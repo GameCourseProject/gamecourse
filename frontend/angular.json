@@ -83,16 +83,29 @@
               "node_modules/highcharts/modules/accessibility.js"
             ],
             "allowedCommonJsDependencies": [
+              "@braintree/sanitize-url",
+              "@simonwep/pickr",
+              "apexcharts",
+              "base64-js",
+              "classnames",
               "codemirror",
+              "cronstrue",
               "core-js-pure",
+              "css.escape",
+              "deepmerge",
               "hoist-non-react-statics",
+              "html2canvas",
               "lodash",
+              "moment",
               "prop-types",
+              "quill",
+              "quill-image-resize",
               "randexp",
               "react-copy-to-clipboard",
               "react-debounce-input",
               "react-immutable-proptypes",
               "redux-immutable",
+              "traverse",
               "url-parse",
               "xml-but-prettier"
             ]
@@ -160,6 +173,5 @@
         }
       }
     }
-  },
-  "defaultProject": "gamecourse"
+  }
 }

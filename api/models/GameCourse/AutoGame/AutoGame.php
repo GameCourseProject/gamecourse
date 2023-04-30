@@ -5,7 +5,6 @@ use Exception;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
-use GameCourse\User\User;
 use Throwable;
 use Utils\CronJob;
 use Utils\Utils;
@@ -17,6 +16,7 @@ use Utils\Utils;
 abstract class AutoGame
 {
     const TABLE_AUTOGAME = "autogame";
+    const TABLE_AUTOGAME_TARGETS = "autogame_target";
     const TABLE_PARTICIPATION = "participation";
 
     const LOGS_FOLDER = "autogame";
@@ -136,24 +136,28 @@ abstract class AutoGame
     }
 
     /**
-     * Triggers AutoGame to run on the next iteration for targets
-     * with new data after a given checkpoint.
+     * Triggers AutoGame to run on the next iteration for given targets.
      *
      * @param int $courseId
-     * @param string $checkpoint
+     * @param array $targets
      * @return void
      */
-    public static function setToRun(int $courseId, string $checkpoint)
+    public static function setToRun(int $courseId, array $targets)
     {
-        $autogameInfo = Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "runNext, checkpoint");
-        $runNext = boolval($autogameInfo["runNext"]);
-        $previousCheckpoint = $autogameInfo["checkpoint"];
+        if (!empty($targets)) {
+            $runNext = boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "runNext"));
 
-        if (!$runNext || (!is_null($previousCheckpoint) && strtotime($checkpoint) < strtotime($previousCheckpoint))) {
-            Core::database()->update(self::TABLE_AUTOGAME, [
-                "runNext" => 1,
-                "checkpoint" => $checkpoint
-            ], ["course" => $courseId]);
+            // Clear previous targets
+            if (!$runNext) Core::database()->delete(self::TABLE_AUTOGAME_TARGETS, ["course" => $courseId]);
+
+            // Add targets, if not already there
+            foreach ($targets as $target) {
+                $exists = !empty(Core::database()->select(self::TABLE_AUTOGAME_TARGETS, ["course" => $courseId, "target" => $target]));
+                if (!$exists) Core::database()->insert(self::TABLE_AUTOGAME_TARGETS, ["course" => $courseId, "target" => $target]);
+            }
+
+            // Set to run on next iteration
+            Core::database()->update(self::TABLE_AUTOGAME, ["runNext" => 1], ["course" => $courseId]);
         }
     }
 

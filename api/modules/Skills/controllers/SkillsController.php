@@ -3,6 +3,7 @@ namespace API;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\Core\Core;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Skills\Skill;
@@ -300,15 +301,18 @@ class SkillsController
         foreach (SkillTree::getSkillTreeById($skillTreeId)->getSkills(true) as $skill) {
             $skill = Skill::getSkillById($skill["id"]);
             $dependencies = $skill->getDependencies();
-            $completed = !empty(array_filter($userSkillAwards, function ($award) use ($skill) {
+            $skillAwards = array_values(array_filter($userSkillAwards, function ($award) use ($skill) {
                 return $award["type"] === AwardType::SKILL && $award["description"] == $skill->getName() && $award["moduleInstance"] == $skill->getId();
             }));
+            $completed = !empty($skillAwards);
+            $wildcardsUsed = $completed ? intval(Core::database()->select(Skills::TABLE_AWARD_WILDCARD, ["award" => $skillAwards[0]["id"]], "IFNULL(SUM(nrWildcardsUsed), 0) as nrWildcardsUsed")["nrWildcardsUsed"]) : 0;
             $info[$skill->getId()] = [
                 "available" => $completed || empty($dependencies) || $this->dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies),
                 "attempts" => count(array_filter(AutoGame::getParticipations($courseId, $userId, "graded post"),
                     function ($item) use ($skill) { return $item["description"] === "Skill Tree, Re: " . $skill->getName(); })),
                 "cost" => $skill->getSkillCostForUser($userId),
-                "completed" => $completed
+                "completed" => $completed,
+                "wildcardsUsed" => $wildcardsUsed
             ];
         }
         $info["total"] = (new Awards($course))->getUserSkillsTotalReward($userId);

@@ -5,7 +5,7 @@ rule: Course Image
         dependencies = combo1
 
         logs = get_skill_logs(target, "Course Image")
-        rating = get_rating(logs)
+        rating = get_best_rating(logs)
 
     then:
         award_skill(target, "Course Image", rating, logs, dependencies)

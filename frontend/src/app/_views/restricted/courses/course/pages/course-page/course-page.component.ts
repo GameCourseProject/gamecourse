@@ -11,6 +11,7 @@ import {User} from "../../../../../../_domain/users/user";
 import {View} from "../../../../../../_domain/views/view";
 
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
+import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 
 import {Moment} from "moment";
 import {environment} from "../../../../../../../environments/environment";
@@ -40,13 +41,18 @@ export class CoursePageComponent implements OnInit {
     skills: Skill[]
   }[] = [];
   availableWildcards: number;
-  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean}};
+  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}};
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
   // FIXME: hard-coded Streaks
   streaks: Streak[] = [];
   userStreaksInfo: {id: number, nrCompletions: number, progress: number, deadline: Moment}[];
   streaksTotal: number;
+
+  // FIXME: hard-coded Gold Exchange
+  hasExchanged: boolean;
+  wallet: number;
+  exchanging: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -116,6 +122,10 @@ export class CoursePageComponent implements OnInit {
       const info = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
       this.userStreaksInfo = info.info;
       this.streaksTotal = info.total;
+
+    } else if (this.page.name === "Gold Exchange") {
+      this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
+      this.wallet = await this.api.getUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
     }
   }
 
@@ -168,6 +178,17 @@ export class CoursePageComponent implements OnInit {
 
   steps(goal: number): number[] {
     return Array(goal);
+  }
+
+  async exchange() {
+    this.exchanging = true;
+
+    const earnedXP = await this.api.exchangeUserTokens(this.course.id, this.user?.id || this.viewer.id, '1:3', 1000, false).toPromise();
+    this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
+    this.wallet = await this.api.getUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
+
+    this.exchanging = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'You earned ' + earnedXP + ' XP!');
   }
 }
 

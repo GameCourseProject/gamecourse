@@ -64,6 +64,22 @@ class VirtualCurrencyController
         API::response($VCModule->getUserTokens($userId));
     }
 
+    public function hasExchangedUserTokens()
+    {
+        API::requireValues("courseId", "userId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $courseUser = API::verifyCourseUserExists($course, $userId);
+
+        $VCModule = new VirtualCurrency($course);
+        API::response($VCModule->hasExchanged($userId));
+    }
+
     /**
      * Exchanges tokens for XP.
      *
@@ -72,22 +88,21 @@ class VirtualCurrencyController
      */
     public function exchangeUserTokens()
     {
-        API::requireValues("courseId", "userId", "ratio", "threshold");
+        API::requireValues("courseId", "userId", "ratio", "threshold", "extra");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCoursePermission($course);
 
-        $userId = API::getValue("users", "int");
+        $userId = API::getValue("userId", "int");
         $parts = explode(":", API::getValue("ratio"));
-        $ratio = round(intval($parts[0]) / intval($parts[1]));
+        $ratio = intval($parts[0]) / intval($parts[1]);
         $threshold = API::getValue("threshold", "int");
+        $extra = API::getValue("extra", "bool");
 
         $VCModule = new VirtualCurrency($course);
-        if (!$VCModule->hasExchanged($userId))
-            $earnedXP = $VCModule->exchangeTokensForXP($userId, $ratio, $threshold);
-
+        $earnedXP = $VCModule->exchangeTokensForXP($userId, $ratio, $threshold, $extra);
         API::response($earnedXP);
     }
 }

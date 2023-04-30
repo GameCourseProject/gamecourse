@@ -343,17 +343,16 @@ class ClassCheck extends Module
 
     /**
      * Imports ClassCheck data into the system.
-     * Returns the datetime of the oldest record imported
-     * if new data was imported, null otherwise.
+     * Returns which targets had new data imported.
      *
-     * @return string|null
+     * @return array
      * @throws Exception
      */
-    public function importData(): ?string
+    public function importData(): array
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
-            return null;
+            return [];
         }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
@@ -361,19 +360,14 @@ class ClassCheck extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
-            // NOTE: AutoGame will run for targets with new data after checkpoint
-            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
-
             $tsvCode = $this->getTSVCode();
-            $checkpoint = $this->saveAttendance($tsvCode);
+            $targets = $this->saveAttendance($tsvCode);
 
-            if ($checkpoint) {
-                $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
+            if (!empty($targets))
                 self::log($this->course->getId(), "Imported new data from " . self::NAME . ".", "SUCCESS");
-            }
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
+            return $targets;
 
         } finally {
             $this->setIsRunning(false);
@@ -385,17 +379,17 @@ class ClassCheck extends Module
      * Saves ClassCheck attendance into the system.
      *
      * @param string $tsvCode
-     * @return int|null
+     * @return array
      * @throws Exception
      */
-    public function saveAttendance(string $tsvCode): ?int
+    public function saveAttendance(string $tsvCode): array
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
+        $targets = []; // Which users to run AutoGame for, based on new attendance imported
 
         $lineNr = 1;
         $file = fopen($tsvCode, "r");
@@ -427,6 +421,7 @@ class ClassCheck extends Module
                             "\"$action\""
                         ];
                         $values[] = "(" . implode(", ", $params) . ")";
+                        $targets[] = $student->getId();
                     }
 
                 } else self::log($this->course->getId(), "No student with username '$studentUsername' enrolled in the course.", "WARNING");
@@ -439,10 +434,8 @@ class ClassCheck extends Module
         if (!empty($values)) {
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
-            $recordsTimestamp = time();
-            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
-        return $oldestRecordTimestamp;
+        return array_unique($targets);
     }
 
     /**

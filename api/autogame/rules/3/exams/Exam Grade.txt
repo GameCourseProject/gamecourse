@@ -4,7 +4,7 @@ rule: Exam Grade
     when:
         logs = get_quiz_logs(target, "Exam")
 
-        exam_grade = get_rating(logs)
+        exam_grade = get_best_rating(logs)
         quizzes_grade = compute_rating(filter_logs(get_quiz_logs(target), None, ["Dry Run", "Exam"]))
         rating = max(exam_grade - quizzes_grade, 0)
 

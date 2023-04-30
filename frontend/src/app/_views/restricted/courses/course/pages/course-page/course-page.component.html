@@ -45,7 +45,7 @@
                                         'outline-color': info[skill.id].available ? skill.color : '#607D8B',
                                         'opacity': info[skill.id].available ? 1 : 0.75}" (click)="goToSkillPage(skill)">
                           <span class="block text-white font-semibold text-xs break-words">{{skill.name}}</span>
-                          <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 left-0 mr-2 mb-2 text-base-100" name="tabler-users" size="1.1rem"></ng-icon>
+                          <ng-icon *ngIf="skill.isCollab" class="absolute bottom-0 left-0 ml-2 mb-2 text-white" name="tabler-users" size="1.1rem"></ng-icon>
                           <ng-icon *ngIf="info[skill.id].completed" class="absolute bottom-0 right-0 mr-2 mb-2 text-white" name="tabler-checks" size="1.1rem"></ng-icon>
                         </div>
                       </div>
@@ -57,6 +57,9 @@
                           <img class="h-4 w-4 inline-block" [src]="vcIcon" alt=""></span></p>
                       </div>
                     </div>
+
+                    <!-- Wildcard usage -->
+                    <p *ngIf="info[skill.id].wildcardsUsed > 0" class="prose font-semibold text-sm text-center text-error mt-1">{{info[skill.id].wildcardsUsed}} wilcard{{info[skill.id].wildcardsUsed !== 1 ? 's' : ''}} used</p>
 
                     <!-- Skill dependencies -->
                     <div *ngIf="skill.dependencies.length > 0" class="mt-1 lg:mb-5">
@@ -133,6 +136,37 @@
               </div>
             </div>
           </div>
+        </div>
+
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- FIXME: this is hard-coded -->
+  <ng-container *ngIf="page.name === 'Gold Exchange'"> <!-- Gold Exchange -->
+    <div class="card w-full bg-base-100 shadow-xl">
+      <div class="card-body overflow-x-auto">
+
+        <!-- Header -->
+        <app-header [title]="'Gold Exchange'" [color]="course.color" [icon]="'tabler-coin'"></app-header>
+
+        <!-- Gold Exchange -->
+        <div class="prose">
+          <p>You can exchange your beloved Gold for some XP. You have a total of <span class="font-semibold" [style]="'color: ' + course.color">{{wallet}} Gold</span>.</p>
+          <p>Here's the current exchange ratio: <span class="font-semibold text-success">3 Gold = 1 XP.</span></p>
+          <div class="flex">
+            <ng-icon class="text-warning mt-1 mr-2" name="feather-alert-triangle" size="1.1rem"></ng-icon>
+            <p class="my-0"><span class="text-warning">But beware!</span> You can only exchange Gold once and up to 1000 Gold and no more.</p>
+          </div>
+          <button class="btn btn-success btn-block mt-4" [disabled]="hasExchanged" (click)="exchange()">
+            <!-- Spinner -->
+            <ng-container *ngIf="exchanging">
+              <app-spinner [size]="'sm'" [color]="'success-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+            Exchange Gold
+          </button>
+          <p *ngIf="hasExchanged" class="text-sm text-error text-center mt-2">You have already exchanged your Gold</p>
+          <p class="text-error text-sm mt-5"><span>Deadline:</span> 27/04/2023 23:59:59</p>
         </div>
 
       </div>

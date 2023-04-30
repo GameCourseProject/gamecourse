@@ -545,7 +545,7 @@ def get_description(log):
     return log[config.LOG_DESCRIPTION_COL]
 
 @rule_function
-def get_rating(logs):
+def get_latest_rating(logs):
     """
     Returns the rating of a set of logs.
 
@@ -557,6 +557,21 @@ def get_rating(logs):
 
     nr_logs = len(logs)
     return 0 if nr_logs == 0 else int(logs[nr_logs - 1][config.LOG_RATING_COL])
+
+@rule_function
+def get_best_rating(logs):
+    """
+    Returns the rating of a set of logs.
+
+    If there are multiple logs, returns the
+    best rating.
+    """
+
+    rating = 0
+    for log in logs:
+        if int(log[config.LOG_RATING_COL]) > rating:
+            rating = int(log[config.LOG_RATING_COL])
+    return rating
 
 @rule_function
 def skill_completed(target, name):

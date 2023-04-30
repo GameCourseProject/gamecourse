@@ -423,10 +423,17 @@ CREATE TABLE autogame(
     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
     isRunning                   boolean DEFAULT FALSE,
     runNext                     boolean DEFAULT FALSE,
-    checkpoint                  TIMESTAMP NULL DEFAULT NULL,
     frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE autogame_target(
+    course                      int unsigned NOT NULL,
+    target                      int unsigned NOT NULL,
+
+    PRIMARY KEY(course, target),
+    FOREIGN key(target, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
 
 

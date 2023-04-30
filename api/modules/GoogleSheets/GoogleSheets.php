@@ -481,17 +481,16 @@ class GoogleSheets extends Module
 
     /**
      * Imports data from a Google sheet into the system.
-     * Returns the datetime of the oldest record imported
-     * if new data was imported, null otherwise.
+     * Returns which targets had new data imported.
      *
-     * @return string|null
+     * @return array
      * @throws Exception
      */
-    public function importData(): ?string
+    public function importData(): array
     {
         if ($this->isRunning()) {
             self::log($this->course->getId(), "Already importing data from " . self::NAME . ".", "WARNING");
-            return false;
+            return [];
         }
 
         $this->setStartedRunning(date("Y-m-d H:i:s", time()));
@@ -499,8 +498,7 @@ class GoogleSheets extends Module
         self::log($this->course->getId(), "Importing data from " . self::NAME . "...", "INFO");
 
         try {
-            // NOTE: AutoGame will run for targets with new data after checkpoint
-            $AutoGameCheckpoint = null; // Timestamp of oldest record imported
+            $targets = []; // Which targets to run AutoGame for, based on new GoogleSheets data imported
 
             $credentials = $this->getCredentials();
             $accessToken = $this->getAccessToken();
@@ -516,9 +514,9 @@ class GoogleSheets extends Module
                 if ($prof) {
                     $data = $this->getSheetData($config["spreadsheetId"], $sheetName);
                     $GSData[$sheetName] = $data;
-                    $checkpoint = $this->saveSheetData($sheetName, $data, $prof->getId());
-                    if ($checkpoint) {
-                        $AutoGameCheckpoint = min($AutoGameCheckpoint, $checkpoint) ?? $checkpoint;
+                    $tgs = $this->saveSheetData($sheetName, $data, $prof->getId());
+                    if (!empty($tgs)) {
+                        $targets = array_unique(array_merge($targets, $tgs));
                         self::log($this->course->getId(), "Imported new data from sheet '" . $sheetName . "'.", "SUCCESS");
                     }
                 } else self::log($this->course->getId(), "No teacher with username '" . $config["ownerNames"][$i] . "' enrolled in the course.", "WARNING");
@@ -528,7 +526,7 @@ class GoogleSheets extends Module
             $this->removeDeletedData($GSData, $config["sheetNames"], $config["ownerNames"]);
 
             self::log($this->course->getId(), "Finished importing data from " . self::NAME . "...", "INFO");
-            return $AutoGameCheckpoint ? date("Y-m-d H:i:s", $AutoGameCheckpoint) : null;
+            return array_unique($targets);
 
         } finally {
             $this->setIsRunning(false);
@@ -555,16 +553,16 @@ class GoogleSheets extends Module
      * @param string $sheetName
      * @param array $data
      * @param int $profId
-     * @return int|null
+     * @return array
      */
-    public function saveSheetData(string $sheetName, array $data, int $profId): ?int
+    public function saveSheetData(string $sheetName, array $data, int $profId): array
     {
         // NOTE: it's better performance-wise to do only one big insert
         //       as opposed to multiple small inserts
         $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, rating, evaluator) VALUES ";
         $values = [];
 
-        $oldestRecordTimestamp = null; // Timestamp of the oldest record imported
+        $targets = []; // Which users to run AutoGame for, based on new data imported
 
         foreach ($data as $i => $row) {
             if (!self::rowIsValid($row, [self::COL_STUDENT_NUMBER, self::COL_ACTION])) continue;
@@ -598,13 +596,13 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" => intval(round($xp)),
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $recordTimeStamp = strtotime($result["date"]);
-                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -632,13 +630,13 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
 
                         } else if ($result["description"] != $info) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" => $action]);
-                            $recordTimeStamp = strtotime($result["date"]);
-                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -660,6 +658,7 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -684,13 +683,13 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
 
                         } else if (intval($result["rating"]) != $xp) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "rating" =>  intval(round($xp))
                             ], ["user" => $userId, "course" => $courseId, "description" => $info, "type" =>  $action]);
-                            $recordTimeStamp = strtotime($result["date"]);
-                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -715,13 +714,13 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
 
                         } else if ($result["description"] != $info) { // update data
                             Core::database()->update(AutoGame::TABLE_PARTICIPATION, [
                                 "description" => $info
                             ], ["user" => $userId, "course" => $courseId, "type" =>  $action]);
-                            $recordTimeStamp = strtotime($result["date"]);
-                            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordTimeStamp) ?? $recordTimeStamp;
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -744,6 +743,7 @@ class GoogleSheets extends Module
                                 $profId
                             ];
                             $values[] = "(" . implode(", ", $params) . ")";
+                            $targets[] = $userId;
                         }
                         break;
 
@@ -756,10 +756,8 @@ class GoogleSheets extends Module
         if (!empty($values)) {
             $sql .= implode(", ", $values);
             Core::database()->executeQuery($sql);
-            $recordsTimestamp = time();
-            $oldestRecordTimestamp = min($oldestRecordTimestamp, $recordsTimestamp) ?? $recordsTimestamp;
         }
-        return $oldestRecordTimestamp;
+        return array_unique($targets);
     }
 
     /**

@@ -2490,12 +2490,27 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public exchangeUserTokens(courseID: number, userIds: number[], ratio: string, threshold: number): Observable<void | number> {
+  public hasExchangedUserTokens(courseID: number, userID: number): Observable<boolean> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.VIRTUAL_CURRENCY);
+      qs.push('request', 'hasExchangedUserTokens');
+      qs.push('courseId', courseID);
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public exchangeUserTokens(courseID: number, userId: number, ratio: string, threshold: number, extra: boolean): Observable<number> {
     const data = {
       courseId: courseID,
-      users: userIds,
+      userId: userId,
       ratio,
-      threshold
+      threshold,
+      extra
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2505,7 +2520,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => res['data']) );
   }
 
 
@@ -2951,7 +2966,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']));
   }
 
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number | string]: {available: boolean, attempts: number, cost: number, completed: boolean}}> {
+  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number | string]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.SKILLS);
       qs.push('request', 'getSkillsExtraInfo');

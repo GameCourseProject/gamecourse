@@ -6,6 +6,7 @@
 
 .bb-collapse {
   @apply collapse;
+  @apply visible #{!important};
 
   &.bb-collapse-arrow {
     @apply collapse-arrow;
