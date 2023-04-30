@@ -57,7 +57,8 @@ export class RulesComponent implements OnInit {
 
   // SEARCH & FILTER
   reduce = new Reduce();
-  searchQuery: string;
+  sectionsToShow: RuleSection[] = [];
+  //searchQuery: string;
 
   @ViewChild('s', {static: false}) s: NgForm;       // Section form
 
@@ -99,6 +100,7 @@ export class RulesComponent implements OnInit {
     this.originalSections = (await this.api.getCourseSections(courseID).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
     this.filteredSections = this.originalSections;
+    this.sectionsToShow = this.originalSections;
 
     if (this.originalSections.length > 1){
       this.sectionActions[0].disable = false;
@@ -130,8 +132,16 @@ export class RulesComponent implements OnInit {
     this.reduce.search(this.originalSections, query);
   }
 
-  filterSections(sectionSearch: RuleSection): RuleSection[]{
-    return this.filteredSections.filter(section => section.name === sectionSearch.name);
+  filterSections(searchQuery: string) {
+    if (searchQuery) {
+      let sections: RuleSection[] = [];
+      for (let i = 0; i < this.filteredSections.length; i++){
+        if (((this.filteredSections[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) sections.push(this.filteredSections[i]);
+      }
+      this.sectionsToShow = sections;
+    }
+    else this.sectionsToShow = this.originalSections;
+
   }
 
   /*** --------------------------------------------- ***/

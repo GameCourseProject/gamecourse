@@ -13,18 +13,19 @@
     </div>
 
     <!-- Search -->
-    <app-input-search
-      [id] = "'sections-search'"
-      [items] = "originalSections"
-      [classList]="'w-[55%] mx-auto mt-5'"
-      [placeholder]="'Search for specific section...'"
-      (onSearch)="filteredSections = $event">
-    </app-input-search>
+    <div class="w-[55%] mx-auto mt-5">
+      <app-input-search
+        [id] = "'sections-search'"
+        [items] = "originalSections"
+        [placeholder]="'Search for specific section...'"
+        (valueChange)="filterSections($event)">
+      </app-input-search>
+    </div>
 
     <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
 
     <!-- Sections and Rules -->
-    <div *ngFor="let section of originalSections">
+    <div *ngFor="let section of sectionsToShow">
       <div class="justify-center flex">
         <div class="card w-[55%] bg-base-100 shadow-xl mt-5">
           <div class="card-body">
