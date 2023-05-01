@@ -114,8 +114,11 @@ export class RuleTagsManagementComponent implements OnInit {
       await this.api.removeTag(this.course.id, this.tagToManage.id).toPromise();
 
       // remove from UI
+      const tag = this.tags.find(tag => tag.id === this.tagToManage.id);
       const index = this.tags.findIndex(tag => tag.id === this.tagToManage.id);
       this.tags.splice(index, 1);
+
+      this.assignRules(tag, action);
 
       AlertService.showAlert(AlertType.SUCCESS, "Tag deleted successfully");
       ModalService.closeModal(action);
@@ -142,7 +145,7 @@ export class RuleTagsManagementComponent implements OnInit {
             message = "Tag created successfully";
 
           }
-          this.assignRules(tag);
+          this.assignRules(tag, action);
 
           AlertService.showAlert(AlertType.SUCCESS, message);
 
@@ -174,13 +177,22 @@ export class RuleTagsManagementComponent implements OnInit {
     return this.themeService.hexaToColor(color);
   }
 
-  assignRules(tag: RuleTag): void {
+  assignRules(tag: RuleTag, action: string): void {
     let rulesToEmit: Rule[] = [];
     let ruleNames = this.tagToManage.ruleNames;
 
     for (let i = 0; i < ruleNames.length; i++) {
       const rule = this.rules.find(rule => rule.name === ruleNames[i]);
-      if (!rule.tags.includes(tag)) rule.tags.push(tag);
+
+      let hasTag = rule.tags.includes(tag);
+      if (hasTag && action === 'remove tag'){
+        let index = rule.tags.findIndex(ruleTag => ruleTag.id === tag.id);
+        rule.tags.splice(index, 1, tag);
+
+      } else if (!hasTag && (action === 'add tag' || action === 'edit tag')){
+        rule.tags.push(tag);
+      }
+
       rulesToEmit.push(rule);
     }
 
