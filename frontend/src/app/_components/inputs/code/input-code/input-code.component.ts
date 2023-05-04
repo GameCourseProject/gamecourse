@@ -1,10 +1,13 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {EditorView, basicSetup} from "codemirror";
+import {EditorState, Compartment} from "@codemirror/state";
 // @ts-ignore
-import {autocompletion} from "@codemirror/autocomplete";
+import {autocompletion, CompletionContext, CompletionSource} from "@codemirror/autocomplete";
+// @ts-ignore
+import {python} from "@codemirror/lang-python";
 
-import {Observable} from "rxjs";
 
+// import {Observable} from "rxjs";
 
 @Component({
   selector: 'app-input-code',
@@ -42,7 +45,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   constructor() { }
 
   ngOnInit(): void {
-    console.log(this.options);
     //this.canInit.subscribe(() => this.initCodeMirror());
     //this.initCodeMirror();
   }
@@ -54,11 +56,19 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   initCodeMirror() {
 
     const element = document.getElementById(this.id) as Element;
+    let language = new Compartment, tabSize = new Compartment;
+
+    const state = EditorState.create();
+    const context = new CompletionContext(state, 0, true);
+
+    const completions = this.myCompletions(context, this.options);
+
     let view = new EditorView({
       doc: "// Type a 'p'\n",
       extensions: [
         basicSetup,
-        autocompletion({override: [this.myCompletions]})
+        language.of(python()),
+        //autocompletion({override: [completions]}),
       ],
       parent: element
     })
@@ -66,17 +76,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   }
 
-  myCompletions(context) {
+  myCompletions(context: CompletionContext, options: any[]) {
+    console.log("hey");
     let before = context.matchBefore(/\w+/)
     // If completion wasn't explicitly started and there
     // is no word before the cursor, don't open completions.
     if (!context.explicit && !before) return null
 
-    console.log(this.options);
-    let options = [];
-    for (const key of Object.keys(this.options)) {
-      options.push({key: this.options[key]});
-    }
+    console.log(options);
     return {
       from: before ? before.from : context.pos,
       options: options,
