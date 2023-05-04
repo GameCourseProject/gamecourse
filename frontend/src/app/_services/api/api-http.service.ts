@@ -1458,6 +1458,19 @@ export class ApiHttpService {
 
   }
 
+  public getRuleFunctions(courseID: number): Observable<any>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getRuleFunctions');
+      qs.push('courseId', courseID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public getCourseRules(courseID: number, active?: boolean): Observable<Rule[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);

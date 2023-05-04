@@ -51,6 +51,13 @@ export class RuleSectionsManagementComponent implements OnInit{
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
+
+  options: any[] = [
+    {label: "panic", type: "keyword"},
+    {label: "park", type: "constant", info: "Test completion"},
+    {label: "password", type: "variable"},
+  ];
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -65,7 +72,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.route.parent.params.subscribe();
   }
 
@@ -161,6 +168,10 @@ export class RuleSectionsManagementComponent implements OnInit{
     }
   }
 
+  async getRuleFunctions(){
+    await this.api.getRuleFunctions(this.course.id).toPromise();
+  }
+
   closeManagement(){
     this.loading.page = true;
 
@@ -181,7 +192,6 @@ export class RuleSectionsManagementComponent implements OnInit{
     let sectionRules = (await this.api.getRulesOfSection(this.course.id, this.section.id).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
     const ruleToActOn = sectionRules[row];
-    console.log(ruleToActOn);
     action = action.toLowerCase();
 
     if (action === 'value changed rule' && col === 3) {
@@ -195,6 +205,8 @@ export class RuleSectionsManagementComponent implements OnInit{
         ModalService.openModal('delete-rule');
 
       } else if (action === Action.EDIT) {
+        console.log(this.options);
+        //await this.getRuleFunctions();
         this.ruleMode = 'edit rule';
         this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
         this.ruleEdit = _.cloneDeep(this.ruleToManage.name);

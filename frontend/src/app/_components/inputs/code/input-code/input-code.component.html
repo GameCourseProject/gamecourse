@@ -1,5 +1,16 @@
-<textarea
+<div class="form-control w-full {{classList}}">
+  <!-- Label -->
+  <label *ngIf="title" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
+    <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
+    <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+</div>
+
+<div [id]="id"></div>
+
+<!--<textarea
   [id]="id"
   [title]="title"
   [ngClass]="classList"
-  [placeholder]="placeholder">{{init}}</textarea>
+  [placeholder]="placeholder">
+</textarea>-->

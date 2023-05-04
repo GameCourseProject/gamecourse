@@ -305,6 +305,19 @@ class RuleSystemController
         API::response($ruleInfo);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function getRuleFunctions() {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $response = RuleSystem::getRuleFunctions($courseId);
+        API::response($response);
+    }
 
     /*** --------------------------------------------- ***/
     /*** -------------------- Tags ------------------- ***/

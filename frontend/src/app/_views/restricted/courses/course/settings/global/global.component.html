@@ -64,7 +64,8 @@
         </div>
 
         <div id="edit-css-file">
-          <app-input-code
+          <!--  FIXME - refactor -->
+<!--          <app-input-code
             [id]="'style-file'"
             [classList]="'form__input'"
             [placeholder]="'Write your style here...'"
@@ -72,7 +73,7 @@
             [init]="styles.contents"
             [canInit]="stylesLoaded"
             (valueChange)="styles.contents = $event">
-          </app-input-code>
+          </app-input-code>-->
         </div>
       </ng-container>
     </div>

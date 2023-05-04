@@ -267,6 +267,30 @@ abstract class RuleSystem
         return !!$rule && $rule->getCourse()->getId() == $courseId;
     }
 
+    /**
+     * Gets all rule functions available from autogame for rule editor UI
+     *
+     * @param int $courseId
+     * @return array|mixed
+     */
+    public static function getRuleFunctions(int $courseId) {
+        $dbHost = DB_HOST;
+        $dbName = DB_NAME;
+        $dbUser = DB_USER;
+        $dbPass = DB_PASSWORD;
+
+        $scriptPath = ROOT_PATH . "autogame/get_functions.py";
+        $cmd = "python \"$scriptPath\" $courseId \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\""; //FIXME later --> change "python" to "python3"
+
+        $output = null;
+        exec($cmd, $output);
+        $funcs = array();
+        if ($output != null && sizeof($output) > 0) {
+            $funcs = json_decode($output[0]);
+        }
+        return $funcs;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Rules Data -------------------- ***/

@@ -332,7 +332,8 @@
     <div class="sb-expression">
       <label [for]="label">{{capitalize(label)}}</label>
       <div id="expression-input" style="width: calc(100% - 90px)">
-        <app-input-code
+        <!-- FIXME: Refactor -->
+        <!--<app-input-code
           [id]="label"
           [title]="title"
           [classList]="'expression form__input'"
@@ -348,7 +349,7 @@
           [init]="viewToEdit[param]"
           [canInit]="viewLoaded"
           (valueChange)="viewToEdit[param] = $event">
-        </app-input-code>
+        </app-input-code>-->
       </div>
     </div>
   </div>

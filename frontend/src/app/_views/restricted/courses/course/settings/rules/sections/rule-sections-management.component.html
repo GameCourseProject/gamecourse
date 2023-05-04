@@ -91,21 +91,11 @@
         <div class="w-full flex flex-wrap" style="align-items: flex-end">
           <!-- When clause -->
           <div class="sm:w-1/2">
-            <!--<app-input-code
-              [id]="'rule-when'"
+            <app-input-code
+              [id]="'my-div'"
               [title]="'When'"
-              [classList]="'expression form__input'"
-              [placeholder]="'Rule When Clause'"
-              [options]="{
-                lineNumbers: false,
-                styleActiveLine: true,
-                autohint: true,
-                lineWrapping: true,
-                theme: 'default'
-              }"
-              [init]="ruleToManage.whenClause"
-              (valueChange)="ruleToManage.whenClause = $event"
-            ></app-input-code>-->
+              [options] = "options"
+            ></app-input-code>
             <app-input-text
               [id]="'rule-whenClause'"
               [form] = "r"
