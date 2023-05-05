@@ -1,3 +1,11 @@
+.cm-completion-active {
+  background-color: #1aa35b;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+}
+
+
 /*.cm.cm-content, .cm.cm-gutter { min-height: 150px; }
 
 .cm{

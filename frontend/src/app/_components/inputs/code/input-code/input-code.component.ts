@@ -80,22 +80,24 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     // Autocompletion feature
     function completePy(context: CompletionContext): CompletionResult {
       let nodeBefore = syntaxTree(context.state).resolveInner(context.pos, -1)
-      if (nodeBefore.name != "Token" ||
-        context.state.sliceDoc(nodeBefore.from, nodeBefore.to) != ".")
-        return null
       let textBefore = context.state.sliceDoc(nodeBefore.from, context.pos)
       let lastWord = /^\w*$/.exec(textBefore)
 
       // Python keywords in a list
-      const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield']
+      const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
+        'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+        'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
+
+      let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
 
       // Add the Python keywords to the options array
-      let options = pyKeywords.concat(myOptions)
+      options = options.concat(myOptions.map(option => ({label: option, type: "function"})));
 
+      console.log(options);
       if (!lastWord && !context.explicit) return null
       return {
         from: lastWord ? nodeBefore.from + lastWord.index : context.pos,
-        options: options.map(option => ({label: option, type: "keyword"})),
+        options: options,
         validFor: /^\w*$/
       }
     }
