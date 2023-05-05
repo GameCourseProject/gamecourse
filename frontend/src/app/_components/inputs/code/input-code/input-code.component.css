@@ -1,0 +1,12 @@
+/*.cm.cm-content, .cm.cm-gutter { min-height: 150px; }
+
+.cm{
+  max-height: 150px !important;
+  min-height: 100px !important;
+  background-color: #1aa35b;
+}
+
+.cm.cm-wrap { height: 300px; border: 1px solid silver}
+.cm.cm-scroller { overflow: auto; }
+
+*/

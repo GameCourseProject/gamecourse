@@ -88,15 +88,19 @@
           </app-input-text>
         </div>
 
-        <div class="w-full flex flex-wrap" style="align-items: flex-end">
-          <!-- When clause -->
-          <div class="sm:w-1/2">
-            <app-input-code
-              [id]="'my-div'"
-              [title]="'When'"
-              [options] = "options"
-            ></app-input-code>
-            <app-input-text
+        <app-input-code
+          [id]="'my-div'"
+          [title]="'When'"
+          [customKeywords]="options"
+        ></app-input-code>
+
+        <!--<div class="w-full flex flex-wrap" style="align-items: flex-end">
+           When clause
+          <div class="sm:w-1/2">-->
+
+
+
+            <!--<app-input-text
               [id]="'rule-whenClause'"
               [form] = "r"
               [(value)] = "ruleToManage.whenClause"
@@ -104,9 +108,9 @@
               [required]="true"
               [topLabel]="'When'">
             </app-input-text>
-          </div>
+          </div>-->
 
-          <!-- Then clause -->
+          <!-- Then clause
           <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
             <app-input-text
               [id]="'rule-thenClause'"
@@ -116,7 +120,7 @@
               [required]="true"
               [topLabel]="'Then'">
             </app-input-text>
-          </div>
+          </div>-->
         </div>
 
         <!--
@@ -158,8 +162,8 @@
 
           <span class="pl-1 pb-16"><small> Tag colors will only show in table</small></span>
 
-        </div>-->
-      </div>
+        </div>
+      </div>-->
 
 
     </div>

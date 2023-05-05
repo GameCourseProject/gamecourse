@@ -52,11 +52,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
 
-  options: any[] = [
-    {label: "panic", type: "keyword"},
-    {label: "park", type: "constant", info: "Test completion"},
-    {label: "password", type: "variable"},
-  ];
+  options: any[] = [ "panic", "park", "portugal", "password"];
 
   constructor(
     private api: ApiHttpService,
