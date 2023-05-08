@@ -7,6 +7,9 @@ import {oneDark} from "@codemirror/theme-one-dark";
 import {autocompletion, CompletionContext, CompletionResult, CompletionSource} from "@codemirror/autocomplete";
 // @ts-ignore
 import {python, pythonLanguage} from "@codemirror/lang-python";
+// @ts-ignore
+import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
+
 
 // import {Observable} from "rxjs";
 
@@ -18,10 +21,10 @@ import {python, pythonLanguage} from "@codemirror/lang-python";
 export class InputCodeComponent implements OnInit, AfterViewInit {
 
   // Essentials
-  @Input() id: string;                        // Unique id
-  @Input() mode: string;                      // Type of code to write
-  @Input() value: string;                     // Value on init
-  @Input() placeholder: string;               // Message to show by default
+  @Input() id: string;                                     // Unique id
+  @Input() mode: "python" | "javascript" = "python";       // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  @Input() value: string;                                  // Value on init
+  @Input() placeholder: string = "Write your code here!";  // Message to show by default
 
   // Extras
   @Input() nrLines?: number = 10;             // Number of lines already added to the editor. Default = 10 lines
@@ -41,39 +44,43 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-
   constructor() { }
 
-  ngOnInit(): void {
-
-  }
+  ngOnInit(): void { }
 
   ngAfterViewInit(): void {
-    this.initCodeMirror()
+    this.initCodeMirror();
   }
 
+  // Initializes code editor and basic setup
   initCodeMirror() {
 
     const element = document.getElementById(this.id) as Element;
-    let language = new Compartment, tabSize = new Compartment;
+    let tabSize = new Compartment;
 
-
+    console.log(this.value);
     // State and Editor basic definition
-
     let state = EditorState.create({
+      doc: "# " + this.placeholder + "\n" + (this.value ?? "") + "\n",
       extensions: [
         basicSetup,
         oneDark,
         tabSize.of(EditorState.tabSize.of(8)),
-        language.of(python()),
-        autocompletion({override: [completePy]})
-      ]
+        this.chooseMode(),
+        autocompletion({override: [completePy]}),
+        /*EditorView.theme({
+          '.cm-tooltip-autocomplete': {
+            //top: '300px !important',
+          }
+        }),*/ // FIXME -- delete later
+        EditorView.lineWrapping
+      ],
     });
 
+    // Only show autocompletion when starting to type
     const context = new CompletionContext(state, 0, true);
 
     let editor = new EditorView({
-      doc: "# " + this.placeholder + "\n",
       state,
       parent: element
     });
@@ -96,7 +103,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       // Add the Python keywords to the options array
       options = options.concat(myOptions.map(option => ({label: option, type: "function"})));
 
-      console.log(options);
       if (!lastWord && !context.explicit) return null
       return {
         from: lastWord ? nodeBefore.from + lastWord.index : context.pos,
@@ -110,7 +116,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     updateToMinNumberOfLines(editor, this.nrLines);
     function updateToMinNumberOfLines(editor, minNumOfLines) {
       const currentNumOfLines = editor.state.doc.lines;
-      const currentStr = editor.state.doc.toString();
+      let currentStr = editor.state.doc.toString();
+
       if (currentNumOfLines >= minNumOfLines) {
         return;
       }
@@ -123,5 +130,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   }
 
+  // Function to select which language should the editor provide
+  chooseMode() {
+    let language = new Compartment;
+
+    switch (this.mode){
+      case "python": return language.of(python());
+      case "javascript": return language.of(javascript()); // NOTE: not tested
+    }
+  }
 
 }

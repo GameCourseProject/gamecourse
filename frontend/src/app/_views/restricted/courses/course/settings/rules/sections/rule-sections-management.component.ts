@@ -29,7 +29,8 @@ export class RuleSectionsManagementComponent implements OnInit{
   @Input() section?: RuleSection;                                   // Section (comes from DB - used for seeing details inside like rules etc, not manipulating the section itself)
   @Input() tags: RuleTag[];                                         // Course tags
 
-  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';                                  // Available modes regarding section management
+  // Available modes regarding section management
+  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';
 
   @Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
 
@@ -37,11 +38,14 @@ export class RuleSectionsManagementComponent implements OnInit{
     page: false,
     action: false
   };
+  refreshing: boolean;
 
   ruleEdit: string = "";                                            // Name of rule to be edited
   ruleMode: 'add rule' | 'edit rule' | 'remove rule';               // Available actions for rules
+  interruptedMode: 'add rule' | 'edit rule' | 'remove rule';        // (Auxiliar) Available actions for rules
   ruleToManage: RuleManageData;                                     // Manage data
   ruleTags: string[];                                               // Tags from a specific rule
+  row: number;                                                      // Row identifying rule in table that its being manipulated
 
   nameTags : {value: string, text: string}[];                       // Tags with names formatted for the select-input
 
@@ -52,7 +56,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
 
-  options: any[] = [ "panic", "park", "portugal", "password"];
+  options: any[] = [ "panic", "park", "portugal", "password"];    // FIXME -- to be replaced with other functions from autogame
 
   constructor(
     private api: ApiHttpService,
@@ -70,6 +74,8 @@ export class RuleSectionsManagementComponent implements OnInit{
 
   async ngOnInit() {
     this.route.parent.params.subscribe();
+
+    //await this.getRuleFunctions(); FIXME
   }
 
   /*** --------------------------------------------- ***/
@@ -85,12 +91,20 @@ export class RuleSectionsManagementComponent implements OnInit{
       await this.exportRules(rules);
 
     } else if (action === 'Create rule') {
+
+      if (this.ruleMode === 'edit rule' || this.ruleMode == 'add rule') {
+        this.interruptedMode = 'add rule';
+        this.discardModal();
+        return;
+      }
+
       this.ruleMode = 'add rule';
       this.ruleTags = [];
       this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
 
       this.getTagNames();
-      ModalService.openModal('manage-rule');
+      this.scroll();
+      //ModalService.openModal('manage-rule');
 
     }
   }
@@ -175,6 +189,7 @@ export class RuleSectionsManagementComponent implements OnInit{
     // TODO -- add tags here later?
 
     this.mode = null;
+    this.resetRuleManage();
 
     this.loading.page = false;
 
@@ -184,7 +199,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async doActionOnTable(section: RuleSection, action: string, row: number, col: number): Promise<void>{
+  async doActionOnTable(action: string, row: number, col: number): Promise<void>{
     let sectionRules = (await this.api.getRulesOfSection(this.course.id, this.section.id).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
     const ruleToActOn = sectionRules[row];
@@ -201,8 +216,14 @@ export class RuleSectionsManagementComponent implements OnInit{
         ModalService.openModal('delete-rule');
 
       } else if (action === Action.EDIT) {
-        console.log(this.options);
-        //await this.getRuleFunctions();
+
+        if (this.ruleMode === 'edit rule' || this.ruleMode == 'add rule') {
+          this.row = row;
+          this.interruptedMode = 'edit rule';
+          this.discardModal();
+          return;
+        }
+
         this.ruleMode = 'edit rule';
         this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
         this.ruleEdit = _.cloneDeep(this.ruleToManage.name);
@@ -212,7 +233,8 @@ export class RuleSectionsManagementComponent implements OnInit{
         this.getTagNames();
         this.ruleTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
 
-        ModalService.openModal('manage-rule');
+        this.scroll();
+        // ModalService.openModal('manage-rule');
 
       } else if ( action === Action.DUPLICATE) {
         await this.duplicateRule(ruleToActOn);
@@ -312,6 +334,32 @@ export class RuleSectionsManagementComponent implements OnInit{
   resetImport(){
     this.importData = {file:null, replace: true};
     this.fImport.resetForm();
+  }
+
+  async exitManagement(){
+
+    this.resetRuleManage();
+    ModalService.closeModal('exit-management');
+
+    if (this.interruptedMode === 'add rule') {
+      this.interruptedMode = null;
+      await this.prepareModal("Create rule");
+
+    } else if (this.interruptedMode === 'edit rule') {
+      this.interruptedMode = null;
+      await this.doActionOnTable(Action.EDIT, this.row,4); // Col 4 has all additional actions
+    }
+  }
+
+  scroll(){
+    // NOTE: card with rule info to update
+    this.refreshing = true;
+    setTimeout(() => this.refreshing = false, 0);
+    document.getElementById("rule-content").scrollIntoView({behavior: 'smooth'});
+  }
+
+  discardModal(){
+    ModalService.openModal('exit-management');
   }
 
   /*** --------------------------------------------- ***/

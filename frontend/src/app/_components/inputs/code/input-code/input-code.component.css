@@ -1,9 +1,9 @@
 .cm {
-  min-height: 200px !important;
-  max-height: 300px !important;
+  height: 200px !important;
   overflow-y: auto;
   background-color: #282C34;
 }
+
 /*.cm.cm-content, .cm.cm-gutter { min-height: 150px; }
 
 .cm{

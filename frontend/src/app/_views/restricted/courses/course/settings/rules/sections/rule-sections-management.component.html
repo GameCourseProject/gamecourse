@@ -35,12 +35,100 @@
       [data] = "section.data"
       [options] = "section.options"
       [loading] = "section.loadingTable"
-      (btnClicked)="doActionOnTable(section, $event.type, $event.row, $event.col)"
-      (valueChanged)="doActionOnTable(section, 'value changed rule', $event.row, $event.col)">
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col)">
     </app-table>
 
+    <div id="rule-content" *ngIf="!refreshing">
+      <div class="card w-full bg-base-100 shadow-xl mt-10"
+           *ngIf="(ruleMode === 'add rule' || ruleMode === 'edit rule') && ruleToManage">
+        <div class="card-body">
+          <div class="card-title flex flex-wrap">
+            <span class="w-full">{{ruleMode === 'edit rule' ? 'Edit rule: \'' + ruleEdit + '\'' : ruleMode?.capitalize()}}</span>
+            <div class="border-b border-gray-200 w-full -mt-3">
+              <span class="text-sm">Section: <strong>{{section.name}}</strong></span>
+            </div>
+          </div>
+          <form #r="ngForm">
+            <div class="w-full">
+              <!-- Name -->
+              <app-input-text
+                [id] = "'rule-name'"
+                [form] = "r"
+                [classList]="'mt-4'"
+                [(value)] = "ruleToManage.name"
+                [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
+                [topLabel]="'Rule Name'"
+                [pattern]="'(?!^\\d+$)^.+$'"
+                [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
+                [required]="true"
+                [maxLength]="60"
+                [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+              </app-input-text>
+
+              <app-input-code
+                [id]="'rule-when'"
+                [classList]="'mt-4'"
+                [title]="'When'"
+                [customKeywords]="options"
+                [placeholder]="'Rule \'When\' clause'"
+                [value]="ruleToManage.whenClause"
+                [mode]="'python'"
+              ></app-input-code>
+
+              <app-input-code
+                [id]="'rule-then'"
+                [classList]="'mt-4'"
+                [title]="'Then'"
+                [customKeywords]="options"
+                [placeholder]="'Rule \'Then\' clause'"
+                [value]="ruleToManage.thenClause"
+                [mode]="'python'"
+              ></app-input-code>
+
+              <app-input-textarea
+                [id] = "'rule-description'"
+                [classList]="'mt-4'"
+                [form] = "r"
+                [(value)] = "ruleToManage.description"
+                [placeholder]="'Write here a small description for this rule ...'"
+                [label] = "'Rule Description'"
+                [required]="false"
+                [maxLength]="100"
+                [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
+              </app-input-textarea>
+
+              <!-- FIXME: Tags missing -->
+            </div>
+          </form>
+
+          <!-- Actions -->
+          <div class="card-actions justify-end mt-4">
+
+            <button type="submit" class="btn btn-primary" (click)="discardModal()">
+              <!-- Spinner -->
+              <ng-container *ngIf="loading.action">
+                <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+              </ng-container>
+              Discard changes
+            </button>
+
+            <button type="submit" class="btn btn-primary" (click)="r.onSubmit(null); doAction(ruleMode)">
+              <!-- Spinner -->
+              <ng-container *ngIf="loading.action">
+                <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+              </ng-container>
+              Save and Close
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
     <!-- Spinner -->
-    <div *ngIf="!section.showTable" class="flex justify-center items-center">
+    <div *ngIf="!section.showTable || refreshing" class="flex justify-center items-center">
       <app-spinner></app-spinner>
     </div>
 
@@ -49,7 +137,28 @@
   </ng-container>
 </div>
 
-<!-- New / Edit rule modal -->
+
+
+<app-modal
+   [id]="'exit-management'"
+   [templateRef]="EXIT_MANAGEMENT"
+   [size]="'md'"
+   [header]="'Discard changes?'"
+   [submitBtnText]="'Discard'"
+   [closeBtnText]="'Cancel'"
+   [actionInProgress] = "loading.action"
+   (submitBtnClicked)="exitManagement()"
+   [xButton]="false"
+   [static]="true">
+</app-modal>
+<ng-template #EXIT_MANAGEMENT>
+  <div class="w-full flex flex-wrap">
+    <span class="w-full">There are currently <strong>unsaved changes</strong>. This action <strong>cannot be undone</strong>.</span>
+    <span class="w-full">Do you want to proceed?</span>
+  </div>
+</ng-template>
+
+<!-- New / Edit rule modal
 <app-modal *ngIf="ruleMode !== 'remove rule' && ruleToManage"
            [id]="'manage-rule'"
            [templateRef]="MANAGE_RULE"
@@ -60,7 +169,7 @@
            [actionInProgress] = "loading.action"
            (submitBtnClicked)="r.onSubmit(null); doAction(ruleMode)"
            (onClose)="resetRuleManage()">
-</app-modal>
+</app-modal>-->
 <ng-template #MANAGE_RULE>
   <div class="border-b border-gray-200 mb-4 -mt-2">
     <span class="text-sm mb-2">Section: <strong>{{section.name}}</strong></span>
@@ -92,6 +201,9 @@
           [id]="'my-div'"
           [title]="'When'"
           [customKeywords]="options"
+          [placeholder]="'Rule \'When\' clause'"
+          [value]="ruleToManage.whenClause"
+          [mode]="'python'"
         ></app-input-code>
 
         <!--<div class="w-full flex flex-wrap" style="align-items: flex-end">

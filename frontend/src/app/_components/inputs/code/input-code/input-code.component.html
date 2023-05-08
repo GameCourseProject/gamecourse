@@ -4,10 +4,11 @@
     <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
-</div>
 
-<div class="cm">
-  <div [id]="id"></div>
+  <div class="cm rounded-xl">
+    <div [id]="id"></div>
+  </div>
+
 </div>
 
 
