@@ -56,7 +56,8 @@ export class RuleSectionsManagementComponent implements OnInit{
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
 
-  options: any[] = [ "panic", "park", "portugal", "password"];    // FIXME -- to be replaced with other functions from autogame
+  functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
+  // options: any[] = [ "panic", "park", "portugal", "password"];    // FIXME -- to be replaced with other functions from autogame
 
   constructor(
     private api: ApiHttpService,
@@ -73,9 +74,14 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** --------------------------------------------- ***/
 
   async ngOnInit() {
-    this.route.parent.params.subscribe();
+    this.route.parent.params.subscribe(async params => {
+      const courseID = parseInt(params.id);
+      await this.getRuleFunctions(courseID);
+    });
+  }
 
-    //await this.getRuleFunctions(); FIXME
+  async getRuleFunctions(courseID: number){
+    this.functions = await this.api.getRuleFunctions(courseID).toPromise();
   }
 
   /*** --------------------------------------------- ***/
@@ -178,10 +184,6 @@ export class RuleSectionsManagementComponent implements OnInit{
     }
   }
 
-  async getRuleFunctions(){
-    await this.api.getRuleFunctions(this.course.id).toPromise();
-  }
-
   closeManagement(){
     this.loading.page = true;
 
@@ -230,8 +232,8 @@ export class RuleSectionsManagementComponent implements OnInit{
 
         // for the tags in the input-select
         // FIXME -- not working
-        this.getTagNames();
-        this.ruleTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
+        // this.getTagNames();
+        // this.ruleTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
 
         this.scroll();
         // ModalService.openModal('manage-rule');
@@ -355,7 +357,9 @@ export class RuleSectionsManagementComponent implements OnInit{
     // NOTE: card with rule info to update
     this.refreshing = true;
     setTimeout(() => this.refreshing = false, 0);
+
     document.getElementById("rule-content").scrollIntoView({behavior: 'smooth'});
+
   }
 
   discardModal(){
