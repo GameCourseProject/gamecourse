@@ -70,7 +70,7 @@
                 [id]="'rule-when'"
                 [classList]="'mt-4'"
                 [title]="'When'"
-                [customKeywords]="options"
+                [customFunctions]="functions"
                 [placeholder]="'Rule \'When\' clause'"
                 [value]="ruleToManage.whenClause"
                 [mode]="'python'"
@@ -80,7 +80,7 @@
                 [id]="'rule-then'"
                 [classList]="'mt-4'"
                 [title]="'Then'"
-                [customKeywords]="options"
+                [customFunctions]="functions"
                 [placeholder]="'Rule \'Then\' clause'"
                 [value]="ruleToManage.thenClause"
                 [mode]="'python'"
@@ -197,7 +197,7 @@
           </app-input-text>
         </div>
 
-        <app-input-code
+        <!--<app-input-code
           [id]="'my-div'"
           [title]="'When'"
           [customKeywords]="options"
@@ -206,7 +206,7 @@
           [mode]="'python'"
         ></app-input-code>
 
-        <!--<div class="w-full flex flex-wrap" style="align-items: flex-end">
+        <div class="w-full flex flex-wrap" style="align-items: flex-end">
            When clause
           <div class="sm:w-1/2">-->
 

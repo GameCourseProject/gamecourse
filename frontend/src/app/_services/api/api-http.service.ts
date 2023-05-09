@@ -1458,7 +1458,7 @@ export class ApiHttpService {
 
   }
 
-  public getRuleFunctions(courseID: number): Observable<any>{
+  public getRuleFunctions(courseID: number): Observable<{ moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getRuleFunctions');
