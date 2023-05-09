@@ -4,7 +4,13 @@ import {EditorState, Compartment} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
 // @ts-ignore
-import {autocompletion, CompletionContext, CompletionResult, CompletionSource} from "@codemirror/autocomplete";
+import {
+  autocompletion,
+  CompletionContext,
+  CompletionResult,
+  CompletionSource,
+  completionStatus
+} from "@codemirror/autocomplete";
 // @ts-ignore
 import {python, pythonLanguage} from "@codemirror/lang-python";
 // @ts-ignore
@@ -31,7 +37,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() title?: string;                    // Textarea title
   @Input() classList?: string;                // Classes to add
   @Input() disabled?: boolean;                // Make it disabled
-  @Input() customKeywords?: any[];            // Codemirror options
+  @Input() customKeywords?: string[] = [];    // Personalized keywords
+
+  // Personalized functions
+  @Input() customFunctions?: {
+    moduleId: string,
+    name: string,
+    keyword: string,
+    description: string,
+    args: {name: string, optional: boolean, type: any}[] }[] = [];
 
   @Input() helperText?: string;                                               // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';              // Helper position
@@ -58,7 +72,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     const element = document.getElementById(this.id) as Element;
     let tabSize = new Compartment;
 
-    console.log(this.value);
     // State and Editor basic definition
     let state = EditorState.create({
       doc: "# " + this.placeholder + "\n" + (this.value ?? "") + "\n",
@@ -68,12 +81,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(),
         autocompletion({override: [completePy]}),
-        /*EditorView.theme({
-          '.cm-tooltip-autocomplete': {
-            //top: '300px !important',
+        EditorView.lineWrapping,
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged && update.selectionSet && update.viewportChanged){
+            insertCommentCommand(editor);
           }
-        }),*/ // FIXME -- delete later
-        EditorView.lineWrapping
+        })
       ],
     });
 
@@ -85,7 +98,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       parent: element
     });
 
-    const myOptions = this.customKeywords;
+    const myFunctions = this.customFunctions;
+    const myKeywords = this.customKeywords;
 
     // Autocompletion feature
     function completePy(context: CompletionContext): CompletionResult {
@@ -100,8 +114,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
 
-      // Add the Python keywords to the options array
-      options = options.concat(myOptions.map(option => ({label: option, type: "function"})));
+      // Add personalized keywords to the options array
+      options = options.concat(myKeywords.map(option => ({label: option, type: "keyword"})));
+
+      // Add personalized functions to the options array
+      options = options.concat(myFunctions.map(option => ({label: option.keyword, type: "function"})));
 
       if (!lastWord && !context.explicit) return null
       return {
@@ -128,6 +145,27 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       })
     }
 
+
+    const insertCommentCommand = (view: EditorView) => {
+      let docString = editor.state.doc.toString();
+      let words = docString.split(/\s+/);
+      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element
+
+      let autocompletion = completePy(context);  // FIXME --> make options global so this function doesnt need to be called
+      let functions = autocompletion.options.filter(option => option.type === "function");
+
+      if (lastWord && functions.map(myFunction => { return myFunction.label }).includes(lastWord)) {
+
+        console.log(lastWord);
+        const comment = "# this is a new comment!\n";
+        const line = view.state.doc.lineAt(state.doc.lineAt(state.selection.main.head).number - 1);
+        const tr = view.state.update({changes: {from: line.from, to: line.from, insert: comment}});
+        view.dispatch(tr);
+        return true;
+      }
+      return false;
+    }
+
   }
 
   // Function to select which language should the editor provide
@@ -139,5 +177,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       case "javascript": return language.of(javascript()); // NOTE: not tested
     }
   }
+
+
 
 }
