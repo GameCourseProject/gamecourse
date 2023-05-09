@@ -5,7 +5,7 @@ import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
 // @ts-ignore
 import {
-  autocompletion,
+  autocompletion, Completion,
   CompletionContext,
   CompletionResult,
   CompletionSource,
@@ -58,9 +58,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
+  options: Completion[] = [];
+
   constructor() { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.setUpKeywords();
+  }
 
   ngAfterViewInit(): void {
     this.initCodeMirror();
@@ -98,27 +102,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       parent: element
     });
 
-    const myFunctions = this.customFunctions;
-    const myKeywords = this.customKeywords;
+    const options = this.options;
 
     // Autocompletion feature
     function completePy(context: CompletionContext): CompletionResult {
-      let nodeBefore = syntaxTree(context.state).resolveInner(context.pos, -1)
-      let textBefore = context.state.sliceDoc(nodeBefore.from, context.pos)
-      let lastWord = /^\w*$/.exec(textBefore)
-
-      // Python keywords in a list
-      const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
-        'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-        'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
-
-      let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
-
-      // Add personalized keywords to the options array
-      options = options.concat(myKeywords.map(option => ({label: option, type: "keyword"})));
-
-      // Add personalized functions to the options array
-      options = options.concat(myFunctions.map(option => ({label: option.keyword, type: "function"})));
+      let nodeBefore = syntaxTree(context.state).resolveInner(context.pos, -1);
+      let textBefore = context.state.sliceDoc(nodeBefore.from, context.pos);
+      let lastWord = /^\w*$/.exec(textBefore);
 
       if (!lastWord && !context.explicit) return null
       return {
@@ -145,22 +135,21 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       })
     }
 
-
+    // FIXME
     const insertCommentCommand = (view: EditorView) => {
       let docString = editor.state.doc.toString();
       let words = docString.split(/\s+/);
-      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element
+      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty)
 
-      let autocompletion = completePy(context);  // FIXME --> make options global so this function doesnt need to be called
-      let functions = autocompletion.options.filter(option => option.type === "function");
+      let functions = this.options.filter(option => option.type === "function");
 
       if (lastWord && functions.map(myFunction => { return myFunction.label }).includes(lastWord)) {
 
-        console.log(lastWord);
         const comment = "# this is a new comment!\n";
         const line = view.state.doc.lineAt(state.doc.lineAt(state.selection.main.head).number - 1);
         const tr = view.state.update({changes: {from: line.from, to: line.from, insert: comment}});
         view.dispatch(tr);
+
         return true;
       }
       return false;
@@ -178,6 +167,22 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Setups all keywords and functions for editor
+  setUpKeywords(){
+    // Python keywords in a list
+    const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
+      'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+      'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
 
+    let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
+
+    // Add personalized keywords to the options array
+    options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
+
+    // Add personalized functions to the options array
+    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function"})));
+
+    this.options = options;
+  }
 
 }
