@@ -3,6 +3,7 @@ import {EditorView, basicSetup} from "codemirror";
 import {EditorState, Compartment} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
+import {Tooltip, hoverTooltip} from "@codemirror/view";
 // @ts-ignore
 import {
   autocompletion, Completion,
@@ -76,6 +77,60 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     const element = document.getElementById(this.id) as Element;
     let tabSize = new Compartment;
 
+    const wordHover = hoverTooltip((view, pos, side) => {
+      let {from, to, text} = view.state.doc.lineAt(pos)
+      let start = pos, end = pos
+
+      while (start > from && /\w/.test(text[start - from - 1])) start--
+      while (end < to && /\w/.test(text[end - from])) end++
+
+      if (start == pos && side < 0 || end == pos && side > 0)
+        return null
+
+      let word = text.slice(start - from, end - from);
+      if (this.isInFunctions(word)){
+        //console.log(this.customFunctions);
+        let myFunction = this.customFunctions.find(option => option.keyword === word);
+        let text = myFunction.name + " (" +
+          myFunction.args.map(arg => {
+            return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
+          }) + ")\n" + myFunction.description;
+
+        return {
+          pos: start,
+          end,
+          above: false,
+          create(view) {
+            let dom = document.createElement("tag-div")
+            dom.className = "cm-tooltip-cursor"
+            EditorView.baseTheme({
+              ".cm-tooltip-lint": {
+                width: "80%"
+              },
+              ".cm-tooltip-cursor": {
+                backgroundColor: "#66b !important",
+                color: "white",
+                border: "none",
+                padding: "5px",
+                borderRadius: "4px",
+                "& .cm-tooltip-arrow:before": {
+                  borderTopColor: "#66b !important"
+                },
+                "& .cm-tooltip-arrow:after": {
+                  borderTopColor: "transparent"
+                }
+              }
+            })
+            dom.textContent = text
+            return {dom}
+          }
+        }
+      }
+
+      return null;
+
+    })
+
     // State and Editor basic definition
     let state = EditorState.create({
       doc: "# " + this.placeholder + "\n" + (this.value ?? "") + "\n",
@@ -90,7 +145,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
             insertCommentCommand(editor);
           }
-        })
+        }),
+        wordHover
       ],
     });
 
@@ -135,16 +191,38 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       })
     }
 
+
+    /*return state.selection.ranges
+      .filter(range => range.empty)
+      .map(range => {
+        let line = state.doc.lineAt(range.head)
+        let text = line.number + ":" + (range.head - line.from)
+        return {
+          pos: range.head,
+          above: true,
+          strictSide: true,
+          arrow: true,
+          create: () => {
+            let dom = document.createElement("div")
+            dom.className = "cm-tooltip-cursor"
+            dom.textContent = text
+            return {dom}
+          }
+        }
+      })*/
+
+
+
     // FIXME
     const insertCommentCommand = (view: EditorView) => {
-      let docString = editor.state.doc.toString();
-      let words = docString.split(/\s+/);
-      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty)
+      let words = (editor.state.doc.toString()).split(/\s+/);
 
-      let functions = this.options.filter(option => option.type === "function");
+      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty) // FIXME
 
-      if (lastWord && functions.map(myFunction => { return myFunction.label }).includes(lastWord)) {
-
+      if (lastWord && this.isInFunctions(lastWord)) {
+        console.log(state.selection.ranges.filter(range => range.empty).map(range => {return state.doc.lineAt(range.head).number}));
+        //let lineNr = state.doc.lineAt(state.selection.ranges[-1].head).number
+        //console.log(lineNr);
         const comment = "# this is a new comment!\n";
         const line = view.state.doc.lineAt(state.doc.lineAt(state.selection.main.head).number - 1);
         const tr = view.state.update({changes: {from: line.from, to: line.from, insert: comment}});
@@ -168,7 +246,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   // Setups all keywords and functions for editor
-  setUpKeywords(){
+  setUpKeywords() {
     // Python keywords in a list
     const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
       'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
@@ -183,6 +261,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function"})));
 
     this.options = options;
+  }
+
+  isInFunctions(word: string): boolean{
+    let functions = this.options.filter(option => option.type === "function");
+    return functions.map(myFunction => { return myFunction.label }).includes(word);
   }
 
 }
