@@ -66,29 +66,50 @@
                 [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
               </app-input-text>
 
-              <app-input-code
-                [id]="'rule-when'"
-                [classList]="'mt-4'"
-                [title]="'When'"
-                [customFunctions]="functions"
-                [placeholder]="'Rule \'When\' clause'"
-                [value]="ruleToManage.whenClause"
-                [helperText]="'Preconditions that will trigger the rule'"
-                [helperPosition]="'right'"
-                [mode]="'python'"
-              ></app-input-code>
+              <div class="w-full flex flex-wrap">
+                <div class="{{metadataNames.length > 0 ? 'w-8/12 pr-4': 'w-full'}}">
+                  <app-input-code
+                    [id]="'rule-when'"
+                    [classList]="'mt-4'"
+                    [title]="'When'"
+                    [customFunctions]="functions"
+                    [placeholder]="'Rule \'When\' clause'"
+                    [value]="ruleToManage.whenClause"
+                    [helperText]="'Preconditions that will trigger the rule'"
+                    [helperPosition]="'right'"
+                    [mode]="'python'"
+                  ></app-input-code>
 
-              <app-input-code
-                [id]="'rule-then'"
-                [classList]="'mt-4'"
-                [title]="'Then'"
-                [customFunctions]="functions"
-                [placeholder]="'Rule \'Then\' clause'"
-                [value]="ruleToManage.thenClause"
-                [helperText]="'Code that will be ran once the rule preconditions have met'"
-                [helperPosition]="'right'"
-                [mode]="'python'"
-              ></app-input-code>
+                  <app-input-code
+                    [id]="'rule-then'"
+                    [classList]="'mt-4'"
+                    [title]="'Then'"
+                    [customFunctions]="functions"
+                    [placeholder]="'Rule \'Then\' clause'"
+                    [value]="ruleToManage.thenClause"
+                    [helperText]="'Code that will be ran once the rule preconditions have met'"
+                    [helperPosition]="'right'"
+                    [mode]="'python'"
+                  ></app-input-code>
+                </div>
+                <div *ngIf="metadataNames.length > 0" class="w-4/12 mt-4">
+
+                  <div class="form-control">
+                    <!-- Label -->
+                    <label class="label cursor-pointer justify-start gap-2">
+                      <app-simple-helper [text]="'Global variables for rule edition'" [position]="'top'"></app-simple-helper>
+                      <span class="label-text">Metadata</span>
+                    </label>
+
+                    <div class="mockup-code overflow-y-scroll">
+                      <div *ngFor="let data of metadataNames">
+                        <pre><code><strong class="text-info">{{data}}</strong> : {{metadata[data]}}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
 
               <app-input-textarea
                 [id] = "'rule-description'"

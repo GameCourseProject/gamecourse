@@ -6,12 +6,18 @@
   </label>
 
   <div class="tabs tabs-boxed flex flex-wrap bg-base-content">
-    <ng-container  *ngFor="let tab of tabNames">
+    <ng-container *ngFor="let tab of tabNames">
       <a class="tab tab-sm text-base-200 {{tabs[tab] ? 'tab-active' : ''}}" (click)="toggleTabs(tab)">{{tab}}</a>
     </ng-container>
   </div>
 
   <div class="editor rounded-xl border-base-content {{getTheme() === 'light' ? 'border-t-base-300 border-2' : 'border-2'}}">
+    <!-- Editor code tab -->
+    <div class="cm {{tabs['Code'] ? '' : 'hidden'}}">
+      <div [id]="id"></div>
+    </div>
+
+    <!-- Editor output tab -->
     <div class="output" *ngIf="tabs['Output']">
       <app-input-textarea
         class="h-12"
@@ -20,10 +26,6 @@
         [size]="'lg'"
         [color]="'ghost'"
       ></app-input-textarea>
-    </div>
-
-    <div class="cm {{tabs['Output'] ? 'hidden' : ''}}">
-      <div [id]="id"></div>
     </div>
 
   </div>

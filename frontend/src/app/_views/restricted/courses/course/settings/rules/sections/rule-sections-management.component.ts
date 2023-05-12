@@ -20,7 +20,7 @@ import {ResourceManager} from "../../../../../../../_utils/resources/resource-ma
 import {ThemingService} from "../../../../../../../_services/theming/theming.service";
 @Component({
   selector: 'app-rule-sections-management',
-  templateUrl: './rule-sections-management.component.html'
+  templateUrl: './rule-sections-management.component.html',
 })
 export class RuleSectionsManagementComponent implements OnInit{
 
@@ -56,7 +56,8 @@ export class RuleSectionsManagementComponent implements OnInit{
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
-  metadata: {[variable: string]: number}[]; //
+  metadata: {[variable: string]: number}[];
+  metadataNames: string[];
 
   constructor(
     private api: ApiHttpService,
@@ -87,7 +88,12 @@ export class RuleSectionsManagementComponent implements OnInit{
   async getMetadata(courseID: number)
   {
     this.metadata = await this.api.getMetadata(courseID).toPromise();
+    this.metadataNames = [];
+    for (const data of Object.keys(this.metadata)){
+      this.metadataNames.push(data);
+    }
   }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
