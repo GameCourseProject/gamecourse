@@ -319,6 +319,20 @@ class RuleSystemController
         API::response($response);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function getMetadata(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $response = RuleSystem::getMetadata($courseId);
+        API::response($response);
+    }
+
     /*** --------------------------------------------- ***/
     /*** -------------------- Tags ------------------- ***/
     /*** --------------------------------------------- ***/

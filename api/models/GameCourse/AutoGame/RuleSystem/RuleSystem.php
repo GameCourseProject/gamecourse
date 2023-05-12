@@ -291,6 +291,26 @@ abstract class RuleSystem
         return $funcs;
     }
 
+    /**
+     * Gets all metadata (aka global variables) available from autogame for rule editor UI
+     *
+     * @return array|mixed
+     */
+    public static function getMetadata(int $courseId){
+
+        $scriptPath = ROOT_PATH . "autogame/get_metadata.py";
+        $cmd = "python \"$scriptPath\" $courseId"; //FIXME later --> change "python" to "python3"
+
+        $output = null;
+        exec($cmd, $output);
+        $metadata = array();
+        if ($output != null && sizeof($output) > 0){
+            $metadata = json_decode($output[0]);
+        }
+
+        return $metadata;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Rules Data -------------------- ***/

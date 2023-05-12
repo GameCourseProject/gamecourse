@@ -73,6 +73,8 @@
                 [customFunctions]="functions"
                 [placeholder]="'Rule \'When\' clause'"
                 [value]="ruleToManage.whenClause"
+                [helperText]="'Preconditions that will trigger the rule'"
+                [helperPosition]="'right'"
                 [mode]="'python'"
               ></app-input-code>
 
@@ -83,6 +85,8 @@
                 [customFunctions]="functions"
                 [placeholder]="'Rule \'Then\' clause'"
                 [value]="ruleToManage.thenClause"
+                [helperText]="'Code that will be ran once the rule preconditions have met'"
+                [helperPosition]="'right'"
                 [mode]="'python'"
               ></app-input-code>
 

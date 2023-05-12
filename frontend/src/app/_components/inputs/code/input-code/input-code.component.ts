@@ -4,18 +4,25 @@ import {EditorState, Compartment} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
 import {Tooltip, hoverTooltip} from "@codemirror/view";
+import {HighlightStyle, Language, LRLanguage } from '@codemirror/language';
+// @ts-ignore
+import { highlightTree } from '@codemirror/highlight';
+
 // @ts-ignore
 import {
-  autocompletion, Completion,
+  autocompletion,
+  Completion,
   CompletionContext,
   CompletionResult,
   CompletionSource,
   completionStatus
 } from "@codemirror/autocomplete";
+
 // @ts-ignore
 import {python, pythonLanguage} from "@codemirror/lang-python";
 // @ts-ignore
 import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
+import {ThemingService} from "../../../../_services/theming/theming.service";
 
 
 // import {Observable} from "rxjs";
@@ -40,6 +47,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() disabled?: boolean;                // Make it disabled
   @Input() customKeywords?: string[] = [];    // Personalized keywords
 
+  @Input() showTabs?: boolean;                          // Boolean to show/hide tabs above editor
+
   // Personalized functions
   @Input() customFunctions?: {
     moduleId: string,
@@ -52,20 +61,66 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';              // Helper position
 
   // Validity
-  @Input() required?: boolean;                // Make it required
+  @Input() required?: boolean;                                // Make it required
 
   // Errors
-  @Input() requiredErrorMessage?: string;     // Message for required error
+  @Input() requiredErrorMessage?: string;                     // Message for required error
 
   @Output() valueChange = new EventEmitter<string>();
 
   options: Completion[] = [];
+  tabs: {[tabName: string]: boolean} = {};
+  tabNames: string[] = ['Code', 'Output'];                    // Names of the tabs that will be shown
+  view;
 
-  constructor() { }
+  constructor(
+    private themeService: ThemingService
+  ) { }
+
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
 
   ngOnInit(): void {
     this.setUpKeywords();
+    this.setUpTabs();
   }
+
+  // Setups all keywords and functions for code
+  setUpKeywords() {
+    // Python keywords in a list
+    const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
+      'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+      'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
+
+    let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
+
+    // Add personalized keywords to the options array
+    options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
+
+    // Add personalized functions to the options array
+    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", info: option.args.map(arg => {
+        return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
+      }) + ")\n" + option.description})));
+
+    /*
+    , info: option.args.map(arg => {
+        return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
+      }) + ")\n" + option.description
+     */
+
+    this.options = options;
+  }
+
+  setUpTabs(){
+    for (let i = 0; i < this.tabNames.length; i++){
+      this.tabs[this.tabNames[i]] = (i === 0);
+    }
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** --------------- AfterViewInit --------------- ***/
+  /*** --------------------------------------------- ***/
 
   ngAfterViewInit(): void {
     this.initCodeMirror();
@@ -131,7 +186,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     })
 
-    // State and Editor basic definition
+    // State and View basic definition
     let state = EditorState.create({
       doc: "# " + this.placeholder + "\n" + (this.value ?? "") + "\n",
       extensions: [
@@ -139,21 +194,30 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         oneDark,
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(),
-        autocompletion({override: [completePy]}),
+        autocompletion({override: [completePy],
+          addToOptions: [{
+            render: (completion: Completion, state: EditorState) => {
+              const element = document.createElement("span");
+              element.innerText = " -> return type";
+              return element;
+            },
+            position: 80,
+          }]}),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
-            insertCommentCommand(editor);
+            insertCommentCommand(this.view);
           }
         }),
         wordHover
       ],
     });
 
+
     // Only show autocompletion when starting to type
     const context = new CompletionContext(state, 0, true);
 
-    let editor = new EditorView({
+    this.view = new EditorView({
       state,
       parent: element
     });
@@ -176,17 +240,17 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
     // Set number of lines initialized
-    updateToMinNumberOfLines(editor, this.nrLines);
-    function updateToMinNumberOfLines(editor, minNumOfLines) {
-      const currentNumOfLines = editor.state.doc.lines;
-      let currentStr = editor.state.doc.toString();
+    updateToMinNumberOfLines(this.view, this.nrLines);
+    function updateToMinNumberOfLines(view, minNumOfLines) {
+      const currentNumOfLines = view.state.doc.lines;
+      let currentStr = view.state.doc.toString();
 
       if (currentNumOfLines >= minNumOfLines) {
         return;
       }
       const lines = minNumOfLines - currentNumOfLines;
       const appendLines = "\n".repeat(lines);
-      editor.dispatch({
+      view.dispatch({
         changes: {from: currentStr.length, insert: appendLines}
       })
     }
@@ -215,7 +279,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // FIXME
     const insertCommentCommand = (view: EditorView) => {
-      let words = (editor.state.doc.toString()).split(/\s+/);
+      let words = (view.state.doc.toString()).split(/\s+/);
 
       let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty) // FIXME
 
@@ -245,27 +309,26 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Setups all keywords and functions for editor
-  setUpKeywords() {
-    // Python keywords in a list
-    const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
-      'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-      'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
-
-    let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
-
-    // Add personalized keywords to the options array
-    options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
-
-    // Add personalized functions to the options array
-    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function"})));
-
-    this.options = options;
-  }
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   isInFunctions(word: string): boolean{
     let functions = this.options.filter(option => option.type === "function");
     return functions.map(myFunction => { return myFunction.label }).includes(word);
+  }
+
+  getTheme(): string{
+    return this.themeService.getTheme();
+  }
+
+  toggleTabs(tabName: string): void {
+    for (const tab of Object.keys(this.tabs)){
+      this.tabs[tab] = tab === tabName;
+    }
+
+    this.view.destroy();
+    this.initCodeMirror();
   }
 
 }

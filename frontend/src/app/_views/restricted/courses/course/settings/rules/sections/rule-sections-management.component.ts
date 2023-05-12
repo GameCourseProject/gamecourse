@@ -55,9 +55,8 @@ export class RuleSectionsManagementComponent implements OnInit{
   importData: {file: File, replace: boolean} = {file: null, replace: true};
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
-
   functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
-  // options: any[] = [ "panic", "park", "portugal", "password"];    // FIXME -- to be replaced with other functions from autogame
+  metadata: {[variable: string]: number}[]; //
 
   constructor(
     private api: ApiHttpService,
@@ -77,11 +76,17 @@ export class RuleSectionsManagementComponent implements OnInit{
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getRuleFunctions(courseID);
+      await this.getMetadata(courseID);
     });
   }
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+  }
+
+  async getMetadata(courseID: number)
+  {
+    this.metadata = await this.api.getMetadata(courseID).toPromise();
   }
 
   /*** --------------------------------------------- ***/

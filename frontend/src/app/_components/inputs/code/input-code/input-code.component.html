@@ -5,9 +5,29 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
-  <div class="cm rounded-xl border-4 border-base-content">
-    <div [id]="id"></div>
+  <div class="tabs tabs-boxed flex flex-wrap bg-base-content">
+    <ng-container  *ngFor="let tab of tabNames">
+      <a class="tab tab-sm text-base-200 {{tabs[tab] ? 'tab-active' : ''}}" (click)="toggleTabs(tab)">{{tab}}</a>
+    </ng-container>
   </div>
+
+  <div class="editor rounded-xl border-base-content {{getTheme() === 'light' ? 'border-t-base-300 border-2' : 'border-2'}}">
+    <div class="output" *ngIf="tabs['Output']">
+      <app-input-textarea
+        class="h-12"
+        [id]="'output-' + id"
+        [placeholder]="'Press \'Run\' to simulate code output!'"
+        [size]="'lg'"
+        [color]="'ghost'"
+      ></app-input-textarea>
+    </div>
+
+    <div class="cm {{tabs['Output'] ? 'hidden' : ''}}">
+      <div [id]="id"></div>
+    </div>
+
+  </div>
+
 
 </div>
 
