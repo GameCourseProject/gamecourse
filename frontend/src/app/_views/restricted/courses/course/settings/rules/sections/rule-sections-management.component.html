@@ -67,7 +67,7 @@
               </app-input-text>
 
               <div class="w-full flex flex-wrap">
-                <div class="{{metadataNames.length > 0 ? 'w-8/12 pr-4': 'w-full'}}">
+                <div class="{{metadataNames.length > 0 ? 'w-8/12 pr-5': 'w-full'}}">
                   <app-input-code
                     [id]="'rule-when'"
                     [classList]="'mt-4'"
@@ -101,9 +101,17 @@
                       <span class="label-text">Metadata</span>
                     </label>
 
-                    <div class="mockup-code overflow-y-scroll">
+                    <div class="mockup-code bg-blue overflow-y-scroll max-h-[calc(32rem)]">
+                      <!-- NOTE: Do not change! Makes it pretty inside code mockup -->
+                      <pre><code>------------------------------------------------------------------------------- </code></pre>
+                      <pre><code>| <strong>How to use?</strong>                                                                 | </code></pre>
+                      <pre><code>| e.g. get total number of Alameda lectures                                   | </code></pre>
+                      <pre><code>| <strong class="text-secondary">nrLectures = METADATA["all_lectures_alameda"] + METADATA["invited_alameda"]</strong> | </code></pre>
+                      <pre><code>------------------------------------------------------------------------------- </code></pre>
+                      <pre><code></code></pre>
+
                       <div *ngFor="let data of metadataNames">
-                        <pre><code><strong class="text-info">{{data}}</strong> : {{metadata[data]}}</code></pre>
+                        <pre><code><strong class="text-warning">{{data}}</strong> : {{metadata[data]}}</code></pre>
                       </div>
                     </div>
                   </div>

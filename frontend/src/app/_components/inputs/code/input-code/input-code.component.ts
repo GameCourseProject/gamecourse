@@ -47,7 +47,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() disabled?: boolean;                // Make it disabled
   @Input() customKeywords?: string[] = [];    // Personalized keywords
 
-  @Input() showTabs?: boolean;                          // Boolean to show/hide tabs above editor
+  @Input() showTabs?: boolean = true;         // Boolean to show/hide tabs above editor
 
   // Personalized functions
   @Input() customFunctions?: {
@@ -68,10 +68,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  options: Completion[] = [];
-  tabs: {[tabName: string]: boolean} = {};
+  options: Completion[] = [];                                 // Editor options for autocompletion
+  tabs: {[tabName: string]: boolean} = {};                    // Tabs with name as key and boolean to enable
   tabNames: string[] = ['Code', 'Output'];                    // Names of the tabs that will be shown
-  view;
 
   constructor(
     private themeService: ThemingService
@@ -99,7 +98,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
 
     // Add personalized functions to the options array
-    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", info: option.args.map(arg => {
+    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.getReturnType(option.description), info: option.args.map(arg => {
         return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
       }) + ")\n" + option.description})));
 
@@ -110,6 +109,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
      */
 
     this.options = options;
+  }
+
+  getReturnType(description: string): string {
+    return "aquii";
   }
 
   setUpTabs(){
@@ -198,7 +201,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           addToOptions: [{
             render: (completion: Completion, state: EditorState) => {
               const element = document.createElement("span");
-              element.innerText = " -> return type";
+              element.innerText = ` -> ${completion.detail}`; // FIXME
               return element;
             },
             position: 80,
@@ -206,7 +209,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
-            insertCommentCommand(this.view);
+            insertCommentCommand(view);
           }
         }),
         wordHover
@@ -217,7 +220,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     // Only show autocompletion when starting to type
     const context = new CompletionContext(state, 0, true);
 
-    this.view = new EditorView({
+    let view = new EditorView({
       state,
       parent: element
     });
@@ -240,7 +243,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
     // Set number of lines initialized
-    updateToMinNumberOfLines(this.view, this.nrLines);
+    updateToMinNumberOfLines(view, this.nrLines);
     function updateToMinNumberOfLines(view, minNumOfLines) {
       const currentNumOfLines = view.state.doc.lines;
       let currentStr = view.state.doc.toString();
@@ -326,9 +329,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (const tab of Object.keys(this.tabs)){
       this.tabs[tab] = tab === tabName;
     }
-
-    this.view.destroy();
-    this.initCodeMirror();
   }
 
 }
