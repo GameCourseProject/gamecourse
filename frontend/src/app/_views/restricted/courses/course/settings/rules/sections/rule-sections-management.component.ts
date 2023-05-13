@@ -208,6 +208,11 @@ export class RuleSectionsManagementComponent implements OnInit{
 
   }
 
+  async previewRule(event: string){
+    console.log(event);
+    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------- Table ------------------- ***/
   /*** --------------------------------------------- ***/

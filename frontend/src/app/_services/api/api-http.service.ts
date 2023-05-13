@@ -1541,6 +1541,28 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
+  public previewRule(ruleData: RuleManageData): Observable<void> {
+    const data = {
+      courseId: ruleData.course,
+      name: ruleData.name,
+      description: ruleData.description,
+      whenClause: ruleData.whenClause,
+      thenClause: ruleData.thenClause,
+      isActive: ruleData.isActive,
+      tags: ruleData.tags
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'previewRule');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res ));
+
+  }
+
   // Tags
 
   public createTag(tagData: TagManageData) : Observable<RuleTag> {

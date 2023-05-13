@@ -78,6 +78,7 @@
                     [helperText]="'Preconditions that will trigger the rule'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
+                    (output)="previewRule($event)"
                   ></app-input-code>
 
                   <app-input-code
@@ -90,6 +91,7 @@
                     [helperText]="'Code that will be ran once the rule preconditions have met'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
+                    (output)="previewRule($event)"
                   ></app-input-code>
                 </div>
                 <div *ngIf="metadataNames.length > 0" class="w-4/12 mt-4">
@@ -97,7 +99,7 @@
                   <div class="form-control">
                     <!-- Label -->
                     <label class="label cursor-pointer justify-start gap-2">
-                      <app-simple-helper [text]="'Global variables for rule edition'" [position]="'top'"></app-simple-helper>
+                      <app-simple-helper [text]="'Quick reference for global variables in rule\'s edition'" [position]="'top'"></app-simple-helper>
                       <span class="label-text">Metadata</span>
                     </label>
 

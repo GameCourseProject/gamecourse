@@ -333,6 +333,28 @@ class RuleSystemController
         API::response($response);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function previewRule(){
+        API::requireValues("courseId", "name", "description", "whenClause",
+            "thenClause", "isActive", "tags");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        // Get rest of values
+        $name = API::getValue("name");
+        $description = API::getValue("description");
+        $whenClause = API::getValue("whenClause");
+        $thenClause = API::getValue("thenClause");
+        $isActive = API::getValue("isActive", "bool");
+        $tags = API::getValue("tags", "array");
+
+        RuleSystem::previewRule($courseId, $name, $description, $whenClause, $thenClause, $isActive, $tags);
+    }
+
     /*** --------------------------------------------- ***/
     /*** -------------------- Tags ------------------- ***/
     /*** --------------------------------------------- ***/

@@ -67,6 +67,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() requiredErrorMessage?: string;                     // Message for required error
 
   @Output() valueChange = new EventEmitter<string>();
+  @Output() output = new EventEmitter<string>();
 
   options: Completion[] = [];                                 // Editor options for autocompletion
   tabs: {[tabName: string]: boolean} = {};                    // Tabs with name as key and boolean to enable
@@ -98,9 +99,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
 
     // Add personalized functions to the options array
-    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.getReturnType(option.description), info: option.args.map(arg => {
+    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.extractReturnType(option.description, false), info: option.args.map(arg => {
         return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-      }) + ")\n" + option.description})));
+      }) + ")\n" + this.extractReturnType(option.description, true)})));
 
     /*
     , info: option.args.map(arg => {
@@ -111,8 +112,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     this.options = options;
   }
 
-  getReturnType(description: string): string {
-    return "aquii";
+  extractReturnType(description: string, getDescription: boolean): string {
+    let returnType = description.indexOf(":returns:")
+    if (!getDescription){
+      let finalString = description.slice(returnType);
+      return finalString.replace(":returns:", "->");
+    }
+
+    return description.slice(0, returnType);
+
   }
 
   setUpTabs(){
@@ -197,15 +205,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         oneDark,
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(),
-        autocompletion({override: [completePy],
-          addToOptions: [{
-            render: (completion: Completion, state: EditorState) => {
-              const element = document.createElement("span");
-              element.innerText = ` -> ${completion.detail}`; // FIXME
-              return element;
-            },
-            position: 80,
-          }]}),
+        autocompletion({override: [completePy]}),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
@@ -310,6 +310,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       case "python": return language.of(python());
       case "javascript": return language.of(javascript()); // NOTE: not tested
     }
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Output ------------------- ***/
+  /*** --------------------------------------------- ***/
+
+  simulateOutput(){
+    this.output.emit("emittingOutput");
+    //await this.api.previewRule().toPromise();
   }
 
   /*** --------------------------------------------- ***/

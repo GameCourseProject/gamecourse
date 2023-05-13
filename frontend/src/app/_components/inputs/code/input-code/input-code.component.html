@@ -19,13 +19,20 @@
 
     <!-- Editor output tab -->
     <div class="output" *ngIf="tabs['Output']">
-      <app-input-textarea
+      <div class="justify-center flex">
+        <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">
+          <ng-icon name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+          Run
+        </button>
+      </div>
+      <span class="text-primary-content text-sm text-opacity-50 ml-1.5"><i>Press 'Run' to simulate code output!</i></span>
+
+      <!--<app-input-textarea
         class="h-12"
         [id]="'output-' + id"
-        [placeholder]="'Press \'Run\' to simulate code output!'"
         [size]="'lg'"
         [color]="'ghost'"
-      ></app-input-textarea>
+      ></app-input-textarea>-->
     </div>
 
   </div>

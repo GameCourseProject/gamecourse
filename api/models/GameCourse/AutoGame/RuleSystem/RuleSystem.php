@@ -311,6 +311,14 @@ abstract class RuleSystem
         return $metadata;
     }
 
+    /**
+     * @throws Exception
+     */
+    public static function previewRule(int $courseId, string $name, string $description, string $whenClause, string $thenClause, bool $isActive, $tags) {
+        $ruleTxt = Rule::generateText($name, $description, $whenClause, $thenClause, $isActive, $tags);
+        $folderPath = self::createTestDataFolder($courseId);
+        file_put_contents($folderPath, $ruleTxt);
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Rules Data -------------------- ***/
@@ -366,6 +374,33 @@ abstract class RuleSystem
      * @throws Exception
      */
     public static function removeDataFolder(int $courseId)
+    {
+        $dataFolder = self::getDataFolder($courseId);
+        if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
+    }
+
+    /**
+     * Creates rules data testing folder for a given course.
+     *
+     * @throws Exception
+     */
+    public static function createTestDataFolder(int $courseId): string
+    {
+        $dataFolder = self::getDataFolder($courseId) . "/rule-tests/";
+        if (!file_exists($dataFolder)) {
+            mkdir($dataFolder, 0777, true);
+        }
+        return $dataFolder;
+    }
+
+    /**
+     * Deletes a given course's data folder.
+     *
+     * @param int $courseId
+     * @return void
+     * @throws Exception
+     */
+    public static function removeTestDataFolder(int $courseId)
     {
         $dataFolder = self::getDataFolder($courseId);
         if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
