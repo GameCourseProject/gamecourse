@@ -95,7 +95,7 @@ export class RuleSectionsManagementComponent implements OnInit{
       myData =
         "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
         "# e.g. get total number of Alameda lectures\n" +
-        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"] |\n\n";
+        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
 
       for (const data of Object.keys(this.metadata)){
         myData += (data + " : " + this.metadata[data] + "\n");
