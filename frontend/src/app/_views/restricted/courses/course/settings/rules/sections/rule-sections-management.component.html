@@ -67,7 +67,7 @@
               </app-input-text>
 
               <div class="w-full flex flex-wrap">
-                <div class="{{metadataNames.length > 0 ? 'w-8/12 pr-5': 'w-full'}}">
+                <div class="w-1/2 pr-1">
                   <app-input-code
                     [id]="'rule-when'"
                     [classList]="'mt-4'"
@@ -78,9 +78,11 @@
                     [helperText]="'Preconditions that will trigger the rule'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
-                    (output)="previewRule($event)"
+                    [showOutput]="false"
+                    (valueChange)="ruleToManage.whenClause = $event"
                   ></app-input-code>
-
+                </div>
+                <div class="w-1/2 pl-1">
                   <app-input-code
                     [id]="'rule-then'"
                     [classList]="'mt-4'"
@@ -91,35 +93,23 @@
                     [helperText]="'Code that will be ran once the rule preconditions have met'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
-                    (output)="previewRule($event)"
+                    [showOutput]="false"
+                    (valueChange)="ruleToManage.thenClause = $event"
                   ></app-input-code>
                 </div>
-                <div *ngIf="metadataNames.length > 0" class="w-4/12 mt-4">
-
-                  <div class="form-control">
-                    <!-- Label -->
-                    <label class="label cursor-pointer justify-start gap-2">
-                      <app-simple-helper [text]="'Quick reference for global variables in rule\'s edition'" [position]="'top'"></app-simple-helper>
-                      <span class="label-text">Metadata</span>
-                    </label>
-
-                    <div class="mockup-code bg-blue overflow-y-scroll max-h-[calc(32rem)]">
-                      <!-- NOTE: Do not change! Makes it pretty inside code mockup -->
-                      <pre><code>------------------------------------------------------------------------------- </code></pre>
-                      <pre><code>| <strong>How to use?</strong>                                                                 | </code></pre>
-                      <pre><code>| e.g. get total number of Alameda lectures                                   | </code></pre>
-                      <pre><code>| <strong class="text-secondary">nrLectures = METADATA["all_lectures_alameda"] + METADATA["invited_alameda"]</strong> | </code></pre>
-                      <pre><code>------------------------------------------------------------------------------- </code></pre>
-                      <pre><code></code></pre>
-
-                      <div *ngFor="let data of metadataNames">
-                        <pre><code><strong class="text-warning">{{data}}</strong> : {{metadata[data]}}</code></pre>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
-
+              <app-input-code
+                  [id]="'rule-tools'"
+                  [classList]="'mt-4'"
+                  [title]="'Additional Tools'"
+                  [value]="parseMetadata()"
+                  [placeholder]="'Autogame global variables:'"
+                  [helperText]="'Extra tools to help with the rule edition'"
+                  [helperPosition]="'right'"
+                  [readonly]="true"
+                  [tabNames]="['Metadata', 'Output']"
+                  (output)="previewRule($event)"
+              ></app-input-code>
 
               <app-input-textarea
                 [id] = "'rule-description'"

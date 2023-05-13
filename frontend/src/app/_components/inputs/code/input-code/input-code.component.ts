@@ -47,7 +47,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() disabled?: boolean;                // Make it disabled
   @Input() customKeywords?: string[] = [];    // Personalized keywords
 
-  @Input() showTabs?: boolean = true;         // Boolean to show/hide tabs above editor
+  @Input() showOutput?: boolean = true;         // Boolean to show/hide tabs with output above editor
+  @Input() readonly?: boolean = false;          // Make editor readonly
+
+  // FIXME: Refactor this to be flexible and accept more than only 2 tabs
+  @Input() tabNames?: string[] = ['Code', 'Output']        // Names of the tabs that will be shown
 
   // Personalized functions
   @Input() customFunctions?: {
@@ -69,9 +73,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() valueChange = new EventEmitter<string>();
   @Output() output = new EventEmitter<string>();
 
-  options: Completion[] = [];                                 // Editor options for autocompletion
-  tabs: {[tabName: string]: boolean} = {};                    // Tabs with name as key and boolean to enable
-  tabNames: string[] = ['Code', 'Output'];                    // Names of the tabs that will be shown
+  options: Completion[] = [];                                   // Editor options for autocompletion
+  tabs: {[tabName: string]: boolean} = {};                      // Tabs with name as key and boolean to enable
 
   constructor(
     private themeService: ThemingService
@@ -83,17 +86,31 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.setUpKeywords();
-    this.setUpTabs();
+    if (this.showOutput) this.setUpTabs();
   }
 
   // Setups all keywords and functions for code
   setUpKeywords() {
-    // Python keywords in a list
-    const pyKeywords = ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
-      'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-      'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
 
-    let options = pyKeywords.map(keyword => ({label: keyword, type: "keyword"}));
+    const modeKeywords = getLanguageKeywords(this.mode);
+
+    // Gets keywords from the specific language
+    function getLanguageKeywords(mode: string): string[] {
+      switch (mode) {
+        case "python": return ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
+          'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+          'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
+        case "javascript": return ["abstract", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
+          "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "export", "extends", "false",
+          "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int",
+          "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short",
+          "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var",
+          "void", "volatile", "while", "with", "yield"];
+        default: return [];
+      }
+    }
+
+    let options = modeKeywords.map(keyword => ({label: keyword, type: "keyword"}));
 
     // Add personalized keywords to the options array
     options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
@@ -102,12 +119,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.extractReturnType(option.description, false), info: option.args.map(arg => {
         return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
       }) + ")\n" + this.extractReturnType(option.description, true)})));
-
-    /*
-    , info: option.args.map(arg => {
-        return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-      }) + ")\n" + option.description
-     */
 
     this.options = options;
   }
@@ -199,7 +210,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // State and View basic definition
     let state = EditorState.create({
-      doc: "# " + this.placeholder + "\n" + (this.value ?? "") + "\n",
+      doc: this.value ? this.value + "\n" : "# " + this.placeholder + "\n",
       extensions: [
         basicSetup,
         oneDark,
@@ -212,10 +223,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             insertCommentCommand(view);
           }
         }),
-        wordHover
+        wordHover,
+        EditorState.readOnly.of(this.readonly),
+        EditorView.editable.of(!this.readonly)
       ],
     });
-
 
     // Only show autocompletion when starting to type
     const context = new CompletionContext(state, 0, true);
@@ -282,6 +294,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // FIXME
     const insertCommentCommand = (view: EditorView) => {
+      this.valueChange.emit(view.state.doc.toString());
+
       let words = (view.state.doc.toString()).split(/\s+/);
 
       let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty) // FIXME
@@ -317,8 +331,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** --------------------------------------------- ***/
 
   simulateOutput(){
-    this.output.emit("emittingOutput");
-    //await this.api.previewRule().toPromise();
+    this.output.emit("emittingOutput"); // FIXME should emit code in editor 'Code' tab
   }
 
   /*** --------------------------------------------- ***/

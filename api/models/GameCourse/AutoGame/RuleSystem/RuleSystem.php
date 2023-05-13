@@ -317,7 +317,9 @@ abstract class RuleSystem
     public static function previewRule(int $courseId, string $name, string $description, string $whenClause, string $thenClause, bool $isActive, $tags) {
         $ruleTxt = Rule::generateText($name, $description, $whenClause, $thenClause, $isActive, $tags);
         $folderPath = self::createTestDataFolder($courseId);
-        file_put_contents($folderPath, $ruleTxt);
+        $rulePath = $folderPath . "rule.txt";
+        file_put_contents($rulePath, $ruleTxt);
+
     }
 
     /*** ---------------------------------------------------- ***/

@@ -57,7 +57,6 @@ export class RuleSectionsManagementComponent implements OnInit{
 
   functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
   metadata: {[variable: string]: number}[];
-  metadataNames: string[];
 
   constructor(
     private api: ApiHttpService,
@@ -88,12 +87,22 @@ export class RuleSectionsManagementComponent implements OnInit{
   async getMetadata(courseID: number)
   {
     this.metadata = await this.api.getMetadata(courseID).toPromise();
-    this.metadataNames = [];
-    for (const data of Object.keys(this.metadata)){
-      this.metadataNames.push(data);
-    }
   }
 
+  parseMetadata(): string{
+    let myData = "";
+    if (Object.keys(this.metadata).length > 0){
+      myData =
+        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
+        "# e.g. get total number of Alameda lectures\n" +
+        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"] |\n\n";
+
+      for (const data of Object.keys(this.metadata)){
+        myData += (data + " : " + this.metadata[data] + "\n");
+      }
+    }
+    return myData;
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
