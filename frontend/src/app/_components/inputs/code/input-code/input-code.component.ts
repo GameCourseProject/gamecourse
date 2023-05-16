@@ -5,6 +5,7 @@ import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
 import {Tooltip, hoverTooltip} from "@codemirror/view";
 import {HighlightStyle, Language, LRLanguage } from '@codemirror/language';
+
 // @ts-ignore
 import { highlightTree } from '@codemirror/highlight';
 
@@ -29,8 +30,7 @@ import {ThemingService} from "../../../../_services/theming/theming.service";
 
 @Component({
   selector: 'app-input-code',
-  templateUrl: './input-code.component.html',
-  styleUrls: ['./input-code.component.css']
+  templateUrl: './input-code.component.html'
 })
 export class InputCodeComponent implements OnInit, AfterViewInit {
 
@@ -125,12 +125,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   extractReturnType(description: string, getDescription: boolean): string {
     let returnType = description.indexOf(":returns:")
+
+    // If false then extract only the return type
     if (!getDescription){
       let finalString = description.slice(returnType);
       return finalString.replace(":returns:", "->");
     }
 
-    return description.slice(0, returnType);
+    return description.slice(0, returnType); // FIXME
 
   }
 
@@ -171,7 +173,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         let text = myFunction.name + " (" +
           myFunction.args.map(arg => {
             return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-          }) + ")\n" + myFunction.description;
+          }) + ")\n" + this.extractReturnType(myFunction.description, true);
 
         return {
           pos: start,

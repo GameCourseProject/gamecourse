@@ -78,16 +78,11 @@
       </div>
     </div>
 
-    <!--<div class="mb-5">
-      <app-top-actions
-        [rightActions]="sectionActions"
-        (btnClicked)="prepareManagement($event)">
-      </app-top-actions>
-    </div>-->
   </ng-container>
 
   <!-- Sections Management -->
   <app-rule-sections-management
+    *ngIf="sectionMode"
     [mode]="sectionMode"
     [course] = "course"
     [courseRules]="courseRules"

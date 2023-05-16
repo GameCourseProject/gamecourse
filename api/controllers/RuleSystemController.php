@@ -196,10 +196,10 @@ class RuleSystemController
         API::requireValues('course', 'section', 'name', 'description', 'whenClause',
             'thenClause', 'position', 'isActive', 'tags');
 
-        $course = API::getValue("course", "int");
-        $courseEntity = API::verifyCourseExists($course);
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
 
-        API::requireCourseAdminPermission($courseEntity);
+        API::requireCourseAdminPermission($course);
 
         // Get values
         $section = API::getValue("section", "int");
@@ -207,12 +207,18 @@ class RuleSystemController
         $description = API::getValue("description");
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
-        $position = API::getValue("position", "int");
-        $isActive = API::getValue("isActive");
-        $tags = API::getValue("tags");
+        $position = API::getValue("position", "int"); // FIXME -- not sure
+        $isActive = API::getValue("isActive", "bool");
+        $tagIds = API::getValue("tags", "array");
+
+        $tags = [];
+        foreach ($tagIds as $tagId){
+            $tag = Tag::getTagById($tagId)->getData();
+            array_push($tags, $tag);
+        }
 
         // Add rule to system
-        $rule = Rule::addRule($course, $section, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+        $rule = Rule::addRule($courseId, $section, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
 
         $ruleInfo = $rule->getData();
         API::response($ruleInfo);
@@ -242,8 +248,14 @@ class RuleSystemController
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
         $position = API::getValue("position", "int");
-        $isActive = API::getValue("isActive");
-        $tags = API::getValue("tags");
+        $isActive = API::getValue("isActive", "bool");
+        $tagIds = API::getValue("tags", "array");
+
+        $tags = [];
+        foreach ($tagIds as $tagId){
+            $tag = Tag::getTagById($tagId)->getData();
+            array_push($tags, $tag);
+        }
 
         // Edit rule
         $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);

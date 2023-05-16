@@ -18,11 +18,13 @@ export {SectionManageData, RuleManageData} from "../rules.component";
 import * as _ from "lodash";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
 import {ThemingService} from "../../../../../../../_services/theming/theming.service";
+import {Subject} from "rxjs";
+
 @Component({
   selector: 'app-rule-sections-management',
   templateUrl: './rule-sections-management.component.html',
 })
-export class RuleSectionsManagementComponent implements OnInit{
+export class RuleSectionsManagementComponent implements OnInit {
 
   @Input() course: Course;                                          // Specific course in which rule system is being manipulated
   @Input() courseRules: Rule[];                                     // Rules of course
@@ -44,9 +46,12 @@ export class RuleSectionsManagementComponent implements OnInit{
   ruleMode: 'add rule' | 'edit rule' | 'remove rule';               // Available actions for rules
   interruptedMode: 'add rule' | 'edit rule' | 'remove rule';        // (Auxiliar) Available actions for rules
   ruleToManage: RuleManageData;                                     // Manage data
-  ruleTags: string[];                                               // Tags from a specific rule
+  //ruleTags: string[];                                             // Tags from a specific rule
   row: number;                                                      // Row identifying rule in table that its being manipulated
 
+  // Input-select for assigning rules to tags
+  previousSelected: string[];
+  setTags: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
   nameTags : {value: string, text: string}[];                       // Tags with names formatted for the select-input
 
   @ViewChild('r', {static: false}) r: NgForm;                       // rule form
@@ -77,6 +82,7 @@ export class RuleSectionsManagementComponent implements OnInit{
       const courseID = parseInt(params.id);
       await this.getRuleFunctions(courseID);
       await this.getMetadata(courseID);
+      this.getTagNames();
     });
   }
 
@@ -84,25 +90,18 @@ export class RuleSectionsManagementComponent implements OnInit{
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
   }
 
-  async getMetadata(courseID: number)
-  {
+  async getMetadata(courseID: number) {
     this.metadata = await this.api.getMetadata(courseID).toPromise();
   }
 
-  parseMetadata(): string{
-    let myData = "";
-    if (Object.keys(this.metadata).length > 0){
-      myData =
-        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
-        "# e.g. get total number of Alameda lectures\n" +
-        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
-
-      for (const data of Object.keys(this.metadata)){
-        myData += (data + " : " + this.metadata[data] + "\n");
-      }
+  getTagNames() {
+    let nameTags = [];
+    for (let i = 0; i < this.tags.length ; i++){
+      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
     }
-    return myData;
+    this.nameTags = _.cloneDeep(nameTags);
   }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -124,14 +123,19 @@ export class RuleSectionsManagementComponent implements OnInit{
         return;
       }
 
+      this.refreshing = true;
       this.ruleMode = 'add rule';
-      this.ruleTags = [];
+      this.previousSelected = [];
+      // this.ruleTags = [];
       this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
 
-      this.getTagNames();
-      this.scroll();
+      //this.getTagNames();
+      //this.scroll();
       //ModalService.openModal('manage-rule');
+      this.refreshing = false;
 
+    } else if (action === 'add tag'){
+      ModalService.openModal(action);
     }
   }
 
@@ -143,9 +147,10 @@ export class RuleSectionsManagementComponent implements OnInit{
         (action === 'add rule') ? await this.createRule() : await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
 
         await buildTable(this.api, this.themeService, this.course.id, this.section);
-        ModalService.closeModal('manage-rule');
+        //ModalService.closeModal('manage-rule');
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.resetRuleManage();
+        this.previousSelected = [];
         this.loading.action = false;
 
       } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
@@ -251,16 +256,20 @@ export class RuleSectionsManagementComponent implements OnInit{
           return;
         }
 
+        this.refreshing = true;
         this.ruleMode = 'edit rule';
         this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
+        this.ruleToManage.tags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name})
         this.ruleEdit = _.cloneDeep(this.ruleToManage.name);
 
         // for the tags in the input-select
         // FIXME -- not working
-        // this.getTagNames();
+        //this.getTagNames();
+        this.previousSelected = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name})
         // this.ruleTags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name});
 
-        this.scroll();
+        //this.scroll();
+        this.refreshing = false;
         // ModalService.openModal('manage-rule');
 
       } else if ( action === Action.DUPLICATE) {
@@ -334,24 +343,49 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** --------------------------------------------- ***/
 
   async assignTags() {
-    if (this.ruleTags.length > 0){
+    if (this.ruleToManage.tags.length > 0){
       let tags = [];
 
-      for (let i = 0;  i < this.ruleTags.length; i++){
-        const data = this.ruleTags[i].split(/-(.*)/s);
+      for (let i = 0;  i < this.ruleToManage.tags.length; i++){
+        const data = this.ruleToManage.tags[i].split(/-(.*)/s);
         const tag = this.tags.find(element => element.id === parseInt(data[0]) && element.name === data[1]);
-        tags.push(RuleTag.toJason(tag));
+        tags.push(tag.id);
       }
       this.ruleToManage.tags = tags;
     }
   }
 
-  getTagNames() {
-    let nameTags = [];
-    for (let i = 0; i < this.tags.length ; i++){
-      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
+  updateTags(selectedTags: any[]): void {
+    if (selectedTags.length > this.previousSelected.length){
+      const tagToAdd = selectedTags.filter(tagName => !this.previousSelected.includes(tagName))[0];
+
+      if (!selectedTags.includes(tagToAdd)) selectedTags.push(tagToAdd);
+
+    } else {
+      const tagToDelete = this.previousSelected.filter(tagName => !selectedTags.includes(tagName))[0];
+
+      if (selectedTags.includes(tagToDelete)) selectedTags.splice(selectedTags.indexOf(tagToDelete), 1);
     }
-    this.nameTags = nameTags;
+
+    this.nameTags.map(option => {
+      option['selected'] = selectedTags.includes(option.value);
+      return option;
+    });
+  }
+
+  parseMetadata(): string{
+    let myData = "";
+    if (Object.keys(this.metadata).length > 0){
+      myData =
+        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
+        "# e.g. get total number of Alameda lectures\n" +
+        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
+
+      for (const data of Object.keys(this.metadata)){
+        myData += (data + " : " + this.metadata[data] + "\n");
+      }
+    }
+    return myData;
   }
 
   onFileSelected(files: FileList, type: 'file'): void {
@@ -380,8 +414,8 @@ export class RuleSectionsManagementComponent implements OnInit{
 
   scroll(){
     // NOTE: card with rule info to update
-    this.refreshing = true;
-    setTimeout(() => this.refreshing = false, 0);
+    //this.refreshing = true;
+    //setTimeout(() => this.refreshing = false, 0);
 
     document.getElementById("rule-content").scrollIntoView({behavior: 'smooth'});
 
@@ -396,7 +430,7 @@ export class RuleSectionsManagementComponent implements OnInit{
   /*** --------------------------------------------- ***/
 
   resetRuleManage(){
-    this.ruleTags = [];
+    //this.ruleTags = [];
     this.ruleMode = null;
     this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
     if (this.r) this.r.resetForm();

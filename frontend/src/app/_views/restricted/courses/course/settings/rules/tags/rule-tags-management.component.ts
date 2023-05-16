@@ -63,7 +63,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.parent.params.subscribe();
-    this.ruleNames = _.cloneDeep(this.getRuleNames()); // FIXME -- test if works
+    this.ruleNames = _.cloneDeep(this.getRuleNames());
   }
 
   getRuleNames(): {value: any, text: string}[] {
@@ -83,7 +83,7 @@ export class RuleTagsManagementComponent implements OnInit {
 
     this.mode = switchMode(action);
 
-    function switchMode(action?: string) {
+    function switchMode(action: string) {
       switch (action) {
         case "create" : return 'add tag';
         case "edit" : return 'edit tag';

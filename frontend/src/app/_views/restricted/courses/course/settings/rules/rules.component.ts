@@ -122,6 +122,7 @@ export class RulesComponent implements OnInit {
 
   async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
+
   }
 
   /*** --------------------------------------------- ***/

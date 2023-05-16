@@ -320,6 +320,8 @@ abstract class RuleSystem
         $rulePath = $folderPath . "rule.txt";
         file_put_contents($rulePath, $ruleTxt);
 
+
+
     }
 
     /*** ---------------------------------------------------- ***/

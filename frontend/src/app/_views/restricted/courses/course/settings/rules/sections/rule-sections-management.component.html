@@ -61,12 +61,14 @@
                 [topLabel]="'Rule Name'"
                 [pattern]="'(?!^\\d+$)^.+$'"
                 [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
+                [helperText]="'Name of the rule'"
+                [helperPosition]="'right'"
                 [required]="true"
                 [maxLength]="60"
                 [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
               </app-input-text>
 
-              <div class="w-full flex flex-wrap">
+              <div class="flex flex-wrap">
                 <div class="w-1/2 pr-1">
                   <app-input-code
                     [id]="'rule-when'"
@@ -98,7 +100,7 @@
                   ></app-input-code>
                 </div>
               </div>
-              <app-input-code
+              <app-input-code *ngIf="metadata"
                   [id]="'rule-tools'"
                   [classList]="'mt-4'"
                   [title]="'Additional Tools'"
@@ -117,13 +119,58 @@
                 [form] = "r"
                 [(value)] = "ruleToManage.description"
                 [placeholder]="'Write here a small description for this rule ...'"
+                [helperText]="'Small description of what the rule does'"
+                [helperPosition]="'right'"
                 [label] = "'Rule Description'"
                 [required]="false"
-                [maxLength]="100"
-                [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
+                [maxLength]="65535"
+                [maxLengthErrorMessage]="'Rule description is too long: maximum of 65 535 characters'">
               </app-input-textarea>
 
-              <!-- FIXME: Tags missing -->
+              <app-input-select *ngIf="nameTags"
+                [id]="'tag-rules'"
+                [form]="r"
+                [classList]="'mt-4'"
+                [(value)]="ruleToManage.tags"
+                [options]="nameTags"
+                [multiple] = "true"
+                [closeOnSelect]="false"
+                [placeholder]="'Select tags to assign this rule to'"
+                [helperText]="'Tags that will be assigned this rule'"
+                [helperPosition]="'right'"
+                [topLabel]="'Rule tags'"
+                (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
+                [setData]="setTags">
+              </app-input-select>
+              <span class="text-xs pl-1">Tags' colors will only appear in table</span>
+
+              <!--<div class="w-full flex flex-wrap items-end" *ngIf="!refreshing && nameTags">
+                <div class="w-4/5 pr-1">
+                  <app-input-select
+                    [id]="'tag-rules'"
+                    [form]="r"
+                    [classList]="'mt-4'"
+                    [(value)]="ruleToManage.tags"
+                    [options]="nameTags"
+                    [multiple] = "true"
+                    [closeOnSelect]="false"
+                    [placeholder]="'Select tags to assign this rule to'"
+                    [topLabel]="'Rule tags'"
+                    (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
+                    [setData]="setTags">
+                  </app-input-select>
+                </div>
+                <div class="w-1/5 pl-1">
+                  <button class="w-full items-center btn btn-secondary rounded rounded-lg gap-2" (click)="prepareModal('add tag')">
+                    <ng-icon name="feather-plus-circle" size="1.2rem"></ng-icon> Add new tag
+                  </button>
+                </div>
+
+                <div *ngIf="refreshing" class="flex justify-center items-center">
+                  <app-spinner></app-spinner>
+                </div>
+
+              </div>-->
             </div>
           </form>
 
@@ -162,8 +209,7 @@
   </ng-container>
 </div>
 
-
-
+<!-- Discard changed Modal -->
 <app-modal
    [id]="'exit-management'"
    [templateRef]="EXIT_MANAGEMENT"
@@ -183,130 +229,6 @@
   </div>
 </ng-template>
 
-<!-- New / Edit rule modal
-<app-modal *ngIf="ruleMode !== 'remove rule' && ruleToManage"
-           [id]="'manage-rule'"
-           [templateRef]="MANAGE_RULE"
-           [size]="'xl'"
-           [header]="ruleMode === 'edit rule' ? 'Edit rule: \'' + ruleEdit + '\'' : ruleMode?.capitalize()"
-           [headerMarginBottom] = "false"
-           [submitBtnText]="ruleMode?.capitalize()"
-           [actionInProgress] = "loading.action"
-           (submitBtnClicked)="r.onSubmit(null); doAction(ruleMode)"
-           (onClose)="resetRuleManage()">
-</app-modal>-->
-<ng-template #MANAGE_RULE>
-  <div class="border-b border-gray-200 mb-4 -mt-2">
-    <span class="text-sm mb-2">Section: <strong>{{section.name}}</strong></span>
-  </div>
-
-  <form #r="ngForm">
-
-    <div class="flex flex-wrap mt-3">
-
-      <!-- border-b-2 border-gray-300 -->
-      <div class="w-full">
-        <div class="w-full sm:pr-7">
-          <!-- Name -->
-          <app-input-text
-            [id] = "'rule-name'"
-            [form] = "r"
-            [(value)] = "ruleToManage.name"
-            [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
-            [topLabel]="'Rule Name'"
-            [pattern]="'(?!^\\d+$)^.+$'"
-            [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
-            [required]="true"
-            [maxLength]="60"
-            [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
-          </app-input-text>
-        </div>
-
-        <!--<app-input-code
-          [id]="'my-div'"
-          [title]="'When'"
-          [customKeywords]="options"
-          [placeholder]="'Rule \'When\' clause'"
-          [value]="ruleToManage.whenClause"
-          [mode]="'python'"
-        ></app-input-code>
-
-        <div class="w-full flex flex-wrap" style="align-items: flex-end">
-           When clause
-          <div class="sm:w-1/2">-->
-
-
-
-            <!--<app-input-text
-              [id]="'rule-whenClause'"
-              [form] = "r"
-              [(value)] = "ruleToManage.whenClause"
-              [placeholder]="'Rule When Clause'"
-              [required]="true"
-              [topLabel]="'When'">
-            </app-input-text>
-          </div>-->
-
-          <!-- Then clause
-          <div class="sm:w-1/2 sm:pl-3 sm:pr-5">
-            <app-input-text
-              [id]="'rule-thenClause'"
-              [form] = "r"
-              [(value)] = "ruleToManage.thenClause"
-              [placeholder]="'Rule Then Clause'"
-              [required]="true"
-              [topLabel]="'Then'">
-            </app-input-text>
-          </div>-->
-        </div>
-
-        <!--
-        <div class="w-full sm:pr-7 mt-3">
-          Description
-          <app-input-textarea
-            [id] = "'rule-description'"
-            [form] = "r"
-            [(value)] = "ruleToManage.description"
-            [placeholder]="'Write here a small description for this rule ...'"
-            [label] = "'Rule Description'"
-            [required]="false"
-            [maxLength]="100"
-            [maxLengthErrorMessage]="'Rule description is too long: maximum of 100 characters'">
-          </app-input-textarea>
-        </div>
-
-        <div class="w-full flex flex-wrap mt-3" style="align-items: flex-end">
-          <div class="sm:w-10/12">
-            Tags
-            <app-input-select
-              [id]="'rule-tags'"
-              [form] = "r"
-              [(value)] = "ruleTags"
-              [options] = "nameTags"
-              [multiple] = "true"
-              [search]="false"
-              [placeholder]="'Select tags for rule'"
-              [topLabel]="'Rule Tags'"
-              [required]="false"
-              [closeOnSelect]="false"
-              (valueChange)="ruleTags = $event ?? []">
-            </app-input-select>
-          </div>
-
-          <div class="sm:w-2/12 sm:pl-3">
-            <button type="button" class="btn-md rounded-lg btn-primary" (click) = "prepareManagement('add tag')">Add new tag</button>
-          </div>
-
-          <span class="pl-1 pb-16"><small> Tag colors will only show in table</small></span>
-
-        </div>
-      </div>-->
-
-
-    </div>
-  </form>
-</ng-template>
-
 <!-- Delete rule Modal -->
 <app-simple-modal *ngIf="ruleMode === 'remove rule' && ruleToManage"
   [id]="'delete-rule'"
@@ -321,6 +243,7 @@
   (onClose)="ruleToManage = null">
 </app-simple-modal>
 
+<!-- Import Modal -->
 <app-modal
   [id]="'import'"
   [templateRef]="IMPORT"
