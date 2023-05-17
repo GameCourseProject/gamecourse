@@ -31,8 +31,8 @@ export class RuleTagsManagementComponent implements OnInit {
   @Output() newTags = new EventEmitter<RuleTag[]>();                          // Changed tags to be emitted
   @Output() newRules = new EventEmitter<Rule[]>();                            // Changed rules to be emitted
 
-  // FIXME -- Should consider light and dark theme
-  colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];   // Available colors for tags
+  // Available colors for tags
+  colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];
 
   loading = {
     management: false,
