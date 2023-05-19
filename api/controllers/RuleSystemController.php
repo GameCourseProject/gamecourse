@@ -522,4 +522,28 @@ class RuleSystemController
         API::response($rules);
     }
 
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------  Others ------------------ ***/
+    /*** --------------------------------------------- **/
+
+    /**
+     * Updates metadata used by the rule system
+     * @throws Exception
+     */
+    public function updateMetadata(){
+        API::requireAdminPermission();
+        API::requireValues("courseId", "metadata");
+
+        // Get values
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCourseAdminPermission($course);
+
+        $metadata = API::getValue("metadata", "string");
+
+        $newMetadata = RuleSystem::updateMetadata($courseId, $metadata);
+        API::response($newMetadata);
+    }
+
 }

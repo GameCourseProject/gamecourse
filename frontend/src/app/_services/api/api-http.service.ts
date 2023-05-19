@@ -1305,6 +1305,22 @@ export class ApiHttpService {
   /*** ------------------- RULE SYSTEM ------------------ ***/
   /*** -------------------------------------------------- ***/
 
+  updateMetadata(courseID: number, metadata: string): Observable<string> {
+    const data = {
+      courseId: courseID,
+      metadata: metadata
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'updateMetadata');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('',params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
   // Sections
   public createSection(sectionData: SectionManageData): Observable<RuleSection> {
     const data = {

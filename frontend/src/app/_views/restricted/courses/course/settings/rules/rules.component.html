@@ -109,6 +109,7 @@
     [courseRules]="courseRules"
     [section]="section"
     [tags]="tags"
+    [metadata]="parsedMetadata"
     (newCourseRules)="closeSectionManagement($event)">
   </app-rule-sections-management>
 
@@ -164,42 +165,28 @@
            [submitBtnText]="'Save'"
            [closeBtnText]="'Discard changes'"
            [actionInProgress] = "loading.action"
-           (submitBtnClicked)="saveSectionPriority()">
+           (submitBtnClicked)="saveMetadata()">
 </app-modal>
 <ng-template #MANAGE_SECTION_PRIORITY>
   <!-- Description -->
   <div class="w-full flex flex-wrap -mt-1">
-    <span>GameCourse's Rule System is arranged by a <strong>set of sections that have rules</strong> inside them.
-      The designated order amongst sections <strong>specifies the priority</strong> of each of them. This means that the <strong>first sections will
-      execute earlier</strong> than the rest.</span>
-    <span class="mt-2">Therefore, keep in consideration in case there's any type of <strong>dependency between each one of them</strong>.</span>
+    <span>GameCourse's Rule System is arranged by a <strong>set of sections that have rules</strong> inside them. <br>
+      Rules can make use of GameCourse's <strong>'Metadata'</strong> to make the act a specific way. This metadata is
+      <strong>general for all rules</strong> and can be edited to simplify the rule creation in the system.</span>
   </div>
 
-  <div cdkDropList [id]="'sections-list'" class="dd max-w-none ml-16 mt-8" (cdkDropListDropped)="drop($event)">
-    <div class="dd-item" *ngFor="let section of sections" cdkDrag>
-      <div class="flex items-center mb-3">
-        <div class="flex items-center w-[calc(100%-6rem)]">
-          <!-- Move -->
-          <div class="tooltip align-middle absolute -left-10" data-tip="Move">
-            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
-              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
-              </ng-icon>
-              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
-            </button>
-          </div>
-
-          <!-- Section -->
-          <div class="dd-content border-primary border-opacity-75 text-primary font-semibold">
-            {{section.name}}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <app-input-code *ngIf="parsedMetadata"
+    [id]="'metadata'"
+    [classList]="'mt-4'"
+    [value]="parsedMetadata"
+    [placeholder]="'Autogame global variables:'"
+    [showOutput]="false"
+    (valueChange)="parsedMetadata = $event"
+  ></app-input-code>
 </ng-template>
 
 <!-- Remove section -->
-<app-simple-modal *ngIf="sectionMode && sectionToManage"
+<app-simple-modal *ngIf="sectionMode === 'remove section' && sectionToManage"
                   [id]="'remove section'"
                   [title]="sectionMode?.capitalize() + ' \'' + (sectionToManage.name)?.capitalize() + '\'?'"
 

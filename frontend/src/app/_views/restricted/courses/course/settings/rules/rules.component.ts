@@ -62,6 +62,9 @@ export class RulesComponent implements OnInit {
   sectionsToShow: RuleSection[] = [];
   //searchQuery: string;
 
+  metadata: {[variable: string]: number}[];
+  parsedMetadata: string;
+
   @ViewChild('s', {static: false}) s: NgForm;       // Section form
 
   constructor(
@@ -152,7 +155,8 @@ export class RulesComponent implements OnInit {
        //this.sections = _.cloneDeep(this.originalSections);
        this.sectionMode = action;
 
-       this.sectionToManage = this.initSectionToManage(section);
+       if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
+       else await this.parseMetadata();
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
          'manage-metadata' : 'manage-section';
@@ -163,6 +167,7 @@ export class RulesComponent implements OnInit {
     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
     else if (action === 'see section'){
        this.sections = _.cloneDeep(this.originalSections);
+       await this.parseMetadata();
        this.sectionMode = action;
        this.section = section;
 
@@ -341,7 +346,7 @@ export class RulesComponent implements OnInit {
   async drop(event: CdkDragDrop<string[]>) {
     this.sections = _.cloneDeep(this.originalSections);
     moveItemInArray(this.originalSections, event.previousIndex, event.currentIndex);
-    this.arrangeSections = false;
+    setTimeout(() => this.arrangeSections = false, 2000);
 
     if (JSON.stringify(this.sections) !== JSON.stringify(this.originalSections)) {
       await this.saveSectionPriority();
@@ -355,6 +360,39 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ----------------- Manage Data --------------- ***/
   /*** --------------------------------------------- ***/
+
+  async parseMetadata() {
+    this.metadata = await this.api.getMetadata(this.course.id).toPromise();
+
+    this.parsedMetadata = "";
+    if (Object.keys(this.metadata).length > 0){
+      this.parsedMetadata =
+        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
+        "# e.g. get total number of Alameda lectures\n" +
+        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
+
+      for (const data of Object.keys(this.metadata)){
+        this.parsedMetadata += (data + " : " + this.metadata[data] + "\n");
+      }
+    }
+
+  }
+
+  async saveMetadata(){
+    this.loading.action = true;
+
+    let updatedMetadata = _.cloneDeep(this.parsedMetadata);
+    // remove comment lines from metadata and clean code before updating
+    updatedMetadata = updatedMetadata.replace(/#[^\n]*\n/g, '');  // comments
+    updatedMetadata = updatedMetadata.replace(/\n\s*\n/g, '');    // empty lines
+    updatedMetadata = updatedMetadata.replace(/(\s*:\s*)/g, ":"); // " : " or ": " or " :" replacing with ":"
+
+    await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Metadata updated successfully');
+    ModalService.closeModal('manage-metadata');
+  }
 
   initSectionToManage(section?: RuleSection): SectionManageData {
     const sectionData: SectionManageData = {
@@ -386,6 +424,7 @@ export class RulesComponent implements OnInit {
   resetSectionManage(){
     this.sectionMode = null;
     this.sections = null;
+    this.parsedMetadata = null;
     if (this.s) this.s.resetForm();
   }
 

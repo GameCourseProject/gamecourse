@@ -314,6 +314,22 @@ abstract class RuleSystem
         return $metadata;
     }
 
+
+    /**
+     * Update course metadata (global variables) used by the rule system
+     *
+     * @param int $courseId
+     * @param string $metadata
+     * @return string
+     * @throws Exception
+     */
+    public static function updateMetadata(int $courseId, string $metadata): string{
+        $metadataPath = ROOT_PATH . "autogame/config/config_" . $courseId . ".txt";
+        $res = file_put_contents($metadataPath, $metadata);
+        if ($res) return $metadata;
+        else return "";
+    }
+
     /**
      * @throws Exception
      */

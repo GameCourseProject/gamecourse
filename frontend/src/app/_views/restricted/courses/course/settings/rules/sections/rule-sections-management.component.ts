@@ -30,6 +30,7 @@ export class RuleSectionsManagementComponent implements OnInit {
   @Input() courseRules: Rule[];                                     // Rules of course
   @Input() section?: RuleSection;                                   // Section (comes from DB - used for seeing details inside like rules etc, not manipulating the section itself)
   @Input() tags: RuleTag[];                                         // Course tags
+  @Input() metadata: string;
 
   // Available modes regarding section management
   @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';
@@ -41,6 +42,7 @@ export class RuleSectionsManagementComponent implements OnInit {
     action: false
   };
   refreshing: boolean;
+  showAlert: boolean = false;
 
   ruleEdit: string = "";                                            // Name of rule to be edited
   ruleMode: 'add rule' | 'edit rule' | 'remove rule';               // Available actions for rules
@@ -61,7 +63,6 @@ export class RuleSectionsManagementComponent implements OnInit {
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
-  metadata: {[variable: string]: number}[];
 
   constructor(
     private api: ApiHttpService,
@@ -81,17 +82,12 @@ export class RuleSectionsManagementComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getRuleFunctions(courseID);
-      await this.getMetadata(courseID);
       this.getTagNames();
     });
   }
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
-  }
-
-  async getMetadata(courseID: number) {
-    this.metadata = await this.api.getMetadata(courseID).toPromise();
   }
 
   getTagNames() {
@@ -373,19 +369,13 @@ export class RuleSectionsManagementComponent implements OnInit {
     });
   }
 
-  parseMetadata(): string{
-    let myData = "";
-    if (Object.keys(this.metadata).length > 0){
-      myData =
-        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
-        "# e.g. get total number of Alameda lectures\n" +
-        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
-
-      for (const data of Object.keys(this.metadata)){
-        myData += (data + " : " + this.metadata[data] + "\n");
-      }
-    }
-    return myData;
+  changeMetadata(newMetadata: string){
+    this.showAlert = true;
+    this.metadata = newMetadata;
+    // TODO
+    // show alert saying that this changes for all metadata in this course (so its
+    // general for all rules) + only save metadata in course when save button is pressed
+    // for now just update input metadata with new string
   }
 
   onFileSelected(files: FileList, type: 'file'): void {

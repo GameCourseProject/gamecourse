@@ -68,6 +68,37 @@
                 [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
               </app-input-text>
 
+              <app-input-textarea
+                [id] = "'rule-description'"
+                [classList]="'mt-4'"
+                [form] = "r"
+                [(value)] = "ruleToManage.description"
+                [placeholder]="'Write here a small description for this rule ...'"
+                [helperText]="'Small description of what the rule does'"
+                [helperPosition]="'right'"
+                [label] = "'Rule Description'"
+                [required]="false"
+                [maxLength]="65535"
+                [maxLengthErrorMessage]="'Rule description is too long: maximum of 65 535 characters'">
+              </app-input-textarea>
+
+              <app-input-select *ngIf="nameTags"
+                                [id]="'tag-rules'"
+                                [form]="r"
+                                [classList]="'mt-4'"
+                                [(value)]="ruleToManage.tags"
+                                [options]="nameTags"
+                                [multiple] = "true"
+                                [closeOnSelect]="false"
+                                [placeholder]="'Select tags to assign this rule to'"
+                                [helperText]="'Tags that will be assigned this rule'"
+                                [helperPosition]="'right'"
+                                [topLabel]="'Rule tags'"
+                                (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
+                                [setData]="setTags">
+              </app-input-select>
+              <span class="text-xs pl-1">Tags' colors will only appear in table</span>
+
               <div class="flex flex-wrap">
                 <div class="w-1/2 pr-1">
                   <app-input-code
@@ -100,49 +131,28 @@
                   ></app-input-code>
                 </div>
               </div>
-              <app-input-code *ngIf="metadata"
+
+              <app-input-code
                   [id]="'rule-tools'"
                   [classList]="'mt-4'"
                   [title]="'Additional Tools'"
-                  [value]="parseMetadata()"
+                  [value]="metadata"
                   [placeholder]="'Autogame global variables:'"
                   [helperText]="'Extra tools to help with the rule edition'"
                   [helperPosition]="'right'"
-                  [readonly]="true"
                   [tabNames]="['Metadata', 'Output']"
+                  (valueChange)="changeMetadata($event)"
                   (output)="previewRule($event)"
               ></app-input-code>
 
-              <app-input-textarea
-                [id] = "'rule-description'"
-                [classList]="'mt-4'"
-                [form] = "r"
-                [(value)] = "ruleToManage.description"
-                [placeholder]="'Write here a small description for this rule ...'"
-                [helperText]="'Small description of what the rule does'"
-                [helperPosition]="'right'"
-                [label] = "'Rule Description'"
-                [required]="false"
-                [maxLength]="65535"
-                [maxLengthErrorMessage]="'Rule description is too long: maximum of 65 535 characters'">
-              </app-input-textarea>
-
-              <app-input-select *ngIf="nameTags"
-                [id]="'tag-rules'"
-                [form]="r"
-                [classList]="'mt-4'"
-                [(value)]="ruleToManage.tags"
-                [options]="nameTags"
-                [multiple] = "true"
-                [closeOnSelect]="false"
-                [placeholder]="'Select tags to assign this rule to'"
-                [helperText]="'Tags that will be assigned this rule'"
-                [helperPosition]="'right'"
-                [topLabel]="'Rule tags'"
-                (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
-                [setData]="setTags">
-              </app-input-select>
-              <span class="text-xs pl-1">Tags' colors will only appear in table</span>
+              <!-- Alert for metadata changes -->
+              <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-4">
+                <div class="alert alert-warning shadow-md">
+                  <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
+                  <div><span>Keep in mind that <strong>metadata is global</strong>. Changing it will <strong>change metadata for the entire course</strong>,
+                    which includes <strong>others rules</strong> as well.</span></div>
+                </div>
+              </div>
 
               <!--<div class="w-full flex flex-wrap items-end" *ngIf="!refreshing && nameTags">
                 <div class="w-4/5 pr-1">
