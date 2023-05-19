@@ -240,7 +240,6 @@ export class RulesComponent implements OnInit {
     this.loading.action = true;
     // this.originalSections = this.sections;
 
-    console.log(this.originalSections)
     for (let i = 0; i < this.originalSections.length; i++){
       this.originalSections[i].position = i;
       let section = this.initSectionToManage(this.originalSections[i]);
@@ -340,10 +339,13 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async drop(event: CdkDragDrop<string[]>) {
+    this.sections = _.cloneDeep(this.originalSections);
     moveItemInArray(this.originalSections, event.previousIndex, event.currentIndex);
     this.arrangeSections = false;
 
-    await this.saveSectionPriority();
+    if (JSON.stringify(this.sections) !== JSON.stringify(this.originalSections)) {
+      await this.saveSectionPriority();
+    }
   }
 
   showWarning(){
