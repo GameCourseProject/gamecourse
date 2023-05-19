@@ -1,4 +1,14 @@
+<!-- Alert for section's priorities -->
+<div *ngIf="arrangeSections" class="absolute z-10 justify-center flex flex-wrap mt-0.5">
+  <div class="alert alert-warning shadow-md w-[90%]">
+    <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
+    <div><span>The designated order amongst sections <strong>specifies the priority</strong> of each of them. <strong>First sections will
+           execute earlier</strong> than the rest, so check there's no type of <strong>dependency being ignored</strong>.</span></div>
+  </div>
+</div>
+
 <div class="w-full relative">
+
   <!-- Header -->
   <app-header [classList]="'text-md'"
     [title]="'Rule Editor'"
@@ -24,45 +34,56 @@
 
     <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
 
-    <!-- Sections and Rules -->
-    <div *ngFor="let section of sectionsToShow">
-      <div class="justify-center flex">
-        <div class="card w-[55%] bg-base-100 shadow-xl mt-5">
-          <div class="card-body">
-            <ng-container *ngIf="!loading.page">
 
-              <div class="flex items-start mt-2 justify-between">
-                <app-header [subHeader]="true" [classList]="'flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
+    <div cdkDropList [id]="'sections-list'" class="dd max-w-none mt-6" (cdkDropListDropped)="drop($event)">
+      <!-- Sections and Rules -->
+      <div class="dd-item" *ngFor="let section of sectionsToShow" cdkDrag (cdkDragStarted)="showWarning()">
+        <div class="justify-center flex">
+          <!-- Move -->
+          <div *ngIf="sectionsToShow.length > 1" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
+            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
+              </ng-icon>
+              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+            </button>
+          </div>
+          <div class="dd-content border-primary border-opacity-75 card w-[55%] bg-base-100 shadow-xl mt-5">
+            <div class="card-body">
+              <ng-container *ngIf="!loading.page">
 
-                <div>
-                  <div class="tooltip align-middle mx-1.5" data-tip="Edit">
-                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('edit section', section)">
-                      <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
-                    </button>
+                <div class="flex items-start mt-2 justify-between">
+                  <app-header [subHeader]="true" [classList]="'flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
+
+                  <div>
+                    <div class="tooltip align-middle mx-1.5" data-tip="Edit">
+                      <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('edit section', section)">
+                        <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
+                      </button>
+                    </div>
+
+                    <div class="tooltip align-middle mx-1.5" data-tip="Delete">
+                      <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('remove section', section)">
+                        <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
+                      </button>
+                    </div>
+
+                    <div class="tooltip align-middle mx-1.5" data-tip="See more details">
+                      <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('see section', section)">
+                        <ng-icon name="feather-arrow-right-circle" size="1.5rem" class="text-primary"></ng-icon>
+                      </button>
+                    </div>
                   </div>
 
-                  <div class="tooltip align-middle mx-1.5" data-tip="Delete">
-                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('remove section', section)">
-                      <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
-                    </button>
-                  </div>
-
-                  <div class="tooltip align-middle mx-1.5" data-tip="See more details">
-                    <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('see section', section)">
-                      <ng-icon name="feather-arrow-right-circle" size="1.5rem" class="text-primary"></ng-icon>
-                    </button>
-                  </div>
                 </div>
+                <span class="text-sm text-base-content text-opacity-50 ml-8 -mt-3">
+                  ({{nrRules[section.id] > 0 ? nrRules[section.id] : 'No'}} rule{{(nrRules[section.id] && nrRules[section.id] === 1) ? '' : 's'}})
+                </span>
 
-              </div>
-              <span class="text-sm text-base-content text-opacity-50 ml-8 -mt-3">
-                ({{nrRules[section.id] > 0 ? nrRules[section.id] : 'No'}} rule{{(nrRules[section.id] && nrRules[section.id] === 1) ? '' : 's'}})
-              </span>
+                <!-- Loader -->
+                <app-loader [loading]="loading.page"></app-loader>
 
-              <!-- Loader -->
-              <app-loader [loading]="loading.page"></app-loader>
-
-            </ng-container>
+              </ng-container>
+            </div>
           </div>
         </div>
       </div>
@@ -70,7 +91,7 @@
 
     <div class="justify-center flex flex-wrap">
       <div *ngFor="let action of sectionActions" class="flex flex-wrap items-center justify-center">
-        <button class="flex items-center btn btn-{{action.color}} rounded rounded-lg mx-1.5 mt-5 {{action.disable ? 'btn-disabled' : ''}}"
+        <button class="flex items-center btn btn-{{action.color}} rounded rounded-lg mx-1.5 mt-5"
                 (click)="prepareManagement(action.action)">
           <ng-icon name="{{action.icon}}" size="{{ action.action === 'add section' ? '1.2rem' : '1.5rem' }}" class="mr-0.5"></ng-icon>
           {{action.action}}
@@ -135,8 +156,8 @@
 </ng-template>
 
 <!-- Manage sections priorities -->
-<app-modal *ngIf="sectionMode === 'manage sections priority'"
-           [id] = "'manage-sections-priority'"
+<app-modal *ngIf="sectionMode === 'metadata'"
+           [id] = "'manage-metadata'"
            [templateRef]="MANAGE_SECTION_PRIORITY"
            [size] = "'lg'"
            [header] = "sectionMode?.capitalize()"

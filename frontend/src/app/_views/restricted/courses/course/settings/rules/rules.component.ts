@@ -43,12 +43,14 @@ export class RulesComponent implements OnInit {
   // Section actions -- general manipulation (create/edit/remove/set priority/see details)
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
       color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
-      {action: 'sections\' priorities', icon: 'jam-box', color: 'secondary', disable: true},
+      {action: 'metadata', icon: 'tabler-book', color: 'secondary'},
       {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
       {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
 
   tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';    // available actions for tags
-  sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';  // available actions for sections
+  sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';  // available actions for sections
+
+  arrangeSections: boolean = false;
 
   // MANAGE DATA
   section: RuleSection;
@@ -102,10 +104,6 @@ export class RulesComponent implements OnInit {
     this.filteredSections = this.originalSections;
     this.sectionsToShow = this.originalSections;
 
-    if (this.originalSections.length > 1){
-      this.sectionActions[0].disable = false;
-    }
-
     // initialize information for tables
     const auxSection = this.initSectionToManage();
     for (let i = 0; i <  this.originalSections.length; i++){
@@ -149,15 +147,15 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async prepareManagement(action: string, section?: RuleSection) {
-    // Actions for sections general manipulation (adding/editing/removing/prioritizing actions)
-     if (action === 'sections\' priorities'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
-       this.sections = _.cloneDeep(this.originalSections);
-       this.sectionMode = (action === 'sections\' priorities') ? 'manage sections priority' : action;
+    // Actions for sections general manipulation (adding/editing/removing/metadata actions)
+     if (action === 'metadata'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
+       //this.sections = _.cloneDeep(this.originalSections);
+       this.sectionMode = action;
 
        this.sectionToManage = this.initSectionToManage(section);
 
-       let modal = (action === 'remove section') ? action : (action === 'sections\' priorities') ?
-         'manage-sections-priority' : 'manage-section';
+       let modal = (action === 'remove section') ? action : (action === 'metadata') ?
+         'manage-metadata' : 'manage-section';
        ModalService.openModal(modal);
 
      }
@@ -196,7 +194,6 @@ export class RulesComponent implements OnInit {
       const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
       this.originalSections.unshift(newSection);
 
-      this.toggleSectionPriority();
       this.resetSectionManage();
 
       this.loading.action = false;
@@ -232,8 +229,6 @@ export class RulesComponent implements OnInit {
     const index = this.originalSections.findIndex(el => el.id === this.sectionToManage.id);
     this.originalSections.removeAtIndex(index);
 
-    this.toggleSectionPriority();
-
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + this.sectionToManage.name + '\' removed');
 
@@ -243,8 +238,9 @@ export class RulesComponent implements OnInit {
 
   async saveSectionPriority(): Promise<void>{
     this.loading.action = true;
-    this.originalSections = this.sections;
+    // this.originalSections = this.sections;
 
+    console.log(this.originalSections)
     for (let i = 0; i < this.originalSections.length; i++){
       this.originalSections[i].position = i;
       let section = this.initSectionToManage(this.originalSections[i]);
@@ -256,7 +252,6 @@ export class RulesComponent implements OnInit {
 
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
-    ModalService.closeModal('manage-sections-priority');
   }
 
   async closeSectionManagement(event: Rule[]) {
@@ -344,12 +339,15 @@ export class RulesComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
-  drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+  async drop(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.originalSections, event.previousIndex, event.currentIndex);
+    this.arrangeSections = false;
+
+    await this.saveSectionPriority();
   }
 
-  toggleSectionPriority(){
-    this.sectionActions[0].disable = this.originalSections.length <= 1;
+  showWarning(){
+    if (this.sectionsToShow.length > 0) this.arrangeSections = true;
   }
 
   /*** --------------------------------------------- ***/
@@ -386,7 +384,7 @@ export class RulesComponent implements OnInit {
   resetSectionManage(){
     this.sectionMode = null;
     this.sections = null;
-    this.s.resetForm();
+    if (this.s) this.s.resetForm();
   }
 
 }

@@ -32,7 +32,7 @@ export class RuleSectionsManagementComponent implements OnInit {
   @Input() tags: RuleTag[];                                         // Course tags
 
   // Available modes regarding section management
-  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'manage sections priority';
+  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';
 
   @Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
 
