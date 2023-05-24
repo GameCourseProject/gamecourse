@@ -41,17 +41,21 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() placeholder: string = "Write your code here!";  // Message to show by default
 
   // Extras
+  @Input() size?: 'md' | 'lg' = 'md';                   // Size of input code
   @Input() nrLines?: number = 10;             // Number of lines already added to the editor. Default = 10 lines
   @Input() title?: string;                    // Textarea title
   @Input() classList?: string;                // Classes to add
   @Input() disabled?: boolean;                // Make it disabled
   @Input() customKeywords?: string[] = [];    // Personalized keywords
 
-  @Input() showOutput?: boolean = true;         // Boolean to show/hide tabs with output above editor
+  @Input() showTabs?: boolean = true;         // Boolean to show/hide tabs with output above editor
   @Input() readonly?: boolean = false;          // Make editor readonly
 
   // FIXME: Refactor this to be flexible and accept more than only 2 tabs
   @Input() tabNames?: string[] = ['Code', 'Output']        // Names of the tabs that will be shown
+
+  @Input() newTabs?: { name: string, type: "code" | "console", show: boolean }[] =
+    [{ name: 'Code', type: "code" , show: true}, {name: 'Output', type: "console", show: false}];
 
   // Personalized functions
   @Input() customFunctions?: {
@@ -74,6 +78,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() output = new EventEmitter<string>();
 
   options: Completion[] = [];                                   // Editor options for autocompletion
+
+  // FIXME -- remove later
   tabs: {[tabName: string]: boolean} = {};                      // Tabs with name as key and boolean to enable
 
   constructor(
@@ -86,7 +92,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.setUpKeywords();
-    if (this.showOutput) this.setUpTabs();
+    // if (this.showTabs) this.setUpTabs();
   }
 
   // Setups all keywords and functions for code
@@ -137,6 +143,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   setUpTabs(){
+
+
     for (let i = 0; i < this.tabNames.length; i++){
       this.tabs[this.tabNames[i]] = (i === 0);
     }
@@ -349,10 +357,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     return this.themeService.getTheme();
   }
 
-  toggleTabs(tabName: string): void {
-    for (const tab of Object.keys(this.tabs)){
-      this.tabs[tab] = tab === tabName;
+  toggleTabs(index: number): void {
+    for (let i = 0; i < this.newTabs.length; i++){
+      this.newTabs[i].show = i === index;
     }
   }
-
 }

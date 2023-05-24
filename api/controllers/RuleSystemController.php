@@ -12,7 +12,25 @@ class RuleSystemController
 {
     /*** --------------------------------------------- ***/
     /*** ------------------  Section ----------------- ***/
-    /*** --------------------------------------------- ***/
+    /*** --------------------------------------------- **/
+
+    /**
+     * Gets section with a given id
+     * @throws Exception
+     */
+    public function getSectionById(){
+        API::requireValues('courseId', 'sectionId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $sectionId = API::getValue("sectionId", "int");
+        $section = Section::getSectionById($sectionId);
+
+        API::response($section->getData());
+
+    }
 
     /**
      * Gets section of specific course

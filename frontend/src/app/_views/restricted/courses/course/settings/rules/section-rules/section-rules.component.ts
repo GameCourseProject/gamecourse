@@ -8,37 +8,47 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {Action} from "../../../../../../../_domain/modules/config/Action";
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Course} from "../../../../../../../_domain/courses/course";
-import {buildTable, editRule, initRuleToManage, RuleManageData, SectionManageData} from "../rules.component";
+import {buildTable, editRule, initSectionToManage, initRuleToManage, RuleManageData, SectionManageData} from "../sections.component";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {RuleTag} from "../../../../../../../_domain/rules/RuleTag";
 
-export {SectionManageData, RuleManageData} from "../rules.component";
+export {SectionManageData, RuleManageData} from "../sections.component";
 
 import * as _ from "lodash";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
 import {ThemingService} from "../../../../../../../_services/theming/theming.service";
 import {Subject} from "rxjs";
+import {TableDataType} from "../../../../../../../_components/tables/table-data/table-data.component";
 
 @Component({
   selector: 'app-rule-sections-management',
-  templateUrl: './rule-sections-management.component.html',
+  templateUrl: './section-rules.component.html',
 })
-export class RuleSectionsManagementComponent implements OnInit {
+export class SectionRulesComponent implements OnInit {
 
-  @Input() course: Course;                                          // Specific course in which rule system is being manipulated
-  @Input() courseRules: Rule[];                                     // Rules of course
-  @Input() section?: RuleSection;                                   // Section (comes from DB - used for seeing details inside like rules etc, not manipulating the section itself)
-  @Input() tags: RuleTag[];                                         // Course tags
-  @Input() metadata: string;
+  //@Input() course: Course;                                          // Specific course in which rule system is being manipulated
+  //@Input() courseRules: Rule[];                                     // Rules of course
+  //@Input() section?: RuleSection;                                   // Section (comes from DB - used for seeing details inside like rules etc, not manipulating the section itself)
+  //@Input() tags: RuleTag[];                                         // Course tags
+  //@Input() metadata: string;
+
+  course: Course;
+  courseRules: Rule[]; // FIXME -- not sure if needed
+  sectionRules: Rule[];
+  section: RuleSection;
+  tags: RuleTag[];
+  metadata: {[variable: string]: number}[];
+  parsedMetadata: string;
+
 
   // Available modes regarding section management
-  @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';
+  // @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';
 
   @Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
 
   loading = {
-    page: false,
+    page: true,
     action: false
   };
   refreshing: boolean;
@@ -81,21 +91,110 @@ export class RuleSectionsManagementComponent implements OnInit {
   async ngOnInit() {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
+      await this.getCourse(courseID);
+      await this.getCourseRules(courseID);
+      await this.getTags(courseID);
+      await this.getMetadata();
       await this.getRuleFunctions(courseID);
-      this.getTagNames();
+
+      this.route.params.subscribe(async childParams => {
+        const sectionID = childParams.id;
+        await this.getSection(this.course.id, sectionID);
+        await this.getSectionRules(sectionID);
+        await this.buildTable();
+        this.loading.page = false;
+      })
     });
+  }
+
+  async getCourse(courseID: number): Promise<void> {
+    this.course = await this.api.getCourseById(courseID).toPromise();
+  }
+
+  async getCourseRules(courseID: number): Promise<void> {
+    this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
+      return a.position - b.position; });
+  }
+
+  async getTags(courseID: number): Promise<void> {
+    this.tags = await this.api.getTags(courseID).toPromise();
+
+    // Get names in another variable for input-select
+    let nameTags = [];
+    for (let i = 0; i < this.tags.length ; i++){
+      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
+    }
+    this.nameTags = _.cloneDeep(nameTags);
   }
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
   }
 
-  getTagNames() {
-    let nameTags = [];
-    for (let i = 0; i < this.tags.length ; i++){
-      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
+  async getSection(courseID: number, sectionID: number) {
+    this.section = await this.api.getSectionById(courseID, sectionID).toPromise();
+
+    // Prepare information for table:
+    const auxSection = initSectionToManage(this.course.id);
+    this.section.headers = auxSection.headers;
+    this.section.data = auxSection.data;
+    this.section.options = auxSection.options;
+    this.section.loadingTable = auxSection.loadingTable;
+    this.section.showTable = auxSection.showTable;
+  }
+
+  async getSectionRules(sectionID: number){
+    this.sectionRules = await this.api.getRulesOfSection(this.course.id, sectionID).toPromise();
+  }
+
+  async getMetadata() {
+    this.metadata = await this.api.getMetadata(this.course.id).toPromise();
+
+    this.parsedMetadata = "";
+    if (Object.keys(this.metadata).length > 0){
+      this.parsedMetadata =
+        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
+        "# e.g. get total number of Alameda lectures\n" +
+        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
+
+      for (const data of Object.keys(this.metadata)){
+        this.parsedMetadata += (data + " : " + this.metadata[data] + "\n");
+      }
     }
-    this.nameTags = _.cloneDeep(nameTags);
+
+  }
+
+  async buildTable(): Promise<void> {
+    this.section.loadingTable = true;
+
+    this.section.showTable = false;
+    setTimeout(() => this.section.showTable = true, 0);
+
+    const table: { type: TableDataType; content: any }[][] = [];
+
+    console.log(this.sectionRules);
+    this.sectionRules.forEach(rule => {
+      table.push([
+        {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},
+        {type: TableDataType.TEXT, content: {text: rule.name}},
+        {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
+              rule.tags.sort((a,b) => a.name.localeCompare(b.name))
+                .map(tag => '<div class="badge badge-md badge-' + this.themeService.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
+              '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
+        {type: TableDataType.ACTIONS, content: {actions: [
+              Action.EDIT,
+              {action: 'Duplicate', icon: 'tabler-copy', color: 'primary'},
+              {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary', disabled: rule.position === 0 },
+              {action: 'Decrease priority', icon: 'tabler-arrow-narrow-down', color: 'primary', disabled: rule.position === this.sectionRules.length - 1 },
+              Action.REMOVE,
+              Action.EXPORT]}
+        }
+      ]);
+    });
+
+    this.section.data = _.cloneDeep(table);
+    this.section.loadingTable = false;
   }
 
 
@@ -211,7 +310,7 @@ export class RuleSectionsManagementComponent implements OnInit {
     this.newCourseRules.emit(this.courseRules);
     // TODO -- add tags here later?
 
-    this.mode = null;
+    //this.mode = null;
     this.resetRuleManage();
 
     this.loading.page = false;
@@ -371,7 +470,7 @@ export class RuleSectionsManagementComponent implements OnInit {
 
   changeMetadata(newMetadata: string){
     this.showAlert = true;
-    this.metadata = newMetadata;
+    //this.metadata = newMetadata;
     // TODO
     // show alert saying that this changes for all metadata in this course (so its
     // general for all rules) + only save metadata in course when save button is pressed

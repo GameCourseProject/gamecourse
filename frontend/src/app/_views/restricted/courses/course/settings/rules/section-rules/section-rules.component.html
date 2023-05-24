@@ -1,14 +1,10 @@
-<div *ngIf="mode === 'see section'" class="w-full relative">
-
-  <ng-container *ngIf="!loading.page">
-
+<div *ngIf="!loading.page"class="w-full relative">
     <div class="flex flex-wrap items-center">
       <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="closeManagement()">
         <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
       </button>
       <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Existing Sections'</i></span>
     </div>
-
 
     <div class="divider -mt-2">
       <div class="flex justify-center mx-2">
@@ -111,7 +107,7 @@
                     [helperText]="'Preconditions that will trigger the rule'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
-                    [showOutput]="false"
+                    [showTabs]="false"
                     (valueChange)="ruleToManage.whenClause = $event"
                   ></app-input-code>
                 </div>
@@ -126,7 +122,7 @@
                     [helperText]="'Code that will be ran once the rule preconditions have met'"
                     [helperPosition]="'right'"
                     [mode]="'python'"
-                    [showOutput]="false"
+                    [showTabs]="false"
                     (valueChange)="ruleToManage.thenClause = $event"
                   ></app-input-code>
                 </div>
@@ -136,7 +132,7 @@
                   [id]="'rule-tools'"
                   [classList]="'mt-4'"
                   [title]="'Additional Tools'"
-                  [value]="metadata"
+                  [value]="parsedMetadata"
                   [placeholder]="'Autogame global variables:'"
                   [helperText]="'Extra tools to help with the rule edition'"
                   [helperPosition]="'right'"
@@ -216,7 +212,6 @@
 
     <!-- Loader -->
     <app-loader [loading]="loading.page"></app-loader>
-  </ng-container>
 </div>
 
 <!-- Discard changed Modal -->

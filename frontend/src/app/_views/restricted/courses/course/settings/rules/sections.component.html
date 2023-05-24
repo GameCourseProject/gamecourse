@@ -101,17 +101,16 @@
 
   </ng-container>
 
-  <!-- Sections Management -->
+  <!-- Sections Management
   <app-rule-sections-management
     *ngIf="sectionMode"
-    [mode]="sectionMode"
     [course] = "course"
     [courseRules]="courseRules"
     [section]="section"
     [tags]="tags"
     [metadata]="parsedMetadata"
     (newCourseRules)="closeSectionManagement($event)">
-  </app-rule-sections-management>
+  </app-rule-sections-management>-->
 
 </div>
 
@@ -180,7 +179,7 @@
     [classList]="'mt-4'"
     [value]="parsedMetadata"
     [placeholder]="'Autogame global variables:'"
-    [showOutput]="false"
+    [showTabs]="false"
     (valueChange)="parsedMetadata = $event"
   ></app-input-code>
 </ng-template>

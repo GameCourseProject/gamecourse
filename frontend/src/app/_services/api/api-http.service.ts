@@ -60,8 +60,8 @@ import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
 import {Rule} from "../../_domain/rules/rule";
-import { RuleManageData, SectionManageData } from "../../_views/restricted/courses/course/settings/rules/rules.component";
-import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/tags/rule-tags-management.component"
+import { RuleManageData, SectionManageData } from "../../_views/restricted/courses/course/settings/rules/sections.component";
+import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/sections.component"
 import { RuleSection } from "../../_domain/rules/RuleSection";
 import { RuleTag } from "../../_domain/rules/RuleTag";
 import { Notification } from "../../_domain/notifications/notification";
@@ -1381,6 +1381,21 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data'].map(obj => RuleSection.fromDatabase(obj))) );
+  }
+
+  public getSectionById(courseID: number, sectionID: number): Observable<RuleSection>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getSectionById');
+      qs.push('courseId', courseID);
+      qs.push('sectionId', sectionID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => RuleSection.fromDatabase(res['data'])));
+
   }
 
   // Rules

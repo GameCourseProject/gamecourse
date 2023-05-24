@@ -10,11 +10,11 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
-import {initTagToManage, TagManageData} from "../rules.component";
+import {initTagToManage, TagManageData} from "../sections.component";
 import * as _ from "lodash";
 import {Subject} from "rxjs";
 
-export {TagManageData} from "../rules.component";
+export {TagManageData} from "../sections.component";
 
 @Component({
   selector: 'app-rule-tags-management',

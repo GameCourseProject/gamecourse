@@ -6,7 +6,7 @@ import {TableDataType} from "../../../../../../_components/tables/table-data/tab
 import {Rule} from "../../../../../../_domain/rules/rule";
 import {Course} from "../../../../../../_domain/courses/course";
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {ModalService} from "../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 import {NgForm} from "@angular/forms";
@@ -20,10 +20,10 @@ import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-rules',
-  templateUrl: './rules.component.html',
-  styleUrls: ['./rules.component.scss']
+  templateUrl: './sections.component.html',
+  styleUrls: ['./sections.component.scss']
 })
-export class RulesComponent implements OnInit {
+export class SectionsComponent implements OnInit {
 
   loading = {
     page: true,
@@ -70,6 +70,7 @@ export class RulesComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private router: Router,
     public themeService: ThemingService
   ) { }
 
@@ -108,7 +109,7 @@ export class RulesComponent implements OnInit {
     this.sectionsToShow = this.originalSections;
 
     // initialize information for tables
-    const auxSection = this.initSectionToManage();
+    const auxSection = initSectionToManage(this.course.id);
     for (let i = 0; i <  this.originalSections.length; i++){
       this.originalSections[i].headers = auxSection.headers;
       this.originalSections[i].data = auxSection.data;
@@ -155,7 +156,7 @@ export class RulesComponent implements OnInit {
        //this.sections = _.cloneDeep(this.originalSections);
        this.sectionMode = action;
 
-       if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
+       if (action !== 'metadata') this.sectionToManage = initSectionToManage(this.course.id, section);
        else await this.parseMetadata();
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
@@ -166,12 +167,14 @@ export class RulesComponent implements OnInit {
 
     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
     else if (action === 'see section'){
-       this.sections = _.cloneDeep(this.originalSections);
-       await this.parseMetadata();
-       this.sectionMode = action;
-       this.section = section;
 
-       await buildTable(this.api, this.themeService, this.course.id, section);
+       this.router.navigate(['rule-system/sections/' + section.id ], {relativeTo: this.route.parent});
+       // this.sections = _.cloneDeep(this.originalSections);
+       // await this.parseMetadata();
+       // this.sectionMode = action;
+       // this.section = section;
+
+       // await buildTable(this.api, this.themeService, this.course.id, section);
 
     }
 
@@ -247,7 +250,7 @@ export class RulesComponent implements OnInit {
 
     for (let i = 0; i < this.originalSections.length; i++){
       this.originalSections[i].position = i;
-      let section = this.initSectionToManage(this.originalSections[i]);
+      let section = initSectionToManage(this.course.id, this.originalSections[i]);
       await this.api.editSection(section).toPromise();
     }
 
@@ -394,33 +397,6 @@ export class RulesComponent implements OnInit {
     ModalService.closeModal('manage-metadata');
   }
 
-  initSectionToManage(section?: RuleSection): SectionManageData {
-    const sectionData: SectionManageData = {
-      course: section?.course ?? this.course.id,
-      name: section?.name ?? null,
-      position: section?.position ?? null,
-      headers: [
-        {label: 'Execution Order', align: 'left'},
-        {label: 'Name', align: 'left'},
-        {label: 'Tags', align: 'middle'},
-        {label: 'Active', align: 'middle'},
-        {label: 'Actions'}],
-      data: section?.data ?? [],
-      options: {
-        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
-        columnDefs: [
-          { type: 'natural', targets: [0,1] },
-          { searchable: false, targets: [2,3] },
-          { orderable: false, targets: [2,3] }
-        ]
-      },
-      loadingTable: false,
-      showTable: false
-    };
-    if (section) sectionData.id = section.id;
-    return sectionData;
-  }
-
   resetSectionManage(){
     this.sectionMode = null;
     this.sections = null;
@@ -465,6 +441,33 @@ export interface RuleManageData {
 }
 
 // GLOBAL FUNCTIONS
+
+export function initSectionToManage(courseId: number, section?: RuleSection): SectionManageData{
+  const sectionData: SectionManageData = {
+    course: section?.course ?? courseId,
+    name: section?.name ?? null,
+    position: section?.position ?? null,
+    headers: [
+      {label: 'Execution Order', align: 'left'},
+      {label: 'Name', align: 'left'},
+      {label: 'Tags', align: 'middle'},
+      {label: 'Active', align: 'middle'},
+      {label: 'Actions'}],
+    data: section?.data ?? [],
+    options: {
+      order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+      columnDefs: [
+        { type: 'natural', targets: [0,1] },
+        { searchable: false, targets: [2,3] },
+        { orderable: false, targets: [2,3] }
+      ]
+    },
+    loadingTable: false,
+    showTable: false
+  };
+  if (section) sectionData.id = section.id;
+  return sectionData;
+}
 
 export function initTagToManage(courseId: number, tag?: RuleTag): TagManageData {
   const tagData: TagManageData = {

@@ -5,30 +5,50 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
-  <div *ngIf="showOutput" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
-    <ng-container *ngFor="let tab of tabNames">
-      <a class="tab tab-sm text-base-200 {{tabs[tab] ? 'tab-active' : ''}}" (click)="toggleTabs(tab)">{{tab}}</a>
+  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
+    <ng-container *ngFor="let tab of newTabs, let i = index">
+      <a class="tab tab-sm text-base-200 {{tab.show ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
     </ng-container>
   </div>
 
-  <div class="rounded-xl border-base-content h-64 border-2 overflow-y-auto
-        {{getTheme() === 'light' && showOutput ? 'border-t-base-300' : ''}} {{showOutput ? 'rounded-t-none': ''}}"
+  <!-- FIXME: refactor to receive more than two tabs -->
+  <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto
+        {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}"
        style="background-color: #282C34">
-    <!-- Editor code tab -->
-    <div class="cm {{tabs[tabNames[0]] || !showOutput ? '' : 'hidden'}}">
-      <div [id]="id"></div>
-    </div>
 
-    <!-- Editor output tab -->
-    <div *ngIf="tabs[tabNames[1]]">
-      <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
-      <div class="justify-center flex">
-        <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">
-          <ng-icon name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-          Run
-        </button>
+    <ng-container *ngFor="let tab of newTabs">
+
+      <!-- Editor code tab
+      <div class="cm {{tabs[tabNames[0]] || !showTabs ? '' : 'hidden'}}">
+        <div [id]="id"></div>
+      </div>-->
+
+      <!-- Editor output tab
+      <div *ngIf="tabs[tabNames[1]]">
+        <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
+        <div class="justify-center flex">
+          <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">
+            <ng-icon name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+            Run
+          </button>
+        </div>
+      </div>-->
+      <!-- Editor code tab
+      <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.show ? '' : 'hidden'}}">
+        <div [id]="id-tab.name"></div>
       </div>
-    </div>
+
+      <div *ngIf="tab.type === 'console' && tab.show">
+        <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
+        <div class="justify-center flex">
+          <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">
+            <ng-icon name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+            Run
+          </button>
+        </div>
+      </div> -->
+
+    </ng-container>
 
   </div>
 
