@@ -25,11 +25,12 @@ export class RuleTagsManagementComponent implements OnInit {
   @Input() course: Course;                                                    // Specific course in which rule system is being manipulated
   @Input() mode: 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';       // Available actions regarding tag management
 
-  @Input() tags: RuleTag[];                                                   // Course tags
-  @Input() rules: Rule[];                                                     // Course rules
+  tags: RuleTag[];                                                   // Course tags
+  rules: Rule[];                                                     // Course rules
 
-  @Output() newTags = new EventEmitter<RuleTag[]>();                          // Changed tags to be emitted
-  @Output() newRules = new EventEmitter<Rule[]>();                            // Changed rules to be emitted
+  //@Output() newTags = new EventEmitter<RuleTag[]>();                          // Changed tags to be emitted
+  //@Output() newRules = new EventEmitter<Rule[]>();                            // Changed rules to be emitted
+  @Output() tagMode = new EventEmitter<'manage tags' | 'add tag' | 'remove tag' | 'edit tag'>();                            // Changed rules to be emitted
 
   // Available colors for tags
   colors: string[] = ["#5E72E4", "#EA6FAC", "#1EA896", "#38BFF8", "#36D399", "#FBBD23", "#EF6060"];
@@ -61,15 +62,21 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  ngOnInit(): void {
+  async ngOnInit() {
     this.route.parent.params.subscribe();
-    this.ruleNames = _.cloneDeep(this.getRuleNames());
+    await this.getTags();
+    await this.getRuleNames();
   }
 
-  getRuleNames(): {value: any, text: string}[] {
-    return Object.values(this.rules).map(rule => {
+  async getRuleNames()  {
+    this.rules = await this.api.getCourseRules(this.course.id).toPromise();
+    this.ruleNames = _.cloneDeep(Object.values(this.rules).map(rule => {
       return {value: rule.name, text: rule.name}
-    });
+    }));
+  }
+
+  async getTags(): Promise<void> {
+    this.tags = await this.api.getTags(this.course.id).toPromise();
   }
 
   /*** --------------------------------------------- ***/
@@ -143,8 +150,8 @@ export class RuleTagsManagementComponent implements OnInit {
             tag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise(); // Update DB
             this.tags.push(tag); // Update UI
             message = "Tag created successfully";
-
           }
+
           this.assignRules(tag, action);
 
           AlertService.showAlert(AlertType.SUCCESS, message);
@@ -162,7 +169,8 @@ export class RuleTagsManagementComponent implements OnInit {
   closeManagement(){
     ModalService.closeModal('manage tags');
     this.mode = null;
-    this.newTags.emit(this.tags);
+    this.tagMode.emit(null);
+    //.newTags.emit(this.tags);
   }
 
   async getRulesWithTag(tag: RuleTag): Promise<Rule[]>{
@@ -177,8 +185,8 @@ export class RuleTagsManagementComponent implements OnInit {
     return this.themeService.hexaToColor(color);
   }
 
-  assignRules(tag: RuleTag, action: string): void {
-    let rulesToEmit: Rule[] = [];
+  async assignRules(tag: RuleTag, action: string): Promise<void> {
+    //let rulesToEmit: Rule[] = [];
     let ruleNames = this.tagToManage.ruleNames;
 
     for (let i = 0; i < ruleNames.length; i++) {
@@ -193,10 +201,12 @@ export class RuleTagsManagementComponent implements OnInit {
         rule.tags.push(tag);
       }
 
-      rulesToEmit.push(rule);
+      //let ruleToManage = initRuleToManage(this.course.id, rule.section, rule);
+      await this.api.editRule(rule).toPromise();
+      //rulesToEmit.push(rule);
     }
 
-    if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
+    //if (rulesToEmit.length > 0) this.newRules.emit(rulesToEmit);
   }
 
   updateRules(selectedRuleNames: string[]): void {

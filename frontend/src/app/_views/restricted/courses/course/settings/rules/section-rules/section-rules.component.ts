@@ -1,19 +1,19 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from "@angular/core";
 import {RuleSection} from "../../../../../../../_domain/rules/RuleSection";
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
-import {ActivatedRoute} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../../_services/alert.service";
 import {Action} from "../../../../../../../_domain/modules/config/Action";
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Course} from "../../../../../../../_domain/courses/course";
-import {buildTable, editRule, initSectionToManage, initRuleToManage, RuleManageData, SectionManageData} from "../sections.component";
+import {buildTable, initSectionToManage, RuleManageData, SectionManageData} from "../sections.component";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {RuleTag} from "../../../../../../../_domain/rules/RuleTag";
 
-export {SectionManageData, RuleManageData} from "../sections.component";
+export {SectionManageData} from "../sections.component";
 
 import * as _ from "lodash";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
@@ -45,7 +45,7 @@ export class SectionRulesComponent implements OnInit {
   // Available modes regarding section management
   // @Input() mode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';
 
-  @Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
+  //@Output() newCourseRules = new EventEmitter<Rule[]>();            // Changed section rules to be emitted
 
   loading = {
     page: true,
@@ -77,6 +77,7 @@ export class SectionRulesComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private router: Router,
     private themeService: ThemingService
   ) { }
 
@@ -222,7 +223,7 @@ export class SectionRulesComponent implements OnInit {
       this.ruleMode = 'add rule';
       this.previousSelected = [];
       // this.ruleTags = [];
-      this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
+      this.ruleToManage = this.initRuleToManage();
 
       //this.getTagNames();
       //this.scroll();
@@ -239,7 +240,7 @@ export class SectionRulesComponent implements OnInit {
       if (this.r.valid) {
         this.loading.action = true;
         await this.assignTags();
-        (action === 'add rule') ? await this.createRule() : await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
+        (action === 'add rule') ? await this.createRule() : await this.editRule();
 
         await buildTable(this.api, this.themeService, this.course.id, this.section);
         //ModalService.closeModal('manage-rule');
@@ -269,6 +270,16 @@ export class SectionRulesComponent implements OnInit {
     this.courseRules.push(newRule);
 
     return newRule;
+  }
+
+  async editRule(): Promise<void> {
+
+    const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
+
+    const index = this.courseRules.findIndex(rule => rule.id === ruleEdited.id);
+    this.courseRules.splice(index, 1, ruleEdited);
+
   }
 
   async importRules(): Promise<void> {
@@ -307,11 +318,17 @@ export class SectionRulesComponent implements OnInit {
   closeManagement(){
     this.loading.page = true;
 
-    this.newCourseRules.emit(this.courseRules);
+    //this.newCourseRules.emit(this.courseRules);
     // TODO -- add tags here later?
 
     //this.mode = null;
+    // FIXME -- not sure this is needed?
     this.resetRuleManage();
+    //'./skills', skill.id, 'preview'
+
+
+    this.router.navigate(['rule-system'], {relativeTo: this.route.parent});
+
 
     this.loading.page = false;
 
@@ -338,7 +355,7 @@ export class SectionRulesComponent implements OnInit {
     } else if (col === 4){
       if (action === Action.REMOVE) {
         this.ruleMode = 'remove rule';
-        this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
+        this.ruleToManage = this.initRuleToManage(ruleToActOn);
 
         ModalService.openModal('delete-rule');
 
@@ -353,7 +370,7 @@ export class SectionRulesComponent implements OnInit {
 
         this.refreshing = true;
         this.ruleMode = 'edit rule';
-        this.ruleToManage = initRuleToManage(this.course.id, this.section.id, ruleToActOn);
+        this.ruleToManage = this.initRuleToManage(ruleToActOn);
         this.ruleToManage.tags = this.ruleToManage.tags.map(tag => {return tag.id + '-' + tag.name})
         this.ruleEdit = _.cloneDeep(this.ruleToManage.name);
 
@@ -417,13 +434,13 @@ export class SectionRulesComponent implements OnInit {
     this.loading.action = true;
 
     let auxRule = _.cloneDeep(rule1);
-    let rule = initRuleToManage(this.course.id, this.section.id, rule1);
-    rule.position = rule2.position;
-    await editRule(this.api, this.course.id, rule, this.courseRules);
+    this.ruleToManage = this.initRuleToManage(rule1);
+    this.ruleToManage.position = rule2.position;
+    await this.editRule();
 
-    rule = initRuleToManage(this.course.id, this.section.id, rule2);
-    rule.position = auxRule.position;
-    await editRule(this.api, this.course.id, rule, this.courseRules);
+    this.ruleToManage = this.initRuleToManage(rule2);
+    this.ruleToManage.position = auxRule.position;
+    await this.editRule();
 
     this.courseRules.sort(function (a, b) { return a.position - b.position; });
 
@@ -521,9 +538,25 @@ export class SectionRulesComponent implements OnInit {
   resetRuleManage(){
     //this.ruleTags = [];
     this.ruleMode = null;
-    this.ruleToManage = initRuleToManage(this.course.id, this.section.id);
+    this.ruleToManage = this.initRuleToManage();
     if (this.r) this.r.resetForm();
   }
 
+  initRuleToManage(rule?: Rule): RuleManageData {
+    const ruleData: RuleManageData = {
+      course: rule?.course ?? this.course.id,
+      section: rule?.section ?? this.section.id,
+      name: rule?.name ?? null,
+      description: rule?.description ?? null,
+      whenClause: rule?.whenClause ?? null,
+      thenClause: rule?.thenClause ?? null,
+      position: rule?.position ?? null,
+      isActive: rule?.isActive ?? true,
+      tags: rule?.tags ?? []
+    };
+    if (rule) {
+      ruleData.id = rule.id;
+    }
+    return ruleData;
+  }
 }
-

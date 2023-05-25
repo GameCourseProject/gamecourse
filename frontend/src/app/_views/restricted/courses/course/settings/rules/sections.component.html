@@ -119,10 +119,7 @@
   *ngIf="tagMode"
   [course] = "course"
   [mode] = "tagMode"
-  [tags] = "tags"
-  (newTags)="this.tags = $event; tagMode = null;"
-  [rules] = "courseRules"
-  (newRules) = "assignRules($event)"
+  (tagMode)="tagMode = $event;"
 ></app-rule-tags-management>
 
 <!-- New / Edit section modal -->

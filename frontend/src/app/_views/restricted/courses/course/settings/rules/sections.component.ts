@@ -31,9 +31,9 @@ export class SectionsComponent implements OnInit {
   }
 
   course: Course;                                   // Specific course in which rule system is being manipulated
-  courseRules: Rule[];                              // Rules of course
+  //courseRules: Rule[];                              // Rules of course
 
-  tags: RuleTag[];                                  // Tags of course
+  //tags: RuleTag[];                                  // Tags of course
 
   originalSections: RuleSection[] = [];             // Sections of course
   sections: RuleSection[] = [];                     // Copy of original sections (used as auxiliary variable for setting priority)
@@ -80,8 +80,8 @@ export class SectionsComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getCourseSections(courseID);
-      await this.getCourseRules(courseID);
-      await this.getTags(courseID);
+      //await this.getCourseRules(courseID);
+      //await this.getTags(courseID);
 
       this.loading.page = false;
 
@@ -97,10 +97,10 @@ export class SectionsComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  async getCourseRules(courseID: number): Promise<void> {
+  /*async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
-  }
+  }*/
 
   async getCourseSections(courseID: number): Promise<void> {
     this.originalSections = (await this.api.getCourseSections(courseID).toPromise()).sort(function (a, b) {
@@ -108,24 +108,16 @@ export class SectionsComponent implements OnInit {
     this.filteredSections = this.originalSections;
     this.sectionsToShow = this.originalSections;
 
-    // initialize information for tables
-    const auxSection = initSectionToManage(this.course.id);
     for (let i = 0; i <  this.originalSections.length; i++){
-      this.originalSections[i].headers = auxSection.headers;
-      this.originalSections[i].data = auxSection.data;
-      this.originalSections[i].options = auxSection.options;
-      this.originalSections[i].loadingTable = auxSection.loadingTable;
-      this.originalSections[i].showTable = auxSection.showTable;
-
       // Get number of rules per section
       this.nrRules[this.originalSections[i].id] = (await this.api.getRulesOfSection(this.course.id, this.originalSections[i].id).toPromise()).length;
     }
   }
 
-  async getTags(courseID: number): Promise<void> {
+  /*async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
 
-  }
+  }*/
 
   /*** --------------------------------------------- ***/
   /*** -------------- Search & Filter -------------- ***/
@@ -262,7 +254,7 @@ export class SectionsComponent implements OnInit {
   }
 
   async closeSectionManagement(event: Rule[]) {
-    this.courseRules = event;
+    //this.courseRules = event;
 
     this.sectionToManage = null;
     this.sectionMode = null;
@@ -272,7 +264,7 @@ export class SectionsComponent implements OnInit {
   /*** -------------------- Tags ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async assignRules(event: Rule[]) {
+  /*async assignRules(event: Rule[]) {
     for (let i = 0; i < event.length; i++) {
       this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
       this.ruleToManage.tags = (event[i].tags).map(tag => {
@@ -280,7 +272,7 @@ export class SectionsComponent implements OnInit {
       });
       await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
     }
-  }
+  }*/
 
   /*
   async createTag(): Promise<void> {
@@ -478,34 +470,6 @@ export function initTagToManage(courseId: number, tag?: RuleTag): TagManageData 
   };
   if (tag) { tagData.id = tag.id; }
   return tagData;
-}
-
-export function initRuleToManage(courseId: number, sectionId: number, rule?: Rule): RuleManageData {
-  const ruleData: RuleManageData = {
-    course: rule?.course ?? courseId,
-    section: rule?.section ?? sectionId,
-    name: rule?.name ?? null,
-    description: rule?.description ?? null,
-    whenClause: rule?.whenClause ?? null,
-    thenClause: rule?.thenClause ?? null,
-    position: rule?.position ?? null,
-    isActive: rule?.isActive ?? true,
-    tags: rule?.tags ?? []
-  };
-  if (rule) {
-    ruleData.id = rule.id;
-  }
-  return ruleData;
-}
-
-export async function editRule(api: ApiHttpService, courseId: number, ruleToManage: RuleManageData, courseRules: Rule[]): Promise<void> {
-
-  const ruleEdited = await api.editRule(clearEmptyValues(ruleToManage)).toPromise();
-  ruleEdited.tags = await api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
-
-  const index = courseRules.findIndex(rule => rule.id === ruleEdited.id);
-  courseRules.splice(index, 1, ruleEdited);
-
 }
 
 export async function buildTable(api: ApiHttpService, themeService: ThemingService ,courseId: number, section: RuleSection): Promise<void> {
