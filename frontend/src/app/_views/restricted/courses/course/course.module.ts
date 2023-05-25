@@ -28,6 +28,7 @@ import { DataSourceStatusComponent } from "./settings/modules/config/data-source
 import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-participation-page/submit-participation-page.component';
 import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page.component';
 import {DragDropModule} from "@angular/cdk/drag-drop";
+import {RulesComponent} from "./settings/rules/section-rules/rules/rules.component";
 
 
 @NgModule({
@@ -39,6 +40,7 @@ import {DragDropModule} from "@angular/cdk/drag-drop";
     ModulesComponent,
     SectionsComponent,
     SectionRulesComponent,
+    RulesComponent,
     RuleTagsManagementComponent,
     ViewsComponent,
     ViewsEditorComponent,

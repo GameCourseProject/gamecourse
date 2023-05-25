@@ -24,13 +24,13 @@
 
     <!-- Section Table-->
     <app-table
-      *ngIf="section.showTable"
+      *ngIf="table.showTable"
       [id] = "'rules-' + section.id"
       [classList]="'mt-5'"
-      [headers] = "section.headers"
-      [data] = "section.data"
-      [options] = "section.options"
-      [loading] = "section.loadingTable"
+      [headers] = "table.headers"
+      [data] = "table.data"
+      [options] = "table.options"
+      [loading] = "loading.table"
       (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
       (valueChanged)="doActionOnTable('value changed rule', $event.row, $event.col)">
     </app-table>
@@ -94,52 +94,53 @@
                                 [setData]="setTags">
               </app-input-select>
               <span class="text-xs pl-1">Tags' colors will only appear in table</span>
+              <!--
+                            <div class="flex flex-wrap">
+                              <div class="w-1/2 pr-1">
+                                <app-input-code
+                                  [id]="'rule-when'"
+                                  [classList]="'mt-4'"
+                                  [title]="'When'"
+                                  [customFunctions]="functions"
+                                  [placeholder]="'Rule \'When\' clause'"
+                                  [value]="ruleToManage.whenClause"
+                                  [helperText]="'Preconditions that will trigger the rule'"
+                                  [helperPosition]="'right'"
+                                  [mode]="'python'"
+                                  [showTabs]="false"
+                                  (valueChange)="ruleToManage.whenClause = $event"
+                                ></app-input-code>
+                              </div>
+                              <div class="w-1/2 pl-1">
+                                <app-input-code
+                                  [id]="'rule-then'"
+                                  [classList]="'mt-4'"
+                                  [title]="'Then'"
+                                  [customFunctions]="functions"
+                                  [placeholder]="'Rule \'Then\' clause'"
+                                  [value]="ruleToManage.thenClause"
+                                  [helperText]="'Code that will be ran once the rule preconditions have met'"
+                                  [helperPosition]="'right'"
+                                  [mode]="'python'"
+                                  [showTabs]="false"
+                                  (valueChange)="ruleToManage.thenClause = $event"
+                                ></app-input-code>
+                              </div>
+                            </div>
 
-              <div class="flex flex-wrap">
-                <div class="w-1/2 pr-1">
-                  <app-input-code
-                    [id]="'rule-when'"
-                    [classList]="'mt-4'"
-                    [title]="'When'"
-                    [customFunctions]="functions"
-                    [placeholder]="'Rule \'When\' clause'"
-                    [value]="ruleToManage.whenClause"
-                    [helperText]="'Preconditions that will trigger the rule'"
-                    [helperPosition]="'right'"
-                    [mode]="'python'"
-                    [showTabs]="false"
-                    (valueChange)="ruleToManage.whenClause = $event"
-                  ></app-input-code>
-                </div>
-                <div class="w-1/2 pl-1">
-                  <app-input-code
-                    [id]="'rule-then'"
-                    [classList]="'mt-4'"
-                    [title]="'Then'"
-                    [customFunctions]="functions"
-                    [placeholder]="'Rule \'Then\' clause'"
-                    [value]="ruleToManage.thenClause"
-                    [helperText]="'Code that will be ran once the rule preconditions have met'"
-                    [helperPosition]="'right'"
-                    [mode]="'python'"
-                    [showTabs]="false"
-                    (valueChange)="ruleToManage.thenClause = $event"
-                  ></app-input-code>
-                </div>
-              </div>
-
-              <app-input-code
-                  [id]="'rule-tools'"
-                  [classList]="'mt-4'"
-                  [title]="'Additional Tools'"
-                  [value]="parsedMetadata"
-                  [placeholder]="'Autogame global variables:'"
-                  [helperText]="'Extra tools to help with the rule edition'"
-                  [helperPosition]="'right'"
-                  [tabNames]="['Metadata', 'Output']"
-                  (valueChange)="changeMetadata($event)"
-                  (output)="previewRule($event)"
-              ></app-input-code>
+                             FIXME: Only commented for NOW
+                            <app-input-code
+                                [id]="'rule-tools'"
+                                [classList]="'mt-4'"
+                                [title]="'Additional Tools'"
+                                [value]="parsedMetadata"
+                                [placeholder]="'Autogame global variables:'"
+                                [helperText]="'Extra tools to help with the rule edition'"
+                                [helperPosition]="'right'"
+                                [tabNames]="['Metadata', 'Output']"
+                                (valueChange)="changeMetadata($event)"
+                                (output)="previewRule($event)"
+                            ></app-input-code>-->
 
               <!-- Alert for metadata changes -->
               <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-4">
@@ -206,7 +207,7 @@
 
 
     <!-- Spinner -->
-    <div *ngIf="!section.showTable || refreshing" class="flex justify-center items-center">
+    <div *ngIf="!table.showTable || refreshing" class="flex justify-center items-center">
       <app-spinner></app-spinner>
     </div>
 

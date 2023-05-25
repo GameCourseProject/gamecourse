@@ -8,12 +8,9 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {Action} from "../../../../../../../_domain/modules/config/Action";
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Course} from "../../../../../../../_domain/courses/course";
-import {buildTable, initSectionToManage, RuleManageData, SectionManageData} from "../sections.component";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {RuleTag} from "../../../../../../../_domain/rules/RuleTag";
-
-export {SectionManageData} from "../sections.component";
 
 import * as _ from "lodash";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
@@ -34,12 +31,10 @@ export class SectionRulesComponent implements OnInit {
   //@Input() metadata: string;
 
   course: Course;
-  courseRules: Rule[]; // FIXME -- not sure if needed
+  //courseRules: Rule[]; // FIXME -- not sure if needed
   sectionRules: Rule[];
   section: RuleSection;
-  tags: RuleTag[];
-  metadata: {[variable: string]: number}[];
-  parsedMetadata: string;
+  //tags: RuleTag[];
 
 
   // Available modes regarding section management
@@ -49,7 +44,8 @@ export class SectionRulesComponent implements OnInit {
 
   loading = {
     page: true,
-    action: false
+    action: false,
+    table: false
   };
   refreshing: boolean;
   showAlert: boolean = false;
@@ -61,10 +57,6 @@ export class SectionRulesComponent implements OnInit {
   //ruleTags: string[];                                             // Tags from a specific rule
   row: number;                                                      // Row identifying rule in table that its being manipulated
 
-  // Input-select for assigning rules to tags
-  previousSelected: string[];
-  setTags: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
-  nameTags : {value: string, text: string}[];                       // Tags with names formatted for the select-input
 
   @ViewChild('r', {static: false}) r: NgForm;                       // rule form
 
@@ -73,6 +65,32 @@ export class SectionRulesComponent implements OnInit {
   @ViewChild('fImport', { static: false }) fImport: NgForm;
 
   functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
+
+
+  // TABLE
+  table: {
+    headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
+    data: {type: TableDataType, content: any}[][],
+    options: any,
+    showTable: boolean;
+  } = {
+    headers: [
+      {label: 'Execution Order', align: 'left'},
+      {label: 'Name', align: 'left'},
+      {label: 'Tags', align: 'middle'},
+      {label: 'Active', align: 'middle'},
+      {label: 'Actions'}],
+    data: null,
+    options: {
+      order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+      columnDefs: [
+        { type: 'natural', targets: [0,1] },
+        { searchable: false, targets: [2,3] },
+        { orderable: false, targets: [2,3] }
+      ]
+    },
+    showTable: false
+  }
 
   constructor(
     private api: ApiHttpService,
@@ -93,9 +111,8 @@ export class SectionRulesComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
-      await this.getCourseRules(courseID);
-      await this.getTags(courseID);
-      await this.getMetadata();
+      //await this.getCourseRules(courseID);
+      //await this.getTags(courseID);
       await this.getRuleFunctions(courseID);
 
       this.route.params.subscribe(async childParams => {
@@ -112,21 +129,14 @@ export class SectionRulesComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  async getCourseRules(courseID: number): Promise<void> {
+  /*async getCourseRules(courseID: number): Promise<void> {
     this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
       return a.position - b.position; });
-  }
+  }*/
 
-  async getTags(courseID: number): Promise<void> {
+  /*async getTags(courseID: number): Promise<void> {
     this.tags = await this.api.getTags(courseID).toPromise();
-
-    // Get names in another variable for input-select
-    let nameTags = [];
-    for (let i = 0; i < this.tags.length ; i++){
-      nameTags.push({value: this.tags[i].id + '-' + this.tags[i].name, text: this.tags[i].name});
-    }
-    this.nameTags = _.cloneDeep(nameTags);
-  }
+  }*/
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
@@ -136,46 +146,29 @@ export class SectionRulesComponent implements OnInit {
     this.section = await this.api.getSectionById(courseID, sectionID).toPromise();
 
     // Prepare information for table:
-    const auxSection = initSectionToManage(this.course.id);
+    /*const auxSection = initSectionToManage(this.course.id);
     this.section.headers = auxSection.headers;
     this.section.data = auxSection.data;
     this.section.options = auxSection.options;
     this.section.loadingTable = auxSection.loadingTable;
-    this.section.showTable = auxSection.showTable;
+    this.section.showTable = auxSection.showTable;*/
   }
 
   async getSectionRules(sectionID: number){
-    this.sectionRules = await this.api.getRulesOfSection(this.course.id, sectionID).toPromise();
-  }
-
-  async getMetadata() {
-    this.metadata = await this.api.getMetadata(this.course.id).toPromise();
-
-    this.parsedMetadata = "";
-    if (Object.keys(this.metadata).length > 0){
-      this.parsedMetadata =
-        "# This is a quick reference for global variables in AutoGame's rule edition. How to use?\n" +
-        "# e.g. get total number of Alameda lectures\n" +
-        "# nrLectures = METADATA[\"all_lectures_alameda\"] + METADATA[\"invited_alameda\"]\n\n";
-
-      for (const data of Object.keys(this.metadata)){
-        this.parsedMetadata += (data + " : " + this.metadata[data] + "\n");
-      }
-    }
-
+    this.sectionRules = (await this.api.getRulesOfSection(this.course.id, sectionID).toPromise()).sort(function (a, b) {
+      return a.position - b.position; });
   }
 
   async buildTable(): Promise<void> {
-    this.section.loadingTable = true;
+    this.loading.table = true;
 
-    this.section.showTable = false;
-    setTimeout(() => this.section.showTable = true, 0);
+    this.table.showTable = false;
+    setTimeout(() => this.table.showTable = true, 0);
 
-    const table: { type: TableDataType; content: any }[][] = [];
+    const data: { type: TableDataType; content: any }[][] = [];
 
-    console.log(this.sectionRules);
     this.sectionRules.forEach(rule => {
-      table.push([
+      data.push([
         {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},
         {type: TableDataType.TEXT, content: {text: rule.name}},
         {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
@@ -194,8 +187,8 @@ export class SectionRulesComponent implements OnInit {
       ]);
     });
 
-    this.section.data = _.cloneDeep(table);
-    this.section.loadingTable = false;
+    this.table.data = _.cloneDeep(data);
+    this.loading.table = false;
   }
 
 
@@ -242,7 +235,7 @@ export class SectionRulesComponent implements OnInit {
         await this.assignTags();
         (action === 'add rule') ? await this.createRule() : await this.editRule();
 
-        await buildTable(this.api, this.themeService, this.course.id, this.section);
+        await this.buildTable();
         //ModalService.closeModal('manage-rule');
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.resetRuleManage();
@@ -262,14 +255,14 @@ export class SectionRulesComponent implements OnInit {
     }
   }
 
-  async createRule(): Promise<Rule> {
+  async createRule() {
 
     const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
     newRule.tags = await this.api.getRuleTags(newRule.course, newRule.id).toPromise();
 
-    this.courseRules.push(newRule);
+    this.sectionRules.push(newRule);
+    // FIXME -- falta dar sort?
 
-    return newRule;
   }
 
   async editRule(): Promise<void> {
@@ -277,8 +270,8 @@ export class SectionRulesComponent implements OnInit {
     const ruleEdited = await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
     ruleEdited.tags = await this.api.getRuleTags(ruleEdited.course, ruleEdited.id).toPromise();
 
-    const index = this.courseRules.findIndex(rule => rule.id === ruleEdited.id);
-    this.courseRules.splice(index, 1, ruleEdited);
+    const index = this.sectionRules.findIndex(rule => rule.id === ruleEdited.id);
+    this.sectionRules.splice(index, 1, ruleEdited);
 
   }
 
@@ -289,8 +282,8 @@ export class SectionRulesComponent implements OnInit {
       const file = await ResourceManager.getText(this.importData.file);
       const nrRulesImported = await this.api.importRules(this.course.id, this.section.id, file, this.importData.replace).toPromise();
 
-      this.courseRules = await this.api.getCourseRules(this.course.id).toPromise();
-      await buildTable(this.api, this.themeService, this.course.id, this.section);
+      this.sectionRules = await this.api.getRulesOfSection(this.course.id, this.section.id).toPromise();
+      await this.buildTable();
 
       this.loading.action = false;
       ModalService.closeModal('import');
@@ -318,17 +311,19 @@ export class SectionRulesComponent implements OnInit {
   closeManagement(){
     this.loading.page = true;
 
+    if (this.interruptedMode) {
+      this.interruptedMode = null;
+      this.discardModal();
+    }
+
     //this.newCourseRules.emit(this.courseRules);
     // TODO -- add tags here later?
 
     //this.mode = null;
     // FIXME -- not sure this is needed?
     this.resetRuleManage();
-    //'./skills', skill.id, 'preview'
-
 
     this.router.navigate(['rule-system'], {relativeTo: this.route.parent});
-
 
     this.loading.page = false;
 
@@ -388,11 +383,11 @@ export class SectionRulesComponent implements OnInit {
         await this.duplicateRule(ruleToActOn);
 
       } else if (action === 'increase priority') {
-        const rule = this.courseRules[row - 1];
+        const rule = this.sectionRules[row - 1];
         await this.changePriority(ruleToActOn, rule);
 
       } else if (action === 'decrease priority') {
-        const rule = this.courseRules[row + 1];
+        const rule = this.sectionRules[row + 1];
         await this.changePriority(ruleToActOn, rule);
 
       }  else if (action === Action.EXPORT || action === Action.EXPORT + ' all rules') {
@@ -404,10 +399,11 @@ export class SectionRulesComponent implements OnInit {
   async deleteRule(): Promise<void> {
 
     await this.api.deleteRule(this.ruleToManage.section, this.ruleToManage.id).toPromise();
-    const index = this.courseRules.findIndex(el => el.id === this.ruleToManage.id);
-    this.courseRules.removeAtIndex(index);
+    const index = this.sectionRules.findIndex(el => el.id === this.ruleToManage.id);
+    this.sectionRules.removeAtIndex(index);
 
-    await buildTable(this.api, this.themeService, this.course.id, this.section);
+    await this.getSectionRules(this.section.id);
+    await this.buildTable();
   }
 
   async toggleActive(rule: Rule) {
@@ -423,8 +419,8 @@ export class SectionRulesComponent implements OnInit {
     this.loading.action = true;
 
     const newRule = await this.api.duplicateRule(rule.id).toPromise();
-    this.courseRules.unshift(newRule);
-    await buildTable(this.api, this.themeService, this.course.id, this.section);
+    this.sectionRules.unshift(newRule);
+    await this.buildTable();
 
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + newRule.name + '\' added');
@@ -436,15 +432,17 @@ export class SectionRulesComponent implements OnInit {
     let auxRule = _.cloneDeep(rule1);
     this.ruleToManage = this.initRuleToManage(rule1);
     this.ruleToManage.position = rule2.position;
+    this.ruleToManage.tags = this.ruleToManage.tags.map(tag => {return tag.id});
     await this.editRule();
 
     this.ruleToManage = this.initRuleToManage(rule2);
     this.ruleToManage.position = auxRule.position;
+    this.ruleToManage.tags = this.ruleToManage.tags.map(tag => {return tag.id});
     await this.editRule();
 
-    this.courseRules.sort(function (a, b) { return a.position - b.position; });
+    this.sectionRules.sort(function (a, b) { return a.position - b.position; });
 
-    await buildTable(this.api, this.themeService, this.course.id, this.section);
+    await this.buildTable();
 
     this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Rule priorities changed successfully');
@@ -465,24 +463,6 @@ export class SectionRulesComponent implements OnInit {
       }
       this.ruleToManage.tags = tags;
     }
-  }
-
-  updateTags(selectedTags: any[]): void {
-    if (selectedTags.length > this.previousSelected.length){
-      const tagToAdd = selectedTags.filter(tagName => !this.previousSelected.includes(tagName))[0];
-
-      if (!selectedTags.includes(tagToAdd)) selectedTags.push(tagToAdd);
-
-    } else {
-      const tagToDelete = this.previousSelected.filter(tagName => !selectedTags.includes(tagName))[0];
-
-      if (selectedTags.includes(tagToDelete)) selectedTags.splice(selectedTags.indexOf(tagToDelete), 1);
-    }
-
-    this.nameTags.map(option => {
-      option['selected'] = selectedTags.includes(option.value);
-      return option;
-    });
   }
 
   changeMetadata(newMetadata: string){
@@ -559,4 +539,17 @@ export class SectionRulesComponent implements OnInit {
     }
     return ruleData;
   }
+}
+
+export interface RuleManageData {
+  id?: number,
+  course?: number,
+  section?: number,
+  name?: string,
+  description?: string,
+  whenClause?: string,
+  thenClause?: string,
+  position?: number,
+  isActive?: boolean,
+  tags?: any[]
 }

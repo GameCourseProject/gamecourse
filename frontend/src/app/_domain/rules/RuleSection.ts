@@ -10,11 +10,11 @@ export class RuleSection{
   private _module: string;
 
   // for tables
-  private _headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
+  /*private _headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
   private _data: {type: TableDataType, content: any}[][];
   private _options: any;
   private _loadingTable: boolean;
-  private _showTable: boolean;
+  private _showTable: boolean;*/
 
   constructor(id: number, course: number, name: string, position: number, module: string) {
     this._id = id;
@@ -64,7 +64,7 @@ export class RuleSection{
     this._module = value;
   }
 
-  get headers(): {label: string, align?: 'left' | 'middle' | 'right'}[]{
+  /*get headers(): {label: string, align?: 'left' | 'middle' | 'right'}[]{
     return this._headers;
   }
 
@@ -102,7 +102,7 @@ export class RuleSection{
 
   set showTable(value: boolean) {
     this._showTable = value;
-  }
+  }*/
 
   static fromDatabase(obj: RuleSectionDatabase): RuleSection {
     return new RuleSection(

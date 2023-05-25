@@ -10,11 +10,9 @@ import {AlertService, AlertType} from "../../../../../../../_services/alert.serv
 import {ModalService} from "../../../../../../../_services/modal.service";
 import {Rule} from "../../../../../../../_domain/rules/rule";
 
-import {initTagToManage, TagManageData} from "../sections.component";
 import * as _ from "lodash";
 import {Subject} from "rxjs";
 
-export {TagManageData} from "../sections.component";
 
 @Component({
   selector: 'app-rule-tags-management',
@@ -84,7 +82,7 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async prepareModal(action: string, tag?: RuleTag) {
-    this.tagToManage = initTagToManage(this.course.id, tag);
+    this.tagToManage = this.initTagToManage(tag);
     this.previousSelected = tag ? this.tagToManage.ruleNames : [];
 
 
@@ -236,9 +234,28 @@ export class RuleTagsManagementComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   resetTagManage() {
-    this.tagToManage = initTagToManage(this.course.id);
+    this.tagToManage = this.initTagToManage();
     this.t.resetForm();
   }
+
+  initTagToManage(tag?: RuleTag): TagManageData {
+    const tagData: TagManageData = {
+      course: tag?.course ?? this.course.id,
+      name : tag?.name ?? null,
+      color : tag?.color ?? "#5E72E4",
+      ruleNames: tag?.rules?.map(rule => rule.name) ?? []
+    };
+    if (tag) { tagData.id = tag.id; }
+    return tagData;
+  }
+}
+
+export interface TagManageData {
+  id?: number,
+  course?: number,
+  name?: string,
+  color?: string,
+  ruleNames?: string[]
 }
 
 

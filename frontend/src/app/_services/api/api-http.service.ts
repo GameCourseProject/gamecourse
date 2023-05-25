@@ -60,8 +60,9 @@ import {
   DataSourceStatus
 } from "../../_views/restricted/courses/course/settings/modules/config/data-source-status/data-source-status.component";
 import {Rule} from "../../_domain/rules/rule";
-import { RuleManageData, SectionManageData } from "../../_views/restricted/courses/course/settings/rules/sections.component";
-import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/sections.component"
+import { RuleManageData } from "../../_views/restricted/courses/course/settings/rules/section-rules/section-rules.component";
+import { SectionManageData } from "../../_views/restricted/courses/course/settings/rules/sections.component";
+import { TagManageData } from "../../_views/restricted/courses/course/settings/rules/tags/rule-tags-management.component"
 import { RuleSection } from "../../_domain/rules/RuleSection";
 import { RuleTag } from "../../_domain/rules/RuleTag";
 import { Notification } from "../../_domain/notifications/notification";
@@ -1459,6 +1460,22 @@ export class ApiHttpService {
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res:any) => res));
   }
+
+  public getRuleById(courseID: number, ruleID: number): Observable<Rule>{
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getRuleById');
+      qs.push('courseId', courseID);
+      qs.push('ruleId', ruleID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => Rule.fromDatabase(res['data'])));
+
+  }
+
 
   public duplicateRule(ruleID: number): Observable<Rule>{
     const data = { ruleId: ruleID };

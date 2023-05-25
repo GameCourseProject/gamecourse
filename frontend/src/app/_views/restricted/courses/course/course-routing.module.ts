@@ -16,8 +16,9 @@ import {
   SubmitParticipationPageComponent
 } from "./pages/modules/qr/submit-participation-page/submit-participation-page.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
-import {SectionsComponent} from "./settings/rules/sections.component";
-import {SectionRulesComponent} from "./settings/rules/section-rules/section-rules.component";
+import { SectionsComponent } from "./settings/rules/sections.component";
+import { SectionRulesComponent } from "./settings/rules/section-rules/section-rules.component";
+import { RulesComponent } from "./settings/rules/section-rules/rules/rules.component";
 
 const routes: Routes = [
   {
@@ -52,6 +53,10 @@ const routes: Routes = [
       {
         path: 'rule-system/sections/:id',
         component: SectionRulesComponent
+      },
+      {
+        path: 'rule-system/sections/:id/rules/:id',
+        component: RulesComponent
       },
       {
         path: 'modules',

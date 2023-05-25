@@ -48,19 +48,18 @@ export class SectionsComponent implements OnInit {
       {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
 
   tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';    // available actions for tags
-  sectionMode: 'see section' | 'add section' | 'edit section' | 'remove section' | 'metadata';  // available actions for sections
+  sectionMode: 'add section' | 'edit section' | 'remove section' | 'metadata';  // available actions for sections
 
   arrangeSections: boolean = false;
 
   // MANAGE DATA
   section: RuleSection;
   sectionToManage: SectionManageData;
-  ruleToManage: RuleManageData;
+  //ruleToManage: RuleManageData;
 
   // SEARCH & FILTER
   reduce = new Reduce();
   sectionsToShow: RuleSection[] = [];
-  //searchQuery: string;
 
   metadata: {[variable: string]: number}[];
   parsedMetadata: string;
@@ -148,7 +147,7 @@ export class SectionsComponent implements OnInit {
        //this.sections = _.cloneDeep(this.originalSections);
        this.sectionMode = action;
 
-       if (action !== 'metadata') this.sectionToManage = initSectionToManage(this.course.id, section);
+       if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
        else await this.parseMetadata();
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
@@ -242,7 +241,7 @@ export class SectionsComponent implements OnInit {
 
     for (let i = 0; i < this.originalSections.length; i++){
       this.originalSections[i].position = i;
-      let section = initSectionToManage(this.course.id, this.originalSections[i]);
+      let section = this.initSectionToManage(this.originalSections[i]);
       await this.api.editSection(section).toPromise();
     }
 
@@ -396,83 +395,52 @@ export class SectionsComponent implements OnInit {
     if (this.s) this.s.resetForm();
   }
 
+
+  initSectionToManage(section?: RuleSection): SectionManageData{
+    const sectionData: SectionManageData = {
+      course: section?.course ?? this.course.id,
+      name: section?.name ?? null,
+      position: section?.position ?? null,
+      /*headers: [
+        {label: 'Execution Order', align: 'left'},
+        {label: 'Name', align: 'left'},
+        {label: 'Tags', align: 'middle'},
+        {label: 'Active', align: 'middle'},
+        {label: 'Actions'}],
+      data: section?.data ?? [],
+      options: {
+        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
+        columnDefs: [
+          { type: 'natural', targets: [0,1] },
+          { searchable: false, targets: [2,3] },
+          { orderable: false, targets: [2,3] }
+        ]
+      },
+      loadingTable: false,
+      showTable: false*/
+    };
+    if (section) sectionData.id = section.id;
+    return sectionData;
+  }
+
 }
 
 // DATA MANAGEMENT GLOBAL INTERFACES
-export interface TagManageData {
-  id?: number,
-  course?: number,
-  name?: string,
-  color?: string,
-  ruleNames?: string[]
-}
 
 export interface SectionManageData {
   id?: number,
   course?: number,
   name?: string,
   position?: number,
-  headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
-  data: {type: TableDataType, content: any}[][],
-  options?: any,
-  loadingTable: boolean,
-  showTable: boolean
+  //headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
+  //data: {type: TableDataType, content: any}[][],
+  //options?: any,
+  //loadingTable: boolean,
+  //showTable: boolean
 }
 
-export interface RuleManageData {
-  id?: number,
-  course?: number,
-  section?: number,
-  name?: string,
-  description?: string,
-  whenClause?: string,
-  thenClause?: string,
-  position?: number,
-  isActive?: boolean,
-  tags?: any[]
-}
 
-// GLOBAL FUNCTIONS
-
-export function initSectionToManage(courseId: number, section?: RuleSection): SectionManageData{
-  const sectionData: SectionManageData = {
-    course: section?.course ?? courseId,
-    name: section?.name ?? null,
-    position: section?.position ?? null,
-    headers: [
-      {label: 'Execution Order', align: 'left'},
-      {label: 'Name', align: 'left'},
-      {label: 'Tags', align: 'middle'},
-      {label: 'Active', align: 'middle'},
-      {label: 'Actions'}],
-    data: section?.data ?? [],
-    options: {
-      order: [ 0, 'asc' ],        // default order -> column 0 ascendant
-      columnDefs: [
-        { type: 'natural', targets: [0,1] },
-        { searchable: false, targets: [2,3] },
-        { orderable: false, targets: [2,3] }
-      ]
-    },
-    loadingTable: false,
-    showTable: false
-  };
-  if (section) sectionData.id = section.id;
-  return sectionData;
-}
-
-export function initTagToManage(courseId: number, tag?: RuleTag): TagManageData {
-  const tagData: TagManageData = {
-    course: tag?.course ?? courseId,
-    name : tag?.name ?? null,
-    color : tag?.color ?? "#5E72E4",
-    ruleNames: tag?.rules?.map(rule => rule.name) ?? []
-  };
-  if (tag) { tagData.id = tag.id; }
-  return tagData;
-}
-
-export async function buildTable(api: ApiHttpService, themeService: ThemingService ,courseId: number, section: RuleSection): Promise<void> {
+/*export async function buildTable(api: ApiHttpService, themeService: ThemingService ,courseId: number, section: RuleSection): Promise<void> {
   section.loadingTable = true;
 
   section.showTable = false;
@@ -504,4 +472,4 @@ export async function buildTable(api: ApiHttpService, themeService: ThemingServi
   section.data = _.cloneDeep(table);
   section.loadingTable = false;
 }
-
+*/

@@ -225,6 +225,11 @@ class RuleSystemController
         $description = API::getValue("description");
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
+
+        // DELETE LATER
+        $whenClause = "when";
+        $thenClause = "then";
+
         $position = API::getValue("position", "int"); // FIXME -- not sure
         $isActive = API::getValue("isActive", "bool");
         $tagIds = API::getValue("tags", "array");
@@ -298,6 +303,24 @@ class RuleSystemController
 
         $section = Section::getSectionById($sectionId);
         $section->removeRule($ruleId);
+    }
+
+    /**
+     * Gets rule with a given id
+     * @throws Exception
+     */
+    public function getRuleById(){
+        API::requireValues('courseId', 'ruleId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $ruleId = API::getValue("ruleId", "int");
+        $rule = Section::getSectionById($ruleId);
+
+        API::response($rule->getData());
+
     }
 
     /**
