@@ -1,10 +1,209 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+<div *ngIf="!loading.page" class="w-full relative">
 
-</body>
-</html>
+  <!-- Header -->
+  <app-header [classList]="'text-md'"
+              [title]="'Rule Editor'"
+              [icon]="'tabler-clipboard-list'"
+              [loading]="loading.action">
+  </app-header>
+
+  <ng-container>
+    <div class="flex flex-wrap items-center">
+      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="doAction('prepare closing')">
+        <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
+      </button>
+      <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'{{section.name}}' section</i></span>
+    </div>
+
+    <div class="divider -mt-2">
+      <div class="flex justify-center mx-2">
+        <ng-icon name="tabler-clipboard-list" size="1.5rem" class="text-primary mr-2"></ng-icon>
+        <span class="text-base-content text-xl font-semibold">{{rule ? 'Rule \'rule.name\'' : 'Create new rule'}}</span>
+      </div>
+    </div>
+
+    <div class="card w-full bg-base-100 shadow-xl mt-10">
+      <div class="card-body">
+        <div class="card-title flex flex-wrap">
+          <span class="w-full">{{rule ? 'Edit rule: \'' + rule.name + '\'' : 'Create new rule'}}</span>
+          <div class="border-b border-gray-200 w-full -mt-3">
+            <span class="text-sm">Section: <strong>{{section.name}}</strong></span>
+          </div>
+        </div>
+        <form #r="ngForm">
+          <div class="w-full">
+            <!-- Name -->
+            <app-input-text
+              [id] = "'rule-name'"
+              [form] = "r"
+              [classList]="'mt-4'"
+              [(value)] = "ruleToManage.name"
+              [placeholder]="'e.g. Amphitheatre Lover, Lab Master ...'"
+              [topLabel]="'Rule Name'"
+              [pattern]="'(?!^\\d+$)^.+$'"
+              [patternErrorMessage]="'Rule name can\'t be composed of only numbers'"
+              [helperText]="'Name of the rule'"
+              [helperPosition]="'right'"
+              [required]="true"
+              [maxLength]="60"
+              [maxLengthErrorMessage]="'Rule name is too long: maximum of 60 characters'">
+            </app-input-text>
+
+            <app-input-textarea
+              [id] = "'rule-description'"
+              [classList]="'mt-4'"
+              [form] = "r"
+              [(value)] = "ruleToManage.description"
+              [placeholder]="'Write here a small description for this rule ...'"
+              [helperText]="'Small description of what the rule does'"
+              [helperPosition]="'right'"
+              [label] = "'Rule Description'"
+              [required]="false"
+              [maxLength]="65535"
+              [maxLengthErrorMessage]="'Rule description is too long: maximum of 65 535 characters'">
+            </app-input-textarea>
+
+            <app-input-select *ngIf="nameTags"
+                              [id]="'tag-rules'"
+                              [form]="r"
+                              [classList]="'mt-4'"
+                              [(value)]="ruleToManage.tags"
+                              [options]="nameTags"
+                              [multiple] = "true"
+                              [closeOnSelect]="false"
+                              [placeholder]="'Select tags to assign this rule to'"
+                              [helperText]="'Tags that will be assigned this rule'"
+                              [helperPosition]="'right'"
+                              [topLabel]="'Rule tags'"
+                              (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
+                              [setData]="setTags">
+            </app-input-select>
+            <span class="text-xs pl-1">Tags' colors will only appear in table</span>
+
+            <div class="flex flex-wrap">
+              <div class="w-1/2 pr-1">
+                <app-input-code
+                  [id]="'rule-when'"
+                  [classList]="'mt-4'"
+                  [title]="'When'"
+                  [helperText]="'Preconditions that will trigger the rule'"
+                  [helperPosition]="'right'"
+                  [showTabs]="false"
+                  [tabs]="whenTabs"
+                  (valueChange)="ruleToManage.whenClause = $event"
+                ></app-input-code>
+              </div>
+              <div class="w-1/2 pl-1">
+                <app-input-code
+                  [id]="'rule-then'"
+                  [classList]="'mt-4'"
+                  [title]="'Then'"
+                  [helperText]="'Code that will be ran once the rule preconditions have met'"
+                  [helperPosition]="'right'"
+                  [showTabs]="false"
+                  [tabs]="thenTabs"
+                  (valueChange)="ruleToManage.thenClause = $event"
+                ></app-input-code>
+              </div>
+            </div>
+
+            <app-input-code
+              [id]="'rule-tools'"
+              [classList]="'mt-4'"
+              [title]="'Additional Tools'"
+              [helperText]="'Extra tools to help with the rule edition'"
+              [helperPosition]="'right'"
+              [tabs]="additionalToolsTabs"
+              (valueChange)="changeMetadata($event)"
+              (output)="previewRule($event)"
+            ></app-input-code>
+
+            <!-- Alert for metadata changes -->
+            <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-4">
+              <div class="alert alert-warning shadow-md">
+                <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
+                <div><span>Keep in mind that <strong>metadata is global</strong>. Changing it will <strong>change metadata for the entire course</strong>,
+                    which includes <strong>others rules</strong> as well.</span></div>
+              </div>
+            </div>
+
+            <div class="w-full flex flex-wrap items-end" *ngIf="!loading.refreshing && nameTags">
+              <div class="w-4/5 pr-1">
+                <app-input-select
+                  [id]="'section-' + section.id + 'rule-tags'"
+                  [form]="r"
+                  [classList]="'mt-4'"
+                  [(value)]="ruleToManage.tags"
+                  [options]="nameTags"
+                  [multiple] = "true"
+                  [closeOnSelect]="false"
+                  [placeholder]="'Select tags to assign this rule to'"
+                  [topLabel]="'Rule tags'"
+                  (valueChange)="ruleToManage.tags = $event ?? []; updateTags(ruleToManage.tags)"
+                  [setData]="setTags">
+                </app-input-select>
+              </div>
+              <!--<div class="w-1/5 pl-1">
+                <button class="w-full items-center btn btn-secondary rounded rounded-lg gap-2" (click)="prepareModal('add tag')">
+                  <ng-icon name="feather-plus-circle" size="1.2rem"></ng-icon> Add new tag
+                </button>
+              </div>-->
+
+              <div *ngIf="loading.refreshing" class="flex justify-center items-center">
+                <app-spinner></app-spinner>
+              </div>
+
+            </div>
+          </div>
+        </form>
+
+        <!-- Actions -->
+        <div class="card-actions justify-end mt-4">
+
+          <button type="submit" class="btn btn-primary" (click)="doAction('prepare closing')">
+            <!-- Spinner -->
+            <ng-container *ngIf="loading.action">
+              <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+            Discard changes
+          </button>
+
+          <button type="submit" class="btn btn-primary" (click)="r.onSubmit(null); rule ? doAction('edit rule') : doAction('add rule')">
+            <!-- Spinner -->
+            <ng-container *ngIf="loading.action">
+              <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+            Save and Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Loader -->
+    <app-loader [loading]="loading.page"></app-loader>
+  </ng-container>
+
+</div>
+
+
+
+<!-- Discard changed Modal -->
+<app-modal
+  [id]="'exit-management'"
+  [templateRef]="EXIT_MANAGEMENT"
+  [size]="'md'"
+  [header]="'Discard changes?'"
+  [submitBtnText]="'Discard'"
+  [closeBtnText]="'Cancel'"
+  [actionInProgress] = "loading.action"
+  (submitBtnClicked)="doAction('exit page')"
+  [xButton]="false"
+  [static]="true">
+</app-modal>
+<ng-template #EXIT_MANAGEMENT>
+  <div class="w-full flex flex-wrap">
+    <span class="w-full">There are currently <strong>unsaved changes</strong>. This action <strong>cannot be undone</strong>.</span>
+    <span class="w-full">Do you want to proceed?</span>
+  </div>
+</ng-template>

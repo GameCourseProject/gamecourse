@@ -226,7 +226,7 @@ class RuleSystemController
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
 
-        // DELETE LATER
+        // FIXME DELETE LATER
         $whenClause = "when";
         $thenClause = "then";
 
@@ -317,9 +317,11 @@ class RuleSystemController
 
         API::requireCourseAdminPermission($course);
         $ruleId = API::getValue("ruleId", "int");
-        $rule = Section::getSectionById($ruleId);
+        $rule = Rule::getRuleById($ruleId);
 
-        API::response($rule->getData());
+        $ruleInfo = $rule->getData();
+        $ruleInfo["tags"] = $rule->getTags();
+        API::response($ruleInfo);
 
     }
 

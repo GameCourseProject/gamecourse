@@ -51,11 +51,15 @@ const routes: Routes = [
         component: SectionsComponent
       },
       {
-        path: 'rule-system/sections/:id',
+        path: 'rule-system/sections/:sectionId',
         component: SectionRulesComponent
       },
       {
-        path: 'rule-system/sections/:id/rules/:id',
+        path: 'rule-system/sections/:sectionId/rules/:ruleId',
+        component: RulesComponent
+      },
+      {
+        path: 'rule-system/sections/:sectionId/new-rule',
         component: RulesComponent
       },
       {

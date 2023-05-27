@@ -8,7 +8,6 @@
 </div>
 
 <div class="w-full relative">
-
   <!-- Header -->
   <app-header [classList]="'text-md'"
     [title]="'Rule Editor'"
@@ -16,6 +15,7 @@
     [loading]="loading.action">
   </app-header>
 
+  <!-- Body -->
   <ng-container>
 
     <div class="flex flex-wrap justify-center">
@@ -101,17 +101,6 @@
 
   </ng-container>
 
-  <!-- Sections Management
-  <app-rule-sections-management
-    *ngIf="sectionMode"
-    [course] = "course"
-    [courseRules]="courseRules"
-    [section]="section"
-    [tags]="tags"
-    [metadata]="parsedMetadata"
-    (newCourseRules)="closeSectionManagement($event)">
-  </app-rule-sections-management>-->
-
 </div>
 
 <!-- Tags Management -->
@@ -152,7 +141,7 @@
   </form>
 </ng-template>
 
-<!-- Manage sections priorities -->
+<!-- Manage Autogame Metadata -->
 <app-modal *ngIf="sectionMode === 'metadata'"
            [id] = "'manage-metadata'"
            [templateRef]="MANAGE_SECTION_PRIORITY"
@@ -174,9 +163,8 @@
   <app-input-code *ngIf="parsedMetadata"
     [id]="'metadata'"
     [classList]="'mt-4'"
-    [value]="parsedMetadata"
-    [placeholder]="'Autogame global variables:'"
     [showTabs]="false"
+    [tabs]="metadataCodeInput"
     (valueChange)="parsedMetadata = $event"
   ></app-input-code>
 </ng-template>
@@ -185,7 +173,6 @@
 <app-simple-modal *ngIf="sectionMode === 'remove section' && sectionToManage"
                   [id]="'remove section'"
                   [title]="sectionMode?.capitalize() + ' \'' + (sectionToManage.name)?.capitalize() + '\'?'"
-
                   [text]="'Are you sure you want to remove section \'' + sectionToManage?.name +
                           '\' and its current rules? You won\'t be able to undo this action.'"
                   [submitBtnText]="'Remove'"

@@ -34,36 +34,32 @@ import {ThemingService} from "../../../../_services/theming/theming.service";
 })
 export class InputCodeComponent implements OnInit, AfterViewInit {
 
-  // Essentials
-  @Input() id: string;                                     // Unique id
-  @Input() mode: "python" | "javascript" = "python";       // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
-  @Input() value: string;                                  // Value on init
-  @Input() placeholder: string = "Write your code here!";  // Message to show by default
-
   // Extras
-  @Input() size?: 'md' | 'lg' = 'md';                   // Size of input code
-  @Input() nrLines?: number = 10;             // Number of lines already added to the editor. Default = 10 lines
-  @Input() title?: string;                    // Textarea title
+  // Essentials
+  @Input() title: string;                                     // Textarea title
+  @Input() id: string;                                        // Unique id
+  //@Input() mode: "python" | "javascript" = "python";        // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  //@Input() value: string;                                   // Value on init
+
+  //@Input() placeholder: string = "Write your code here!";     // Message to show by default
+  @Input() size?: 'md' | 'lg' = 'md';                         // Size of input code
+  //@Input() nrLines?: number = 10;             // Number of lines already added to the editor. Default = 10 lines
   @Input() classList?: string;                // Classes to add
   @Input() disabled?: boolean;                // Make it disabled
-  @Input() customKeywords?: string[] = [];    // Personalized keywords
+  //@Input() customKeywords?: string[] = [];    // Personalized keywords
 
-  @Input() showTabs?: boolean = true;         // Boolean to show/hide tabs with output above editor
-  @Input() readonly?: boolean = false;          // Make editor readonly
+  @Input() showTabs?: boolean = true;           // Boolean to show/hide tabs (this will only show content of first tab)
+  //@Input() readonly?: boolean = false;          // Make editor readonly
 
   // FIXME: Refactor this to be flexible and accept more than only 2 tabs
-  @Input() tabNames?: string[] = ['Code', 'Output']        // Names of the tabs that will be shown
+  //@Input() tabNames?: string[] = ['Code', 'Output']        // Names of the tabs that will be shown
 
-  @Input() newTabs?: { name: string, type: "code" | "console", show: boolean }[] =
-    [{ name: 'Code', type: "code" , show: true}, {name: 'Output', type: "console", show: false}];
+  @Input() tabs?: tabInfo[] = [
+    { name: 'Code', type: "code", show: true, mode: "python"},
+    {name: 'Output', type: "output", show: false}];
 
   // Personalized functions
-  @Input() customFunctions?: {
-    moduleId: string,
-    name: string,
-    keyword: string,
-    description: string,
-    args: {name: string, optional: boolean, type: any}[] }[] = [];
+  //@Input() customFunctions?: customFunctions[] = [];
 
   @Input() helperText?: string;                                               // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';              // Helper position
@@ -80,7 +76,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   options: Completion[] = [];                                   // Editor options for autocompletion
 
   // FIXME -- remove later
-  tabs: {[tabName: string]: boolean} = {};                      // Tabs with name as key and boolean to enable
+  //tabs: {[tabName: string]: boolean} = {};                      // Tabs with name as key and boolean to enable
 
   constructor(
     private themeService: ThemingService
@@ -91,14 +87,19 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** --------------------------------------------- ***/
 
   ngOnInit(): void {
-    this.setUpKeywords();
+    for (let i = 0; i < this.tabs.length; i++){
+      if (this.tabs[i].type === 'code'){
+        this.setUpKeywords(this.tabs[i])
+      }
+    }
+    //this.setUpKeywords();
     // if (this.showTabs) this.setUpTabs();
   }
 
   // Setups all keywords and functions for code
-  setUpKeywords() {
+  setUpKeywords(tab: tabInfo) {
 
-    const modeKeywords = getLanguageKeywords(this.mode);
+    const modeKeywords = getLanguageKeywords(tab.mode);
 
     // Gets keywords from the specific language
     function getLanguageKeywords(mode: string): string[] {
@@ -119,10 +120,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let options = modeKeywords.map(keyword => ({label: keyword, type: "keyword"}));
 
     // Add personalized keywords to the options array
-    options = options.concat(this.customKeywords.map(option => ({label: option, type: "keyword"})));
+    let customKeywords = tab.customKeywords ?? [];
+    options = options.concat(customKeywords.map(option => ({label: option, type: "keyword"})));
 
     // Add personalized functions to the options array
-    options = options.concat(this.customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.extractReturnType(option.description, false), info: option.args.map(arg => {
+    let customFunctions = tab.customFunctions ?? [];
+    options = options.concat(customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.extractReturnType(option.description, false), info: option.args.map(arg => {
         return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
       }) + ")\n" + this.extractReturnType(option.description, true)})));
 
@@ -142,27 +145,32 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   }
 
-  setUpTabs(){
+  /*setUpTabs(){
 
 
     for (let i = 0; i < this.tabNames.length; i++){
       this.tabs[this.tabNames[i]] = (i === 0);
     }
-  }
+  }*/
 
   /*** --------------------------------------------- ***/
   /*** --------------- AfterViewInit --------------- ***/
   /*** --------------------------------------------- ***/
 
   ngAfterViewInit(): void {
-    this.initCodeMirror();
+    for (let i = 0; i < this.tabs.length; i++){
+      if (this.tabs[i].type === 'code') {
+        this.initCodeMirror(i, this.tabs[i]);
+      }
+    }
   }
 
   // Initializes code editor and basic setup
-  initCodeMirror() {
+  initCodeMirror(index: number, tab: tabInfo) {
 
-    const element = document.getElementById(this.id) as Element;
+    const element = document.getElementById(this.title ?? "" + index.toString() + tab.name) as Element;
     let tabSize = new Compartment;
+    const readonly = tab.readonly ? tab.readonly : false;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -177,7 +185,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
         //console.log(this.customFunctions);
-        let myFunction = this.customFunctions.find(option => option.keyword === word);
+        let myFunction = tab.customFunctions.find(option => option.keyword === word);
         let text = myFunction.name + " (" +
           myFunction.args.map(arg => {
             return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
@@ -220,12 +228,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // State and View basic definition
     let state = EditorState.create({
-      doc: this.value ? this.value + "\n" : "# " + this.placeholder + "\n",
+      doc: tab.value ? tab.value + "\n" : "# " + tab.placeholder ? tab.placeholder : "Write your code here!" + "\n",
       extensions: [
         basicSetup,
         oneDark,
         tabSize.of(EditorState.tabSize.of(8)),
-        this.chooseMode(),
+        this.chooseMode(tab.mode),
         autocompletion({override: [completePy]}),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
@@ -234,8 +242,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           }
         }),
         wordHover,
-        EditorState.readOnly.of(this.readonly),
-        EditorView.editable.of(!this.readonly)
+        EditorState.readOnly.of(readonly),
+        EditorView.editable.of(!readonly)
       ],
     });
 
@@ -265,7 +273,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
     // Set number of lines initialized
-    updateToMinNumberOfLines(view, this.nrLines);
+    const nrLines = tab.nrLines ? tab.nrLines : 10;
+    updateToMinNumberOfLines(view, nrLines);
     function updateToMinNumberOfLines(view, minNumOfLines) {
       const currentNumOfLines = view.state.doc.lines;
       let currentStr = view.state.doc.toString();
@@ -327,12 +336,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   // Function to select which language should the editor provide
-  chooseMode() {
+  chooseMode(mode: string) {
     let language = new Compartment;
 
-    switch (this.mode){
+    switch (mode){
       case "python": return language.of(python());
       case "javascript": return language.of(javascript()); // NOTE: not tested
+      default: return language.of(python());
     }
   }
 
@@ -358,8 +368,29 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   toggleTabs(index: number): void {
-    for (let i = 0; i < this.newTabs.length; i++){
-      this.newTabs[i].show = i === index;
+    for (let i = 0; i < this.tabs.length; i++){
+      this.tabs[i].show = i === index;
     }
   }
+}
+
+export interface tabInfo {
+  name: string,
+  type: "code" | "output",
+  show: boolean,
+  value?: string,
+  mode?: "python" | "javascript",
+  placeholder?: string,
+  nrLines?: number,
+  customKeywords?: string[],
+  customFunctions?: customFunctions[],
+  readonly?: boolean
+}
+
+export interface customFunctions {
+  moduleId: string,
+  name: string,
+  keyword: string,
+  description: string,
+  args: {name: string, optional: boolean, type: any}[]
 }

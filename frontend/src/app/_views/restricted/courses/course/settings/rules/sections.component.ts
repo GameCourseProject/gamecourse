@@ -17,6 +17,7 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 
 import * as _ from "lodash";
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import {tabInfo} from "../../../../../../_components/inputs/code/input-code/input-code.component";
 
 @Component({
   selector: 'app-rules',
@@ -31,13 +32,10 @@ export class SectionsComponent implements OnInit {
   }
 
   course: Course;                                   // Specific course in which rule system is being manipulated
-  //courseRules: Rule[];                              // Rules of course
-
-  //tags: RuleTag[];                                  // Tags of course
 
   originalSections: RuleSection[] = [];             // Sections of course
   sections: RuleSection[] = [];                     // Copy of original sections (used as auxiliary variable for setting priority)
-  nrRules: {[sectionId: number]: number} = [];    // Dictionary with number of rules per section
+  nrRules: {[sectionId: number]: number} = [];      // Dictionary with number of rules per section
   filteredSections: RuleSection[] = [];             // Section search
 
   // Section actions -- general manipulation (create/edit/remove/set priority/see details)
@@ -55,7 +53,6 @@ export class SectionsComponent implements OnInit {
   // MANAGE DATA
   section: RuleSection;
   sectionToManage: SectionManageData;
-  //ruleToManage: RuleManageData;
 
   // SEARCH & FILTER
   reduce = new Reduce();
@@ -63,6 +60,7 @@ export class SectionsComponent implements OnInit {
 
   metadata: {[variable: string]: number}[];
   parsedMetadata: string;
+  metadataCodeInput: tabInfo[];
 
   @ViewChild('s', {static: false}) s: NgForm;       // Section form
 
@@ -79,8 +77,6 @@ export class SectionsComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getCourseSections(courseID);
-      //await this.getCourseRules(courseID);
-      //await this.getTags(courseID);
 
       this.loading.page = false;
 
@@ -96,10 +92,6 @@ export class SectionsComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
-  /*async getCourseRules(courseID: number): Promise<void> {
-    this.courseRules = (await this.api.getCourseRules(courseID).toPromise()).sort(function (a, b) {
-      return a.position - b.position; });
-  }*/
 
   async getCourseSections(courseID: number): Promise<void> {
     this.originalSections = (await this.api.getCourseSections(courseID).toPromise()).sort(function (a, b) {
@@ -113,10 +105,6 @@ export class SectionsComponent implements OnInit {
     }
   }
 
-  /*async getTags(courseID: number): Promise<void> {
-    this.tags = await this.api.getTags(courseID).toPromise();
-
-  }*/
 
   /*** --------------------------------------------- ***/
   /*** -------------- Search & Filter -------------- ***/
@@ -144,11 +132,15 @@ export class SectionsComponent implements OnInit {
   async prepareManagement(action: string, section?: RuleSection) {
     // Actions for sections general manipulation (adding/editing/removing/metadata actions)
      if (action === 'metadata'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
-       //this.sections = _.cloneDeep(this.originalSections);
        this.sectionMode = action;
 
        if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
-       else await this.parseMetadata();
+       else{
+         await this.parseMetadata();
+         this.metadataCodeInput =
+           [{ name: 'Metadata', type: "code", show: true, value: this.parsedMetadata,
+             placeholder: "Autogame global variables:"}];
+       }
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
          'manage-metadata' : 'manage-section';
@@ -158,15 +150,7 @@ export class SectionsComponent implements OnInit {
 
     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
     else if (action === 'see section'){
-
-       this.router.navigate(['rule-system/sections/' + section.id ], {relativeTo: this.route.parent});
-       // this.sections = _.cloneDeep(this.originalSections);
-       // await this.parseMetadata();
-       // this.sectionMode = action;
-       // this.section = section;
-
-       // await buildTable(this.api, this.themeService, this.course.id, section);
-
+       await this.router.navigate(['rule-system/sections/' + section.id ], {relativeTo: this.route.parent});
     }
 
     // Actions related to Tags' general manipulation
@@ -237,7 +221,6 @@ export class SectionsComponent implements OnInit {
 
   async saveSectionPriority(): Promise<void>{
     this.loading.action = true;
-    // this.originalSections = this.sections;
 
     for (let i = 0; i < this.originalSections.length; i++){
       this.originalSections[i].position = i;
@@ -252,12 +235,6 @@ export class SectionsComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
   }
 
-  async closeSectionManagement(event: Rule[]) {
-    //this.courseRules = event;
-
-    this.sectionToManage = null;
-    this.sectionMode = null;
-  }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Tags ------------------- ***/
@@ -400,24 +377,7 @@ export class SectionsComponent implements OnInit {
     const sectionData: SectionManageData = {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,
-      position: section?.position ?? null,
-      /*headers: [
-        {label: 'Execution Order', align: 'left'},
-        {label: 'Name', align: 'left'},
-        {label: 'Tags', align: 'middle'},
-        {label: 'Active', align: 'middle'},
-        {label: 'Actions'}],
-      data: section?.data ?? [],
-      options: {
-        order: [ 0, 'asc' ],        // default order -> column 0 ascendant
-        columnDefs: [
-          { type: 'natural', targets: [0,1] },
-          { searchable: false, targets: [2,3] },
-          { orderable: false, targets: [2,3] }
-        ]
-      },
-      loadingTable: false,
-      showTable: false*/
+      position: section?.position ?? null
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -425,51 +385,9 @@ export class SectionsComponent implements OnInit {
 
 }
 
-// DATA MANAGEMENT GLOBAL INTERFACES
-
 export interface SectionManageData {
   id?: number,
   course?: number,
   name?: string,
-  position?: number,
-  //headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
-  //data: {type: TableDataType, content: any}[][],
-  //options?: any,
-  //loadingTable: boolean,
-  //showTable: boolean
+  position?: number
 }
-
-
-/*export async function buildTable(api: ApiHttpService, themeService: ThemingService ,courseId: number, section: RuleSection): Promise<void> {
-  section.loadingTable = true;
-
-  section.showTable = false;
-  setTimeout(() => section.showTable = true, 0);
-
-  const table: { type: TableDataType; content: any }[][] = [];
-
-  const rules = await api.getRulesOfSection(courseId, section.id).toPromise();
-  rules.forEach(rule => {
-    table.push([
-      {type: TableDataType.NUMBER, content: {value: rule.position, valueFormat: 'none'}},
-      {type: TableDataType.TEXT, content: {text: rule.name}},
-      {type: TableDataType.CUSTOM, content: {html: '<div class="flex flex-col gap-2">' +
-            rule.tags.sort((a,b) => a.name.localeCompare(b.name))
-              .map(tag => '<div class="badge badge-md badge-' + themeService.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
-            '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
-      {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
-      {type: TableDataType.ACTIONS, content: {actions: [
-            Action.EDIT,
-            {action: 'Duplicate', icon: 'tabler-copy', color: 'primary'},
-            {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary', disabled: rule.position === 0 },
-            {action: 'Decrease priority', icon: 'tabler-arrow-narrow-down', color: 'primary', disabled: rule.position === rules.length - 1 },
-            Action.REMOVE,
-            Action.EXPORT]}
-      }
-    ]);
-  });
-
-  section.data = _.cloneDeep(table);
-  section.loadingTable = false;
-}
-*/
