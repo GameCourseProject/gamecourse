@@ -11,33 +11,17 @@
     </ng-container>
   </div>
 
-  <!-- FIXME: refactor to receive more than two tabs -->
   <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto
         {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}"
        style="background-color: #282C34">
 
     <ng-container *ngFor="let tab of tabs, let i = index">
-
-      <!-- Editor code tab
-      <div class="cm {{tabs[tabNames[0]] || !showTabs ? '' : 'hidden'}}">
-        <div [id]="id"></div>
-      </div>-->
-
-      <!-- Editor output tab
-      <div *ngIf="tabs[tabNames[1]]">
-        <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
-        <div class="justify-center flex">
-          <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">
-            <ng-icon name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-            Run
-          </button>
-        </div>
-      </div>-->
-      <!-- Editor code tab  -->
+      <!-- Editor code tabs  -->
       <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.show ? '' : 'hidden'}}">
         <div [id]="title ?? '' + i + tab.name"></div>
       </div>
 
+      <!-- Editor output tabs  -->
       <div *ngIf="tab.type === 'output' && tab.show">
         <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
         <div class="justify-center flex">

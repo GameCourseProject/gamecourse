@@ -34,49 +34,31 @@ import {ThemingService} from "../../../../_services/theming/theming.service";
 })
 export class InputCodeComponent implements OnInit, AfterViewInit {
 
-  // Extras
   // Essentials
-  @Input() title: string;                                     // Textarea title
   @Input() id: string;                                        // Unique id
-  //@Input() mode: "python" | "javascript" = "python";        // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
-  //@Input() value: string;                                   // Value on init
+  @Input() title: string;                                     // Textarea title
 
-  //@Input() placeholder: string = "Write your code here!";     // Message to show by default
-  @Input() size?: 'md' | 'lg' = 'md';                         // Size of input code
-  //@Input() nrLines?: number = 10;             // Number of lines already added to the editor. Default = 10 lines
-  @Input() classList?: string;                // Classes to add
-  @Input() disabled?: boolean;                // Make it disabled
-  //@Input() customKeywords?: string[] = [];    // Personalized keywords
-
-  @Input() showTabs?: boolean = true;           // Boolean to show/hide tabs (this will only show content of first tab)
-  //@Input() readonly?: boolean = false;          // Make editor readonly
-
-  // FIXME: Refactor this to be flexible and accept more than only 2 tabs
-  //@Input() tabNames?: string[] = ['Code', 'Output']        // Names of the tabs that will be shown
-
+  // Extras
+  @Input() size?: 'md' | 'lg' = 'md';                             // Size of input code
+  @Input() classList?: string;                                    // Classes to add
+  @Input() disabled?: boolean;                                    // Make it disabled
+  @Input() helperText?: string;                                   // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
+  @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
   @Input() tabs?: tabInfo[] = [
     { name: 'Code', type: "code", show: true, mode: "python"},
     {name: 'Output', type: "output", show: false}];
 
-  // Personalized functions
-  //@Input() customFunctions?: customFunctions[] = [];
-
-  @Input() helperText?: string;                                               // Text for helper tooltip
-  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';              // Helper position
-
   // Validity
   @Input() required?: boolean;                                // Make it required
-
   // Errors
   @Input() requiredErrorMessage?: string;                     // Message for required error
+
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() output = new EventEmitter<string>();
 
   options: Completion[] = [];                                   // Editor options for autocompletion
-
-  // FIXME -- remove later
-  //tabs: {[tabName: string]: boolean} = {};                      // Tabs with name as key and boolean to enable
 
   constructor(
     private themeService: ThemingService
@@ -92,8 +74,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         this.setUpKeywords(this.tabs[i])
       }
     }
-    //this.setUpKeywords();
-    // if (this.showTabs) this.setUpTabs();
   }
 
   // Setups all keywords and functions for code
@@ -145,13 +125,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   }
 
-  /*setUpTabs(){
-
-
-    for (let i = 0; i < this.tabNames.length; i++){
-      this.tabs[this.tabNames[i]] = (i === 0);
-    }
-  }*/
 
   /*** --------------------------------------------- ***/
   /*** --------------- AfterViewInit --------------- ***/
@@ -184,7 +157,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
-        //console.log(this.customFunctions);
         let myFunction = tab.customFunctions.find(option => option.keyword === word);
         let text = myFunction.name + " (" +
           myFunction.args.map(arg => {
@@ -273,7 +245,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
     // Set number of lines initialized
-    const nrLines = tab.nrLines ? tab.nrLines : 10;
+    const nrLines = tab.nrLines ?? 10;
     updateToMinNumberOfLines(view, nrLines);
     function updateToMinNumberOfLines(view, minNumOfLines) {
       const currentNumOfLines = view.state.doc.lines;
@@ -375,22 +347,22 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 }
 
 export interface tabInfo {
-  name: string,
-  type: "code" | "output",
-  show: boolean,
-  value?: string,
-  mode?: "python" | "javascript",
-  placeholder?: string,
-  nrLines?: number,
-  customKeywords?: string[],
-  customFunctions?: customFunctions[],
-  readonly?: boolean
+  name: string,                              // Name of the tab that will appear above
+  type: "code" | "output",                   // Specifies type of tab in editor
+  show: boolean,                             // Indicates which tab is active (only one at a time!)
+  value?: string,                            // Value on init
+  mode?: "python" | "javascript",            // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  placeholder?: string,                      // Message to show by default
+  nrLines?: number,                          // Number of lines already added to the editor. Default = 10 lines
+  customKeywords?: string[],                 // Personalized keywords
+  customFunctions?: customFunction[],        // Personalized functions
+  readonly?: boolean                         // Make editor readonly
 }
 
-export interface customFunctions {
-  moduleId: string,
-  name: string,
-  keyword: string,
-  description: string,
-  args: {name: string, optional: boolean, type: any}[]
+export interface customFunction {
+  moduleId: string,                                       // Module from which the functions belong to
+  name: string,                                           // Name of the function
+  keyword: string,                                        // Name of the function (different format?check -> not sure)
+  description: string,                                    // Description of the function (what it does + return type)
+  args: {name: string, optional: boolean, type: any}[]    // Arguments that each function receives
 }

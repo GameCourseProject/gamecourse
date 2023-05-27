@@ -123,7 +123,7 @@ export class RulesComponent implements OnInit {
 
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", show: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "code" , show: false},
+       { name: 'Preview Function', type: "code" , show: false, nrLines: 2},
        { name: 'Output', type: "output", show: false }]
   }
 
