@@ -201,7 +201,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // State and View basic definition
     let state = EditorState.create({
-      doc: tab.value ? tab.value + "\n" : "# " + tab.placeholder ? tab.placeholder : "Write your code here!" + "\n",
+      doc: tab.value ? tab.value + "\n" : ("# " + (tab.placeholder ? tab.placeholder : "Write your code here!") + "\n"),
       extensions: [
         basicSetup,
         oneDark,

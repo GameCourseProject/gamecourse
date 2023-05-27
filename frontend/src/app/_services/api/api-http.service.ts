@@ -1476,7 +1476,6 @@ export class ApiHttpService {
 
   }
 
-
   public duplicateRule(ruleID: number): Observable<Rule>{
     const data = { ruleId: ruleID };
 
@@ -1517,6 +1516,18 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res['data']) );
+  }
+
+  public getELFunctions(): Observable<void> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getELFunctions');
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
   }
 
   public getMetadata(courseID: number): Observable<{[variable: string]: number}[]>{

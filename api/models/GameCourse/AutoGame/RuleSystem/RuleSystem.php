@@ -3,6 +3,8 @@ namespace GameCourse\AutoGame\RuleSystem;
 
 use Exception;
 use GameCourse\Course\Course;
+use GameCourse\Views\Dictionary\Dictionary;
+use GameCourse\Views\Dictionary\Library;
 use Utils\Utils;
 
 /**
@@ -295,6 +297,33 @@ abstract class RuleSystem
     }
 
     /**
+     * Gets functions from the EL dictionary
+     * @throws Exception
+     */
+    public static function getELFunctions(): array{
+        $dictionary = new Dictionary();
+        $libraries = $dictionary->getLibraries();
+
+        foreach ($libraries as $library){
+            $myLibrary = $dictionary->getLibraryById($library->getId());
+            $functions = $myLibrary->getFunctions();
+            $myFunctions[$library->getName()] = [];
+
+            foreach ($functions as $function){
+                $myFunction["name"] = $function->getName();
+                $myFunction["description"] = $function->getDescription();
+                $myFunction["returnType"] = $function->getReturnType();
+                array_push($myFunctions[$library->getName()], $myFunction);
+                //$myFunctions = $myFunction;
+            }
+
+            //array_push($myFunctions, $myLibrary->getFunctions());
+        }
+        //var_dump($myFunctions);
+        return $myFunctions;
+    }
+
+    /**
      * Gets all metadata (aka global variables) available from autogame for rule editor UI
      *
      * @return array|mixed
@@ -428,4 +457,5 @@ abstract class RuleSystem
         $dataFolder = self::getDataFolder($courseId);
         if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
     }
+
 }

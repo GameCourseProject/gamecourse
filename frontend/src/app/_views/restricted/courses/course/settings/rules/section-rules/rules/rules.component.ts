@@ -123,7 +123,7 @@ export class RulesComponent implements OnInit {
 
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "code" , active: false, value: "whatever. this is a test", nrLines: 2, readonly: true},
+       { name: 'Preview Function', type: "code" , active: false, readonly: true},
        { name: 'Output', type: "output", active: false, readonly: true }]
   }
 
@@ -146,6 +146,7 @@ export class RulesComponent implements OnInit {
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+    await this.api.getELFunctions().toPromise();
   }
 
   async getSection(sectionID: number): Promise<void> {

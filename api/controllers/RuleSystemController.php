@@ -377,6 +377,14 @@ class RuleSystemController
     /**
      * @throws Exception
      */
+    public function getELFunctions(){
+        $ELFunctions = RuleSystem::getELFunctions();
+        API::response($ELFunctions);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getMetadata(){
         API::requireValues("courseId");
 
