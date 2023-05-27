@@ -138,7 +138,7 @@ export class SectionsComponent implements OnInit {
        else{
          await this.parseMetadata();
          this.metadataCodeInput =
-           [{ name: 'Metadata', type: "code", show: true, value: this.parsedMetadata,
+           [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata,
              placeholder: "Autogame global variables:"}];
        }
 

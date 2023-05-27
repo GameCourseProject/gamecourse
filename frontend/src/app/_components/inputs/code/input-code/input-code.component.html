@@ -7,7 +7,7 @@
 
   <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
     <ng-container *ngFor="let tab of tabs, let i = index">
-      <a class="tab tab-sm text-base-200 {{tab.show ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
+      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
     </ng-container>
   </div>
 
@@ -17,12 +17,12 @@
 
     <ng-container *ngFor="let tab of tabs, let i = index">
       <!-- Editor code tabs  -->
-      <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.show ? '' : 'hidden'}}">
-        <div [id]="title ?? '' + i + tab.name"></div>
+      <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}}">
+        <div [id]="getId(i, tab.name)"></div>
       </div>
 
       <!-- Editor output tabs  -->
-      <div *ngIf="tab.type === 'output' && tab.show">
+      <div *ngIf="tab.type === 'output' && tab.active">
         <span class="text-primary-content text-sm text-opacity-50 ml-2"><i>Press 'Run' to simulate code output!</i></span>
         <div class="justify-center flex">
           <button type="button" class="btn btn-success text-white mt-1 gap-2 w-[calc(100%-0.5rem)] mb-1" (click)="simulateOutput()">

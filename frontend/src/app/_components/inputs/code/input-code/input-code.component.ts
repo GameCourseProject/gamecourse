@@ -46,8 +46,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
   @Input() tabs?: tabInfo[] = [
-    { name: 'Code', type: "code", show: true, mode: "python"},
-    {name: 'Output', type: "output", show: false}];
+    { name: 'Code', type: "code", active: true, mode: "python"},
+    {name: 'Output', type: "output", active: false}];
 
   // Validity
   @Input() required?: boolean;                                // Make it required
@@ -141,7 +141,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // Initializes code editor and basic setup
   initCodeMirror(index: number, tab: tabInfo) {
 
-    const element = document.getElementById(this.title ?? "" + index.toString() + tab.name) as Element;
+    console.log((this.title ? this.title : "") + "-" + index.toString() + "-" + tab.name);
+    const element = document.getElementById(this.getId(index, tab.name)) as Element;
     let tabSize = new Compartment;
     const readonly = tab.readonly ? tab.readonly : false;
 
@@ -330,6 +331,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  getId(index: number, tabName: string): string{
+    return (this.title ? this.title : "") + "-" + index.toString() + "-" + tabName
+  }
+
   isInFunctions(word: string): boolean{
     let functions = this.options.filter(option => option.type === "function");
     return functions.map(myFunction => { return myFunction.label }).includes(word);
@@ -341,7 +346,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   toggleTabs(index: number): void {
     for (let i = 0; i < this.tabs.length; i++){
-      this.tabs[i].show = i === index;
+      this.tabs[i].active = i === index;
     }
   }
 }
@@ -349,7 +354,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 export interface tabInfo {
   name: string,                              // Name of the tab that will appear above
   type: "code" | "output",                   // Specifies type of tab in editor
-  show: boolean,                             // Indicates which tab is active (only one at a time!)
+  active: boolean,                             // Indicates which tab is active (only one at a time!)
   value?: string,                            // Value on init
   mode?: "python" | "javascript",            // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
   placeholder?: string,                      // Message to show by default

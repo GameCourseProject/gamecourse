@@ -114,17 +114,17 @@ export class RulesComponent implements OnInit {
 
   prepareCodeInputTabs(){
     this.whenTabs =
-      [{ name: 'Code', type: "code", show: true, value: this.ruleToManage.whenClause,
+      [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.whenClause,
         mode: "python", placeholder: "Rule \'When\' clause", customFunctions: this.functions}]
 
     this.thenTabs =
-      [{ name: 'Code', type: "code", show: true, value: this.ruleToManage.thenClause,
+      [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.thenClause,
         mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions}]
 
     this.additionalToolsTabs =
-      [{ name: 'Metadata', type: "code", show: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "code" , show: false, nrLines: 2},
-       { name: 'Output', type: "output", show: false }]
+      [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
+       { name: 'Preview Function', type: "code" , active: false, value: "whatever. this is a test", nrLines: 2, readonly: true},
+       { name: 'Output', type: "output", active: false, readonly: true }]
   }
 
   async getMetadata() {
