@@ -159,7 +159,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
         let myFunction = tab.customFunctions.find(option => option.keyword === word);
-        let text = myFunction.name + " (" +
+        let text = myFunction.keyword + " (" +
           myFunction.args.map(arg => {
             return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
           }) + ")\n" + this.extractReturnType(myFunction.description, true);
@@ -365,9 +365,11 @@ export interface tabInfo {
 }
 
 export interface customFunction {
-  moduleId: string,                                       // Module from which the functions belong to
-  name: string,                                           // Name of the function
-  keyword: string,                                        // Name of the function (different format?check -> not sure)
+  moduleId?: string,                                      // Module from which the functions belong to (e.g. gamerules) - not really used here (hence being optional)
+  name: string,                                           // Name of the module or library the function belongs to
+  keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
-  args: {name: string, optional: boolean, type: any}[]    // Arguments that each function receives
+  args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
+  returnType?: string,                                     // Type of value it returns FIXME -- should not be optional
+  example?: string                                        // Example of how the function should be used and what it returns
 }

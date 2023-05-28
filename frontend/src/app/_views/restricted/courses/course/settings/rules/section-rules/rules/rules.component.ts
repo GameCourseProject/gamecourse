@@ -3,7 +3,7 @@ import {ApiHttpService} from "../../../../../../../../_services/api/api-http.ser
 import {ActivatedRoute, Router} from "@angular/router";
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {RuleTag} from "../../../../../../../../_domain/rules/RuleTag";
-import { tabInfo } from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
+import {customFunction, tabInfo} from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
 import * as _ from "lodash";
@@ -43,7 +43,8 @@ export class RulesComponent implements OnInit {
   thenTabs: tabInfo[];
   additionalToolsTabs: tabInfo[];
 
-  functions: { moduleId: string, name: string, keyword: string, description: string, args: {name: string, optional: boolean, type: any}[] }[];
+  functions: customFunction[];
+  ELfunctions: { [libraryName: string]: { functionName: string; description: string; returnType: string; }[] }[]
 
   // Input-select for assigning rules to tags
   previousSelected: string[];
@@ -146,7 +147,8 @@ export class RulesComponent implements OnInit {
 
   async getRuleFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
-    await this.api.getELFunctions().toPromise();
+    this.ELfunctions = await this.api.getELFunctions().toPromise();
+    console.log(this.ELfunctions);
   }
 
   async getSection(sectionID: number): Promise<void> {

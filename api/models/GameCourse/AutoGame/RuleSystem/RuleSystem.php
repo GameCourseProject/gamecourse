@@ -314,13 +314,10 @@ abstract class RuleSystem
                 $myFunction["description"] = $function->getDescription();
                 $myFunction["returnType"] = $function->getReturnType();
                 array_push($myFunctions[$library->getName()], $myFunction);
-                //$myFunctions = $myFunction;
             }
 
-            //array_push($myFunctions, $myLibrary->getFunctions());
         }
-        //var_dump($myFunctions);
-        return $myFunctions;
+        return $myFunctions ?? [];
     }
 
     /**
