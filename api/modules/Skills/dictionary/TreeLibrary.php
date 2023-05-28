@@ -31,21 +31,25 @@ class TreeLibrary extends Library
     {
         return [
             new DFunction("maxReward",
+                [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's maximum reward.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getSkillTreeById",
+                [["name" => "skillTreeId", "optional" => false, "type" => "int"]],
                 "Gets a skill tree by its ID in the system.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getSkillTreeByName",
+                [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a skill tree by its name.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getSkillTrees",
+                [],
                 "Gets all skill trees of course.",
                 ReturnType::COLLECTION,
                 $this

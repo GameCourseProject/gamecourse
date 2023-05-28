@@ -31,36 +31,44 @@ class BadgeLevelsLibrary extends Library
     {
         return [
             new DFunction("number",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("goal",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's goal.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("description",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("reward",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's reward.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("tokens",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's tokens.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("image",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's image URL.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("getLevelByNumber",
+                [["name" => "number", "optional" => false, "type" => "int"],
+                    ["name" => "number", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
                 $this

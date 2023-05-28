@@ -31,46 +31,58 @@ class VCLibrary extends Library
     {
         return [
             new DFunction("getVCName",
+                [],
                 "Gets Virtual Currency name.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("getImage",
+                [],
                 "Gets Virtual Currency image URL.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("getUserTokens",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total tokens for a given user.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("description",
+                [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's description.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("amount",
+                [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's amount.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("date",
+                [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's date.",
                 ReturnType::TIME,
                 $this
             ),
             new DFunction("getUserSpending",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets spending for a given user.",
                 ReturnType::COLLECTION,
                 $this
             ),
             new DFunction("getUserTotalSpending",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total spending for a given user.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("exchangeTokensForXP",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "ratio", "optional" => true, "type" => "float"],
+                    ["name" => "threshold", "optional" => true, "type" => "int"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"]],
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
                 ReturnType::VOID,
                 $this

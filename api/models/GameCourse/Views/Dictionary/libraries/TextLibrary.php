@@ -29,6 +29,7 @@ class TextLibrary extends Library
     {
         return [
             new DFunction("strip",
+                [["name" => "text", "optional" => false, "type" => "string"]],
                 "Removes all whitespace from a text.",
                 ReturnType::TEXT,
                 $this

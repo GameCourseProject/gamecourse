@@ -44,7 +44,7 @@ export class RulesComponent implements OnInit {
   additionalToolsTabs: tabInfo[];
 
   functions: customFunction[];
-  ELfunctions: { [libraryName: string]: { functionName: string; description: string; returnType: string; }[] }[]
+  ELfunctions: { [libraryName: string]: customFunction[] }[]
 
   // Input-select for assigning rules to tags
   previousSelected: string[];

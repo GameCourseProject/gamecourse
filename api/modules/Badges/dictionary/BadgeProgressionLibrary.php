@@ -30,11 +30,13 @@ class BadgeProgressionLibrary extends Library
     {
         return [
             new DFunction("description",
+                [["name" => "progression", "optional" => false, "type" => "any"]],
                 "Gets a given progression's description.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("link",
+                [["name" => "progression", "optional" => false, "type" => "any"]],
                 "Gets a given progression's link.",
                 ReturnType::TEXT,
                 $this

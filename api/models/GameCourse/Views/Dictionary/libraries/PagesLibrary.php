@@ -31,11 +31,13 @@ class PagesLibrary extends Library
     {
         return [
             new DFunction("id",
+                [["name" => "page", "optional" => false, "type" => "Page"]],
                 "Gets a given page's ID in the system.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getPageByName",
+                [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a page by its name.",
                 ReturnType::OBJECT,
                 $this

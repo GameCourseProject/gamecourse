@@ -30,6 +30,7 @@ class ModulesLibrary extends Library
     {
         return [
             new DFunction("isEnabled",
+                [["name" => "moduleId", "optional" => false, "type" => "string"]],
                 "Checks whether a given module is enabled.",
                 ReturnType::BOOLEAN,
                 $this

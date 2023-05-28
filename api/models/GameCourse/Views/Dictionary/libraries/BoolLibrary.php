@@ -28,11 +28,13 @@ class BoolLibrary extends Library
     {
         return [
             new DFunction("not",
+                [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Gets the opposite bool value of a given value.",
             ReturnType::BOOLEAN,
                 $this
             ),
             new DFunction("exists",
+                [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Checks whether a given value exists.",
                 ReturnType::BOOLEAN,
                 $this

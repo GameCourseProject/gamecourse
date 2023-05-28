@@ -32,46 +32,55 @@ class LevelLibrary extends Library
     {
         return [
             new DFunction("id",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's ID in the system.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("minXP",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's minimum XP.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("description",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("number",
+                [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getLevelById",
+                [["name" => "levelId", "optional" => false, "type" => "int"]],
                 "Gets a level by its ID.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getLevelByMinXP",
+                [["name" => "minXP", "optional" => false, "type" => "int"]],
                 "Gets a level by its minimum XP.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getLevelByXP",
+                [["name" => "xp", "optional" => false, "type" => "int"]],
                 "Gets a level by its corresponding XP.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getLevelByNumber",
+                [["name" => "number", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
                 $this
             ),
             new DFunction("getLevels",
+                [["name" => "orderBy", "optional" => true, "type" => "string"]],
                 "Gets levels of course. Option to order by a given parameter.",
                 ReturnType::COLLECTION,
                 $this

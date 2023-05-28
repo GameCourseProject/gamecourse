@@ -370,6 +370,6 @@ export interface customFunction {
   keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
-  returnType?: string,                                     // Type of value it returns FIXME -- should not be optional
+  returnType?: string,                                    // Type of value it returns FIXME -- should not be optional
   example?: string                                        // Example of how the function should be used and what it returns
 }

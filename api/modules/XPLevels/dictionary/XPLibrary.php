@@ -32,41 +32,54 @@ class XPLibrary extends Library
     {
         return [
             new DFunction("getMaxXP",
+                [],
                 "Gets maximum XP each student can earn in total.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getMaxExtraCredit",
+                [],
                 "Gets maximum extra credit each student can earn in total.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserXP",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total XP for a given user.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserExtraCreditXP",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total extra credit XP for a given user.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserXPByType",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "type", "optional" => false, "type" => "string"],
+                    ["name" => "instance", "optional" => true, "type" => "int"]],
                 "Gets total XP for a given user of a specific type of award.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserBadgesXP",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"]],
                 "Gets total badges XP for a given user. Some options available.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserSkillsXP",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"]],
                 "Gets total skills XP for a given user. Some options available.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("getUserStreaksXP",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"]],
                 "Gets total streaks XP for a given user. Some options available.",
                 ReturnType::NUMBER,
                 $this

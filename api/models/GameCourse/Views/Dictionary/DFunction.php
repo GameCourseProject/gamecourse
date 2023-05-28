@@ -8,13 +8,15 @@ namespace GameCourse\Views\Dictionary;
 class DFunction
 {
     private $name;
+    private $args;           // [[ name => string, optional => boolean, type => any ]]
     private $description;
     private $returnType;
     private $library;
 
-    public function __construct(string $name, string $description, string $returnType, Library $library)
+    public function __construct(string $name, array $args, string $description, string $returnType, Library $library)
     {
         $this->name = $name;
+        $this->args = $args;
         $this->description = $description;
         $this->returnType = $returnType;
         $this->library = $library;
@@ -28,6 +30,11 @@ class DFunction
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getArgs(): array
+    {
+        return $this->args;
     }
 
     public function getDescription(): string

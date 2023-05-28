@@ -32,31 +32,45 @@ class CollectionLibrary extends Library
     {
         return [
             new DFunction("item",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "index", "optional" => false, "type" => "int"]],
                 "Gets a given collection's item on a specific index.",
                 ReturnType::MIXED,
                 $this
             ),
             new DFunction("index",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                    ["name" => "item", "optional" => false, "type" => "ValueNode"],
+                    ["name" => "key", "optional" => true, "type" => "string"]],
                 "Gets the index of an item on a given collection. For items that are not basic types like text, numbers, etc., a search key should be given.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("count",
+                [[ "name" => "collection", "optional" => false, "type" => "array"]],
                 "Counts the number of elements in a given collection.",
                 ReturnType::NUMBER,
                 $this
             ),
             new DFunction("sort",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "orderKeyPairs", "optional" => true, "type" => "string"]],
                 "Sorts a given collection. Order key pairs format: 'order: param'. Order options: 'ASC', 'DESC', 'asc', 'desc', 'ascending', 'descending'.",
             ReturnType::COLLECTION,
                 $this
             ),
             new DFunction("crop",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "start", "optional" => false, "type" => "int"],
+                 ["name" => "end", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning items between start and end indexes.",
                 ReturnType::COLLECTION,
                 $this
             ),
             new DFunction("getKNeighbors",
+                [["name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "index", "optional" => false, "type" => "int"],
+                 ["name" => "k", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning an item and its K neighbors.",
                 ReturnType::COLLECTION,
                 $this

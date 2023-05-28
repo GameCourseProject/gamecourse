@@ -303,20 +303,26 @@ abstract class RuleSystem
     public static function getELFunctions(): array{
         $dictionary = new Dictionary();
         $libraries = $dictionary->getLibraries();
+        $myFunctions = [];
 
-        foreach ($libraries as $library){
+        foreach ($libraries as $library) {
+            //var_dump($library->getName());
             $myLibrary = $dictionary->getLibraryById($library->getId());
             $functions = $myLibrary->getFunctions();
-            $myFunctions[$library->getName()] = [];
 
-            foreach ($functions as $function){
-                $myFunction["name"] = $function->getName();
+            foreach ($functions as $function) {
+                $myFunction["name"] = $library->getName();
+                $myFunction["keyword"] = $function->getName();
+                $myFunction["args"] = $function->getArgs();
                 $myFunction["description"] = $function->getDescription();
                 $myFunction["returnType"] = $function->getReturnType();
-                array_push($myFunctions[$library->getName()], $myFunction);
+                //var_dump($myFunction);
+                array_push($myFunctions, $myFunction);
             }
+            //var_dump(count($myFunctions));
 
         }
+        //var_dump($myFunctions);
         return $myFunctions ?? [];
     }
 

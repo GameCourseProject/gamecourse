@@ -27,11 +27,15 @@ class ActionsLibrary extends Library
     {
         return [
             new DFunction("goToPage",
+                [[ "name" => "pageId", "optional" => false, "type" => "int"],
+                 ["name" => "userId", "optional" => true, "type" => "int"]],
                 "Navigates to a given course page. Option for user param for page.",
                 ReturnType::VOID,
                 $this
             ),
             new DFunction("showTooltip",
+                [[ "name" => "text", "optional" => false, "type" => "string"],
+                 ["name" => "position", "optional" => true, "type" => "string"]],
                 "Shows a tooltip with a given text and position.",
                 ReturnType::VOID,
                 $this

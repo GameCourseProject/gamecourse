@@ -31,11 +31,15 @@ class SystemLibrary extends Library
     {
         return [
             new DFunction("if",
+                [["name" => "condition", "optional" => false, "type" => "bool"],
+                 ["name" => "ifTrue", "optional" => false, "type" => "any"],
+                 ["name" => "ifFalse", "optional" => false, "type" => "any"]],
                 "Checks a condition and returns the 2nd argument if true, or the 3rd if false.",
                 ReturnType::MIXED,
                 $this
             ),
             new DFunction("time",
+                [],
                 "Returns the time in seconds since the epoch as a floating point number. The specific date of 
                 the epoch and the handling of leap seconds is platform dependent. On Windows and most Unix systems, 
                 the epoch is January 1, 1970, 00:00:00 (UTC) and leap seconds are not counted towards the time in seconds 

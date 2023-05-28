@@ -31,11 +31,13 @@ class CoursesLibrary extends Library
     {
         return [
             new DFunction("color",
+                [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given courses's color.",
                 ReturnType::TEXT,
                 $this
             ),
             new DFunction("getCourseById",
+                [["name" => "courseId", "optional" => false, "type" => "int"]],
                 "Gets a course by its ID.",
                 ReturnType::OBJECT,
                 $this
