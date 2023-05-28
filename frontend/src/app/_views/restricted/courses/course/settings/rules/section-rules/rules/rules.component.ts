@@ -44,7 +44,7 @@ export class RulesComponent implements OnInit {
   additionalToolsTabs: tabInfo[];
 
   functions: customFunction[];
-  ELfunctions: { [libraryName: string]: customFunction[] }[]
+  ELfunctions: customFunction[];
 
   // Input-select for assigning rules to tags
   previousSelected: string[];
@@ -116,11 +116,11 @@ export class RulesComponent implements OnInit {
   prepareCodeInputTabs(){
     this.whenTabs =
       [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.whenClause,
-        mode: "python", placeholder: "Rule \'When\' clause", customFunctions: this.functions}]
+        mode: "python", placeholder: "Rule \'When\' clause", customFunctions: this.functions.concat(this.ELfunctions)}]
 
     this.thenTabs =
       [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.thenClause,
-        mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions}]
+        mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions.concat(this.ELfunctions)}]
 
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
