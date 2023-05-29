@@ -311,7 +311,7 @@ abstract class RuleSystem
             $functions = $myLibrary->getFunctions();
 
             foreach ($functions as $function) {
-                $myFunction["name"] = $library->getName();
+                $myFunction["name"] = $library->getId();
                 $myFunction["keyword"] = $function->getName();
                 $myFunction["args"] = $function->getArgs();
                 $myFunction["description"] = $function->getDescription();

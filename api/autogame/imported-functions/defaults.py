@@ -19,6 +19,8 @@ def get_logs(target=None, log_type=None, rating=None, evaluator=None, start_date
 
     Option to get logs for a specific target, type, rating,
     evaluator, and/or description, as well as an initial and/or end date.
+
+    :returns: tuple array
     """
 
     return connector.get_logs(target, log_type, rating, evaluator, start_date, end_date, description)
@@ -29,6 +31,8 @@ def get_assignment_logs(target, name=None):
     Gets all assignment logs for a specific target.
 
     Option to get a specific assignment by name.
+
+    :returns: tuple array
     """
 
     return connector.get_assignment_logs(target, name)
@@ -39,6 +43,8 @@ def get_attendance_lab_logs(target, lab_nr=None):
     Gets all lab attendance logs for a specific target.
 
     Option to get a specific lab by number.
+
+    :returns: tuple array
     """
 
     return connector.get_attendance_lab_logs(target, lab_nr)
@@ -49,6 +55,8 @@ def get_attendance_lecture_logs(target, lecture_nr=None):
     Gets all lecture attendance logs for a specific target.
 
     Option to get a specific lecture by number.
+
+    :returns: tuple array
     """
 
     return connector.get_attendance_lecture_logs(target, lecture_nr)
@@ -59,6 +67,8 @@ def get_attendance_lecture_late_logs(target, lecture_nr=None):
     Gets all late lecture attendance logs for a specific target.
 
     Option to get a specific lecture by number.
+
+    :returns: tuple array
     """
 
     return connector.get_attendance_lecture_late_logs(target, lecture_nr)
@@ -70,6 +80,8 @@ def get_forum_logs(target, forum=None, thread=None, rating=None):
 
     Options to get logs from a specific forum and/or thread,
     as well as with a certain rating.
+
+    :returns: tuple array
     """
 
     return connector.get_forum_logs(target, forum, thread, rating)
@@ -80,6 +92,8 @@ def get_lab_logs(target, lab_nr=None):
     Gets all labs logs for a specific target.
 
     Option to get a specific lab by number.
+
+    :returns: tuple array
     """
 
     return connector.get_lab_logs(target, lab_nr)
@@ -90,6 +104,8 @@ def get_page_view_logs(target, name=None):
     Gets all page view logs for a specific target.
 
     Option to get a specific page view by name.
+
+    :returns: tuple array
     """
 
     return connector.get_page_view_logs(target, name)
@@ -100,6 +116,8 @@ def get_participation_lecture_logs(target, lecture_nr=None):
     Gets all lecture participation logs for a specific target.
 
     Option to get a specific participation by lecture number.
+
+    :returns: tuple array
     """
 
     return connector.get_participation_lecture_logs(target, lecture_nr)
@@ -110,6 +128,8 @@ def get_participation_invited_lecture_logs(target, lecture_nr=None):
     Gets all invited lecture participation logs for a specific target.
 
     Option to get a specific participation by lecture number.
+
+    :returns: tuple array
     """
 
     return connector.get_participation_invited_lecture_logs(target, lecture_nr)
@@ -121,6 +141,8 @@ def get_peergrading_logs(target, forum=None, thread=None, rating=None):
 
     Options to get logs from a specific forum and/or thread,
     as well as with a certain rating.
+
+    :returns: tuple array
     """
 
     return connector.get_peergrading_logs(target, forum, thread, rating)
@@ -129,6 +151,8 @@ def get_peergrading_logs(target, forum=None, thread=None, rating=None):
 def get_presentation_logs(target):
     """
     Gets presentation logs for a specific target.
+
+    :returns: tuple array
     """
 
     return connector.get_presentation_logs(target)
@@ -139,6 +163,8 @@ def get_questionnaire_logs(target, name=None):
     Gets all questionnaire logs for a specific target.
 
     Option to get a specific questionnaire by name.
+
+    :returns: tuple array
     """
 
     return connector.get_questionnaire_logs(target, name)
@@ -149,6 +175,8 @@ def get_quiz_logs(target, name=None):
     Gets all quiz logs for a specific target.
 
     Option to get a specific quiz by name.
+
+    :returns: tuple array
     """
 
     return connector.get_quiz_logs(target, name)
@@ -160,6 +188,8 @@ def get_resource_view_logs(target, name=None, unique=True):
 
     Option to get a specific resource view by name and
     to get only one resource view log per description.
+
+    :returns: tuple array
     """
 
     return connector.get_resource_view_logs(target, name, unique)
@@ -174,6 +204,8 @@ def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_l
 
     Additional options to get only logs that meet the minimum
     rating, as well as only the latest log for each skill.
+
+    :returns: tuple array
     """
 
     return connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
@@ -185,6 +217,8 @@ def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
 
     Options to get only logs that meet the minimum rating,
     as well as only the latest log for each skill.
+
+    :returns: tuple array
     """
 
     return connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
@@ -195,6 +229,8 @@ def get_url_view_logs(target, name=None):
     Gets all URL view logs for a specific target.
 
     Option to get a specific URL view by name.
+
+    :returns: tuple array
     """
 
     return connector.get_url_view_logs(target, name)
@@ -215,6 +251,8 @@ def get_consecutive_logs(logs):
         > "1 - Quiz (22/01/2023)" -> will raise error
         > "Quiz (22/01/2023) - 1" -> will raise error
         > "Quiz" -> will raise error
+
+    :returns: tuple array
     """
 
     def find_order(description):
@@ -271,6 +309,8 @@ def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_ra
      > custom_rating --> different ratings based on description
        e.g. {'1': {'min': 100, 'max': None, 'exact': None}, '2': {'min': 100, 'max': None, 'exact': None},
              '3': {'min': 200, 'ma'x': None, 'exact': None}, '4': {'min': 300, 'max': None, 'exact': None}, ...}
+
+     :returns: tuple array
     """
 
     def is_consecutive(r, d, last_r, last_d):
@@ -323,6 +363,8 @@ def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_ra
 def get_consecutive_peergrading_logs(target):
     """
     Gets consecutive peergrading logs done by target.
+
+    :returns: tuple array
     """
 
     return connector.get_consecutive_peergrading_logs(target)
@@ -338,6 +380,8 @@ def get_periodic_logs(logs, number, time, log_type):
 
         > relative -> check periodicity starting on the
                     first entry for streak
+
+    :returns: tuple array
     """
 
     return connector.get_periodic_logs(logs, number, time, log_type)
@@ -350,6 +394,8 @@ def get_total_reward(target, award_type=None):
     """
     Gets total reward for a given target.
     Option to filter by a specific award type.
+
+    :returns: number
     """
 
     return connector.get_total_reward(target, award_type)
@@ -358,6 +404,8 @@ def get_total_reward(target, award_type=None):
 def get_total_assignment_reward(target):
     """
     Gets total reward for a given target from assignments.
+
+    :returns: number
     """
 
     return connector.get_total_assignment_reward(target)
@@ -366,6 +414,8 @@ def get_total_assignment_reward(target):
 def get_total_badge_reward(target):
     """
     Gets total reward for a given target from badges.
+
+    :returns: number
     """
 
     return connector.get_total_badge_reward(target)
@@ -374,6 +424,8 @@ def get_total_badge_reward(target):
 def get_total_bonus_reward(target):
     """
     Gets total reward for a given target from bonus.
+
+    :returns: number
     """
 
     return connector.get_total_bonus_reward(target)
@@ -382,6 +434,8 @@ def get_total_bonus_reward(target):
 def get_total_exam_reward(target):
     """
     Gets total reward for a given target from exams.
+
+    :returns: number
     """
 
     return connector.get_total_exam_reward(target)
@@ -390,6 +444,8 @@ def get_total_exam_reward(target):
 def get_total_lab_reward(target):
     """
     Gets total reward for a given target from labs.
+
+    :returns: number
     """
 
     return connector.get_total_lab_reward(target)
@@ -398,6 +454,8 @@ def get_total_lab_reward(target):
 def get_total_presentation_reward(target):
     """
     Gets total reward for a given target from presentations.
+
+    :returns: number
     """
 
     return connector.get_total_presentation_reward(target)
@@ -406,6 +464,8 @@ def get_total_presentation_reward(target):
 def get_total_quiz_reward(target):
     """
     Gets total reward for a given target from quizzes.
+
+    :returns: number
     """
 
     return connector.get_total_quiz_reward(target)
@@ -414,6 +474,8 @@ def get_total_quiz_reward(target):
 def get_total_skill_reward(target):
     """
     Gets total reward for a given target from skills.
+
+    :returns: number
     """
 
     return connector.get_total_skill_reward(target)
@@ -422,6 +484,8 @@ def get_total_skill_reward(target):
 def get_total_streak_reward(target):
     """
     Gets total reward for a given target from streaks.
+
+    :returns: number
     """
 
     return connector.get_total_streak_reward(target)
@@ -430,6 +494,8 @@ def get_total_streak_reward(target):
 def get_total_tokens_reward(target):
     """
     Gets total reward for a given target from tokens.
+
+    :returns: number
     """
 
     return connector.get_total_tokens_reward(target)
@@ -441,6 +507,8 @@ def get_total_tokens_reward(target):
 def filter_logs(logs, with_descriptions=None, without_descriptions=None, min_rating=None, max_rating=None, exact_rating=None):
     """
     Filters logs by a set of descriptions and/or ratings.
+
+    :returns: tuple array
     """
 
     # Filter by description
@@ -460,6 +528,8 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
         > filter_logs_by_description(logs, ["A", "B"]) ==> w/ description equal to 'A' or 'B'
         > filter_logs_by_description(logs, None, "A") ==> w/ description not equal to 'A'
         > filter_logs_by_description(logs, None, ["A", "B"]) ==> w/ description not equal to 'A' nor 'B'
+
+    :returns: tuple array
     """
 
     if isinstance(with_descriptions, str):
@@ -476,6 +546,8 @@ def filter_logs_by_description(logs, with_descriptions=None, without_description
 def filter_logs_by_rating(logs, min_rating=None, max_rating=None, exact_rating=None):
     """
     Filters logs by rating.
+
+    :returns: tuple array
     """
 
     return [log for log in logs if
@@ -500,6 +572,9 @@ def compute_lvl(val, *lvls):
         > compute_lvl(val=5) ==> returns 0
         > compute_lvl(val=5, [2,4,6]) ==> returns 2
         > compute_lvl(val=5, (10,5,1)) ==> returns 3
+
+
+    :returns: number
     """
 
     # No levels specified
@@ -521,6 +596,8 @@ def compute_lvl(val, *lvls):
 def compute_rating(logs):
     """
     Sums the ratings of a set of logs.
+
+    :returns: number
     """
 
     return sum([log[config.LOG_RATING_COL] for log in logs])
@@ -532,6 +609,8 @@ def compute_rating(logs):
 def count(collection):
     """
     Just another name for function 'len'.
+
+    :returns: number
     """
 
     return len(collection)
@@ -540,12 +619,14 @@ def count(collection):
 def get_description(log):
     """
     Returns the description of a logline.
+
+    :returns: string
     """
 
     return log[config.LOG_DESCRIPTION_COL]
 
 @rule_function
-def get_latest_rating(logs):
+def get_rating(logs):
     """
     Returns the rating of a set of logs.
 
@@ -553,6 +634,8 @@ def get_latest_rating(logs):
     recent rating.
 
     NOTE: logs are ordered by date ASC.
+
+    :returns: number
     """
 
     nr_logs = len(logs)
@@ -578,6 +661,8 @@ def skill_completed(target, name):
     """
     Checks whether a given skill has already been awarded
     to a specific target.
+
+    :returns: boolean
     """
 
     return connector.skill_completed(target, name)
@@ -586,6 +671,8 @@ def skill_completed(target, name):
 def has_wildcard_available(target, skill_tree_id, wildcard_tier):
     """
     Checks whether a given target has wildcards available to use.
+
+    :returns: boolean
     """
 
     return connector.has_wildcard_available(target, skill_tree_id, wildcard_tier)
@@ -604,6 +691,8 @@ def award(target, award_type, description, reward, instance=None, unique=True, a
 
     NOTE: will not retract, but will not award twice if unique.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award(target, award_type, description, reward, instance, unique, award_id)
@@ -619,6 +708,8 @@ def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
 
     NOTE: will NOT retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_assignment_grade(target, logs, max_xp, max_grade)
@@ -630,6 +721,8 @@ def award_badge(target, name, lvl, logs, progress=None):
 
     NOTE: will retract if level changed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_badge(target, name, lvl, logs, progress)
@@ -641,6 +734,8 @@ def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
 
     NOTE: will retract if bonus removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_bonus(target, name, logs, reward, instance, unique)
@@ -656,6 +751,8 @@ def award_exam_grade(target, name, logs, reward, max_xp=1, max_grade=1):
 
     NOTE: will retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_exam_grade(target, name, logs, reward, max_xp, max_grade)
@@ -671,6 +768,8 @@ def award_lab_grade(target, logs, max_xp=1, max_grade=1):
 
     NOTE: will NOT retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_lab_grade(target, logs, max_xp, max_grade)
@@ -686,6 +785,8 @@ def award_post_grade(target, logs, max_xp=1, max_grade=1):
 
     NOTE: will NOT retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_post_grade(target, logs, max_xp, max_grade)
@@ -701,6 +802,8 @@ def award_presentation_grade(target, name, logs, max_xp=1, max_grade=1):
 
     NOTE: will retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_presentation_grade(target, name, logs, max_xp, max_grade)
@@ -716,6 +819,8 @@ def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
 
     NOTE: will NOT retract if grade removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_quiz_grade(target, logs, max_xp, max_grade)
@@ -728,6 +833,8 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
     NOTE: will retract if rating changed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
@@ -739,6 +846,8 @@ def award_streak(target, name, logs):
 
     NOTE: will retract if streak changed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_streak(target, name, logs)
@@ -750,6 +859,8 @@ def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
 
     NOTE: will retract if tokens removed.
     Updates award if reward has changed.
+
+    :returns: void
     """
 
     connector.award_tokens(target, name, logs, reward, instance, unique)
@@ -764,6 +875,8 @@ def spend_tokens(target, name, amount, repetitions=1):
 
     NOTE: will not retract, but will not spend twice if is unique.
     Updates if amount has changed.
+
+    :returns: void
     """
 
     connector.spend_tokens(target, name, amount, repetitions)
@@ -785,6 +898,8 @@ def gc(library, name, *args):
         gc("library", "function", arg1, arg2)
 
     This wrapper will handle the function request and pass it to PHP.
+
+    :returns: TODO
     """
 
     from ..connector.gamecourse_connector import call_gamecourse
@@ -803,6 +918,8 @@ def gc(library, name, *args):
 def effect_unlocked(val, target=None):
     """
     Returns True if the target has unlocked the given effect.
+
+    :returns: boolean
     """
 
     from ..namespace import rule_system as rs
@@ -829,6 +946,8 @@ def transform(val):
     """
     Wraps any value into a rule effect, this way it will be
     part of the rule output.
+
+    :returns: TODO
     """
 
     return val

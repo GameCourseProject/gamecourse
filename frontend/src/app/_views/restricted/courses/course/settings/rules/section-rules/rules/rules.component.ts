@@ -68,7 +68,7 @@ export class RulesComponent implements OnInit {
       await this.getCourse(courseID);
       await this.getTags(courseID);
       await this.getMetadata();
-      await this.getRuleFunctions(courseID);
+      await this.getCustomFunctions(courseID);
 
       this.route.params.subscribe(async childParams => {
         const sectionID = childParams.sectionId;
@@ -145,10 +145,20 @@ export class RulesComponent implements OnInit {
 
   }
 
-  async getRuleFunctions(courseID: number){
+  async getCustomFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+
+    for (let i = 0; i < this.functions.length; i++){
+      let description = this.functions[i].description;
+      let returnType = description.indexOf(":returns:");
+      let finalString = description.slice(returnType);
+      this.functions[i].returnType = finalString.replace(":returns:", "-> ");
+
+      this.functions[i].description = description.slice(0, returnType);
+    }
+
     this.ELfunctions = await this.api.getELFunctions().toPromise();
-    console.log(this.ELfunctions);
+    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
   }
 
   async getSection(sectionID: number): Promise<void> {
@@ -188,8 +198,10 @@ export class RulesComponent implements OnInit {
   }
 
   async previewRule(event: string){
-    console.log(event);
-    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
+    this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
+
+    //await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
   }
 
   /*async createRule() {
@@ -215,6 +227,24 @@ export class RulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  parseFunctions(clause: string): string{
+    // Keep only functions and see which ones need the 'gc.library' to work before sending it to backend
+    const regexPattern: RegExp = /\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g;
+    let clauseArray = clause.match(regexPattern)?.map(match => match.slice(0, -1)) || [];
+
+    for (let i = 0; i < clauseArray.length; i++){
+      let ELfunction = this.ELfunctions.find(myFunction => myFunction.keyword === clauseArray[i]);
+
+      if (ELfunction){
+        // needs 'gc.library.' to work
+        let regex = new RegExp(`\\b${clauseArray[i]}`, "g");
+        clause = clause.replace(regex, "gc." + ELfunction.name + "." + ELfunction.keyword);
+      }
+    }
+
+    return clause;
+  }
 
   // Function to format tags before sending it to DB
   async assignTags() {

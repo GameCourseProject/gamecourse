@@ -105,24 +105,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // Add personalized functions to the options array
     let customFunctions = tab.customFunctions ?? [];
-    options = options.concat(customFunctions.map(option => ({label: option.keyword, type: "function", detail: this.extractReturnType(option.description, false), info: option.args.map(arg => {
-        return ( arg === option.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-      }) + ")\n" + this.extractReturnType(option.description, true)})));
+    options = options.concat(customFunctions.map(option => (
+      { label: option.keyword,
+        type: "function",
+        detail: option.returnType,
+        info: option.args.map(arg =>
+              { return ( arg === option.args[0] ? "(" : " ") + arg.name + (arg.optional ? "? " : "") + ": " +
+                arg.type + ( arg === option.args[option.args.length - 1] ? ") " : " ") }) + option.description})));
 
     this.options = options;
-  }
-
-  extractReturnType(description: string, getDescription: boolean): string {
-    let returnType = description.indexOf(":returns:")
-
-    // If false then extract only the return type
-    if (!getDescription){
-      let finalString = description.slice(returnType);
-      return finalString.replace(":returns:", "->");
-    }
-
-    return description.slice(0, returnType); // FIXME
-
   }
 
 
@@ -141,7 +132,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // Initializes code editor and basic setup
   initCodeMirror(index: number, tab: tabInfo) {
 
-    console.log((this.title ? this.title : "") + "-" + index.toString() + "-" + tab.name);
     const element = document.getElementById(this.getId(index, tab.name)) as Element;
     let tabSize = new Compartment;
     const readonly = tab.readonly ? tab.readonly : false;
@@ -162,7 +152,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         let text = myFunction.keyword + " (" +
           myFunction.args.map(arg => {
             return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-          }) + ")\n" + this.extractReturnType(myFunction.description, true);
+          }) + ")\n" + myFunction.description;
 
         return {
           pos: start,
@@ -293,7 +283,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty) // FIXME
 
       if (lastWord && this.isInFunctions(lastWord)) {
-        console.log(state.selection.ranges.filter(range => range.empty).map(range => {return state.doc.lineAt(range.head).number}));
+        //console.log(state.selection.ranges.filter(range => range.empty).map(range => {return state.doc.lineAt(range.head).number}));
         //let lineNr = state.doc.lineAt(state.selection.ranges[-1].head).number
         //console.log(lineNr);
         const comment = "# this is a new comment!\n";
@@ -370,6 +360,6 @@ export interface customFunction {
   keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
-  returnType?: string,                                    // Type of value it returns FIXME -- should not be optional
+  returnType: string,                                     // Type of value it returns FIXME -- should not be optional
   example?: string                                        // Example of how the function should be used and what it returns
 }
