@@ -2,6 +2,7 @@
 namespace GameCourse\AutoGame\RuleSystem;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\Course\Course;
 use GameCourse\Views\Dictionary\Dictionary;
 use GameCourse\Views\Dictionary\Library;
@@ -306,7 +307,6 @@ abstract class RuleSystem
         $myFunctions = [];
 
         foreach ($libraries as $library) {
-            //var_dump($library->getName());
             $myLibrary = $dictionary->getLibraryById($library->getId());
             $functions = $myLibrary->getFunctions();
 
@@ -316,13 +316,10 @@ abstract class RuleSystem
                 $myFunction["args"] = $function->getArgs();
                 $myFunction["description"] = $function->getDescription();
                 $myFunction["returnType"] = $function->getReturnType();
-                //var_dump($myFunction);
                 array_push($myFunctions, $myFunction);
             }
-            //var_dump(count($myFunctions));
 
         }
-        //var_dump($myFunctions);
         return $myFunctions ?? [];
     }
 
@@ -371,8 +368,16 @@ abstract class RuleSystem
         $rulePath = $folderPath . "rule.txt";
         file_put_contents($rulePath, $ruleTxt);
 
+        AutoGame::run($courseId, true, null, true);
+        /*
+         * Ends up using command: (Use in terminal to test)
+         * "python C:\xampp\htdocs\gamecourse\api\inc/../autogame/run_autogame_test.py 1 all "C:\xampp\htdocs\gamecourse\api\inc/../course_data/1-pcm/rules" "C:\xampp\htdocs\gamecourse\api\inc/../logs/autogame/autogame_1.txt" "localhost" "gamecourse" "root" """
+         */
+    }
 
 
+    public static function previewFunction(){
+        // TODO -- incomplete
     }
 
     /*** ---------------------------------------------------- ***/

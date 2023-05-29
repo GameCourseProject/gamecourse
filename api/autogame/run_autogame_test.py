@@ -1,6 +1,5 @@
 from gamerules import *
 from course.coursedata import students
-from gamerules.connector.gamecourse_connector import *
 from gamerules.functions.utils import import_functions_from_rulepath
 from io import StringIO
 
@@ -20,8 +19,9 @@ IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/api/autogame/imported-func
 
 
 def get_config_metadata(course):
-	CONFIGFILE = "config_" + str(course) + ".txt"
-	CONFIGPATH = os.path.join("/var/www/html/gamecourse/api/autogame/config",CONFIGFILE)
+	CONFIGFILE = "config_" + str(config.COURSE) + ".txt"
+	CONFIGPATH = os.path.join(config.ROOT_PATH, "config", CONFIGFILE)
+
 	try:
 		with open(CONFIGPATH, 'r') as f:
 			lines = f.read()
@@ -48,28 +48,35 @@ def get_config_metadata(course):
 
 # This python script will be invoked from the php side with
 # an argument that indicated which course is being run
+
+# CLI prompt: python3 run_autogame_test.py [courseId] [all/new/targets] [rules_path] [logs_file] [dbHost] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
 	#error = ""
 	all_targets = False
 	targets_list = None
 
 	# Process Arguments
-	# cli prompt: python3 run_autogame.py [courseId] [rule_path] [all/targets]
-	if len(sys.argv) >= 4:
+	if len(sys.argv) >= 8:
+
+		# Initialize GameCourse connector
+		from gamerules.connector.db_connector import connect_to_gamecourse_db
+		connect_to_gamecourse_db(sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8])
+		from gamerules.connector.gamecourse_connector import *
+
 		if course_exists(sys.argv[1]):
 			course = sys.argv[1]
 			config.COURSE = course
 			config.TEST_MODE = True
-			rulespath = sys.argv[2]
+			rulespath = sys.argv[3]
 			config.RULES_PATH = os.path.join(rulespath, RULES_TESTS_FOLDER)
 			output_file = os.path.join(config.RULES_PATH, "rule-test-output.txt")
 
 		else:
 			sys.exit("ERROR: Course passed is not active or does not exist.")
-		if sys.argv[3] == "all":
+		if sys.argv[2] == "all":
 			all_targets = True
 		else:
-			targets_list = sys.argv[3].strip("[]").split(",")
+			targets_list = sys.argv[2].strip("[]").split(",")
 	else:
 		sys.exit()
 		

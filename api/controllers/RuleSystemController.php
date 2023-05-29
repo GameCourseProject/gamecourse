@@ -25,6 +25,7 @@ class RuleSystemController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
+
         $sectionId = API::getValue("sectionId", "int");
         $section = Section::getSectionById($sectionId);
 
@@ -226,10 +227,6 @@ class RuleSystemController
         $whenClause = API::getValue("whenClause");
         $thenClause = API::getValue("thenClause");
 
-        // FIXME DELETE LATER
-        $whenClause = "when";
-        $thenClause = "then";
-
         $position = API::getValue("position", "int"); // FIXME -- not sure
         $isActive = API::getValue("isActive", "bool");
         $tagIds = API::getValue("tags", "array");
@@ -394,6 +391,19 @@ class RuleSystemController
         API::requireCourseAdminPermission($course);
         $response = RuleSystem::getMetadata($courseId);
         API::response($response);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function previewFunction(){
+        API::requireValues("courseId", "library", "function", "args");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $reponse = RuleSystem::previewFunction();
     }
 
     /**

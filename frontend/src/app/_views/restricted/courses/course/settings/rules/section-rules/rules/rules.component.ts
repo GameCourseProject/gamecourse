@@ -124,8 +124,8 @@ export class RulesComponent implements OnInit {
 
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "code" , active: false, readonly: true},
-       { name: 'Output', type: "output", active: false, readonly: true }]
+       { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
+       { name: 'Preview Rule', type: "output", active: false, readonly: true }]
   }
 
   async getMetadata() {
@@ -182,6 +182,8 @@ export class RulesComponent implements OnInit {
         (action === 'add rule') ? await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise() :
           await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
 
+        this.saveMetadata();
+
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.loading.action = false;
 
@@ -197,11 +199,21 @@ export class RulesComponent implements OnInit {
     }
   }
 
-  async previewRule(event: string){
+  async saveMetadata(){
+    let updatedMetadata = _.cloneDeep(this.parsedMetadata);
+    // remove comment lines from metadata and clean code before updating
+    updatedMetadata = updatedMetadata.replace(/#[^\n]*\n/g, '');  // comments
+    updatedMetadata = updatedMetadata.replace(/\n\s*\n/g, '');    // empty lines
+    updatedMetadata = updatedMetadata.replace(/(\s*:\s*)/g, ":"); // " : " or ": " or " :" replacing with ":"
+
+    await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
+  }
+
+  async previewRule(){
     this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
     this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
 
-    //await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
   }
 
   /*async createRule() {
