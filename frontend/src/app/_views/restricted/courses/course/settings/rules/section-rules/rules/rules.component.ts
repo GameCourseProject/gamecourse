@@ -45,11 +45,12 @@ export class RulesComponent implements OnInit {
   additionalToolsTabs: (codeTab | outputTab)[];
   functions: customFunction[];
   ELfunctions: customFunction[];
-  codeOutput: string = "";
 
   // Input-select for assigning rules to tags
   previousSelected: string[];
   setTags: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
+
+  tabOutput: string;
 
   @ViewChild('r', {static: false}) r: NgForm;                       // rule form
 
@@ -126,7 +127,7 @@ export class RulesComponent implements OnInit {
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
        { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
-       { name: 'Preview Rule', type: "output", active: false, readonly: true, running: false, value: null }]
+       { name: 'Preview Rule', type: "output", active: false, readonly: true, running: null, value: null }]
   }
 
   async getMetadata() {
@@ -214,8 +215,12 @@ export class RulesComponent implements OnInit {
     this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
     this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
 
-    this.codeOutput = await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
-    console.log("codeOutput: ", this.codeOutput);
+    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+  }
+
+  async getPreviewRuleOutput() {
+    this.tabOutput = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
+    setTimeout(()=> this.tabOutput = null, 4000);
   }
 
   /*async createRule() {

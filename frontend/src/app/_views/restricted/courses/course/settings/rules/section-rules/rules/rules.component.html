@@ -114,8 +114,10 @@
                   [helperPosition]="'right'"
                   [size]="'lg'"
                   [tabs]="additionalToolsTabs"
+                  [tabOutput]="tabOutput"
                   (valueChange)="changeMetadata($event)"
-                  (output)="previewRule()"
+                  (runOutput)="previewRule()"
+                  (refreshOutput)="getPreviewRuleOutput()"
                 ></app-input-code>
               </div>
             </div>

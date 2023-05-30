@@ -360,10 +360,11 @@ abstract class RuleSystem
     }
 
     /**
+     * Runs AutoGame in test mode and to preview how the rule would act
      * @throws Exception
      */
     public static function previewRule(int $courseId, string $name, string $description, string $whenClause,
-                                       string $thenClause, bool $isActive, $tags): ?string {
+                                       string $thenClause, bool $isActive, $tags) {
         $ruleTxt = Rule::generateText($name, $description, $whenClause, $thenClause, $isActive, $tags);
         $folderPath = self::createTestDataFolder($courseId);
         $rulePath = $folderPath . "rule.txt";
@@ -378,6 +379,7 @@ abstract class RuleSystem
          * "C:\xampp\htdocs\gamecourse\api\inc/../course_data/1-pcm/rules"
          * "C:\xampp\htdocs\gamecourse\api\inc/../logs/autogame/autogame_1.txt" "localhost" "gamecourse" "root" """
          */
+
         // NOTE: ITS HARDCODED
         $dbHost = DB_HOST;
         $dbName = DB_NAME;
@@ -391,13 +393,23 @@ abstract class RuleSystem
         //var_dump($cmd);
 
         //system($cmd);
+    }
 
-        $outputPath = $folderPath . "rule-test-output.txt";
+    /**
+     * Sees if the PreviewRule function has finished (file rule-test-output) and returns its output
+     *
+     * @param $courseId
+     * @return string
+     * @throws Exception
+     */
+    public static function getPreviewRuleOutput($courseId): string{
+        // FIXME -- should also check if autogame has done running in test mode
+        $outputPath = self::createTestDataFolder($courseId) . "rule-test-output.txt";
         if (file_exists($outputPath)){
             $output = file_get_contents($outputPath);
-            //var_dump($output);
-            return $output;
+            return strval($output);
         }
+        return false;
     }
 
 

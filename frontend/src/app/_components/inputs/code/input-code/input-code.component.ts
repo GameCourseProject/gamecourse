@@ -57,9 +57,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
   @Output() valueChange = new EventEmitter<string>();
-  @Output() output = new EventEmitter<any>();
+  @Output() runOutput = new EventEmitter<any>();
+  @Output() refreshOutput = new EventEmitter<any>();
 
   options: Completion[] = [];                                     // Editor options for autocompletion
+  @Input() tabOutput: string;
 
   constructor(
     private themeService: ThemingService
@@ -314,22 +316,38 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Output ------------------- ***/
   /*** --------------------------------------------- ***/
 
+  getTooltip(tab: outputTab | codeTab): string {
+    if ((tab as outputTab).type === "output"){
+      return (tab as outputTab).tooltip ?? "Click \'Run\' to simulate output!";
+    }
+    return  "Click \'Run\' to simulate output!";
+  }
+
   isRunning(tab: outputTab | codeTab): boolean {
     if ((tab as outputTab).type === "output") {
       return (tab as outputTab).running;
     }
-    return false;
+    return null;
   }
 
   simulateOutput(tab: outputTab | codeTab){
     if ((tab as outputTab).type === "output") {
       (tab as outputTab).running = true;
+      this.runOutput.emit();
     }
-    this.output.emit();
   }
 
-  refreshOutput(tab: outputTab | codeTab){
-    // TODO -- incomplete
+  refreshingOutput(tab: outputTab | codeTab) {
+    if ((tab as outputTab).type === "output") {
+      if (this.tabOutput) {
+        tab.value = this.tabOutput;
+        (tab as outputTab).running = false;
+        this.tabOutput = null;
+        return;
+      }
+      this.refreshOutput.emit();
+    }
+
   }
 
   /*** --------------------------------------------- ***/
@@ -375,7 +393,7 @@ export interface outputTab {
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   running: boolean,                          // Boolean to show if code is running in background
   value?: string,                            // Output value once run
-  placeholder?: string,                      // Message to show by default
+  tooltip?: string,                      // Message to show by default
 }
 
 export interface customFunction {

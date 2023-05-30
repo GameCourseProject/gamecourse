@@ -425,8 +425,22 @@ class RuleSystemController
         $isActive = API::getValue("isActive", "bool");
         $tags = API::getValue("tags", "array");
 
-        $output = RuleSystem::previewRule($courseId, $name, $description, $whenClause, $thenClause, $isActive, $tags);
-        API::response($output ?? "");
+        RuleSystem::previewRule($courseId, $name, $description, $whenClause, $thenClause, $isActive, $tags);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getPreviewRuleOutput(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $output = RuleSystem::getPreviewRuleOutput($courseId);
+        //var_dump($output);
+        API::response($output);
     }
 
     /*** --------------------------------------------- ***/

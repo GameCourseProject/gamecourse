@@ -1601,7 +1601,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
-  public previewRule(ruleData: RuleManageData): Observable<string> {
+  public getPreviewRuleOutput(courseID: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getPreviewRuleOutput');
+      qs.push('courseId', courseID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res ? res['data'] : null));
+  }
+
+  public previewRule(ruleData: RuleManageData): Observable<void> {
     const data = {
       courseId: ruleData.course,
       name: ruleData.name,
@@ -1619,7 +1631,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']));
+      .pipe( map((res: any) => res));
 
   }
 
