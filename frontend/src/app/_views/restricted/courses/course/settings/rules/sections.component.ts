@@ -17,7 +17,7 @@ import {ThemingService} from "../../../../../../_services/theming/theming.servic
 
 import * as _ from "lodash";
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
-import {tabInfo} from "../../../../../../_components/inputs/code/input-code/input-code.component";
+import {codeTab} from "../../../../../../_components/inputs/code/input-code/input-code.component";
 
 @Component({
   selector: 'app-rules',
@@ -60,7 +60,7 @@ export class SectionsComponent implements OnInit {
 
   metadata: {[variable: string]: number}[];
   parsedMetadata: string;
-  metadataCodeInput: tabInfo[];
+  metadataCodeInput: codeTab[];
 
   @ViewChild('s', {static: false}) s: NgForm;       // Section form
 

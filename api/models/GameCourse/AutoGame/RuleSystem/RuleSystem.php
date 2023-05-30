@@ -362,17 +362,42 @@ abstract class RuleSystem
     /**
      * @throws Exception
      */
-    public static function previewRule(int $courseId, string $name, string $description, string $whenClause, string $thenClause, bool $isActive, $tags) {
+    public static function previewRule(int $courseId, string $name, string $description, string $whenClause,
+                                       string $thenClause, bool $isActive, $tags): ?string {
         $ruleTxt = Rule::generateText($name, $description, $whenClause, $thenClause, $isActive, $tags);
         $folderPath = self::createTestDataFolder($courseId);
         $rulePath = $folderPath . "rule.txt";
         file_put_contents($rulePath, $ruleTxt);
 
-        AutoGame::run($courseId, true, null, true);
+        // FIXME -- Uncomment later
+        // AutoGame::run($courseId, true, null, true);
+
         /*
          * Ends up using command: (Use in terminal to test)
-         * "python C:\xampp\htdocs\gamecourse\api\inc/../autogame/run_autogame_test.py 1 all "C:\xampp\htdocs\gamecourse\api\inc/../course_data/1-pcm/rules" "C:\xampp\htdocs\gamecourse\api\inc/../logs/autogame/autogame_1.txt" "localhost" "gamecourse" "root" """
+         * "python C:\xampp\htdocs\gamecourse\api\inc/../autogame/run_autogame_test.py 1 all
+         * "C:\xampp\htdocs\gamecourse\api\inc/../course_data/1-pcm/rules"
+         * "C:\xampp\htdocs\gamecourse\api\inc/../logs/autogame/autogame_1.txt" "localhost" "gamecourse" "root" """
          */
+        // NOTE: ITS HARDCODED
+        $dbHost = DB_HOST;
+        $dbName = DB_NAME;
+        $dbUser = DB_USER;
+        $dbPass = DB_PASSWORD;
+        $scriptPath = ROOT_PATH . "autogame/run_autogame.py";
+        $rulesPath = ROOT_PATH . "course_data/1-pcm/rules";
+        $logsFile = ROOT_PATH . "logs/autogame/autogame_1.txt";
+        $cmd = "python \"$scriptPath\" $courseId \"all\" \"$rulesPath\" \"$logsFile\" \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
+
+        //var_dump($cmd);
+
+        //system($cmd);
+
+        $outputPath = $folderPath . "rule-test-output.txt";
+        if (file_exists($outputPath)){
+            $output = file_get_contents($outputPath);
+            //var_dump($output);
+            return $output;
+        }
     }
 
 

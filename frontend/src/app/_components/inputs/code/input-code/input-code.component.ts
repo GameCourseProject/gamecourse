@@ -35,8 +35,8 @@ import {ThemingService} from "../../../../_services/theming/theming.service";
 export class InputCodeComponent implements OnInit, AfterViewInit {
 
   // Essentials
-  @Input() id: string;                                        // Unique id
-  @Input() title: string;                                     // Textarea title
+  @Input() id: string;                                            // Unique id
+  @Input() title: string;                                         // Textarea title
 
   // Extras
   @Input() size?: 'md' | 'lg' = 'md';                             // Size of input code
@@ -45,20 +45,21 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                   // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
-  @Input() tabs?: tabInfo[] = [
+  @Input() tabs?: (codeTab | outputTab)[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
-    {name: 'Output', type: "output", active: false}];
+    { name: 'Output', type: "output", active: false, running: false }];
+  //@Input() codeOutput?: string = "";                              // Result from running the code (to be shown at the 'output' tab)
 
   // Validity
-  @Input() required?: boolean;                                // Make it required
+  @Input() required?: boolean;                                    // Make it required
   // Errors
-  @Input() requiredErrorMessage?: string;                     // Message for required error
+  @Input() requiredErrorMessage?: string;                         // Message for required error
 
 
   @Output() valueChange = new EventEmitter<string>();
-  @Output() output = new EventEmitter<string>();
+  @Output() output = new EventEmitter<any>();
 
-  options: Completion[] = [];                                   // Editor options for autocompletion
+  options: Completion[] = [];                                     // Editor options for autocompletion
 
   constructor(
     private themeService: ThemingService
@@ -77,7 +78,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   // Setups all keywords and functions for code
-  setUpKeywords(tab: tabInfo) {
+  setUpKeywords(tab: codeTab) {
 
     const modeKeywords = getLanguageKeywords(tab.mode);
 
@@ -130,7 +131,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   // Initializes code editor and basic setup
-  initCodeMirror(index: number, tab: tabInfo) {
+  initCodeMirror(index: number, tab: codeTab) {
 
     const element = document.getElementById(this.getId(index, tab.name)) as Element;
     let tabSize = new Compartment;
@@ -313,8 +314,22 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Output ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  simulateOutput(){
-    this.output.emit("emittingOutput"); // FIXME should emit code in editor 'Code' tab
+  isRunning(tab: outputTab | codeTab): boolean {
+    if ((tab as outputTab).type === "output") {
+      return (tab as outputTab).running;
+    }
+    return false;
+  }
+
+  simulateOutput(tab: outputTab | codeTab){
+    if ((tab as outputTab).type === "output") {
+      (tab as outputTab).running = true;
+    }
+    this.output.emit();
+  }
+
+  refreshOutput(tab: outputTab | codeTab){
+    // TODO -- incomplete
   }
 
   /*** --------------------------------------------- ***/
@@ -341,17 +356,26 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 }
 
-export interface tabInfo {
+export interface codeTab {
   name: string,                              // Name of the tab that will appear above
   type: "code" | "output",                   // Specifies type of tab in editor
-  active: boolean,                             // Indicates which tab is active (only one at a time!)
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
   value?: string,                            // Value on init
   mode?: "python" | "javascript",            // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
   placeholder?: string,                      // Message to show by default
   nrLines?: number,                          // Number of lines already added to the editor. Default = 10 lines
   customKeywords?: string[],                 // Personalized keywords
   customFunctions?: customFunction[],        // Personalized functions
-  readonly?: boolean                         // Make editor readonly
+  readonly?: boolean,                        // Make editor readonly
+}
+
+export interface outputTab {
+  name: string,                              // Name of the tab that will appear above
+  type: "code" | "output",                   // Specifies type of tab in editor
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
+  running: boolean,                          // Boolean to show if code is running in background
+  value?: string,                            // Output value once run
+  placeholder?: string,                      // Message to show by default
 }
 
 export interface customFunction {
@@ -360,6 +384,6 @@ export interface customFunction {
   keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
-  returnType: string,                                     // Type of value it returns FIXME -- should not be optional
+  returnType: string,                                     // Type of value it returns
   example?: string                                        // Example of how the function should be used and what it returns
 }

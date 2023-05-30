@@ -3,7 +3,7 @@ import {ApiHttpService} from "../../../../../../../../_services/api/api-http.ser
 import {ActivatedRoute, Router} from "@angular/router";
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {RuleTag} from "../../../../../../../../_domain/rules/RuleTag";
-import {customFunction, tabInfo} from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
+import {customFunction, codeTab, outputTab} from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
 import * as _ from "lodash";
@@ -39,12 +39,13 @@ export class RulesComponent implements OnInit {
   parsedMetadata: string;
   showAlert: boolean = false;
 
-  whenTabs: tabInfo[];
-  thenTabs: tabInfo[];
-  additionalToolsTabs: tabInfo[];
-
+  // CODE-INPUT VARIABLES
+  whenTabs: codeTab[];
+  thenTabs: codeTab[];
+  additionalToolsTabs: (codeTab | outputTab)[];
   functions: customFunction[];
   ELfunctions: customFunction[];
+  codeOutput: string = "";
 
   // Input-select for assigning rules to tags
   previousSelected: string[];
@@ -125,7 +126,7 @@ export class RulesComponent implements OnInit {
     this.additionalToolsTabs =
       [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
        { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
-       { name: 'Preview Rule', type: "output", active: false, readonly: true }]
+       { name: 'Preview Rule', type: "output", active: false, readonly: true, running: false, value: null }]
   }
 
   async getMetadata() {
@@ -182,7 +183,7 @@ export class RulesComponent implements OnInit {
         (action === 'add rule') ? await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise() :
           await this.api.editRule(clearEmptyValues(this.ruleToManage)).toPromise();
 
-        this.saveMetadata();
+        await this.saveMetadata();
 
         AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
         this.loading.action = false;
@@ -213,7 +214,8 @@ export class RulesComponent implements OnInit {
     this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
     this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
 
-    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    this.codeOutput = await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    console.log("codeOutput: ", this.codeOutput);
   }
 
   /*async createRule() {
@@ -240,8 +242,8 @@ export class RulesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  // Parses functions and adds 'gc.library' if needed before sending it to backend
   parseFunctions(clause: string): string{
-    // Keep only functions and see which ones need the 'gc.library' to work before sending it to backend
     const regexPattern: RegExp = /\b([a-zA-Z_][a-zA-Z0-9_]*)\(/g;
     let clauseArray = clause.match(regexPattern)?.map(match => match.slice(0, -1)) || [];
 

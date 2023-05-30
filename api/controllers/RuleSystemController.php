@@ -425,7 +425,8 @@ class RuleSystemController
         $isActive = API::getValue("isActive", "bool");
         $tags = API::getValue("tags", "array");
 
-        RuleSystem::previewRule($courseId, $name, $description, $whenClause, $thenClause, $isActive, $tags);
+        $output = RuleSystem::previewRule($courseId, $name, $description, $whenClause, $thenClause, $isActive, $tags);
+        API::response($output ?? "");
     }
 
     /*** --------------------------------------------- ***/

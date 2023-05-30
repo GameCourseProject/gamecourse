@@ -1601,7 +1601,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(res['data'])) );
   }
 
-  public previewRule(ruleData: RuleManageData): Observable<void> {
+  public previewRule(ruleData: RuleManageData): Observable<string> {
     const data = {
       courseId: ruleData.course,
       name: ruleData.name,
@@ -1619,7 +1619,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res ));
+      .pipe( map((res: any) => res['data']));
 
   }
 
