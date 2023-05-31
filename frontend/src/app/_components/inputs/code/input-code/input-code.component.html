@@ -44,7 +44,7 @@
             <button type="button" class="btn btn-success text-white w-full gap-2"
                     (click)="simulateOutput(tab)">
               <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [size]="'sm'"></app-spinner>
+              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
               Run
             </button>
           </div>

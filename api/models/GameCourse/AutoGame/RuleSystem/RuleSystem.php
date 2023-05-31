@@ -42,8 +42,8 @@ abstract class RuleSystem
         file_put_contents($functionsFolder . $defaultFunctionsFile, file_get_contents($functionsFileDefault));
         file_put_contents($metadataFile, "");
 
-        // FIXME: Check if it makes sense to add here
         Section::addSection($courseId, "Miscellaneous");
+        Section::addSection($courseId, "Graveyard");
     }
 
     /**

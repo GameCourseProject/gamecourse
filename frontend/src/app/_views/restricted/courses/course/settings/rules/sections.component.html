@@ -37,10 +37,10 @@
 
     <div cdkDropList [id]="'sections-list'" class="dd max-w-none mt-6" (cdkDropListDropped)="drop($event)">
       <!-- Sections and Rules -->
-      <div class="dd-item" *ngFor="let section of sectionsToShow" cdkDrag (cdkDragStarted)="showWarning()">
-        <div class="justify-center flex">
+      <div class="dd-item" *ngFor="let section of sectionsToShow" [cdkDragDisabled]="section.name === 'Graveyard'" cdkDrag (cdkDragStarted)="showWarning()">
+        <div class="justify-center flex {{(section.name === 'Graveyard' && nrRules[section.id] === 0) ? 'hidden' : ''}}">
           <!-- Move -->
-          <div *ngIf="sectionsToShow.length > 1" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
+          <div *ngIf="sectionsToShow.length > 1 && section.name !== 'Graveyard'" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
             <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
               <ng-icon name="tabler-arrows-vertical" size="1.2rem">
               </ng-icon>
@@ -55,15 +55,17 @@
                   <app-header [subHeader]="true" [classList]="'flex flex-wrap items-start'" [title]="section.name" [icon] ="'jam-box'"></app-header>
 
                   <div>
-                    <div class="tooltip align-middle mx-1.5" data-tip="Edit">
-                      <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('edit section', section)">
-                        <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
+                    <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Edit'">
+                      <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                              (click)="section.name === 'Graveyard' ? prepareManagement('edit section', section) : ''">
+                        <ng-icon name="jam-pencil-f" size="1.5rem" class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-warning'}}"></ng-icon>
                       </button>
                     </div>
 
-                    <div class="tooltip align-middle mx-1.5" data-tip="Delete">
-                      <button class="btn btn-sm btn-ghost btn-circle" (click)="prepareManagement('remove section', section)">
-                        <ng-icon name="jam-trash-f" size="1.5rem" class="text-error"></ng-icon>
+                    <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Delete'">
+                      <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                              (click)="section.name === 'Graveyard' ? prepareManagement('remove section', section) : ''">
+                        <ng-icon name="jam-trash-f" size="1.5rem" class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-error'}}"></ng-icon>
                       </button>
                     </div>
 

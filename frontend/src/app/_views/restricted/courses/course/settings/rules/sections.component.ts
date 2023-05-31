@@ -314,6 +314,11 @@ export class SectionsComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
+  dragAndDropDisabled(): boolean {
+    // Check if any section.name is "Graveyard"
+    return this.sections.some((section) => section.name === "Graveyard");
+  }
+
   async drop(event: CdkDragDrop<string[]>) {
     this.sections = _.cloneDeep(this.originalSections);
     moveItemInArray(this.originalSections, event.previousIndex, event.currentIndex);
