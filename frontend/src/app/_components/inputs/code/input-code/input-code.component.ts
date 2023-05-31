@@ -5,6 +5,7 @@ import {syntaxTree} from "@codemirror/language";
 import {oneDark} from "@codemirror/theme-one-dark";
 import {Tooltip, hoverTooltip} from "@codemirror/view";
 import {HighlightStyle, Language, LRLanguage } from '@codemirror/language';
+import { basicLight } from "cm6-theme-basic-light";
 
 // @ts-ignore
 import { highlightTree } from '@codemirror/highlight';
@@ -139,6 +140,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let tabSize = new Compartment;
     const readonly = tab.readonly ? tab.readonly : false;
 
+    const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = prefersDarkTheme ? oneDark : basicLight;
+
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
       let start = pos, end = pos
@@ -197,7 +201,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       doc: tab.value ? tab.value + "\n" : ("# " + (tab.placeholder ? tab.placeholder : "Write your code here!") + "\n"),
       extensions: [
         basicSetup,
-        oneDark,
+        theme,
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(tab.mode),
         autocompletion({override: [completePy]}),

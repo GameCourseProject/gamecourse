@@ -25,6 +25,7 @@
     "@codemirror/lang-javascript": "^6.1.7",
     "@codemirror/lang-python": "^6.1.2",
     "@codemirror/theme-one-dark": "^6.1.2",
+    "cm6-theme-basic-light": "^0.2.0",
     "css-loader": "^6.7.3",
     "rxjs": "~7.8.0",
     "style-loader": "^3.3.2",
