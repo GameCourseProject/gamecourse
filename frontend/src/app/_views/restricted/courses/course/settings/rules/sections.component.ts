@@ -232,7 +232,6 @@ export class SectionsComponent implements OnInit {
     this.resetSectionManage();
 
     this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
   }
 
 
@@ -321,11 +320,20 @@ export class SectionsComponent implements OnInit {
 
   async drop(event: CdkDragDrop<string[]>) {
     this.sections = _.cloneDeep(this.originalSections);
+
     moveItemInArray(this.originalSections, event.previousIndex, event.currentIndex);
     setTimeout(() => this.arrangeSections = false, 2000);
 
+    if (this.originalSections[this.originalSections.length - 1].name !== 'Graveyard') {
+      AlertService.showAlert(AlertType.ERROR, '\'Graveyard\' section must be at the end');
+      this.originalSections = this.sections;
+      await this.saveSectionPriority();
+      return;
+    }
+
     if (JSON.stringify(this.sections) !== JSON.stringify(this.originalSections)) {
       await this.saveSectionPriority();
+      AlertService.showAlert(AlertType.SUCCESS, 'Sections\' priority saved successfully');
     }
   }
 
