@@ -1,10 +1,13 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {EditorView, basicSetup} from "codemirror";
-import {EditorState, Compartment} from "@codemirror/state";
-import {syntaxTree} from "@codemirror/language";
-import {oneDark} from "@codemirror/theme-one-dark";
-import {Tooltip, hoverTooltip} from "@codemirror/view";
-import {HighlightStyle, Language, LRLanguage } from '@codemirror/language';
+import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { EditorView, basicSetup } from "codemirror";
+import { EditorState, Compartment } from "@codemirror/state";
+import { syntaxTree } from "@codemirror/language";
+import { Tooltip, hoverTooltip } from "@codemirror/view";
+import {ThemingService} from "../../../../_services/theming/theming.service";
+import { HighlightStyle, Language, LRLanguage } from '@codemirror/language';
+
+// THEMES
+import { oneDark } from "@codemirror/theme-one-dark";
 import { basicLight } from "cm6-theme-basic-light";
 
 // @ts-ignore
@@ -21,10 +24,9 @@ import {
 } from "@codemirror/autocomplete";
 
 // @ts-ignore
-import {python, pythonLanguage} from "@codemirror/lang-python";
+import { python, pythonLanguage } from "@codemirror/lang-python";
 // @ts-ignore
-import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
-import {ThemingService} from "../../../../_services/theming/theming.service";
+import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 
 
 // import {Observable} from "rxjs";
@@ -49,7 +51,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() tabs?: (codeTab | outputTab)[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false }];
-  //@Input() codeOutput?: string = "";                              // Result from running the code (to be shown at the 'output' tab)
+  @Input() tabOutput: string;                                     // Message of the Output once the code has run
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -62,7 +64,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() refreshOutput = new EventEmitter<any>();
 
   options: Completion[] = [];                                     // Editor options for autocompletion
-  @Input() tabOutput: string;
+
+  views: {[tabID: number]: EditorView};
+  editorTheme: Compartment = new Compartment;
 
   constructor(
     private themeService: ThemingService
@@ -73,11 +77,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** --------------------------------------------- ***/
 
   ngOnInit(): void {
+    let views = {};
     for (let i = 0; i < this.tabs.length; i++){
+      views[i] = new EditorView();
       if (this.tabs[i].type === 'code'){
         this.setUpKeywords(this.tabs[i])
       }
     }
+    this.views = views;
   }
 
   // Setups all keywords and functions for code
@@ -140,8 +147,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let tabSize = new Compartment;
     const readonly = tab.readonly ? tab.readonly : false;
 
-    const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = prefersDarkTheme ? oneDark : basicLight;
+    // Initializes with the device's theme
+    const theme = this.themeService.getTheme() === 'dark' ? oneDark : basicLight;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -201,7 +208,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       doc: tab.value ? tab.value + "\n" : ("# " + (tab.placeholder ? tab.placeholder : "Write your code here!") + "\n"),
       extensions: [
         basicSetup,
-        theme,
+        this.editorTheme.of(theme),
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(tab.mode),
         autocompletion({override: [completePy]}),
@@ -220,11 +227,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     // Only show autocompletion when starting to type
     const context = new CompletionContext(state, 0, true);
 
-    let view = new EditorView({
+    this.views[index] = new EditorView({
       state,
       parent: element
     });
 
+    let view = this.views[index];
     const options = this.options;
 
     // Autocompletion feature
@@ -358,7 +366,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getId(index: number, tabName: string): string{
+  getId(index: number, tabName: string): string {
     return (this.title ? this.title : "") + "-" + index.toString() + "-" + tabName
   }
 
@@ -369,6 +377,24 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   getTheme(): string{
     return this.themeService.getTheme();
+  }
+
+  loadTheme(view: EditorView) {
+    view.dispatch({
+      effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
+    })
+    /*let theme = this.themeService.getTheme();
+    console.log(this.editorTheme.reconfigure(
+      theme === "light" ? basicLight : oneDark
+    ))
+    // Cannot read properties of undefined (reading 'dispatch')
+    this.view.dispatch({
+      effects: this.editorTheme.reconfigure(
+        theme === "light" ? basicLight : oneDark
+      )
+    });
+*/
+    return true;
   }
 
   toggleTabs(index: number): void {
