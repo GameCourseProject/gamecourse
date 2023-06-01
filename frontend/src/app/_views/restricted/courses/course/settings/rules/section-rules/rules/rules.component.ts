@@ -150,7 +150,7 @@ export class RulesComponent implements OnInit {
   async getCustomFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
 
-    for (let i = 0; i < this.functions.length; i++){
+    for (let i = 0; i < this.functions.length; i++) {
       let description = this.functions[i].description;
       let returnType = description.indexOf(":returns:");
       let finalString = description.slice(returnType);

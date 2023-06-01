@@ -152,7 +152,8 @@
            [submitBtnText]="'Save'"
            [closeBtnText]="'Discard changes'"
            [actionInProgress] = "loading.action"
-           (submitBtnClicked)="saveMetadata()">
+           (submitBtnClicked)="saveMetadata()"
+           (closeBtnClicked)="parsedMetadata = null;">
 </app-modal>
 <ng-template #MANAGE_SECTION_PRIORITY>
   <!-- Description -->
@@ -167,6 +168,7 @@
     [classList]="'mt-4'"
     [showTabs]="false"
     [tabs]="metadataCodeInput"
+    [size]="'lg'"
     (valueChange)="parsedMetadata = $event"
   ></app-input-code>
 </ng-template>

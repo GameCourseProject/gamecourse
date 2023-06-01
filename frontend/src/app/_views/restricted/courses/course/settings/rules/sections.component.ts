@@ -145,7 +145,6 @@ export class SectionsComponent implements OnInit {
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
          'manage-metadata' : 'manage-section';
        ModalService.openModal(modal);
-
      }
 
     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
@@ -347,7 +346,6 @@ export class SectionsComponent implements OnInit {
 
   async parseMetadata() {
     this.metadata = await this.api.getMetadata(this.course.id).toPromise();
-
     this.parsedMetadata = "";
     if (Object.keys(this.metadata).length > 0){
       this.parsedMetadata =
@@ -364,18 +362,20 @@ export class SectionsComponent implements OnInit {
 
   async saveMetadata(){
     this.loading.action = true;
-
     let updatedMetadata = _.cloneDeep(this.parsedMetadata);
+
     // remove comment lines from metadata and clean code before updating
-    updatedMetadata = updatedMetadata.replace(/#[^\n]*\n/g, '');  // comments
-    updatedMetadata = updatedMetadata.replace(/\n\s*\n/g, '');    // empty lines
-    updatedMetadata = updatedMetadata.replace(/(\s*:\s*)/g, ":"); // " : " or ": " or " :" replacing with ":"
+    updatedMetadata = updatedMetadata
+      .replace(/#.*/g, '') // Remove comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/(\s*:\s*)/g, ':'); // Replace ' : ', ' :' and ': ' with ':'
+
 
     await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
-
-    this.loading.action = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Metadata updated successfully');
     ModalService.closeModal('manage-metadata');
+    this.parsedMetadata = null;
+    this.loading.action = false;
   }
 
   resetSectionManage(){
