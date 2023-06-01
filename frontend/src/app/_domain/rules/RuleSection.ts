@@ -1,6 +1,3 @@
-import {Action, ActionScope} from "../modules/config/Action";
-import {TableDataType} from "../../_components/tables/table-data/table-data.component";
-
 export class RuleSection{
 
   private _id: number;
@@ -8,13 +5,6 @@ export class RuleSection{
   private _name: string;
   private _position: number;
   private _module: string;
-
-  // for tables
-  /*private _headers: {label: string, align?: 'left' | 'middle' | 'right'}[];
-  private _data: {type: TableDataType, content: any}[][];
-  private _options: any;
-  private _loadingTable: boolean;
-  private _showTable: boolean;*/
 
   constructor(id: number, course: number, name: string, position: number, module: string) {
     this._id = id;
@@ -63,46 +53,6 @@ export class RuleSection{
   set module(value: string) {
     this._module = value;
   }
-
-  /*get headers(): {label: string, align?: 'left' | 'middle' | 'right'}[]{
-    return this._headers;
-  }
-
-  set headers(value: {label: string, align?: 'left' | 'middle' | 'right'}[]) {
-    this._headers = value;
-  }
-
-  get data() : {type: TableDataType, content: any}[][] {
-    return this._data;
-  }
-
-  set data(value: {type: TableDataType, content: any}[][]){
-    this._data = value;
-  }
-
-  get options(): any {
-    return this._options;
-  }
-
-  set options(value: any){
-    this._options = value;
-  }
-
-  get loadingTable(): boolean {
-    return this._loadingTable;
-  }
-
-  get showTable(): boolean {
-    return this._showTable;
-  }
-
-  set loadingTable(value: boolean){
-    this._loadingTable = value;
-  }
-
-  set showTable(value: boolean) {
-    this._showTable = value;
-  }*/
 
   static fromDatabase(obj: RuleSectionDatabase): RuleSection {
     return new RuleSection(

@@ -34,6 +34,24 @@ class RuleSystemController
     }
 
     /**
+     * Gets section ID of specific course and module
+     *
+     * @throws Exception
+     */
+    public function getSectionIdByModule(){
+        API::requireValues("courseId", "moduleId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $moduleId = API::getValue("moduleId");
+
+        $sectionId = RuleSystem::getSectionIdByModule($courseId, $moduleId);
+        API::response($sectionId);
+    }
+
+    /**
      * Gets section of specific course
      *
      * @throws Exception

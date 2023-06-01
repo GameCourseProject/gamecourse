@@ -337,8 +337,8 @@ export class ConfigComponent implements OnInit {
       this.exportItems(list, [itemToActOn]);
 
     } else if (action === Action.VIEW_RULE) {
-      // const ruleLink = './rule-system/rule/' + itemToActOn["rule"]; // FIXME: redirect to rule
-      const ruleLink = './rule-system'
+      let sectionID = await this.api.getSectionIdByModule(this.course.id, this.module.id).toPromise();
+      const ruleLink = './rule-system/sections/' + sectionID + "/rules/" + itemToActOn["rule"];
       this.router.navigate([ruleLink], {relativeTo: this.route.parent});
 
     } else {

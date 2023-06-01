@@ -3,7 +3,12 @@ import {ApiHttpService} from "../../../../../../../../_services/api/api-http.ser
 import {ActivatedRoute, Router} from "@angular/router";
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {RuleTag} from "../../../../../../../../_domain/rules/RuleTag";
-import {customFunction, codeTab, outputTab} from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
+import {
+  customFunction,
+  codeTab,
+  outputTab,
+  referenceManualTab
+} from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
 import * as _ from "lodash";
@@ -42,7 +47,7 @@ export class RulesComponent implements OnInit {
   // CODE-INPUT VARIABLES
   whenTabs: codeTab[];
   thenTabs: codeTab[];
-  additionalToolsTabs: (codeTab | outputTab)[];
+  additionalToolsTabs: (codeTab | outputTab | referenceManualTab )[];
   functions: customFunction[];
   ELfunctions: customFunction[];
 
@@ -116,18 +121,21 @@ export class RulesComponent implements OnInit {
   }
 
   prepareCodeInputTabs(){
+
     this.whenTabs =
       [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.whenClause,
-        mode: "python", placeholder: "Rule \'When\' clause", customFunctions: this.functions.concat(this.ELfunctions)}]
+        mode: "python", placeholder: "Rule \'When\' clause",
+        customFunctions: this.functions.concat(this.ELfunctions)}];
 
     this.thenTabs =
       [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.thenClause,
-        mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions.concat(this.ELfunctions)}]
+        mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions }]
 
     this.additionalToolsTabs =
-      [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
+      [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions) },
+       { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
        { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
-       { name: 'Preview Rule', type: "output", active: false, readonly: true, running: null, value: null }]
+       { name: 'Preview Rule', type: "output", active: false, running: null, value: null }]
   }
 
   async getMetadata() {

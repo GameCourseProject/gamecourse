@@ -1400,6 +1400,20 @@ export class ApiHttpService {
 
   }
 
+  getSectionIdByModule(courseID: number, moduleID: string) : Observable<number> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getSectionIdByModule');
+      qs.push('courseId', courseID);
+      qs.push('moduleId', moduleID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'] ));
+  }
+
   // Rules
 
   public createRule(ruleData: RuleManageData): Observable<Rule> {

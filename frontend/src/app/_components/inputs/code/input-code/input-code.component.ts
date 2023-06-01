@@ -48,7 +48,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                   // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
-  @Input() tabs?: (codeTab | outputTab)[] = [
+  @Input() tabs?: ( codeTab | outputTab | referenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false }];
   @Input() tabOutput: string;                                     // Message of the Output once the code has run
@@ -64,9 +64,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() refreshOutput = new EventEmitter<any>();
 
   options: Completion[] = [];                                     // Editor options for autocompletion
-
-  views: {[tabID: number]: EditorView};
-  editorTheme: Compartment = new Compartment;
+  views: {[tabID: number]: EditorView};                           // All EditorView's sorted by tabs
+  editorTheme: Compartment = new Compartment;                     // Theme to toggle between dark and light mode
 
   constructor(
     private themeService: ThemingService
@@ -81,7 +80,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.tabs.length; i++){
       views[i] = new EditorView();
       if (this.tabs[i].type === 'code'){
-        this.setUpKeywords(this.tabs[i])
+        this.setUpKeywords((this.tabs[i] as codeTab))
       }
     }
     this.views = views;
@@ -93,6 +92,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     const modeKeywords = getLanguageKeywords(tab.mode);
 
     // Gets keywords from the specific language
+    // FIXME -- could be refactored to a more elegant way
     function getLanguageKeywords(mode: string): string[] {
       switch (mode) {
         case "python": return ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
@@ -120,9 +120,19 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       { label: option.keyword,
         type: "function",
         detail: option.returnType,
+        section: option.name,
         info: option.args.map(arg =>
               { return ( arg === option.args[0] ? "(" : " ") + arg.name + (arg.optional ? "? " : "") + ": " +
-                arg.type + ( arg === option.args[option.args.length - 1] ? ") " : " ") }) + option.description})));
+                arg.type + ( arg === option.args[option.args.length - 1] ? ") " : " ") }) + option.description,
+        apply: (view, completion, from, to) => {
+          const replacement = option.name !== 'gamerules' ?
+            `${option.name}.${completion.label}` : `${completion.label}`;
+          const transaction = view.state.update({
+            changes: { from, to, insert: replacement }
+          });
+          view.dispatch(transaction);
+        }
+      })));
 
     this.options = options;
   }
@@ -135,7 +145,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     for (let i = 0; i < this.tabs.length; i++){
       if (this.tabs[i].type === 'code') {
-        this.initCodeMirror(i, this.tabs[i]);
+        this.initCodeMirror(i, (this.tabs[i] as codeTab));
       }
     }
   }
@@ -211,11 +221,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         this.editorTheme.of(theme),
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(tab.mode),
-        autocompletion({override: [completePy]}),
+        autocompletion({
+          override: [completePy]
+        }),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
-            insertCommentCommand(view);
+            this.valueChange.emit(view.state.doc.toString());
+            //insertCommentCommand(view);
           }
         }),
         wordHover,
@@ -291,7 +304,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // FIXME
     const insertCommentCommand = (view: EditorView) => {
-      this.valueChange.emit(view.state.doc.toString());
 
       let words = (view.state.doc.toString()).split(/\s+/);
 
@@ -379,21 +391,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     return this.themeService.getTheme();
   }
 
+  // FIXME -- try and find another way of doing this
   loadTheme(view: EditorView) {
     view.dispatch({
       effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
     })
-    /*let theme = this.themeService.getTheme();
-    console.log(this.editorTheme.reconfigure(
-      theme === "light" ? basicLight : oneDark
-    ))
-    // Cannot read properties of undefined (reading 'dispatch')
-    this.view.dispatch({
-      effects: this.editorTheme.reconfigure(
-        theme === "light" ? basicLight : oneDark
-      )
-    });
-*/
     return true;
   }
 
@@ -405,25 +407,32 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 }
 
 export interface codeTab {
-  name: string,                              // Name of the tab that will appear above
-  type: "code" | "output",                   // Specifies type of tab in editor
-  active: boolean,                           // Indicates which tab is active (only one at a time!)
-  value?: string,                            // Value on init
-  mode?: "python" | "javascript",            // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
-  placeholder?: string,                      // Message to show by default
-  nrLines?: number,                          // Number of lines already added to the editor. Default = 10 lines
-  customKeywords?: string[],                 // Personalized keywords
-  customFunctions?: customFunction[],        // Personalized functions
-  readonly?: boolean,                        // Make editor readonly
+  name: string,                                    // Name of the tab that will appear above
+  type: "code",                                    // Specifies type of tab in editor
+  active: boolean,                                 // Indicates which tab is active (only one at a time!)
+  value?: string,                                  // Value on init
+  mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  placeholder?: string,                            // Message to show by default
+  nrLines?: number,                                // Number of lines already added to the editor. Default = 10 lines
+  customKeywords?: string[],                       // Personalized keywords
+  customFunctions?: customFunction[],              // Personalized functions
+  readonly?: boolean,                              // Make editor readonly
 }
 
 export interface outputTab {
   name: string,                              // Name of the tab that will appear above
-  type: "code" | "output",                   // Specifies type of tab in editor
+  type: "output",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   running: boolean,                          // Boolean to show if code is running in background
   value?: string,                            // Output value once run
-  tooltip?: string,                      // Message to show by default
+  tooltip?: string,                          // Message to show by default
+}
+
+export interface referenceManualTab {
+  name: string,                              // Name of the tab that will appear above
+  type: "manual",                            // Specifies type of tab in editor
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
+  customFunctions?: customFunction[],        // Personalized functions
 }
 
 export interface customFunction {

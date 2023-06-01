@@ -22,6 +22,10 @@
           <div [id]="getId(i, tab.name)"></div>
         </div>
 
+        <!-- TODO: Editor reference manual tabs -->
+        <div *ngIf="tab.type === 'manual' && tab.active">
+          <ng-container></ng-container>
+        </div>
         <!-- Editor output tabs -->
         <div *ngIf="tab.type === 'output' && tab.active">
           <!-- Warning message -->

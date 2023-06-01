@@ -185,6 +185,12 @@ class Section
         else return null;
     }
 
+    public static function getSectionIdByModule(int $courseId, string $moduleId): int {
+        $table = self::TABLE_RULE_SECTION;
+        $where = ["course" => $courseId, "module" => $moduleId];
+        return intval(Core::database()->select($table, $where, "id"));
+    }
+
     /**
      * Gets a section by its name.
      * Returns null if section doesn't exist.

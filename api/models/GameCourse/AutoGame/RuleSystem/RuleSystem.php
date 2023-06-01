@@ -159,6 +159,10 @@ abstract class RuleSystem
     }
 
 
+    public static function getSectionIdByModule(int $courseId, string $moduleId): int {
+        return Section::getSectionIdByModule($courseId, $moduleId);
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Tags ----------------------- ***/
     /*** ---------------------------------------------------- ***/

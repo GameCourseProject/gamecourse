@@ -336,8 +336,8 @@ export class SkillsComponent implements OnInit {
         // this.exportUsers([userToActOn]);
 
       } else if (action === Action.VIEW_RULE) {
-        // const ruleLink = './rule-system/rule/' + skillToActOn["rule"]; // FIXME: redirect to rule
-        const ruleLink = './rule-system'
+        let sectionID = await this.api.getSectionIdByModule(this.courseID, "Skills").toPromise();
+        const ruleLink = './rule-system/sections/' + sectionID + "/rules/" + skillToActOn.ruleID;
         this.router.navigate([ruleLink], {relativeTo: this.route.parent});
 
       }
