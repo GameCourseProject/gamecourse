@@ -1,9 +1,19 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { EditorView, basicSetup } from "codemirror";
-import { EditorState, Compartment } from "@codemirror/state";
+import { EditorState, Compartment, StateField, StateEffect } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
-import { Tooltip, hoverTooltip } from "@codemirror/view";
-import {ThemingService} from "../../../../_services/theming/theming.service";
+import {
+  Tooltip,
+  hoverTooltip,
+  Decoration,
+  DecorationSet,
+  keymap,
+  highlightActiveLine,
+  MatchDecorator,
+  ViewPlugin,
+  ViewUpdate
+} from "@codemirror/view";
+import { ThemingService } from "../../../../_services/theming/theming.service";
 import { HighlightStyle, Language, LRLanguage } from '@codemirror/language';
 
 // THEMES
@@ -27,7 +37,7 @@ import {
 import { python, pythonLanguage } from "@codemirror/lang-python";
 // @ts-ignore
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
-
+import {UpdateService} from "../../../../_services/update.service";
 
 // import {Observable} from "rxjs";
 
@@ -68,7 +78,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   editorTheme: Compartment = new Compartment;                     // Theme to toggle between dark and light mode
 
   constructor(
-    private themeService: ThemingService
+    private themeService: ThemingService,
+    private updateService: UpdateService
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -79,11 +90,17 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let views = {};
     for (let i = 0; i < this.tabs.length; i++){
       views[i] = new EditorView();
+
       if (this.tabs[i].type === 'code'){
         this.setUpKeywords((this.tabs[i] as codeTab))
       }
     }
     this.views = views;
+
+    this.updateService.update.subscribe((value: any) => {
+      // Trigger your function here based on the variable change
+      this.loadTheme();
+    });
   }
 
   // Setups all keywords and functions for code
@@ -190,7 +207,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
                 width: "80%"
               },
               ".cm-tooltip-cursor": {
-                backgroundColor: "#66b !important",
+                backgroundColor: theme === oneDark ? "#66b !important" : "#FFFFFF !important",
                 color: "white",
                 border: "none",
                 padding: "5px",
@@ -233,7 +250,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         }),
         wordHover,
         EditorState.readOnly.of(readonly),
-        EditorView.editable.of(!readonly)
+        EditorView.editable.of(!readonly),
       ],
     });
 
@@ -300,10 +317,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         }
       })*/
 
-
-
     // FIXME
-    const insertCommentCommand = (view: EditorView) => {
+    /*const insertCommentCommand = (view: EditorView) => {
 
       let words = (view.state.doc.toString()).split(/\s+/);
 
@@ -321,7 +336,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         return true;
       }
       return false;
-    }
+    }*/
 
   }
 
@@ -388,15 +403,17 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   getTheme(): string{
+
+
     return this.themeService.getTheme();
   }
 
-  // FIXME -- try and find another way of doing this
-  loadTheme(view: EditorView) {
-    view.dispatch({
-      effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
-    })
-    return true;
+  loadTheme() {
+    for (let i = 0; i < this.tabs.length; i++){
+      this.views[i].dispatch({
+        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
+      });
+    }
   }
 
   toggleTabs(index: number): void {

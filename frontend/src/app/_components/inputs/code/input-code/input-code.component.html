@@ -16,54 +16,51 @@
        [style.background-color]="getTheme() === 'light' ? '#FFFFFF' : '#282C34'">
 
     <ng-container *ngFor="let tab of tabs, let i = index">
-      <ng-container *ngIf="loadTheme(views[i])">
-        <!-- Editor code tabs  -->
-        <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}}">
-          <div [id]="getId(i, tab.name)"></div>
-        </div>
+      <!-- Editor code tabs  -->
+      <div *ngIf="tab.type === 'code'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}}">
+        <div [id]="getId(i, tab.name)"></div>
+      </div>
 
-        <!-- TODO: Editor reference manual tabs -->
-        <div *ngIf="tab.type === 'manual' && tab.active">
-          <ng-container></ng-container>
-        </div>
-        <!-- Editor output tabs -->
-        <div *ngIf="tab.type === 'output' && tab.active">
-          <!-- Warning message -->
-          <div class="justify-center flex">
-            <div *ngIf="isRunning(tab)" class="alert alert-warning shadow-lg rounded-lg w-[calc(90%-0.5rem)] mt-4">
-              <div>
-                <ng-icon [name]="'feather-alert-triangle'" size="1rem"></ng-icon>
-                <span><strong>Code is running.</strong> Hold on! Results might take a while to appear (click refresh icon table to see if output is ready).</span>
-              </div>
+      <!-- TODO: Editor reference manual tabs -->
+      <div *ngIf="tab.type === 'manual' && tab.active">
+        <ng-container></ng-container>
+      </div>
+      <!-- Editor output tabs -->
+      <div *ngIf="tab.type === 'output' && tab.active">
+        <!-- Warning message -->
+        <div class="justify-center flex">
+          <div *ngIf="isRunning(tab)" class="alert alert-warning shadow-lg rounded-lg w-[calc(90%-0.5rem)] mt-4">
+            <div>
+              <ng-icon [name]="'feather-alert-triangle'" size="1rem"></ng-icon>
+              <span><strong>Code is running.</strong> Hold on! Results might take a while to appear (click refresh icon table to see if output is ready).</span>
             </div>
           </div>
+        </div>
 
-          <div *ngIf="!isRunning(tab) && isRunning(tab) !== null && tab.value !== null" class="justify-center flex">
+        <div *ngIf="!isRunning(tab) && isRunning(tab) !== null && tab.value !== null" class="justify-center flex">
           <textarea class="textarea textarea-bordered textarea-md w-[calc(80%-0.5rem)] h-full
           bg-transparent text-white border-base-300 mt-4">{{tab.value}}
           </textarea>
-          </div>
-
-          <div class="justify-center flex align-middle mt-4">
-            <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
-              <button type="button" class="btn btn-success text-white w-full gap-2"
-                      (click)="simulateOutput(tab)">
-                <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-                <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-                Run
-              </button>
-            </div>
-
-            <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
-              <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(tab)">
-                <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
-              </button>
-            </div>
-          </div>
-
         </div>
-      </ng-container>
 
+        <div class="justify-center flex align-middle mt-4">
+          <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
+            <button type="button" class="btn btn-success text-white w-full gap-2"
+                    (click)="simulateOutput(tab)">
+              <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+              Run
+            </button>
+          </div>
+
+          <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
+            <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(tab)">
+              <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
+            </button>
+          </div>
+        </div>
+
+      </div>
     </ng-container>
 
   </div>
