@@ -1,20 +1,10 @@
 import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { EditorView, basicSetup } from "codemirror";
-import { EditorState, Compartment, StateField, StateEffect } from "@codemirror/state";
+import { EditorState, Compartment, StateField, StateEffect, Range } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";
-import {
-  Tooltip,
-  hoverTooltip,
-  Decoration,
-  DecorationSet,
-  keymap,
-  highlightActiveLine,
-  MatchDecorator,
-  ViewPlugin,
-  ViewUpdate
-} from "@codemirror/view";
+import { SearchCursor } from "@codemirror/search";
+import { hoverTooltip, Decoration } from "@codemirror/view";
 import { ThemingService } from "../../../../_services/theming/theming.service";
-import { HighlightStyle, Language, LRLanguage } from '@codemirror/language';
 
 // THEMES
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -230,11 +220,28 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     })
 
+    const highlightEffect = StateEffect.define<Range<Decoration>[]>();
+
+    const highlightExtension = StateField.define({
+      create() { return Decoration.none },
+      update(value, transaction) {
+        value = value.map(transaction.changes)
+
+        for (let effect of transaction.effects) {
+          if (effect.is(highlightEffect)) value = value.update({add: effect.value, sort: true})
+        }
+
+        return value
+      },
+      provide: f => EditorView.decorations.from(f)
+    });
+
     // State and View basic definition
     let state = EditorState.create({
       doc: tab.value ? tab.value + "\n" : ("# " + (tab.placeholder ? tab.placeholder : "Write your code here!") + "\n"),
       extensions: [
         basicSetup,
+        highlightExtension,
         this.editorTheme.of(theme),
         tabSize.of(EditorState.tabSize.of(8)),
         this.chooseMode(tab.mode),
@@ -279,7 +286,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       }
     }
 
-
     // Set number of lines initialized
     const nrLines = tab.nrLines ?? 10;
     updateToMinNumberOfLines(view, nrLines);
@@ -295,6 +301,29 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       view.dispatch({
         changes: {from: currentStr.length, insert: appendLines}
       })
+    }
+
+
+    // highlights incomplete lines of code
+    highlight(view);
+    function highlight(view: EditorView) {
+      // cursor based on the doc content and the substring
+      let cursor = new SearchCursor(view.state.doc, "# COMPLETE THIS:");
+
+      const highlightDecoration = Decoration.mark({
+        attributes: {style: "background-color: yellow"}
+      });
+
+      while(!cursor.done) {
+        cursor.next();
+        // this is where the change takes effect by the dispatch. The of method instantiate the effect. You need to put this code where you want the change to take place
+        view.dispatch({
+          effects: highlightEffect.of([highlightDecoration.range(cursor.value.from, cursor.value.to)])
+        });
+      }
+      // Search first match of the substring
+      //cursor.next();
+
     }
 
 
@@ -403,8 +432,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   getTheme(): string{
-
-
     return this.themeService.getTheme();
   }
 

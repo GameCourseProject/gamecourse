@@ -23,7 +23,14 @@
 
       <!-- TODO: Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active">
-        <ng-container></ng-container>
+        <div class="w-[calc(90%-0.5rem)] justify-center flex">
+          <!--<app-input-search
+            [id] = "'manual'"
+            [items] = ""
+            [placeholder]="'Search for functions...'"
+            (valueChange)="filterFunctions($event)">
+          </app-input-search>-->
+        </div>
       </div>
       <!-- Editor output tabs -->
       <div *ngIf="tab.type === 'output' && tab.active">
