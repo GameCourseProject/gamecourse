@@ -68,6 +68,19 @@
   (onClose)="ruleToManage = null">
 </app-simple-modal>
 
+<!-- Uncompleted rule modal -->
+<app-simple-modal
+   [id]="'uncompleted-rule'"
+   [title]="'Uncompleted Rule!'"
+   [text]="'There seems to be some defective lines in this rule. Consider completing it before activating it.'"
+   [submitBtnText]="'Ok'"
+   [submitBtnColor]="'primary'"
+   [xButton]="false"
+   [closeBtn]="false"
+   [actionInProgress]="loading.action"
+   (submitBtnClicked)="doAction('close-uncompleted-rule')">
+</app-simple-modal>
+
 <!-- Import Modal -->
 <app-modal
   [id]="'import'"

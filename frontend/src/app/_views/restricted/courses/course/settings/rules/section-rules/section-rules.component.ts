@@ -130,7 +130,7 @@ export class SectionRulesComponent implements OnInit {
               rule.tags.sort((a,b) => a.name.localeCompare(b.name))
                 .map(tag => '<div class="badge badge-md badge-' + this.themeService.hexaToColor(tag.color) + '">' + tag.name + '</div>').join('') +
               '</div>', searchBy: rule.tags.map(tag => tag.name).join(' ') }},
-        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive}},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive, toggleDisabled: this.section.name === 'Graveyard' }},
         {type: TableDataType.ACTIONS, content: {actions: [
               Action.EDIT,
               {action: 'Duplicate', icon: 'tabler-copy', color: 'primary', disabled: this.section.name === 'Graveyard'},
@@ -176,7 +176,12 @@ export class SectionRulesComponent implements OnInit {
       ModalService.closeModal('delete-rule');
       this.resetRuleManage();
       this.loading.action = false;
-    }
+    } else if (action === 'close-uncompleted-rule'){
+       this.loading.action = true;
+       await this.buildTable();
+       ModalService.closeModal('uncompleted-rule');
+       this.loading.action = false;
+     }
   }
 
   async importRules(): Promise<void> {
@@ -233,7 +238,9 @@ export class SectionRulesComponent implements OnInit {
     action = action.toLowerCase();
 
     if (action === 'value changed rule' && col === 3) {
-      await this.toggleActive(ruleToActOn);
+      if (this.isUncompleted(ruleToActOn)) {
+        ModalService.openModal('uncompleted-rule');
+      } else await this.toggleActive(ruleToActOn);
 
     } else if (col === 4){
       if (action === Action.REMOVE) {
@@ -329,6 +336,11 @@ export class SectionRulesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  // FIXME -- hardcoded
+  isUncompleted (rule: Rule): boolean {
+    let query = "logs = [] # COMPLETE THIS:";
+    return rule.whenClause.includes(query) || rule.thenClause.includes(query);
+  }
 
   onFileSelected(files: FileList, type: 'file'): void {
     this.importData.file = files.item(0);

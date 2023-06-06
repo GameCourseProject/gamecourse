@@ -9,7 +9,9 @@
 
   <ng-container>
     <div class="flex flex-wrap items-center">
-      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="doAction('prepare closing')">
+      <!-- NOTE: Because we are going to previous page it doesnt matter if rule is completed or not.
+      We make it true so the uncompleted warning is not triggered -->
+      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="isCompleted = true; doAction('prepare closing')">
         <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
       </button>
       <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'{{section.name}}' section</i></span>
@@ -90,6 +92,7 @@
                   [helperPosition]="'right'"
                   [showTabs]="false"
                   [tabs]="whenTabs"
+                  (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.whenClause = $event"
                 ></app-input-code>
 
@@ -101,6 +104,7 @@
                   [helperPosition]="'right'"
                   [showTabs]="false"
                   [tabs]="thenTabs"
+                  (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.thenClause = $event"
                 ></app-input-code>
               </div>
@@ -164,7 +168,9 @@
         <!-- Actions -->
         <div class="card-actions justify-end mt-4">
 
-          <button type="submit" class="btn btn-primary" (click)="doAction('prepare closing')">
+          <!-- NOTE: Because we are going to previous page it doesnt matter if rule is completed or not.
+               We make it true so the uncompleted warning is not triggered -->
+          <button type="submit" class="btn btn-primary" (click)="isCompleted = true; doAction('prepare closing')">
             <!-- Spinner -->
             <ng-container *ngIf="loading.action">
               <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
@@ -172,7 +178,8 @@
             Discard changes
           </button>
 
-          <button type="submit" class="btn btn-primary" (click)="r.onSubmit(null); rule ? doAction('edit rule') : doAction('add rule')">
+          <button type="submit" class="btn btn-primary"
+                  (click)="r.onSubmit(null); !isCompleted ? doAction('prepare closing') : (rule ? doAction('edit rule') : doAction('add rule'))">
             <!-- Spinner -->
             <ng-container *ngIf="loading.action">
               <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
@@ -191,23 +198,27 @@
 </div>
 
 
-
 <!-- Discard changed Modal -->
 <app-modal
   [id]="'exit-management'"
   [templateRef]="EXIT_MANAGEMENT"
   [size]="'md'"
-  [header]="'Discard changes?'"
-  [submitBtnText]="'Discard'"
+  [header]=" !isCompleted ? 'Uncompleted lines!' : 'Discard changes?'"
+  [submitBtnText]="!isCompleted ? 'Save anyway' : 'Discard'"
   [closeBtnText]="'Cancel'"
   [actionInProgress] = "loading.action"
-  (submitBtnClicked)="doAction('exit page')"
+  (submitBtnClicked)="!isCompleted ? doAction('saving incomplete') : doAction('exit page') "
   [xButton]="false"
   [static]="true">
 </app-modal>
 <ng-template #EXIT_MANAGEMENT>
-  <div class="w-full flex flex-wrap">
+  <div *ngIf="isCompleted" class="w-full flex flex-wrap">
     <span class="w-full">There are currently <strong>unsaved changes</strong>. This action <strong>cannot be undone</strong>.</span>
+    <span class="w-full">Do you want to proceed?</span>
+  </div>
+
+  <div *ngIf="!isCompleted" class="w-full flex flex-wrap">
+    <span class="w-full">There are currently <strong>uncompleted lines</strong>. Saving this will make the rule defective.</span>
     <span class="w-full">Do you want to proceed?</span>
   </div>
 </ng-template>

@@ -50,6 +50,7 @@ export class RulesComponent implements OnInit {
   additionalToolsTabs: (codeTab | outputTab | referenceManualTab )[];
   functions: customFunction[];
   ELfunctions: customFunction[];
+  isCompleted: boolean;
 
   // Input-select for assigning rules to tags
   previousSelected: string[];
@@ -97,6 +98,7 @@ export class RulesComponent implements OnInit {
           this.previousSelected = _.cloneDeep(this.ruleToManage.tags);
         }
 
+        this.isUncompleted();
         this.prepareCodeInputTabs();
         this.loading.page = false;
       })
@@ -123,12 +125,16 @@ export class RulesComponent implements OnInit {
   prepareCodeInputTabs(){
 
     this.whenTabs =
-      [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.whenClause,
+      [{ name: 'Code', type: "code", active: true,
+        highlightQuery: '[] # COMPLETE THIS:',
+        value: this.ruleToManage.whenClause,
         mode: "python", placeholder: "Rule \'When\' clause",
         customFunctions: this.functions.concat(this.ELfunctions)}];
 
     this.thenTabs =
-      [{ name: 'Code', type: "code", active: true, value: this.ruleToManage.thenClause,
+      [{ name: 'Code', type: "code", active: true,
+        highlightQuery: '[] # COMPLETE THIS:',
+        value: this.ruleToManage.thenClause,
         mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions }]
 
     this.additionalToolsTabs =
@@ -157,6 +163,8 @@ export class RulesComponent implements OnInit {
 
   async getCustomFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+    // TODO -- remove the gc. function w/ splice() ?
+    // what about the transform function?
 
     for (let i = 0; i < this.functions.length; i++) {
       let description = this.functions[i].description;
@@ -177,6 +185,13 @@ export class RulesComponent implements OnInit {
 
   async getRule(ruleID: number): Promise<void> {
     this.rule = await this.api.getRuleById(this.course.id, ruleID).toPromise();
+  }
+
+  // FIXME -- hardcoded
+  isUncompleted () {
+    let query = "logs = [] # COMPLETE THIS:";
+    console.log(this.ruleToManage.whenClause.includes(query));
+    this.isCompleted = !this.ruleToManage.whenClause.includes(query) && !this.ruleToManage.thenClause.includes(query);
   }
 
   /*** ------------------------------------------------ ***/
@@ -205,7 +220,9 @@ export class RulesComponent implements OnInit {
       ModalService.openModal('exit-management');
     } else if (action === 'exit page'){
       await this.router.navigate(['rule-system/sections/' + this.section.id], {relativeTo: this.route.parent});
-
+    } else if (action === 'saving incomplete') {
+      this.ruleToManage.isActive = false;
+      await this.doAction('edit rule');
     }
   }
 
@@ -331,7 +348,8 @@ export interface RuleManageData {
   thenClause?: string,
   position?: number,
   isActive?: boolean,
-  tags?: any[]
+  isComplete?: boolean
+  tags?: any[],
 }
 
 
@@ -345,6 +363,7 @@ export function initRuleToManage(courseID: number, sectionID: number, rule?: Rul
     thenClause: rule?.thenClause ?? null,
     position: rule?.position ?? null,
     isActive: rule?.isActive ?? true,
+    isComplete: null,
     tags: rule?.tags ?? []
   };
   if (rule) {

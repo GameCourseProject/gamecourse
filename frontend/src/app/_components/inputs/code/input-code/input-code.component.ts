@@ -40,6 +40,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // Essentials
   @Input() id: string;                                            // Unique id
   @Input() title: string;                                         // Textarea title
+  @Input() tabOutput: string;                                     // Message of the Output once the code has run
 
   // Extras
   @Input() size?: 'md' | 'lg' = 'md';                             // Size of input code
@@ -51,7 +52,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() tabs?: ( codeTab | outputTab | referenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false }];
-  @Input() tabOutput: string;                                     // Message of the Output once the code has run
+  //@Input() highlightText?: string                                 // Text to highlight
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -60,12 +61,16 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
 
   @Output() valueChange = new EventEmitter<string>();
+  @Output() isCompleted = new EventEmitter<boolean>();
   @Output() runOutput = new EventEmitter<any>();
   @Output() refreshOutput = new EventEmitter<any>();
 
   options: Completion[] = [];                                     // Editor options for autocompletion
   views: {[tabID: number]: EditorView};                           // All EditorView's sorted by tabs
   editorTheme: Compartment = new Compartment;                     // Theme to toggle between dark and light mode
+
+  // If there's anything in complete (doesn't matter from which tab), the alert will be visible
+  showAlert: boolean = false;                                    // Boolean for incomplete lines
 
   constructor(
     private themeService: ThemingService,
@@ -164,6 +169,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let tabSize = new Compartment;
     const readonly = tab.readonly ? tab.readonly : false;
 
+    let query = tab.highlightQuery;
+
     // Initializes with the device's theme
     const theme = this.themeService.getTheme() === 'dark' ? oneDark : basicLight;
 
@@ -252,6 +259,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         EditorView.updateListener.of((update) => {
           if (update.docChanged && update.selectionSet && update.viewportChanged){
             this.valueChange.emit(view.state.doc.toString());
+            if (query) this.toggleAlert(view, query);
+            this.isCompleted.emit(!this.showAlert);
             //insertCommentCommand(view);
           }
         }),
@@ -304,28 +313,33 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
 
 
-    // highlights incomplete lines of code
-    highlight(view);
-    function highlight(view: EditorView) {
-      // cursor based on the doc content and the substring
-      let cursor = new SearchCursor(view.state.doc, "# COMPLETE THIS:");
+    if (query){
 
-      const highlightDecoration = Decoration.mark({
-        attributes: {style: "background-color: yellow"}
-      });
+      let showAlert = this.showAlert;
+      // highlights incomplete lines of code
+      highlight(view, query);
+      function highlight(view: EditorView, query: string) {
+        // cursor based on the doc content and the substring
+        let cursor = new SearchCursor(view.state.doc, query);
 
-      while(!cursor.done) {
-        cursor.next();
-        // this is where the change takes effect by the dispatch. The of method instantiate the effect. You need to put this code where you want the change to take place
-        view.dispatch({
-          effects: highlightEffect.of([highlightDecoration.range(cursor.value.from, cursor.value.to)])
+        const highlightDecoration = Decoration.mark({
+          attributes: {style: "background-color: yellow"}
         });
+
+        while (!cursor.done) {
+          cursor.next();
+
+          // Makes warning visible
+          showAlert = true;
+
+          // this is where the change takes effect by the dispatch. The of method instantiate the effect. You need to put this code where you want the change to take place
+          view.dispatch({
+            effects: highlightEffect.of([highlightDecoration.range(cursor.value.from, cursor.value.to)])
+          });
+        }
       }
-      // Search first match of the substring
-      //cursor.next();
-
+      this.showAlert = showAlert;
     }
-
 
     /*return state.selection.ranges
       .filter(range => range.empty)
@@ -378,6 +392,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       case "javascript": return language.of(javascript()); // NOTE: not tested
       default: return language.of(python());
     }
+  }
+
+  toggleAlert(view: EditorView, query: string){
+    this.showAlert = (view.state.doc.toString()).includes(query);
   }
 
   /*** --------------------------------------------- ***/
@@ -454,6 +472,8 @@ export interface codeTab {
   name: string,                                    // Name of the tab that will appear above
   type: "code",                                    // Specifies type of tab in editor
   active: boolean,                                 // Indicates which tab is active (only one at a time!)
+  //isComplete: boolean,                             // TODO
+  highlightQuery?: string,                         // TODO
   value?: string,                                  // Value on init
   mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
   placeholder?: string,                            // Message to show by default
@@ -486,5 +506,4 @@ export interface customFunction {
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
-  example?: string                                        // Example of how the function should be used and what it returns
 }

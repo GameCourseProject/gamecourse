@@ -15,6 +15,9 @@ export class SimpleModalComponent implements OnInit {
 
   @Input() title?: string;                                              // Modal title
   @Input() text?: string;                                               // Modal text
+  @Input() xButton?: boolean = true;                                    // Right top button 'X'
+
+  @Input() closeBtn?: boolean = true;                                   // Show left button
 
   @Input() closeBtnText?: string = 'Cancel';                            // Left button text
   @Input() closeBtnColor?: 'primary' | 'secondary' | 'accent' |         // Modal title color
@@ -24,7 +27,7 @@ export class SimpleModalComponent implements OnInit {
   @Input() extraBtnColor?: 'primary' | 'secondary' | 'accent' |         // Modal title color
     'neutral' | 'info' | 'success' | 'warning' | 'error';               // Middle button color
   @Input() extraBtnOutline?: boolean;                                   // Make middle button outline
-  @Input() extraBtnDisabled?: boolean;                                // Make it disabled
+  @Input() extraBtnDisabled?: boolean;                                  // Make it disabled
 
   @Input() submitBtnText?: string = 'Submit';                           // Right button text
   @Input() submitBtnColor?: 'primary' | 'secondary' | 'accent' |        // Modal title color

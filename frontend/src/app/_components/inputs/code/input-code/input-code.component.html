@@ -1,4 +1,13 @@
 <div class="form-control w-full {{classList}}">
+
+  <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-4">
+    <div class="alert alert-warning shadow-md">
+      <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
+      <div><span>There are <strong>uncompleted lines</strong> of code below.
+        Check the <strong>highlighted lines</strong> and <strong>change them</strong> to their desired behavior.</span></div>
+    </div>
+  </div>
+
   <!-- Label -->
   <label *ngIf="title" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
     <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
@@ -32,6 +41,7 @@
           </app-input-search>-->
         </div>
       </div>
+
       <!-- Editor output tabs -->
       <div *ngIf="tab.type === 'output' && tab.active">
         <!-- Warning message -->
