@@ -28,6 +28,7 @@ import { python, pythonLanguage } from "@codemirror/lang-python";
 // @ts-ignore
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
+import {Reduce} from "../../../../_utils/lists/reduce";
 
 // import {Observable} from "rxjs";
 
@@ -52,7 +53,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() tabs?: ( codeTab | outputTab | referenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false }];
-  //@Input() highlightText?: string                                 // Text to highlight
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -71,6 +71,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   // If there's anything in complete (doesn't matter from which tab), the alert will be visible
   showAlert: boolean = false;                                    // Boolean for incomplete lines
+  selectedFunction: customFunction = null;                       // Selected function to show information in reference manual
+
+  // SEARCH AND FILTER
+  // NOTE: Because there can only be 1 tab active at a time, we can take these variables as 'global' for the entire component
+  reduce = new Reduce();
+  originalFunctions: customFunction[] = [];
+  functionsToShow: customFunction[] = [];
+  filteredFunctions: customFunction[] = [];
 
   constructor(
     private themeService: ThemingService,
@@ -87,7 +95,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       views[i] = new EditorView();
 
       if (this.tabs[i].type === 'code'){
-        this.setUpKeywords((this.tabs[i] as codeTab))
+        this.setUpKeywords((this.tabs[i] as codeTab));
+      } else if (this.tabs[i].type === 'manual') {
+        this.filteredFunctions = (this.tabs[i] as referenceManualTab).customFunctions;
+        this.functionsToShow = (this.tabs[i] as referenceManualTab).customFunctions;
       }
     }
     this.views = views;
@@ -313,7 +324,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
 
 
-    if (query){
+    if (query) {
 
       let showAlert = this.showAlert;
       // highlights incomplete lines of code
@@ -394,6 +405,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // Function to make the warning visible or not
   toggleAlert(view: EditorView, query: string){
     this.showAlert = (view.state.doc.toString()).includes(query);
   }
@@ -437,8 +449,43 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   /*** --------------------------------------------- ***/
+  /*** -------------- Search & Filter -------------- ***/
+  /*** --------------------------------------------- ***/
+
+  reduceList(query?: string): void {
+    this.reduce.search(this.originalFunctions, query);
+  }
+
+  filterFunctions(searchQuery?: string) {
+    if (searchQuery) {
+      console.log("hey");
+      let functions: customFunction[] = [];
+      for (let i = 0; i < this.filteredFunctions.length; i++){
+        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          functions.push(this.filteredFunctions[i]);
+        }
+      }
+      this.functionsToShow = functions;
+    }
+    else {
+      this.functionsToShow = this.filteredFunctions;
+    }
+  }
+
+  /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  isSelected(fx: customFunction){
+    if (this.selectedFunction !== null){
+      return this.selectedFunction.keyword === fx.keyword;
+    }
+    return false;
+  }
+
+  selectFunction(fx: customFunction){
+    this.selectedFunction = fx;
+  }
 
   getId(index: number, tabName: string): string {
     return (this.title ? this.title : "") + "-" + index.toString() + "-" + tabName
@@ -472,8 +519,7 @@ export interface codeTab {
   name: string,                                    // Name of the tab that will appear above
   type: "code",                                    // Specifies type of tab in editor
   active: boolean,                                 // Indicates which tab is active (only one at a time!)
-  //isComplete: boolean,                             // TODO
-  highlightQuery?: string,                         // TODO
+  highlightQuery?: string,                         // Text to highlight
   value?: string,                                  // Value on init
   mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
   placeholder?: string,                            // Message to show by default

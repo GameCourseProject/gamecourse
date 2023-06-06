@@ -118,7 +118,9 @@ export class SectionsComponent implements OnInit {
     if (searchQuery) {
       let sections: RuleSection[] = [];
       for (let i = 0; i < this.filteredSections.length; i++){
-        if (((this.filteredSections[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) sections.push(this.filteredSections[i]);
+        if (((this.filteredSections[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          sections.push(this.filteredSections[i]);
+        }
       }
       this.sectionsToShow = sections;
     }

@@ -190,7 +190,6 @@ export class RulesComponent implements OnInit {
   // FIXME -- hardcoded
   isUncompleted () {
     let query = "logs = [] # COMPLETE THIS:";
-    console.log(this.ruleToManage.whenClause.includes(query));
     this.isCompleted = !this.ruleToManage.whenClause.includes(query) && !this.ruleToManage.thenClause.includes(query);
   }
 
