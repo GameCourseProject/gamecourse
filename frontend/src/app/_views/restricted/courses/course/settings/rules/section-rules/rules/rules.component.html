@@ -110,6 +110,15 @@
               </div>
 
               <div class="w-1/2 pl-1">
+                <!-- Alert for metadata changes -->
+                <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-8">
+                  <div class="alert alert-warning shadow-md">
+                    <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
+                    <div><span>Keep in mind that <strong>metadata is global</strong>. Changing it will <strong>change metadata for the entire course</strong>,
+                    which includes <strong>others rules</strong> as well.</span></div>
+                  </div>
+                </div>
+
                 <app-input-code
                   [id]="'rule-tools'"
                   [classList]="'mt-4'"
@@ -123,15 +132,6 @@
                   (runOutput)="previewRule()"
                   (refreshOutput)="getPreviewRuleOutput()"
                 ></app-input-code>
-              </div>
-            </div>
-
-            <!-- Alert for metadata changes -->
-            <div *ngIf="showAlert" class="justify-center flex flex-wrap mt-4">
-              <div class="alert alert-warning shadow-md">
-                <ng-icon name="tabler-alert-triangle" size="2rem"></ng-icon>
-                <div><span>Keep in mind that <strong>metadata is global</strong>. Changing it will <strong>change metadata for the entire course</strong>,
-                    which includes <strong>others rules</strong> as well.</span></div>
               </div>
             </div>
 
@@ -203,7 +203,7 @@
   [id]="'exit-management'"
   [templateRef]="EXIT_MANAGEMENT"
   [size]="'md'"
-  [header]=" !isCompleted ? 'Uncompleted lines!' : 'Discard changes?'"
+  [header]=" !isCompleted ? 'Incomplete lines!' : 'Discard changes?'"
   [submitBtnText]="!isCompleted ? 'Save anyway' : 'Discard'"
   [closeBtnText]="'Cancel'"
   [actionInProgress] = "loading.action"
@@ -218,7 +218,7 @@
   </div>
 
   <div *ngIf="!isCompleted" class="w-full flex flex-wrap">
-    <span class="w-full">There are currently <strong>uncompleted lines</strong>. Saving this will make the rule defective.</span>
+    <span class="w-full">There are currently <strong>incomplete lines</strong>. Saving this will make the rule defective.</span>
     <span class="w-full">Do you want to proceed?</span>
   </div>
 </ng-template>

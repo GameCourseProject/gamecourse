@@ -5,13 +5,15 @@ export class RuleSection{
   private _name: string;
   private _position: number;
   private _module: string;
+  private _isActive: boolean;
 
-  constructor(id: number, course: number, name: string, position: number, module: string) {
+  constructor(id: number, course: number, name: string, position: number, module: string, isAcive: boolean) {
     this._id = id;
     this._course = course;
     this._name = name;
     this._position = position;
     this._module = module;
+    this._isActive = isAcive;
   }
 
   get id(): number {
@@ -54,13 +56,22 @@ export class RuleSection{
     this._module = value;
   }
 
+  get isActive(): boolean {
+    return this._isActive;
+  }
+
+  set isActive(value: boolean) {
+    this._isActive = value;
+  }
+
   static fromDatabase(obj: RuleSectionDatabase): RuleSection {
     return new RuleSection(
       obj.id,
       obj.course,
       obj.name,
       obj.position,
-      obj.module
+      obj.module,
+      obj.isActive
     );
   }
 }
@@ -70,5 +81,6 @@ interface RuleSectionDatabase {
   course: number,
   name: string,
   position: number,
-  module: string
+  module: string,
+  isActive: boolean
 }

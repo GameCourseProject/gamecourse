@@ -447,6 +447,7 @@ CREATE TABLE rule_section(
     name                        varchar(50) NOT NULL,
     position                    int unsigned,
     module                      varchar(50) DEFAULT NULL,
+    isActive                    boolean NOT NULL DEFAULT TRUE,
 
     UNIQUE key(name, course),
     UNIQUE key(position, course),

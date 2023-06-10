@@ -298,6 +298,7 @@ abstract class RuleSystem
         if ($output != null && sizeof($output) > 0) {
             $funcs = json_decode($output[0]);
         }
+
         return $funcs;
     }
 
@@ -311,11 +312,16 @@ abstract class RuleSystem
         $myFunctions = [];
 
         foreach ($libraries as $library) {
+            $libraryId = $library->getId();
+            
+            // Libraries not needed for rule editor
+            if ($libraryId === 'actions' || $libraryId === 'providers') continue;
+
             $myLibrary = $dictionary->getLibraryById($library->getId());
             $functions = $myLibrary->getFunctions();
 
             foreach ($functions as $function) {
-                $myFunction["name"] = $library->getId();
+                $myFunction["name"] = $libraryId;
                 $myFunction["keyword"] = $function->getName();
                 $myFunction["args"] = $function->getArgs();
                 $myFunction["description"] = $function->getDescription();

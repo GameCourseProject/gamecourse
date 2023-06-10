@@ -102,7 +102,7 @@ class RuleSystemController
      */
     public function editSection()
     {
-        API::requireValues('id', 'course', 'name', 'position');
+        API::requireValues('id', 'course', 'name', 'position', 'isActive');
 
         $courseId = API::getValue("course", "int");
 
@@ -114,8 +114,9 @@ class RuleSystemController
         // Get values
         $name = API::getValue("name");
         $position = API::getValue("position", "int");
+        $isActive = API::getValue("isActive", "bool");
 
-        $section->editSection($name, $position);
+        $section->editSection($name, $position, $isActive);
         $sectionInfo = $section->getData();
 
         API::response($sectionInfo);

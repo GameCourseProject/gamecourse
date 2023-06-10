@@ -22,6 +22,16 @@
       </div>
     </div>
 
+
+    <!-- Alert for metadata changes -->
+    <div *ngIf="!section.isActive" class="justify-center flex flex-wrap mt-8">
+      <div class="alert alert-info shadow-md justify-center flex">
+        <ng-icon name="feather-info" size="1.5rem" color="white"></ng-icon>
+        <div><span class="text-white">This section is <strong>disabled</strong>. Keep in mind that changes <strong>will only work</strong>
+          once the section becomes <strong>enabled</strong> again.</span></div>
+      </div>
+    </div>
+
     <app-top-actions
       [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
                        {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
@@ -68,17 +78,17 @@
   (onClose)="ruleToManage = null">
 </app-simple-modal>
 
-<!-- Uncompleted rule modal -->
+<!-- Incomplete rule modal -->
 <app-simple-modal
-   [id]="'uncompleted-rule'"
-   [title]="'Uncompleted Rule!'"
+   [id]="'ncomplete-rule'"
+   [title]="'Incomplete Rule!'"
    [text]="'There seems to be some defective lines in this rule. Consider completing it before activating it.'"
    [submitBtnText]="'Ok'"
    [submitBtnColor]="'primary'"
    [xButton]="false"
    [closeBtn]="false"
    [actionInProgress]="loading.action"
-   (submitBtnClicked)="doAction('close-uncompleted-rule')">
+   (submitBtnClicked)="doAction('close-incomplete-rule')">
 </app-simple-modal>
 
 <!-- Import Modal -->

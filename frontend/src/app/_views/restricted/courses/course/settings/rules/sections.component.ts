@@ -137,7 +137,7 @@ export class SectionsComponent implements OnInit {
        this.sectionMode = action;
 
        if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
-       else{
+       else {
          await this.parseMetadata();
          this.metadataCodeInput =
            [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata,
@@ -146,6 +146,7 @@ export class SectionsComponent implements OnInit {
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
          'manage-metadata' : 'manage-section';
+       console.log(modal);
        ModalService.openModal(modal);
      }
 
@@ -314,6 +315,18 @@ export class SectionsComponent implements OnInit {
   /*** ------------------- Helpers ----------------- ***/
   /*** --------------------------------------------- ***/
 
+  async toggleStatus(section: RuleSection){
+    this.loading.action = true;
+
+    let newSection = await this.api.editSection(section).toPromise();
+
+    const index = this.originalSections.findIndex(section => section.id === newSection.id);
+    this.originalSections.splice(index, 1, newSection);
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' ' + (newSection.isActive ? 'enabled' : 'disabled'));
+  }
+
   dragAndDropDisabled(): boolean {
     // Check if any section.name is "Graveyard"
     return this.sections.some((section) => section.name === "Graveyard");
@@ -392,7 +405,8 @@ export class SectionsComponent implements OnInit {
     const sectionData: SectionManageData = {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,
-      position: section?.position ?? null
+      position: section?.position ?? null,
+      isActive: section?.isActive ?? true
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -404,5 +418,6 @@ export interface SectionManageData {
   id?: number,
   course?: number,
   name?: string,
-  position?: number
+  position?: number,
+  isActive?: boolean
 }

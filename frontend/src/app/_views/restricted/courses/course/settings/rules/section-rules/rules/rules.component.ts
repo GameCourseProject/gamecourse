@@ -98,7 +98,7 @@ export class RulesComponent implements OnInit {
           this.previousSelected = _.cloneDeep(this.ruleToManage.tags);
         }
 
-        this.isUncompleted();
+        this.isIncomplete();
         this.prepareCodeInputTabs();
         this.loading.page = false;
       })
@@ -163,8 +163,12 @@ export class RulesComponent implements OnInit {
 
   async getCustomFunctions(courseID: number){
     this.functions = await this.api.getRuleFunctions(courseID).toPromise();
-    // TODO -- remove the gc. function w/ splice() ?
-    // what about the transform function?
+
+    // Remove 'gc' and 'transform' functions (not needed for rule editor)
+    let index = this.functions.findIndex(fn => fn.keyword === 'gc');
+    this.functions.splice(index, 1);
+    index = this.functions.findIndex(fn => fn.keyword === 'transform');
+    this.functions.splice(index, 1);
 
     for (let i = 0; i < this.functions.length; i++) {
       let description = this.functions[i].description;
@@ -188,7 +192,7 @@ export class RulesComponent implements OnInit {
   }
 
   // FIXME -- hardcoded
-  isUncompleted () {
+  isIncomplete () {
     let query = "logs = [] # COMPLETE THIS:";
     this.isCompleted = !this.ruleToManage.whenClause.includes(query) && !this.ruleToManage.thenClause.includes(query);
   }

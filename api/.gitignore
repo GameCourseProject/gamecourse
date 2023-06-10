@@ -58,3 +58,4 @@ autogame/imported-functions/*/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
+/inc/config_testing.php

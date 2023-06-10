@@ -176,10 +176,10 @@ export class SectionRulesComponent implements OnInit {
       ModalService.closeModal('delete-rule');
       this.resetRuleManage();
       this.loading.action = false;
-    } else if (action === 'close-uncompleted-rule'){
+    } else if (action === 'close-incomplete-rule'){
        this.loading.action = true;
        await this.buildTable();
-       ModalService.closeModal('uncompleted-rule');
+       ModalService.closeModal('incomplete-rule');
        this.loading.action = false;
      }
   }
@@ -238,8 +238,8 @@ export class SectionRulesComponent implements OnInit {
     action = action.toLowerCase();
 
     if (action === 'value changed rule' && col === 3) {
-      if (this.isUncompleted(ruleToActOn)) {
-        ModalService.openModal('uncompleted-rule');
+      if (this.isIncomplete(ruleToActOn)) {
+        ModalService.openModal('incomplete-rule');
       } else await this.toggleActive(ruleToActOn);
 
     } else if (col === 4){
@@ -337,7 +337,7 @@ export class SectionRulesComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   // FIXME -- hardcoded
-  isUncompleted (rule: Rule): boolean {
+  isIncomplete (rule: Rule): boolean {
     let query = "logs = [] # COMPLETE THIS:";
     return rule.whenClause.includes(query) || rule.thenClause.includes(query);
   }

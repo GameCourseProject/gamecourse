@@ -1346,7 +1346,8 @@ export class ApiHttpService {
       id: sectionData.id,
       course: sectionData.course,
       name: sectionData.name,
-      position: sectionData.position
+      position: sectionData.position,
+      isActive: sectionData.isActive
     }
 
     const params = (qs: QueryStringParameters) => {

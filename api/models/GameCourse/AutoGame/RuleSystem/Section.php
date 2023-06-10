@@ -64,6 +64,10 @@ class Section
         return RuleSystem::getDataFolder($courseId, $fullPath) . "/" . $priority . "-" . Utils::strip($name, "_") . ".txt";
     }
 
+    public function isActive(): bool {
+        return $this->getData("isActive");
+    }
+
     /**
      * Gets section data from the database.
      *
@@ -109,6 +113,13 @@ class Section
     public function setModule(?Module $module)
     {
         $this->setData(["module" => $module ? $module->getId() : null]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setActive(bool $isActive) {
+        $this->setData(["isActive" => +$isActive]);
     }
 
     /**
@@ -247,10 +258,11 @@ class Section
      * @param string $name
      * @param int|null $position
      * @param string|null $moduleId
+     * @param bool $isActive
      * @return Section
      * @throws Exception
      */
-    public static function addSection(int $courseId, string $name, int $position = null, string $moduleId = null): Section
+    public static function addSection(int $courseId, string $name, int $position = null, string $moduleId = null, bool $isActive = true): Section
     {
         self::trim($name);
         self::validateSection($courseId, $name);
@@ -260,7 +272,8 @@ class Section
         $id = Core::database()->insert(self::TABLE_RULE_SECTION, [
             "course" => $courseId,
             "name" => $name,
-            "module" => $moduleId
+            "module" => $moduleId,
+            "isActive" => +$isActive
         ]);
         Utils::updateItemPosition(null, $position, self::TABLE_RULE_SECTION, "position", $id,
             self::getSections($courseId), function ($sectionId, $oldPosition, $newPosition) {
@@ -283,14 +296,16 @@ class Section
      *
      * @param string $name
      * @param int $position
+     * @param bool $isActive
      * @return Section
      * @throws Exception
      */
-    public function editSection(string $name, int $position): Section
+    public function editSection(string $name, int $position, bool $isActive): Section
     {
         $this->setData([
             "name" => $name,
-            "position" => $position
+            "position" => $position,
+            "isActive" => +$isActive
         ]);
         return $this;
     }
@@ -306,7 +321,7 @@ class Section
     {
         // Copy section
         $copiedSection = self::addSection($copyTo->getId(), $this->getName(), $this->getPosition(),
-            $this->getModule() ? $this->getModule()->getId() : null);
+            $this->getModule() ? $this->getModule()->getId() : null, $this->isActive());
 
         // Copy rules
         foreach ($this->getRules() as $rule) {
@@ -545,8 +560,9 @@ class Section
     private static function parse(array $section = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "position"];
+        $boolValues = ["isActive"];
 
-        return Utils::parse(["int" => $intValues], $section, $field, $fieldName);
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $section, $field, $fieldName);
     }
 
     /**
