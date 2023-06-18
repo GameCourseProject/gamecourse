@@ -74,8 +74,8 @@ class AwardsLibrary extends Library
             ),
             new DFunction("image",
                 [["name" => "award", "optional" => false, "type" => "any"],
-                    ["name" => "style", "optional" => true, "type" => "string: \"outline\" | \"solid\""],
-                    ["name" => "extension", "optional" => true, "type" => "string: \"jpg\" | \"svg\""]],
+                    ["name" => "\"outline\" | \"solid\"", "optional" => true, "type" => "string"],
+                    ["name" => "\"jpg\" | \"svg\"", "optional" => true, "type" => "string"]],
                 "Gets a given award's image URL.",
                 ReturnType::TEXT,
                 $this
@@ -88,8 +88,8 @@ class AwardsLibrary extends Library
             ),
             new DFunction("getImageOfType",
                 [["name" => "type", "optional" => false, "type" => "string"],
-                    ["name" => "style", "optional" => true, "type" => "string: \"outline\" | \"solid\""],
-                    ["name" => "extension", "optional" => true, "type" => "string: \"jpg\" | \"svg\""]],
+                    ["name" => "\"outline\" | \"solid\"", "optional" => true, "type" => "string"],
+                    ["name" => "\"jpg\" | \"svg\"", "optional" => true, "type" => "string"]],
                 "Gets image for a given type of award.",
                 ReturnType::TEXT,
                 $this

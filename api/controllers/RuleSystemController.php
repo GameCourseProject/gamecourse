@@ -416,7 +416,7 @@ class RuleSystemController
      * @throws Exception
      */
     public function previewFunction(){
-        API::requireValues("courseId", "library", "function", "args");
+        API::requireValues("courseId", "library", "function", "args", "views");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);

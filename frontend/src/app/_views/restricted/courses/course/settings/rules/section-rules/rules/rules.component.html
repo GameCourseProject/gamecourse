@@ -92,6 +92,7 @@
                   [helperPosition]="'right'"
                   [showTabs]="false"
                   [tabs]="whenTabs"
+                  [required]="true"
                   (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.whenClause = $event"
                 ></app-input-code>
@@ -104,6 +105,7 @@
                   [helperPosition]="'right'"
                   [showTabs]="false"
                   [tabs]="thenTabs"
+                  [required]="true"
                   (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.thenClause = $event"
                 ></app-input-code>

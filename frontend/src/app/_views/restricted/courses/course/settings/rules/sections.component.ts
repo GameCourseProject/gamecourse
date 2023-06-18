@@ -174,14 +174,14 @@ export class SectionsComponent implements OnInit {
 
   async createSection(): Promise<void> {
     if (this.s.valid) {
-      this.loading.action = true;
+      this.sectionToManage.loading = true;
 
       const newSection = await this.api.createSection(clearEmptyValues(this.sectionToManage)).toPromise();
       this.originalSections.unshift(newSection);
 
       this.resetSectionManage();
 
-      this.loading.action = false;
+      this.sectionToManage.loading = false;
 
       AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' added');
       ModalService.closeModal('manage-section');
@@ -191,13 +191,13 @@ export class SectionsComponent implements OnInit {
 
   async editSection(): Promise<void>{
     if (this.s.valid) {
-      this.loading.action = true;
+      this.sectionToManage.loading = true;
 
       const sectionEdited = await this.api.editSection(clearEmptyValues(this.sectionToManage)).toPromise();
       const index = this.originalSections.findIndex(section => section.id === sectionEdited.id);
       this.originalSections.splice(index, 1, sectionEdited);
 
-      this.loading.action = false;
+      this.sectionToManage.loading = false;
       AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + sectionEdited.name + '\' edited');
 
       ModalService.closeModal('manage-section');
@@ -316,14 +316,14 @@ export class SectionsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async toggleStatus(section: RuleSection){
-    this.loading.action = true;
+    section.loading = true;
 
     let newSection = await this.api.editSection(section).toPromise();
 
     const index = this.originalSections.findIndex(section => section.id === newSection.id);
     this.originalSections.splice(index, 1, newSection);
 
-    this.loading.action = false;
+    section.loading = false;
     AlertService.showAlert(AlertType.SUCCESS, 'Section \'' + newSection.name + '\' ' + (newSection.isActive ? 'enabled' : 'disabled'));
   }
 
@@ -406,7 +406,8 @@ export class SectionsComponent implements OnInit {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,
       position: section?.position ?? null,
-      isActive: section?.isActive ?? true
+      isActive: section?.isActive ?? true,
+      loading: false
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -419,5 +420,6 @@ export interface SectionManageData {
   course?: number,
   name?: string,
   position?: number,
-  isActive?: boolean
+  isActive?: boolean,
+  loading?: boolean
 }

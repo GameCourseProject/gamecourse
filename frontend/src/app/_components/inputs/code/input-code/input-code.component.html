@@ -31,55 +31,78 @@
       </div>
 
       <!-- TODO: Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active">
-        <div class="w-[calc(90%-0.5rem)] ml-1">
-
-          <div class="w-full flex">
-            <div class="w-[calc(50%-0.25rem)]">
-              <div class="justify-center flex mb-1.5">
-                <app-input-search
-                  [id] = "'manual'"
-                  [size]="'sm'"
-                  [items] = "originalFunctions"
-                  [placeholder]="'Search for function...'"
-                  (valueChange)="filterFunctions($event)">
-                </app-input-search>
-              </div>
-              <div class="bg-base-300 {{size === 'lg' ? 'h-[32.5rem]' : 'h-64'}} overflow-y-auto overflow-x-auto">
-                <div *ngFor="let fx of functionsToShow">
-                  <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                        {{isSelected(fx) ? 'badge-outline' : ''}}" (click)="selectFunction(fx)">
-                    {{fx.keyword}}
+      <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1">
+        <div class="w-full flex">
+          <div class="w-[calc(50%-0.25rem)]">
+            <div class="justify-center flex mb-1.5">
+              <app-input-search
+                [id] = "'manual'"
+                [size]="'sm'"
+                [classList]="'mt-1'"
+                [items] = "originalFunctions"
+                [placeholder]="'Search for function...'"
+                (valueChange)="filterFunctions($event)">
+              </app-input-search>
+            </div>
+            <div class="bg-base-300 {{size === 'lg' ? 'h-[32rem]' : 'h-64'}} overflow-y-auto overflow-x-auto">
+              <div *ngFor="let namespace of tab.namespaces">
+                <ng-container *ngIf="containsFunctions(namespace)">
+                  <span class="text-sm"><strong>{{ namespace !== 'gamerules' ? 'Namespace: ' : 'Others: ' }}</strong>
+                    <i>{{ namespace !== 'gamerules' ? namespace : '' }}</i>
+                  </span>
+                  <div *ngFor="let fx of functionsToShow">
+                    <div *ngIf="fx.name === namespace" class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
+                        {{ isSelected(fx) ? 'badge-outline' : '' }}" (click)="selectedFunction = fx">
+                      {{ fx.keyword }}
+                    </div>
                   </div>
-                </div>
+                </ng-container>
+              </div>
 
-                <span *ngIf="functionsToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex mt-40">
+              <span *ngIf="functionsToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex">
                 Nothing found.
               </span>
 
-              </div>
-            </div>
-
-
-            <div class="w-[calc(50%+0.25rem)] {{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto ml-2 mt-2">
-              <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 justify-center flex mt-40">
-                Choose a function to see information
-              </span>
-
-              <div *ngIf="selectedFunction">
-                <div><strong>Namespace:</strong> <i>{{selectedFunction.name}}</i></div>
-                <div><strong>Function: </strong><span class="text-secondary">{{selectedFunction.keyword}}</span></div>
-                <div><strong>Description:</strong> {{selectedFunction.description}}</div>
-                <div><strong>Args:</strong>
-                  <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
-                    <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
-                  </ng-container>
-                </div>
-                <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div>
-              </div>
             </div>
           </div>
 
+
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2">
+              <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 justify-center flex mt-40">
+                Select a function
+              </span>
+
+            <div *ngIf="selectedFunction" class="ml-2">
+              <div class="border-b border-gray-200 mb-4">
+                <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
+              </div>
+
+              <div class="mb-4">
+                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
+
+                <div *ngFor="let arg of selectedFunction.args, let i = index">
+                  <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
+                    {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                </div>
+
+                <span>) : {{selectedFunction.returnType.removeWord('->')}}</span>
+              </div>
+
+              <div><strong>Description: </strong>{{selectedFunction.description}}</div><br>
+
+              <div *ngIf="selectedFunction.name !== 'gamerules'">
+                <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
+              </div><br *ngIf="selectedFunction.name !== 'gamerules'">
+
+              <div><strong>Args:</strong>
+                <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
+                  <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                </ng-container>
+              </div><br>
+
+              <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
+            </div>
+          </div>
         </div>
       </div>
 

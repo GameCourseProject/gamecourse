@@ -40,7 +40,7 @@
     <ng-container *ngFor="let action of rightActions">
 
       <!-- Simple button -->
-      <button *ngIf="!action.dropdown" class="btn {{buttonColors[action.color]}} gap-2 {{action.disable ? 'btn-disabled' : ''}}"
+      <button *ngIf="!action.dropdown" class="btn gap-2 {{action.disable ? 'btn-disabled' : buttonColors[action.color]}}"
               [ngClass]="{'btn-outline': action.outline}" (click)="btnClicked.emit(action.action)">
 
         {{action.action.capitalize()}}
@@ -55,7 +55,7 @@
         </label>
 
         <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box min-w-max">
-          <li *ngFor="let item of action.dropdown" (click)="btnClicked.emit(item.action)"><a>
+          <li *ngFor="let item of action.dropdown" (click)="btnClicked.emit(item.action)" class="{{item.disable ? 'disabled' : ''}}"><a>
             <ng-icon *ngIf="item.icon" [name]="item.icon" size="1rem" color="fillCurrent"></ng-icon>
             {{item.action.capitalize()}}
           </a></li>

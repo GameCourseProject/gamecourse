@@ -6,6 +6,7 @@ export class RuleSection{
   private _position: number;
   private _module: string;
   private _isActive: boolean;
+  private _loading: boolean;
 
   constructor(id: number, course: number, name: string, position: number, module: string, isAcive: boolean) {
     this._id = id;
@@ -14,6 +15,9 @@ export class RuleSection{
     this._position = position;
     this._module = module;
     this._isActive = isAcive;
+
+    // for showing spinner individually
+    this._loading = false;
   }
 
   get id(): number {
@@ -64,6 +68,14 @@ export class RuleSection{
     this._isActive = value;
   }
 
+  get loading(): boolean {
+    return this._loading;
+  }
+
+  set loading(value: boolean) {
+    this._loading = value;
+  }
+
   static fromDatabase(obj: RuleSectionDatabase): RuleSection {
     return new RuleSection(
       obj.id,
@@ -82,5 +94,6 @@ interface RuleSectionDatabase {
   name: string,
   position: number,
   module: string,
-  isActive: boolean
+  isActive: boolean,
+  loading: boolean
 }

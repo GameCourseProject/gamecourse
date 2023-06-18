@@ -183,6 +183,12 @@ abstract class Module
             throw new Exception("Can't enable/disable module '" . $this->id . "': no course given.");
 
         $this->canChangeState($isEnabled, true);
+
+        // makes rules "orphan" before disabling module
+        if (!$isEnabled){
+            RuleSystem::moveRulesToGraveyard($this->course->getId(), $this->getId());
+        }
+
         Core::database()->update(self::TABLE_COURSE_MODULE, ["isEnabled" => +$isEnabled],
             ["module" => $this->id, "course" => $this->course->getId()]);
 

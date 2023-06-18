@@ -29,6 +29,7 @@ import { python, pythonLanguage } from "@codemirror/lang-python";
 import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
+import {moveItemInArray} from "@angular/cdk/drag-drop";
 
 // import {Observable} from "rxjs";
 
@@ -80,6 +81,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   functionsToShow: customFunction[] = [];
   filteredFunctions: customFunction[] = [];
 
+  namespaces: Set<string>;
+
   constructor(
     private themeService: ThemingService,
     private updateService: UpdateService
@@ -96,6 +99,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       if (this.tabs[i].type === 'code'){
         this.setUpKeywords((this.tabs[i] as codeTab));
+
       } else if (this.tabs[i].type === 'manual') {
         this.filteredFunctions = (this.tabs[i] as referenceManualTab).customFunctions;
         this.functionsToShow = (this.tabs[i] as referenceManualTab).customFunctions;
@@ -212,11 +216,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             dom.className = "cm-tooltip-cursor"
             EditorView.baseTheme({
               ".cm-tooltip-lint": {
-                width: "80%"
+                width: "80%",
               },
               ".cm-tooltip-cursor": {
-                backgroundColor: theme === oneDark ? "#66b !important" : "#FFFFFF !important",
-                color: "white",
                 border: "none",
                 padding: "5px",
                 borderRadius: "4px",
@@ -224,7 +226,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
                   borderTopColor: "#66b !important"
                 },
                 "& .cm-tooltip-arrow:after": {
-                  borderTopColor: "transparent"
+                  borderTopColor: "transparent",
                 }
               }
             })
@@ -476,15 +478,16 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  containsFunctions(namespace: string) {
+    let namespaces = this.functionsToShow.map(fx => fx.name);
+    return namespaces.includes(namespace)
+  }
+
   isSelected(fx: customFunction){
     if (this.selectedFunction !== null){
       return this.selectedFunction.keyword === fx.keyword;
     }
     return false;
-  }
-
-  selectFunction(fx: customFunction){
-    this.selectedFunction = fx;
   }
 
   getId(index: number, tabName: string): string {
@@ -543,6 +546,7 @@ export interface referenceManualTab {
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: customFunction[],        // Personalized functions
+  namespaces?: string[]                      // Namespaces of functions
 }
 
 export interface customFunction {

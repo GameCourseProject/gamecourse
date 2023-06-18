@@ -3,6 +3,7 @@ namespace GameCourse\AutoGame\RuleSystem;
 
 use Exception;
 use GameCourse\AutoGame\AutoGame;
+use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Dictionary\Dictionary;
 use GameCourse\Views\Dictionary\Library;
@@ -42,8 +43,8 @@ abstract class RuleSystem
         file_put_contents($functionsFolder . $defaultFunctionsFile, file_get_contents($functionsFileDefault));
         file_put_contents($metadataFile, "");
 
-        Section::addSection($courseId, "Miscellaneous");
-        Section::addSection($courseId, "Graveyard");
+        Section::addSection($courseId, Section::MISCELLANEOUS_SECTION);
+        Section::addSection($courseId, Section::GRAVEYARD_SECTION);
     }
 
     /**
@@ -313,7 +314,7 @@ abstract class RuleSystem
 
         foreach ($libraries as $library) {
             $libraryId = $library->getId();
-            
+
             // Libraries not needed for rule editor
             if ($libraryId === 'actions' || $libraryId === 'providers') continue;
 
@@ -353,7 +354,6 @@ abstract class RuleSystem
         return $metadata;
     }
 
-
     /**
      * Update course metadata (global variables) used by the rule system
      *
@@ -367,6 +367,18 @@ abstract class RuleSystem
         $res = file_put_contents($metadataPath, $metadata);
         if ($res) return $metadata;
         else return "";
+    }
+
+    /**
+     * Makes rules orphan ("Graveyard" section means parent module has been disabled and rules are inactive)
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    public static function moveRulesToGraveyard(int $courseId, string $moduleId) {
+        Section::moveRulesToGraveyard($courseId, $moduleId);
     }
 
     /**
@@ -412,7 +424,7 @@ abstract class RuleSystem
      * @return string
      * @throws Exception
      */
-    public static function getPreviewRuleOutput($courseId): string{
+    public static function getPreviewRuleOutput($courseId): string {
         // FIXME -- should also check if autogame has done running in test mode
         $outputPath = self::createTestDataFolder($courseId) . "rule-test-output.txt";
         if (file_exists($outputPath)){

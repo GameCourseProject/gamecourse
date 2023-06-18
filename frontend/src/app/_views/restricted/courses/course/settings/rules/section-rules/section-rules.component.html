@@ -23,19 +23,19 @@
     </div>
 
 
-    <!-- Alert for metadata changes -->
+    <!-- Alert for disabled sections
     <div *ngIf="!section.isActive" class="justify-center flex flex-wrap mt-8">
       <div class="alert alert-info shadow-md justify-center flex">
         <ng-icon name="feather-info" size="1.5rem" color="white"></ng-icon>
         <div><span class="text-white">This section is <strong>disabled</strong>. Keep in mind that changes <strong>will only work</strong>
           once the section becomes <strong>enabled</strong> again.</span></div>
       </div>
-    </div>
+    </div>-->
 
     <app-top-actions
-      [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true},
+      [rightActions]="[{action: 'Create rule', icon: 'tabler-clipboard-list', color: 'primary', outline: true, disable: section.name === 'Graveyard'},
                        {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                        {action: Action.IMPORT + ' rule(s)', icon:'jam-download'},
+                        {action: Action.IMPORT + ' rule(s)', icon:'jam-download', disable: section.name === 'Graveyard'},
                         {action: Action.EXPORT + ' all rules', icon:'jam-upload'}
                       ]}]"
       (btnClicked)="prepareModal($event)">

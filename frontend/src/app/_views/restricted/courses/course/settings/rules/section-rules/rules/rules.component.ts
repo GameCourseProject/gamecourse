@@ -18,6 +18,7 @@ import {AlertService, AlertType} from "../../../../../../../../_services/alert.s
 import {NgForm} from "@angular/forms";
 import {RuleSection} from "../../../../../../../../_domain/rules/RuleSection";
 import {ModalService} from "../../../../../../../../_services/modal.service";
+import {moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-rules',
@@ -50,6 +51,7 @@ export class RulesComponent implements OnInit {
   additionalToolsTabs: (codeTab | outputTab | referenceManualTab )[];
   functions: customFunction[];
   ELfunctions: customFunction[];
+  namespaces: string[];
   isCompleted: boolean;
 
   // Input-select for assigning rules to tags
@@ -138,7 +140,8 @@ export class RulesComponent implements OnInit {
         mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions }]
 
     this.additionalToolsTabs =
-      [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions) },
+      [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
+        namespaces: this.namespaces },
        { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
        { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
        { name: 'Preview Rule', type: "output", active: false, running: null, value: null }]
@@ -181,6 +184,12 @@ export class RulesComponent implements OnInit {
 
     this.ELfunctions = await this.api.getELFunctions().toPromise();
     this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
+
+    // set namespaces of functions
+    let names = this.functions.concat(this.ELfunctions)
+      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
+    this.namespaces = Array.from(new Set(names).values())
+    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
   }
 
   async getSection(sectionID: number): Promise<void> {
@@ -194,17 +203,20 @@ export class RulesComponent implements OnInit {
   // FIXME -- hardcoded
   isIncomplete () {
     let query = "logs = [] # COMPLETE THIS:";
-    this.isCompleted = !this.ruleToManage.whenClause.includes(query) && !this.ruleToManage.thenClause.includes(query);
+
+    // Should only check when editing rules (new rules have empty clauses)
+    if (this.ruleToManage.whenClause && this.ruleToManage.thenClause) {
+      this.isCompleted = !this.ruleToManage.whenClause.includes(query) && !this.ruleToManage.thenClause.includes(query);
+    }
   }
 
   /*** ------------------------------------------------ ***/
   /*** -------------------- Actions ------------------- ***/
   /*** ------------------------------------------------ ***/
 
-
   async doAction(action: string): Promise<void>{
     if (action === 'add rule' || action === 'edit rule') {
-      if (this.r.valid) {
+      if (this.r.valid && this.ruleToManage.whenClause && this.ruleToManage.thenClause) {
         this.loading.action = true;
         await this.assignTags();
         (action === 'add rule') ? await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise() :
@@ -212,10 +224,13 @@ export class RulesComponent implements OnInit {
 
         await this.saveMetadata();
 
-        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' added');
+        AlertService.showAlert(AlertType.SUCCESS, 'Rule \'' + this.ruleToManage.name + '\' ' + (action === 'add rule' ? 'added': 'edited'));
         this.loading.action = false;
 
         await this.router.navigate(['rule-system/sections/' + this.section.id], {relativeTo: this.route.parent});
+
+      } else if (!this.ruleToManage.whenClause || !this.ruleToManage.thenClause) {
+        AlertService.showAlert(AlertType.ERROR, '\'When\' and \'Then\' clauses cannot be empty');
 
       } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
 

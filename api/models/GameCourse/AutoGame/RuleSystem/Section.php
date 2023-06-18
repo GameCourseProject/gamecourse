@@ -15,6 +15,8 @@ class Section
 {
     const TABLE_RULE_SECTION = "rule_section";
 
+    const MISCELLANEOUS_SECTION = "Miscellaneous";
+    const GRAVEYARD_SECTION = "Graveyard";
     const RULE_DIVIDER = "#########";
 
     protected $id;
@@ -245,6 +247,19 @@ class Section
         return $sections;
     }
 
+    /**
+     * Gets id of section "Graveyard" (aka section where orphan rules are)
+     *
+     * @param int $courseId
+     * @return int
+     */
+    public static function getGraveyardSectionId(int $courseId): int {
+        return Core::database()->select(self::TABLE_RULE_SECTION, ["course" => $courseId, "name" => self::GRAVEYARD_SECTION], "id");
+    }
+
+    public static function getRulesInGraveyard(int $courseId, int $graveyardSectionId): array {
+        return Core::database()->selectMultiple(Rule::TABLE_RULE, ["course" => $courseId, "section" => $graveyardSectionId]);
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** --------------- Section Manipulation --------------- ***/
@@ -370,6 +385,28 @@ class Section
         return !empty($this->getData("id"));
     }
 
+    /**
+     * Makes rules orphan ("Graveyard" section means parent module has been disabled and rules are inactive)
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    public static function moveRulesToGraveyard(int $courseId, string $moduleId) {
+        $graveyardSectionId = self::getGraveyardSectionId($courseId);
+
+        $table = Rule::TABLE_RULE . " r JOIN " . self::TABLE_RULE_SECTION .
+            " s on r.section=s.id WHERE s.module=\"$moduleId\" and r.course=\"$courseId\" and s.course=\"$courseId\"";
+
+        $rules = array_map(function($rule) { return intval($rule["id"]); }, Core::database()->selectMultiple($table, [], "r.id"));
+        $nrRules = count(self::getRulesInGraveyard($courseId, $graveyardSectionId));
+
+        foreach ($rules as $rule) {
+            Core::database()->update(Rule::TABLE_RULE, ["section" => $graveyardSectionId, "position" => $nrRules], ["id" => $rule]);
+            $nrRules = $nrRules + 1;
+        }
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Rules ----------------------- ***/
