@@ -30,7 +30,7 @@
         <div [id]="getId(i, tab.name)"></div>
       </div>
 
-      <!-- TODO: Editor reference manual tabs -->
+      <!-- Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1">
         <div class="w-full flex">
           <div class="w-[calc(50%-0.25rem)]">
@@ -68,9 +68,9 @@
 
 
           <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2">
-              <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 justify-center flex mt-40">
-                Select a function
-              </span>
+            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 mt-40 mt-14">
+              Select a function
+            </span>
 
             <div *ngIf="selectedFunction" class="ml-2">
               <div class="border-b border-gray-200 mb-4">
@@ -112,9 +112,56 @@
         <div class="justify-center flex">
           <div *ngIf="isRunning(tab)" class="alert alert-warning shadow-lg rounded-lg w-[calc(90%-0.5rem)] mt-4">
             <div>
-              <ng-icon [name]="'feather-alert-triangle'" size="1rem"></ng-icon>
-              <span><strong>Code is running.</strong> Hold on! Results might take a while to appear (click refresh icon table to see if output is ready).</span>
+              <ng-icon [name]="'feather-alert-triangle'" size="1.2rem"></ng-icon>
+              <div class="ml-2.5">
+                <span><strong>Running...</strong></span><br>
+                <span>
+                  Hold on {{tab.specificFunction ? 'and don\'t  move your cursor!' : '!'}} Results might take a while to appear (click refresh to check for new results).
+                </span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <div *ngIf="tab.specificFunction" class="mt-4">
+          <div class="ml-14 mr-14">
+            <span>{{getTooltip(tab)}}</span><br>
+            <span class="text-sm mt-4">e.g. <i>compute_lvl(attendances, 6, 9, 13)</i></span><br><br>
+            <span>Your selection:</span><br>
+            <span>"<i>{{receiveFunctionSelection.selection ?? '' }}</i>"</span>
+          </div>
+
+          <div class="justify-center flex align-middle mt-4">
+            <div class="w-[calc(80%-0.5rem)]">
+              <button type="button" class="btn btn-success text-white w-full gap-2" (click)="simulateOutput(i, tab)">
+                <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+                <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+                {{tab.runMessage ?? 'Preview Function'}}
+              </button>
+            </div>
+
+            <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
+              <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
+                <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div *ngIf="!tab.specificFunction" class="justify-center flex align-middle mt-4">
+          <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
+            <button type="button" class="btn btn-success text-white w-full gap-2" (click)="simulateOutput(i, tab)">
+              <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+              {{tab.runMessage ?? 'Run'}}
+            </button>
+          </div>
+
+          <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
+            <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
+              <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
+            </button>
           </div>
         </div>
 
@@ -123,25 +170,8 @@
           bg-transparent text-white border-base-300 mt-4">{{tab.value}}
           </textarea>
         </div>
-
-        <div class="justify-center flex align-middle mt-4">
-          <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
-            <button type="button" class="btn btn-success text-white w-full gap-2"
-                    (click)="simulateOutput(tab)">
-              <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-              Run
-            </button>
-          </div>
-
-          <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
-            <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(tab)">
-              <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
-            </button>
-          </div>
-        </div>
-
       </div>
+
     </ng-container>
 
   </div>

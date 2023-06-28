@@ -51,9 +51,16 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                   // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
-  @Input() tabs?: ( codeTab | outputTab | referenceManualTab )[] = [
+  @Input() receiveFunctionSelection?: MySelection = {
+    selection: "",
+    functionName: null,
+    argumentsArray: null,
+    library: null
+  }; // TODO -- explain
+
+  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
-    { name: 'Output', type: "output", active: false, running: false }];
+    { name: 'Output', type: "output", active: false, running: false, specificFunction: false }];
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -65,6 +72,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() isCompleted = new EventEmitter<boolean>();
   @Output() runOutput = new EventEmitter<any>();
   @Output() refreshOutput = new EventEmitter<any>();
+  @Output() sendFunctionSelection = new EventEmitter<MySelection>();   // TODO -- explain
 
   options: Completion[] = [];                                     // Editor options for autocompletion
   views: {[tabID: number]: EditorView};                           // All EditorView's sorted by tabs
@@ -72,16 +80,17 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   // If there's anything in complete (doesn't matter from which tab), the alert will be visible
   showAlert: boolean = false;                                    // Boolean for incomplete lines
-  selectedFunction: customFunction = null;                       // Selected function to show information in reference manual
 
   // SEARCH AND FILTER
   // NOTE: Because there can only be 1 tab active at a time, we can take these variables as 'global' for the entire component
   reduce = new Reduce();
-  originalFunctions: customFunction[] = [];
-  functionsToShow: customFunction[] = [];
-  filteredFunctions: customFunction[] = [];
+  originalFunctions: CustomFunction[] = [];
+  functionsToShow: CustomFunction[] = [];
+  filteredFunctions: CustomFunction[] = [];
 
+  // REFERENCE MANUAL
   namespaces: Set<string>;
+  selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
 
   constructor(
     private themeService: ThemingService,
@@ -98,11 +107,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       views[i] = new EditorView();
 
       if (this.tabs[i].type === 'code'){
-        this.setUpKeywords((this.tabs[i] as codeTab));
+        this.setUpKeywords((this.tabs[i] as CodeTab));
 
       } else if (this.tabs[i].type === 'manual') {
-        this.filteredFunctions = (this.tabs[i] as referenceManualTab).customFunctions;
-        this.functionsToShow = (this.tabs[i] as referenceManualTab).customFunctions;
+        this.filteredFunctions = (this.tabs[i] as ReferenceManualTab).customFunctions;
+        this.functionsToShow = (this.tabs[i] as ReferenceManualTab).customFunctions;
       }
     }
     this.views = views;
@@ -114,7 +123,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 
   // Setups all keywords and functions for code
-  setUpKeywords(tab: codeTab) {
+  setUpKeywords(tab: CodeTab) {
 
     const modeKeywords = getLanguageKeywords(tab.mode);
 
@@ -172,13 +181,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     for (let i = 0; i < this.tabs.length; i++){
       if (this.tabs[i].type === 'code') {
-        this.initCodeMirror(i, (this.tabs[i] as codeTab));
+        this.initCodeMirror(i, (this.tabs[i] as CodeTab));
       }
     }
   }
 
   // Initializes code editor and basic setup
-  initCodeMirror(index: number, tab: codeTab) {
+  initCodeMirror(index: number, tab: CodeTab) {
 
     const element = document.getElementById(this.getId(index, tab.name)) as Element;
     let tabSize = new Compartment;
@@ -275,6 +284,23 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             if (query) this.toggleAlert(view, query);
             this.isCompleted.emit(!this.showAlert);
             //insertCommentCommand(view);
+          }
+          let firstRange = view.state.selection.ranges[0];
+
+          let selection = state.doc.toString().substring(firstRange.from,firstRange.to);
+
+          if (selection){
+            let text = selection.split(/(\w+)\((.*)\)/);
+
+            const mySelection : MySelection = {
+              selection: selection,
+              functionName: text[1],
+              argumentsArray: text[2].split(',').map(arg => arg.trim()),
+              library: selection.split(".")[0] ?? 'gamerules'
+            };
+            console.log(mySelection);
+
+            this.sendFunctionSelection.emit(mySelection);
           }
         }),
         wordHover,
@@ -416,36 +442,41 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Output ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  getTooltip(tab: outputTab | codeTab): string {
-    if ((tab as outputTab).type === "output"){
-      return (tab as outputTab).tooltip ?? "Click \'Run\' to simulate output!";
-    }
-    return  "Click \'Run\' to simulate output!";
-  }
-
-  isRunning(tab: outputTab | codeTab): boolean {
-    if ((tab as outputTab).type === "output") {
-      return (tab as outputTab).running;
+  getTooltip(tab: OutputTab | CodeTab): string {
+    if ((tab as OutputTab).type === "output") {
+      if ((tab as OutputTab).specificFunction) {
+        return (tab as OutputTab).tooltip ?? "Select the function you want to preview alongside its arguments with cursor!";
+      }
+      else if (!(tab as OutputTab).specificFunction) {
+        return (tab as OutputTab).tooltip ?? "Click \'Run\' to simulate output!";
+      }
     }
     return null;
   }
 
-  simulateOutput(tab: outputTab | codeTab){
-    if ((tab as outputTab).type === "output") {
-      (tab as outputTab).running = true;
-      this.runOutput.emit();
+  isRunning(tab: OutputTab | CodeTab): boolean {
+    if ((tab as OutputTab).type === "output") {
+      return (tab as OutputTab).running;
+    }
+    return null;
+  }
+
+  simulateOutput(indexTab: number, tab: OutputTab | CodeTab){
+    if ((tab as OutputTab).type === "output") {
+      (tab as OutputTab).running = true;
+      this.runOutput.emit([indexTab, this.receiveFunctionSelection]);
     }
   }
 
-  refreshingOutput(tab: outputTab | codeTab) {
-    if ((tab as outputTab).type === "output") {
+  refreshingOutput(indexTab: number, tab: OutputTab | CodeTab) {
+    if ((tab as OutputTab).type === "output") {
       if (this.tabOutput) {
         tab.value = this.tabOutput;
-        (tab as outputTab).running = false;
+        (tab as OutputTab).running = false;
         this.tabOutput = null;
         return;
       }
-      this.refreshOutput.emit();
+      this.refreshOutput.emit(indexTab);
     }
 
   }
@@ -461,7 +492,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   filterFunctions(searchQuery?: string) {
     if (searchQuery) {
       console.log("hey");
-      let functions: customFunction[] = [];
+      let functions: CustomFunction[] = [];
       for (let i = 0; i < this.filteredFunctions.length; i++){
         if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())) {
           functions.push(this.filteredFunctions[i]);
@@ -483,7 +514,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     return namespaces.includes(namespace)
   }
 
-  isSelected(fx: customFunction){
+  isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
       return this.selectedFunction.keyword === fx.keyword;
     }
@@ -518,7 +549,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   }
 }
 
-export interface codeTab {
+export interface CodeTab {
   name: string,                                    // Name of the tab that will appear above
   type: "code",                                    // Specifies type of tab in editor
   active: boolean,                                 // Indicates which tab is active (only one at a time!)
@@ -528,32 +559,41 @@ export interface codeTab {
   placeholder?: string,                            // Message to show by default
   nrLines?: number,                                // Number of lines already added to the editor. Default = 10 lines
   customKeywords?: string[],                       // Personalized keywords
-  customFunctions?: customFunction[],              // Personalized functions
+  customFunctions?: CustomFunction[],              // Personalized functions
   readonly?: boolean,                              // Make editor readonly
 }
 
-export interface outputTab {
+export interface OutputTab {
   name: string,                              // Name of the tab that will appear above
   type: "output",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   running: boolean,                          // Boolean to show if code is running in background
+  specificFunction: boolean,                 // Boolean to indicate whether entire code should be run or only a small selection
+  runMessage?: string,                       // Custom message when running code
   value?: string,                            // Output value once run
   tooltip?: string,                          // Message to show by default
 }
 
-export interface referenceManualTab {
+export interface ReferenceManualTab {
   name: string,                              // Name of the tab that will appear above
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
-  customFunctions?: customFunction[],        // Personalized functions
+  customFunctions?: CustomFunction[],        // Personalized functions
   namespaces?: string[]                      // Namespaces of functions
 }
 
-export interface customFunction {
+export interface CustomFunction {
   moduleId?: string,                                      // Module from which the functions belong to (e.g. gamerules) - not really used here (hence being optional)
   name: string,                                           // Name of the module or library the function belongs to
   keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
+}
+
+export interface MySelection {
+  selection: string,
+  functionName: string,
+  argumentsArray: string[],
+  library: string
 }

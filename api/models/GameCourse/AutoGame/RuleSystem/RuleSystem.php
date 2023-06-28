@@ -2,11 +2,10 @@
 namespace GameCourse\AutoGame\RuleSystem;
 
 use Exception;
-use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Dictionary\Dictionary;
-use GameCourse\Views\Dictionary\Library;
+use GameCourse\Views\ExpressionLanguage\ValueNode;
 use Utils\Utils;
 
 /**
@@ -412,7 +411,6 @@ abstract class RuleSystem
         $logsFile = ROOT_PATH . "logs/autogame/autogame_1.txt";
         $cmd = "python \"$scriptPath\" $courseId \"all\" \"$rulesPath\" \"$logsFile\" \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
 
-        //var_dump($cmd);
 
         //system($cmd);
     }
@@ -420,11 +418,11 @@ abstract class RuleSystem
     /**
      * Sees if the PreviewRule function has finished (file rule-test-output) and returns its output
      *
-     * @param $courseId
+     * @param int $courseId
      * @return string
      * @throws Exception
      */
-    public static function getPreviewRuleOutput($courseId): string {
+    public static function getPreviewRuleOutput(int $courseId): string {
         // FIXME -- should also check if autogame has done running in test mode
         $outputPath = self::createTestDataFolder($courseId) . "rule-test-output.txt";
         if (file_exists($outputPath)){
@@ -435,8 +433,38 @@ abstract class RuleSystem
     }
 
 
-    public static function previewFunction(){
-        // TODO -- incomplete
+    /**
+     * @param Course $course
+     * @param string $libraryId
+     * @param string $function
+     * @param array $args
+     * @return ValueNode
+     * @throws Exception
+     */
+    public static function previewFunction(Course $course, string $libraryId, string $function, array $args): ValueNode {
+
+        // FIXME
+        $result = Core::dictionary()->callFunction($course, $libraryId, $function, !empty($args) ? $args : null);
+
+        var_dump($result);
+
+        // If result is a collection, set library on each item
+        // NOTE: important for functions in the collection library
+        if (is_array($result->getValue()) && Utils::isSequentialArray($result->getValue())) {
+            $collection = array_map(function ($item) use ($result) {
+                if (!isset($item["libraryOfItem"])) $item["libraryOfItem"] = $result->getLibrary();
+                return $item;
+            }, $result->getValue());
+            $result = new ValueNode($collection, $result->getLibrary());
+        }
+        var_dump($result);
+        return $result;
+    }
+
+
+    public static function getPreviewFunctionOutput(int $courseId): string {
+        // TODO
+        return false;
     }
 
     /*** ---------------------------------------------------- ***/

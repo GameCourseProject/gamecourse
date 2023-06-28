@@ -72,7 +72,7 @@ import {
   QuestionnaireManageData
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
-import {customFunction} from "../../_components/inputs/code/input-code/input-code.component";
+import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 
 @Injectable({
   providedIn: 'root'
@@ -1521,7 +1521,7 @@ export class ApiHttpService {
 
   }
 
-  public getRuleFunctions(courseID: number): Observable<customFunction[]>{
+  public getRuleFunctions(courseID: number): Observable<CustomFunction[]>{
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getRuleFunctions');
@@ -1534,7 +1534,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getELFunctions(): Observable<customFunction[]> {
+  public getELFunctions(): Observable<CustomFunction[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getELFunctions');

@@ -4,10 +4,11 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {RuleTag} from "../../../../../../../../_domain/rules/RuleTag";
 import {
-  customFunction,
-  codeTab,
-  outputTab,
-  referenceManualTab
+  CustomFunction,
+  CodeTab,
+  OutputTab,
+  ReferenceManualTab,
+  MySelection
 } from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
@@ -46,11 +47,12 @@ export class RulesComponent implements OnInit {
   showAlert: boolean = false;
 
   // CODE-INPUT VARIABLES
-  whenTabs: codeTab[];
-  thenTabs: codeTab[];
-  additionalToolsTabs: (codeTab | outputTab | referenceManualTab )[];
-  functions: customFunction[];
-  ELfunctions: customFunction[];
+  whenTabs: CodeTab[];
+  thenTabs: CodeTab[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab )[];
+  functionSelection: MySelection;
+  functions: CustomFunction[];
+  ELfunctions: CustomFunction[];
   namespaces: string[];
   isCompleted: boolean;
 
@@ -143,8 +145,8 @@ export class RulesComponent implements OnInit {
       [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces },
        { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "code", active: false, placeholder: "TODO", readonly: true},
-       { name: 'Preview Rule', type: "output", active: false, running: null, value: null }]
+       { name: 'Preview Function', type: "output", active: false, running: null, specificFunction: true, value: null },
+       { name: 'Preview Rule', type: "output", active: false, running: null, specificFunction: false, runMessage: 'Preview Rule', value: null }]
   }
 
   async getMetadata() {
@@ -254,16 +256,43 @@ export class RulesComponent implements OnInit {
     await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
   }
 
-  async previewRule(){
-    this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
-    this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
+  async preview(indexTab: number, selection: MySelection){
+    let tab = this.additionalToolsTabs[indexTab];
 
-    await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+    if (tab.active && (tab as OutputTab).running){
+      // Preview Function
+      if (indexTab === 2 && (tab as OutputTab).specificFunction){
+        console.log(selection);
+        //await this.api.previewFunction(this.course, selection.library, selection.functionName, selection.argumentsArray).toPromise();
+      }
+      // Preview Rule
+      else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
+        this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
+        this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
+
+        await this.api.previewRule(clearEmptyValues(this.ruleToManage)).toPromise();
+      }
+    }
+
   }
 
-  async getPreviewRuleOutput() {
-    this.tabOutput = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
-    setTimeout(()=> this.tabOutput = null, 4000);
+  async getPreviewOutput(indexTab: number){
+    let tab = this.additionalToolsTabs[indexTab];
+
+    if (tab.active && (tab as OutputTab).running) {
+
+      // Preview Function
+      if (indexTab === 2 && (tab as OutputTab).specificFunction){
+        // TODO
+        console.log("tab preview function -- get preview output");
+      }
+
+      // Preview Rule
+      else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
+        this.tabOutput = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
+        setTimeout(()=> this.tabOutput = null, 4000);
+      }
+    }
   }
 
   /*async createRule() {

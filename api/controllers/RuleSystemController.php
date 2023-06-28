@@ -416,13 +416,35 @@ class RuleSystemController
      * @throws Exception
      */
     public function previewFunction(){
-        API::requireValues("courseId", "library", "function", "args", "views");
+        API::requireValues("courseId", "libraryId", "function", "args");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        $reponse = RuleSystem::previewFunction();
+
+        // Get rest of the values
+        $libraryId = API::getValue("libraryId");
+        $function = API::getValue("function");
+        $args = API::getValue("args", "array");
+
+        $response = RuleSystem::previewFunction($course, $libraryId, $function, $args);
+        API::response($response);
+    }
+
+
+    /**
+     * @throws Exception
+     */
+    public function getPreviewFunctionOutput(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        $output = RuleSystem::getPreviewFunctionOutput($courseId);
+        API::response($output);
     }
 
     /**
@@ -458,7 +480,6 @@ class RuleSystemController
 
         API::requireCourseAdminPermission($course);
         $output = RuleSystem::getPreviewRuleOutput($courseId);
-        //var_dump($output);
         API::response($output);
     }
 
