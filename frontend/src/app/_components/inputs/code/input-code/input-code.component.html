@@ -126,23 +126,33 @@
         <div *ngIf="tab.specificFunction" class="mt-4">
           <div class="ml-14 mr-14">
             <span>{{getTooltip(tab)}}</span><br>
-            <span class="text-sm mt-4">e.g. <i>compute_lvl(attendances, 6, 9, 13)</i></span><br><br>
+            <span class="text-sm">e.g. <span class="font-semibold">
+              <i class="text-error">badges</i>.
+              <i class="text-secondary">getUserBadgeNextLevel</i>(<i class="text-primary">44</i>,
+              <i class="text-primary">7</i>)
+            </span></span><br><br>
             <span>Your selection:</span><br>
-            <span>"<i>{{receiveFunctionSelection.selection ?? '' }}</i>"</span>
+            <span class="text-sm">(If existing, don't forget the namespace)</span><br>
+            <span class="mt-4">"<i class="font-semibold">{{receiveFunctionSelection.selection ?? '' }}</i>"</span>
           </div>
 
           <div class="justify-center flex align-middle mt-4">
             <div class="w-[calc(80%-0.5rem)]">
-              <button type="button" class="btn btn-success text-white w-full gap-2" (click)="simulateOutput(i, tab)">
-                <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+              <button type="button" class="btn btn-success text-white w-full gap-2
+                {{receiveFunctionSelection.library === null || isRunning(tab) ? 'btn-disabled' : ''}}" (click)="simulateOutput(i, tab)">
+                <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem"
+                         class="{{receiveFunctionSelection.library !== null ? 'text-white' : 'text-base-content text-opacity-50'}}">
+                </ng-icon>
                 <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-                {{tab.runMessage ?? 'Preview Function'}}
+                <span class="{{receiveFunctionSelection.library !== null ? '' : 'text-base-content text-opacity-50'}}">
+                  {{tab.runMessage ?? 'Preview Function'}}
+                </span>
               </button>
             </div>
 
             <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
               <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
-                <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
+                <ng-icon name="feather-refresh-ccw" size="1.2rem" [color]="getTheme() === 'light' ? 'text-base-content' : 'text-white'"></ng-icon>
               </button>
             </div>
           </div>
@@ -151,7 +161,7 @@
 
         <div *ngIf="!tab.specificFunction" class="justify-center flex align-middle mt-4">
           <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
-            <button type="button" class="btn btn-success text-white w-full gap-2" (click)="simulateOutput(i, tab)">
+            <button type="button" class="btn btn-success text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="simulateOutput(i, tab)">
               <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
               <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
               {{tab.runMessage ?? 'Run'}}
@@ -160,7 +170,7 @@
 
           <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
             <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
-              <ng-icon name="feather-refresh-ccw" size="1.2rem" class="text-white"></ng-icon>
+              <ng-icon name="feather-refresh-ccw" size="1.2rem" [color]="getTheme() === 'light' ? 'text-base-content' : 'text-white'"></ng-icon>
             </button>
           </div>
         </div>

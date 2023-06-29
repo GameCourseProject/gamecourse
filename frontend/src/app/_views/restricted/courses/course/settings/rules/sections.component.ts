@@ -401,7 +401,7 @@ export class SectionsComponent implements OnInit {
   }
 
 
-  initSectionToManage(section?: RuleSection): SectionManageData{
+  initSectionToManage(section?: RuleSection): SectionManageData {
     const sectionData: SectionManageData = {
       course: section?.course ?? this.course.id,
       name: section?.name ?? null,

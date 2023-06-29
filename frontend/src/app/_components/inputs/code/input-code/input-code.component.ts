@@ -1,17 +1,17 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { EditorView, basicSetup } from "codemirror";
-import { EditorState, Compartment, StateField, StateEffect, Range } from "@codemirror/state";
-import { syntaxTree } from "@codemirror/language";
-import { SearchCursor } from "@codemirror/search";
-import { hoverTooltip, Decoration } from "@codemirror/view";
-import { ThemingService } from "../../../../_services/theming/theming.service";
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {basicSetup, EditorView} from "codemirror";
+import {Compartment, EditorState, Range, StateEffect, StateField} from "@codemirror/state";
+import {syntaxTree} from "@codemirror/language";
+import {SearchCursor} from "@codemirror/search";
+import {Decoration, hoverTooltip} from "@codemirror/view";
+import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
-import { oneDark } from "@codemirror/theme-one-dark";
-import { basicLight } from "cm6-theme-basic-light";
+import {oneDark} from "@codemirror/theme-one-dark";
+import {basicLight} from "cm6-theme-basic-light";
 
 // @ts-ignore
-import { highlightTree } from '@codemirror/highlight';
+import {highlightTree} from '@codemirror/highlight';
 
 // @ts-ignore
 import {
@@ -24,12 +24,11 @@ import {
 } from "@codemirror/autocomplete";
 
 // @ts-ignore
-import { python, pythonLanguage } from "@codemirror/lang-python";
+import {python, pythonLanguage} from "@codemirror/lang-python";
 // @ts-ignore
-import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
+import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
-import {moveItemInArray} from "@angular/cdk/drag-drop";
 
 // import {Observable} from "rxjs";
 
@@ -42,7 +41,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // Essentials
   @Input() id: string;                                            // Unique id
   @Input() title: string;                                         // Textarea title
-  @Input() tabOutput: string;                                     // Message of the Output once the code has run
 
   // Extras
   @Input() size?: 'md' | 'lg' = 'md';                             // Size of input code
@@ -51,12 +49,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                   // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
+  @Input() previewFunction?: boolean = false;                     // Boolean to make the selection for 'preview function' functionality available
+  // Selection data for 'Preview Function' functionality
   @Input() receiveFunctionSelection?: MySelection = {
     selection: "",
     functionName: null,
     argumentsArray: null,
     library: null
-  }; // TODO -- explain
+  };
 
   @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, mode: "python"},
@@ -120,6 +120,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       // Trigger your function here based on the variable change
       this.loadTheme();
     });
+    this.receiveFunctionSelection = this.initMySelection();
   }
 
   // Setups all keywords and functions for code
@@ -279,29 +280,34 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         }),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
-          if (update.docChanged && update.selectionSet && update.viewportChanged){
+          if ((update.docChanged && update.viewportChanged) || update.selectionSet){
             this.valueChange.emit(view.state.doc.toString());
             if (query) this.toggleAlert(view, query);
             this.isCompleted.emit(!this.showAlert);
             //insertCommentCommand(view);
+
+            // Manages selection for 'preview function' functionality
+            if (this.previewFunction && update.selectionSet){
+              let selection = view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to);
+
+              let text = selection ? selection.split(/(\w+)\((.*)\)/) : [];
+
+              let mySelection = this.initMySelection(selection);
+              if (text.length >= 3){
+                let argumentsArray = text[2].split(',').map(arg => arg.trim());
+
+                const libraryPattern = /(\w+)\.\w+\(/;
+                const library = selection.match(libraryPattern)?.[1] ?? 'gamerules';
+
+                mySelection = this.initMySelection(selection, text[1], argumentsArray, library);
+              }
+
+              this.sendFunctionSelection.emit(mySelection);
+            }
+
+
           }
-          let firstRange = view.state.selection.ranges[0];
 
-          let selection = state.doc.toString().substring(firstRange.from,firstRange.to);
-
-          if (selection){
-            let text = selection.split(/(\w+)\((.*)\)/);
-
-            const mySelection : MySelection = {
-              selection: selection,
-              functionName: text[1],
-              argumentsArray: text[2].split(',').map(arg => arg.trim()),
-              library: selection.split(".")[0] ?? 'gamerules'
-            };
-            console.log(mySelection);
-
-            this.sendFunctionSelection.emit(mySelection);
-          }
         }),
         wordHover,
         EditorState.readOnly.of(readonly),
@@ -470,10 +476,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   refreshingOutput(indexTab: number, tab: OutputTab | CodeTab) {
     if ((tab as OutputTab).type === "output") {
-      if (this.tabOutput) {
-        tab.value = this.tabOutput;
+      if ((tab as OutputTab).value) {
         (tab as OutputTab).running = false;
-        this.tabOutput = null;
         return;
       }
       this.refreshOutput.emit(indexTab);
@@ -547,6 +551,21 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       this.tabs[i].active = i === index;
     }
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ---------------- Manage Data ---------------- ***/
+  /*** --------------------------------------------- ***/
+
+  initMySelection(selection?: string, functionName?: string, argumentsArray?: string[], library?: string): MySelection{
+    return {
+      selection: selection ?? null,
+      functionName: functionName ?? null,
+      argumentsArray: argumentsArray ?? [],
+      library: library ?? null,
+    };
+  }
+
 }
 
 export interface CodeTab {

@@ -60,8 +60,6 @@ export class RulesComponent implements OnInit {
   previousSelected: string[];
   setTags: Subject<{value: string, text: string, innerHTML?: string, selected: boolean}[]> = new Subject();
 
-  tabOutput: string;
-
   @ViewChild('r', {static: false}) r: NgForm;                       // rule form
 
   constructor(
@@ -262,8 +260,7 @@ export class RulesComponent implements OnInit {
     if (tab.active && (tab as OutputTab).running){
       // Preview Function
       if (indexTab === 2 && (tab as OutputTab).specificFunction){
-        console.log(selection);
-        //await this.api.previewFunction(this.course, selection.library, selection.functionName, selection.argumentsArray).toPromise();
+        await this.api.previewFunction(this.course.id, selection.library, selection.functionName, selection.argumentsArray).toPromise();
       }
       // Preview Rule
       else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
@@ -276,6 +273,7 @@ export class RulesComponent implements OnInit {
 
   }
 
+  // when refresh button is pressed
   async getPreviewOutput(indexTab: number){
     let tab = this.additionalToolsTabs[indexTab];
 
@@ -283,14 +281,12 @@ export class RulesComponent implements OnInit {
 
       // Preview Function
       if (indexTab === 2 && (tab as OutputTab).specificFunction){
-        // TODO
-        console.log("tab preview function -- get preview output");
+        (tab as OutputTab).value = await this.api.getPreviewFunctionOutput(this.course.id).toPromise();
       }
 
       // Preview Rule
       else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
-        this.tabOutput = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
-        setTimeout(()=> this.tabOutput = null, 4000);
+        (tab as OutputTab).value = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
       }
     }
   }

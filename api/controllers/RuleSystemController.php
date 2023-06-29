@@ -416,7 +416,7 @@ class RuleSystemController
      * @throws Exception
      */
     public function previewFunction(){
-        API::requireValues("courseId", "libraryId", "function", "args");
+        API::requireValues("courseId", "library", "functionName", "functionArgs");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -424,11 +424,11 @@ class RuleSystemController
         API::requireCourseAdminPermission($course);
 
         // Get rest of the values
-        $libraryId = API::getValue("libraryId");
-        $function = API::getValue("function");
-        $args = API::getValue("args", "array");
+        $library = API::getValue("library");
+        $functionName = API::getValue("functionName");
+        $functionArgs = API::getValue("functionArgs", "array");
 
-        $response = RuleSystem::previewFunction($course, $libraryId, $function, $args);
+        $response = RuleSystem::previewFunction($course, $library, $functionName, $functionArgs);
         API::response($response);
     }
 

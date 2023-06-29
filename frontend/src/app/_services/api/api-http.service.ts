@@ -1628,6 +1628,36 @@ export class ApiHttpService {
       .pipe(map((res: any) => res ? res['data'] : null));
   }
 
+  public getPreviewFunctionOutput(courseID: number): Observable<string> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'getPreviewFunctionOutput');
+      qs.push('courseId', courseID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res ? res['data'] : null));
+  }
+
+  public previewFunction(courseID: number, libraryID: string, functionName: string, functionArgs: string[]): Observable<void> {
+    const data = {
+      courseId: courseID,
+      library: libraryID,
+      functionName: functionName,
+      functionArgs: functionArgs
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.RULES_SYSTEM);
+      qs.push('request', 'previewFunction');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res));
+  }
+
   public previewRule(ruleData: RuleManageData): Observable<void> {
     const data = {
       courseId: ruleData.course,
