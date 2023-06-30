@@ -293,6 +293,9 @@ export class SkillsComponent implements OnInit {
         this.buildTiersTable(this.skillTreeInView.id);
 
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+
+      } else if (action === Action.EXPORT) {
+        await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", [tierToActOn.id]).toPromise();
       }
 
     } else if (table === 'skills') { // SKILLS
@@ -349,12 +352,15 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  doAction(table: 'tiers' | 'skills', action: string) {
+  async doAction(table: 'tiers' | 'skills', action: string) {
     if (table === 'tiers') { // TIERS
       if (action === Action.IMPORT) {
         ModalService.openModal('tier-import');
 
       } else if (action === Action.EXPORT) {
+        let tiers = this.skillTreesInfo.map(info => { return info.tiers.map(tier => { return tier.id })});
+        console.log(tiers.flat());
+        //await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", tiers.map(tier => )).toPromise();
         // this.exportTiers(this.getSkillTreeInfo(this.skillTreeInView.id).tiers);
 
       } else if (action === 'Create tier') {
