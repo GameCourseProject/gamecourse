@@ -212,10 +212,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
         let myFunction = tab.customFunctions.find(option => option.keyword === word);
-        let text = myFunction.keyword + " (" +
-          myFunction.args.map(arg => {
-            return ( arg === myFunction.args[0] ? "" : " ") + arg.name + (arg.optional ? "? " : "") + ": " + arg.type
-          }) + ")\n" + myFunction.description;
+        let text = `<span class="text-secondary font-semibold">${myFunction.keyword + " (" +
+                    myFunction.args.map(arg => {
+                      return (arg === myFunction.args[0] ? "" : " ") +
+                                `<span class="text-primary">${arg.name + (arg.optional ? "? " : "") + ": " + arg.type}</span>`;
+                    }).join("") + ")"} <br /></span>
+            ${myFunction.description}`;
 
         return {
           pos: start,
@@ -224,23 +226,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           create(view) {
             let dom = document.createElement("tag-div")
             dom.className = "cm-tooltip-cursor"
-            EditorView.baseTheme({
-              ".cm-tooltip-lint": {
-                width: "80%",
-              },
-              ".cm-tooltip-cursor": {
-                border: "none",
-                padding: "5px",
-                borderRadius: "4px",
-                "& .cm-tooltip-arrow:before": {
-                  borderTopColor: "#66b !important"
-                },
-                "& .cm-tooltip-arrow:after": {
-                  borderTopColor: "transparent",
-                }
-              }
-            })
-            dom.textContent = text
+            dom.innerHTML = text
             return {dom}
           }
         }
@@ -312,6 +298,25 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         wordHover,
         EditorState.readOnly.of(readonly),
         EditorView.editable.of(!readonly),
+        EditorView.baseTheme({
+          ".cm-tooltip-lint": {
+            width: "80%"
+          },
+          ".cm-tooltip-cursor": {
+            border: "none",
+            padding: "5px",
+            borderRadius: "4px",
+            "& .cm-tooltip-arrow:before": {
+              borderTopColor: "#66b !important"
+            },
+            "& .cm-tooltip-arrow:after": {
+              borderTopColor: "transparent",
+            }
+          },
+          "&light .cm-tooltip-below" : {
+            backgroundColor: "#bec1c4 !important",
+          }
+        })
       ],
     });
 
@@ -444,6 +449,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     this.showAlert = (view.state.doc.toString()).includes(query);
   }
 
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Output ------------------- ***/
   /*** --------------------------------------------- ***/
@@ -495,7 +501,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   filterFunctions(searchQuery?: string) {
     if (searchQuery) {
-      console.log("hey");
       let functions: CustomFunction[] = [];
       for (let i = 0; i < this.filteredFunctions.length; i++){
         if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())) {

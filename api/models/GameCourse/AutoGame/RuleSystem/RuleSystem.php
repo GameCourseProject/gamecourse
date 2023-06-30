@@ -424,6 +424,7 @@ abstract class RuleSystem
      */
     public static function getPreviewRuleOutput(int $courseId): string {
         // FIXME -- should also check if autogame has done running in test mode
+        
         $outputPath = self::createTestDataFolder($courseId) . "rule-test-output.txt";
         if (file_exists($outputPath)){
             $output = file_get_contents($outputPath);
