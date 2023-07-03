@@ -359,8 +359,7 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === Action.EXPORT) {
         let tiers = this.skillTreesInfo.map(info => { return info.tiers.map(tier => { return tier.id })});
-        console.log(tiers.flat());
-        //await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", tiers.map(tier => )).toPromise();
+        await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", tiers.flat()).toPromise();
         // this.exportTiers(this.getSkillTreeInfo(this.skillTreeInView.id).tiers);
 
       } else if (action === 'Create tier') {
