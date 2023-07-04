@@ -335,6 +335,26 @@ class Skills extends Module
         return ["position" => "after"];
     }
 
+    /**
+     * @throws Exception
+     */
+    public function importListingItems(string $listName, string $file, bool $replace = true): ?int
+    {
+        // TODO
+        // if ($listName == "Skill Trees") return SkillTree::importSkillTrees($this->course->getId(), $file, $replace);
+        return null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function exportListingItems(string $listName, array $items): ?array
+    {
+        if ($listName == "Skill Trees") return SkillTree::exportSkillTrees($this->course->getId(), $items);
+        else if ($listName == "Skills") return Skill::exportSkills($this->course->getId(), $items);
+        return null;
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ----------------- Rule System ----------------- ***/
