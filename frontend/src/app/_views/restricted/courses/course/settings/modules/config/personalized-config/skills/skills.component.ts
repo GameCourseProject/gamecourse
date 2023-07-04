@@ -333,6 +333,7 @@ export class SkillsComponent implements OnInit {
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
 
       } else if (action === Action.EXPORT) {
+        await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", [tierToActOn.id]).toPromise();
         // this.exportUsers([userToActOn]);
 
       } else if (action === Action.VIEW_RULE) {
@@ -368,6 +369,8 @@ export class SkillsComponent implements OnInit {
         ModalService.openModal('skill-import');
 
       } else if (action === Action.EXPORT) {
+        let tiers = this.skillTreesInfo.map(info => { return info.tiers.map(tier => { return tier.id })});
+        await this.api.exportModuleItems(this.courseID, "Tiers", "Tiers", tiers.flat()).toPromise();
         // this.exportSkills(this.getSkillTreeInfo(this.skillTreeInView.id).skills);
 
       } else if (action === 'Create skill') {
