@@ -352,6 +352,7 @@ class Skills extends Module
     {
         if ($listName == "Skill Trees") return SkillTree::exportSkillTrees($this->course->getId(), $items);
         else if ($listName == "Skills") return Skill::exportSkills($this->course->getId(), $items);
+        else if ($listName == "Tiers") return Tier::exportTiers($this->course->getId(), $items);
         return null;
     }
 

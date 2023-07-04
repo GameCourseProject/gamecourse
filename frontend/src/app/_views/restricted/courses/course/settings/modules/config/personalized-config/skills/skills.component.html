@@ -189,6 +189,55 @@
     (submitBtnClicked)="deleteTier(tierToDelete)"
     (onClose)="tierToDelete = null">
   </app-simple-modal>
+
+  <!-- Import Modal -->
+  <app-modal
+    [id]="'tier-import'"
+    [templateRef]="TIER_IMPORT"
+    [header]="'Import Tiers'"
+    [submitBtnText]="'Import'"
+    [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.tiers"
+    (submitBtnClicked)="fImport.onSubmit(null); importTiers()"
+    (onClose)="resetImport()">
+  </app-modal>
+
+  <ng-template #TIER_IMPORT>
+    <div class="prose flex items-center gap-1 mb-3">
+      <p class="mb-0">Upload a .ZIP file containing tier information</p>
+      <app-import-helper
+        [id]="'import-helper'"
+        [format]="'.zip'"
+        [requirements]="[]"
+      >
+      </app-import-helper>
+    </div>
+
+    <form #fImport="ngForm">
+
+      <!-- File -->
+      <app-input-file
+        [id]="'import-file'"
+        [form]="fImport"
+        [accept]="['.zip']"
+        [size]="'sm'"
+        [color]="'primary'"
+        [required]="true"
+        (valueChange)="this.importData.file = $event.item(0)">
+      </app-input-file>
+
+      <!-- Replace -->
+      <app-input-checkbox
+        [id]="'import-replace'"
+        [form]="fImport"
+        [(value)]="importData.replace"
+        [color]="'secondary'"
+        [classList]="'mt-2'"
+        [label]="'Replace duplicates'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+
+    </form>
+  </ng-template>
 </div>
 
 <!-- Skills -->
@@ -342,6 +391,56 @@
     (submitBtnClicked)="deleteSkill(skillToDelete)"
     (onClose)="skillToDelete = null">
   </app-simple-modal>
+
+  <!-- Import Modal -->
+  <app-modal
+    [id]="'skill-import'"
+    [templateRef]="SKILL_IMPORT"
+    [header]="'Import Skills'"
+    [submitBtnText]="'Import'"
+    [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
+    (submitBtnClicked)="fImport.onSubmit(null); importSkills()"
+    (onClose)="resetImport()">
+  </app-modal>
+
+  <ng-template #SKILL_IMPORT>
+    <div class="prose flex items-center gap-1 mb-3">
+      <p class="mb-0">Upload a .ZIP file containing skill information</p>
+      <app-import-helper
+        [id]="'import-helper'"
+        [format]="'.zip'"
+        [requirements]="[]"
+      >
+      </app-import-helper>
+    </div>
+
+    <form #fImport="ngForm">
+
+      <!-- File -->
+      <app-input-file
+        [id]="'import-file'"
+        [form]="fImport"
+        [accept]="['zip']"
+        [size]="'sm'"
+        [color]="'primary'"
+        [required]="true"
+        (valueChange)="this.importData.file = $event.item(0)">
+      </app-input-file>
+
+      <!-- Replace -->
+      <app-input-checkbox
+        [id]="'import-replace'"
+        [form]="fImport"
+        [(value)]="importData.replace"
+        [color]="'secondary'"
+        [classList]="'mt-2'"
+        [label]="'Replace duplicates'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+
+    </form>
+  </ng-template>
+
 </div>
 
 <!-- Skill Tree Preview -->
