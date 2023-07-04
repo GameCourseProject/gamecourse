@@ -340,8 +340,9 @@ class Skills extends Module
      */
     public function importListingItems(string $listName, string $file, bool $replace = true): ?int
     {
-        // TODO
-        // if ($listName == "Skill Trees") return SkillTree::importSkillTrees($this->course->getId(), $file, $replace);
+        if ($listName == "Skill Trees") return SkillTree::importSkillTrees($this->course->getId(), $file, $replace);
+        else if ($listName == "Skills") return Skill::importSkills($this->course->getId(), $file, $replace);
+        else if ($listName == "Tiers") return Tier::importTiers($this->course->getId(), $file, $replace);
         return null;
     }
 

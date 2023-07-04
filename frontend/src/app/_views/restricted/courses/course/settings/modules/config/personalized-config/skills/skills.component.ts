@@ -450,8 +450,19 @@ export class SkillsComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Tier \'' + tier.name + '\' deleted');
   }
 
-  importTiers(){
+  async importTiers(){
+    if (this.fImport.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
 
+      const file = await ResourceManager.getBase64(this.importData.file);
+      const nrSkillsImported = await this.api.importModuleItems(this.courseID, "Skills", "Tiers", file, this.importData.replace).toPromise();
+
+
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+      ModalService.closeModal('tier-import');
+      AlertService.showAlert(AlertType.SUCCESS, nrSkillsImported + ' ' + Tier + (nrSkillsImported != 1 ? 's' : '') + ' imported');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
   // SKILLS

@@ -545,7 +545,7 @@ class Tier
      *
      * Returns the nr. of tiers imported.
      *
-     * @param int $skillTreeId
+     * @param int $courseId
      * @param string $contents
      * @param bool $replace
      * @return int
