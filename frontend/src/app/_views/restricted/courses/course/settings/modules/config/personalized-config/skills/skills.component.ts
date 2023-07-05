@@ -566,7 +566,8 @@ export class SkillsComponent implements OnInit {
   }
 
   resetImport(){
-
+    this.importData = {file: null, replace: true};
+    this.fImport.resetForm();
   }
 
   /*** --------------------------------------------- ***/

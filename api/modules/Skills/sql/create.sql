@@ -12,8 +12,10 @@ CREATE TABLE IF NOT EXISTS skill_tree(
     course                      int unsigned NOT NULL,
     name                        varchar(50),
     maxReward                   int unsigned DEFAULT NULL,
+    inView                      boolean NOT NULL DEFAULT FALSE,
 
     UNIQUE key(course, name),
+    UNIQUE key(course, inView),
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
