@@ -537,33 +537,64 @@ class Tier
 
     /**
      * Imports tiers into a given skill tree from a .zip file containing
-     * a FIXME: complete.
+     * a tiers and their costs (costs are optional -- just if VirtualCurrency module is enabled)
      *
      * Returns the nr. of tiers imported.
      *
+     * @param int $courseId
      * @param int $skillTreeId
      * @param string $contents
      * @param bool $replace
      * @return int
      * @throws Exception
      */
-    public static function importTiers(int $skillTreeId, string $contents, bool $replace = true): int
+    public static function importTiers(int $courseId, string $contents, bool $replace = true): int
     {
+        $course = new Course($courseId);
+
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
 
         // Extract contents
         $zipPath = $tempFolder . "/tiers.zip";
-        file_put_contents($zipPath, $contents);
+        Utils::uploadFile($tempFolder, $contents, "tiers.zip");
         $zip = new ZipArchive();
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
         Utils::deleteFile($tempFolder, "tiers.zip");
 
-        $nrTiersImported = 0;
-        // TODO: import skill tiers
+        $file = file_get_contents($tempFolder . "/tiers.csv");
+
+        $nrTiersImported = Utils::importFromCSV(self::HEADERS, function ($tier, $indexes) use ($courseId, $replace) {
+            $name = Utils::nullify($tier[$indexes["name"]]);
+            $reward = self::parse(null, Utils::nullify($tier[$indexes["reward"]]), "reward");
+            $position = self::parse(null, Utils::nullify($tier[$indexes["position"]]), "position");
+            $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
+            $costType = Utils::nullify($tier[$indexes["costType"]]);
+            $cost = self::parse(null, Utils::nullify($tier[$indexes["cost"]]), "cost");
+            $increment = self::parse(null, Utils::nullify($tier[$indexes["increment"]]), "increment");
+            $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
+
+            $skillTrees = SkillTree::getSkillTrees($courseId);
+            foreach($skillTrees as $skillTree){
+                $skillTreeId = $skillTree["id"];
+                $tier = self::getTierByName($skillTreeId, $name);
+
+                if ($tier){ // Tier already exists
+                    if ($replace) { // replace
+                        $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
+
+                    }
+                } else { // tier doesn't exist
+                    self::addTier($skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
+
+                    return 1;
+                }
+                return 0;
+            }
+        }, $file);
 
         // Remove temporary folder
         Utils::deleteDirectory($tempFolder);
@@ -576,12 +607,15 @@ class Tier
     /**
      * Exports tiers of a skill tree to a .zip file.
      *
-     * @param int $skillTreeId
+     * @param int $courseId
+     * @param array $tiers
      * @return array
      * @throws Exception
      */
-    public static function exportTiers(int $skillTreeId): array
+    public static function exportTiers(int $courseId, array $tiers): array
     {
+        $course = new Course($courseId);
+
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
@@ -593,10 +627,35 @@ class Tier
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
 
-        // TODO: export
+        // Add tiers .csv file
+        $tiersToExport = array_values(array_filter(self::getTiers($courseId), function ($tier) use ($tiers)
+            { return in_array($tier["id"], $tiers); }));
+        $zip->addFromString("tiers.csv", Utils::exportToCSV($tiersToExport, function ($tier) {
+            return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
+                $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
+        }, self::HEADERS));
+
+        // Add tier costs if virtual currency is enabled
+        /*if (array_search("VirtualCurrency", $course->getModules(true,true))){
+
+            $tierCosts = [];
+            foreach($tiersToExport as $tierInfo){
+                $tier = self::getTierById($tierInfo["id"]);
+                $tierCostType = $tier->getCostType();
+                $tierCost = $tier->getCost();
+                $tierIncrement = $tier->getIncrement();
+                $tierMinRating = $tier->getMinRating();
+
+                array_push($tierCosts, [$tierInfo["id"], $tierCostType, $tierCost, $tierIncrement, $tierMinRating]);
+            }
+
+            $zip->addFromString("tiersCost.csv", Utils::exportToCSV($tierCosts, function ($tierCost) {
+                return [$tierCost[0], $tierCost[1], $tierCost[2], $tierCost[3], $tierCost[4]];
+            }, self::HEADER_TIER_COST));
+        }*/
 
         $zip->close();
-        return ["extension" => ".zip", "path" => $zipPath];
+        return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
 

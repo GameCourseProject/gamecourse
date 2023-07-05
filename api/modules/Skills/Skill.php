@@ -1224,7 +1224,9 @@ class Skill
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    // TODO: import
+    public static function importSkills(int $courseId, string $contents, bool $replace = true): int {
+        // TODO
+    }
 
     /**
      * Exports skills to a .zip file.

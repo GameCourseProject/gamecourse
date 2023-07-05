@@ -51,6 +51,10 @@ class SkillTree
         return $this->getData("maxReward");
     }
 
+    public function inView(): bool {
+        return $this->getData("inView");
+    }
+
     /**
      * Gets skill tree data from the database.
      *
@@ -88,6 +92,13 @@ class SkillTree
     public function setMaxReward(?int $maxReward)
     {
         $this->setData(["maxReward" => $maxReward]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setInView(?bool $inView){
+        $this->setData(["inView" => +$inView]);
     }
 
     /**
@@ -158,10 +169,20 @@ class SkillTree
      */
     public static function getSkillTrees(int $courseId, string $orderBy = "name"): array
     {
-        $field = "id, name, maxReward";
+        $field = "id, name, maxReward, inView";
         $skillTrees = Core::database()->selectMultiple(self::TABLE_SKILL_TREE, ["course" => $courseId], $field, $orderBy);
         foreach ($skillTrees as &$skillTree) { $skillTree = self::parse($skillTree); }
         return $skillTrees;
+    }
+
+    /**
+     * Gets skill tree in config view inside Skill Tree module given a specific course
+     *
+     * @param int $courseId
+     * @return mixed|null
+     */
+    public static function getSkillTreeInView(int $courseId){
+        return Core::database()->select(self::TABLE_SKILL_TREE, ["course" => $courseId, "inView" => true]);
     }
 
 
@@ -176,17 +197,19 @@ class SkillTree
      * @param int $courseId
      * @param string|null $name
      * @param int|null $maxReward
+     * @param bool|null $inView
      * @return SkillTree
      * @throws Exception
      */
-    public static function addSkillTree(int $courseId, ?string $name, ?int $maxReward): SkillTree
+    public static function addSkillTree(int $courseId, ?string $name, ?int $maxReward, bool $inView = false): SkillTree
     {
         self::trim($name);
         self::validateName($courseId, $name);
         $id = Core::database()->insert(self::TABLE_SKILL_TREE, [
             "course" => $courseId,
             "name" => $name,
-            "maxReward" => $maxReward
+            "maxReward" => $maxReward,
+            "inView" => +$inView
         ]);
         Tier::addTier($id, Tier::WILDCARD, 0);
         return new SkillTree($id);
@@ -198,6 +221,7 @@ class SkillTree
      *
      * @param string|null $name
      * @param int|null $maxReward
+     * @param bool|null $inView
      * @return SkillTree
      * @throws Exception
      */
@@ -333,15 +357,30 @@ class SkillTree
 
         // Extract contents
         $zipPath = $tempFolder . "/skillTrees.zip";
-        file_put_contents($zipPath, $contents);
+        Utils::uploadFile($tempFolder, $contents, "skillTrees.zip");
         $zip = new ZipArchive();
         if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
         $zip->extractTo($tempFolder);
         $zip->close();
         Utils::deleteFile($tempFolder, "skillTrees.zip");
 
-        $nrSkillTreesImported = 0;
-        // TODO: import skill trees
+        //file_put_contents($zipPath, $contents);
+        $file = file_get_contents($tempFolder ."/skillTrees.csv");
+        $nrSkillTreesImported = Utils::importFromCSV(self::HEADERS, function($skillTree, $indexes) use ($courseId, $replace) {
+            $name = Utils::nullify($skillTree[$indexes["name"]]);
+            $maxReward = self::parse(null, Utils::nullify($skillTree[$indexes["maxReward"]]), "maxReward");
+
+            $skillTree = self::getSkillTreeByName($courseId, $name);
+            if ($skillTree) { // skillTree already exists
+                if ($replace){ // replace
+                    $skillTree->editSkillTree($name, $maxReward);
+                }
+            } else { // skillTree doesn't exist
+                self::addSkillTree($courseId, $name, $maxReward);
+                return 1;
+            }
+            return 0;
+        }, $file);
 
         // Remove temporary folder
         Utils::deleteDirectory($tempFolder);
@@ -369,7 +408,7 @@ class SkillTree
 
         // Create zip archive to store skill trees' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), '_') . "-skillTrees.zip";
+        $zipPath = $tempFolder . "/skillTrees.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
@@ -386,7 +425,17 @@ class SkillTree
 
             // Add tiers .csv file
             $tiers = $skillTree->getTiers();
-            // TODO
+            $zip->addFromString("tiers.csv", Utils::exportToCSV($tiers, function ($tier) {
+                return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
+                    $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
+            }, Tier::HEADERS));
+
+            // Add skills .csv file
+            $skills = $skillTree->getSkills();
+            $zip->addFromString("skills.csv", Utils::exportToCSV($tiers, function ($tier) {
+                return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
+                    $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
+            }, Tier::HEADERS));
         }
 
         $zip->close();
@@ -441,8 +490,9 @@ class SkillTree
     private static function parse(array $skillTree = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "maxReward"];
+        $boolValues = ["inView"];
 
-        return Utils::parse(["int" => $intValues], $skillTree, $field, $fieldName);
+        return Utils::parse(["int" => $intValues, "bool" => $boolValues], $skillTree, $field, $fieldName);
     }
 
     /**
