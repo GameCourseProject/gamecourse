@@ -2,6 +2,8 @@
 namespace GameCourse\Module\Skills;
 
 use Exception;
+use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
@@ -365,8 +367,8 @@ class SkillTree
         Utils::deleteFile($tempFolder, "skillTrees.zip");
 
         //file_put_contents($zipPath, $contents);
-        $file = file_get_contents($tempFolder ."/skillTrees.csv");
-        $nrSkillTreesImported = Utils::importFromCSV(self::HEADERS, function($skillTree, $indexes) use ($courseId, $replace) {
+        $file = file_get_contents($tempFolder . "/skillTrees.csv");
+        $nrSkillTreesImported = Utils::importFromCSV(self::HEADERS, function($skillTree, $indexes) use ($courseId, $replace, $tempFolder) {
             $name = Utils::nullify($skillTree[$indexes["name"]]);
             $maxReward = self::parse(null, Utils::nullify($skillTree[$indexes["maxReward"]]), "maxReward");
 
@@ -374,9 +376,29 @@ class SkillTree
             if ($skillTree) { // skillTree already exists
                 if ($replace){ // replace
                     $skillTree->editSkillTree($name, $maxReward);
+
+                    // Import tiers and skills
+                    $tierFile = file_get_contents($tempFolder . "/tiers.csv");
+                    if ($tierFile){ // There are tiers to be imported
+                        $skillTree->setInView(true); // Specifies which skill tree is being manipulated at the moment
+                        Tier::importTiers($courseId, $tierFile, $replace);
+                        $skillTree->setInView(false);
+
+                        // FIXME -- skills left
+                    }
                 }
             } else { // skillTree doesn't exist
                 self::addSkillTree($courseId, $name, $maxReward);
+
+                $tierFile = file_get_contents($tempFolder . "/tiers.csv");
+                if ($tierFile) { // There are tiers to be imported
+                    $skillTree->setInView(true); // Specifies which skill tree is being manipulated at the moment
+                    Tier::importTiers($courseId, $tierFile, $replace);
+                    $skillTree->setInView(false);
+
+                    // FIXME -- skills left
+                }
+
                 return 1;
             }
             return 0;
@@ -432,10 +454,20 @@ class SkillTree
 
             // Add skills .csv file
             $skills = $skillTree->getSkills();
-            $zip->addFromString("skills.csv", Utils::exportToCSV($tiers, function ($tier) {
-                return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
-                    $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
-            }, Tier::HEADERS));
+            $zip->addFromString("skills.csv", Utils::exportToCSV($skills, function ($skill) {
+                return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
+            }, Skill::HEADERS));
+
+            // Skill's rules as well
+            $skillsSection = RuleSystem::getSectionIdByModule($courseId, "Skills");
+            $skillRules = Rule::getRulesOfSection($skillsSection);
+            $zip->addFromString("skillsRules.csv", Utils::exportToCSV($skillRules, function ($skillRule) {
+                $whenClause = Rule::parseToExportAndImport($skillRule["whenClause"], "export");
+                $thenClause = Rule::parseToExportAndImport($skillRule["thenClause"], "export");
+
+                return [$skillRule["name"], $skillRule["description"], $whenClause, $thenClause,
+                    +$skillRule["isActive"], $skillRule["position"], ""]; // tags are omitted
+            }, Rule::HEADERS));
         }
 
         $zip->close();

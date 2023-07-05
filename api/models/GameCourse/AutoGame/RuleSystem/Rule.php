@@ -507,8 +507,8 @@ class Rule
         return Utils::importFromCSV(self::HEADERS, function ($rule, $indexes) use ($replace, $courseId, $sectionId) {
             $name = Utils::nullify($rule[$indexes["name"]]);
             $description = Utils::nullify($rule[$indexes["description"]]);
-            $whenClause = Utils::nullify($rule[$indexes["whenClause"]]);
-            $thenClause = Utils::nullify($rule[$indexes["thenClause"]]);
+            $whenClause = Utils::nullify(self::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
+            $thenClause = Utils::nullify(self::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
             $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
             $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
 
@@ -806,6 +806,27 @@ class Rule
         $boolValues = ["isActive"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $rule, $field, $fieldName);
+    }
+
+    /**
+     *
+     * Because the import and export to .csv files doesn't accept special characters this is a workaround save fields in
+     * columns correctly
+     *
+     * @param string $text
+     * @param string $mode
+     * @return string
+     */
+    public static function parseToExportAndImport(string $text, string $mode): string{
+        if ($mode === "export"){
+            $res = str_replace(["\"", "\'", '"'], '\quote\\', $text);
+            return str_replace("\n", '\newline\\', $res);
+
+        } else if ($mode === "import"){
+            $res = str_replace('\quote\\', "\"", $text);
+            return str_replace('\newline\\', "\n", $res);
+        } else return $text;
+
     }
 
     /**

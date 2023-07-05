@@ -4,6 +4,7 @@ namespace GameCourse\Module\Skills;
 use Exception;
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
@@ -1224,8 +1225,69 @@ class Skill
     /*** ------------------ Import/Export ------------------- ***/
     /*** ---------------------------------------------------- ***/
 
-    public static function importSkills(int $courseId, string $contents, bool $replace = true): int {
-        // TODO
+    /**
+     * @param int $courseId
+     * @param string $contents
+     * @param bool $replace
+     * @return int
+     * @throws Exception
+     */
+    public static function importSkills(int $courseId, string $contents, bool $replace = true): int
+    {
+        // Create a temporary folder to work with
+        $tempFolder = ROOT_PATH . "temp/" . time();
+        mkdir($tempFolder, 0777, true);
+
+        // Extract contents
+        $zipPath = $tempFolder . "/skills.zip";
+        Utils::uploadFile($tempFolder, $contents, "skills.zip");
+        $zip = new ZipArchive();
+        if (!$zip->open($zipPath)) throw new Exception("Failed to create zip archive.");
+        $zip->extractTo($tempFolder);
+        $zip->close();
+        Utils::deleteFile($tempFolder, "skills.zip");
+
+        $file = file_get_contents($tempFolder ."/skills.csv");
+        $ruleFile = file_get_contents($tempFolder ."/skillsRules.csv");
+        $nrSkillsImported = Utils::importFromCSV(self::HEADERS, function($skill, $indexes) use ($courseId, $replace, $ruleFile) {
+            $name = Utils::nullify($skill[$indexes["name"]]);
+            $color = Utils::nullify($skill[$indexes["color"]]);
+            $page = Utils::nullify($skill[$indexes["page"]]);
+            $isCollab = self::parse(null, Utils::nullify($skill[$indexes["isCollab"]]), "isCollab");
+            $isExtra = self::parse(null, Utils::nullify($skill[$indexes["isExtra"]]), "isExtra");
+            $isActive = self::parse(null, Utils::nullify($skill[$indexes["isActive"]]), "isActive");
+            $position = self::parse(null, Utils::nullify($skill[$indexes["position"]]), "position");
+
+            $skill = self::getSkillByName($courseId, $name);
+            if ($skill) { // skill already exists
+                if ($replace){ // replace
+                    $tierId = $skill->getTier()->getId();
+                    $dependencies = $skill->getDependencies();
+                    // both tierId and dependencies are not something to be edited through import
+                    $skill->editSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $isActive, $position, $dependencies);
+
+                    if ($ruleFile){
+                        Rule::importRules($courseId, Section::getSectionIdByModule($courseId, "Skills"), $ruleFile, $replace);
+                    }
+
+                }
+            } else { // skill doesn't exist
+                self::addSkill();  // FIXME which tier should it be added to?
+
+                if ($ruleFile){
+                    Rule::importRules($courseId, Section::getSectionIdByModule($courseId, "Skills"), $ruleFile, $replace);
+                }
+                return 1;
+            }
+            return 0;
+        }, $file);
+
+        // Remove temporary folder
+        Utils::deleteDirectory($tempFolder);
+        if (Utils::getDirectorySize(ROOT_PATH . "temp") == 0)
+            Utils::deleteDirectory(ROOT_PATH . "temp");
+
+        return $nrSkillsImported;
     }
 
     /**
@@ -1257,8 +1319,19 @@ class Skill
             return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
         }, self::HEADERS));
 
+        $skillsSection = RuleSystem::getSectionIdByModule($courseId, "Skills");
+        $skillRules = Rule::getRulesOfSection($skillsSection);
+        $zip->addFromString("skillsRules.csv", Utils::exportToCSV($skillRules, function ($skillRule) {
+            $whenClause = Rule::parseToExportAndImport($skillRule["whenClause"], "export");
+            $thenClause = Rule::parseToExportAndImport($skillRule["thenClause"], "export");
+
+            return [$skillRule["name"], $skillRule["description"], $whenClause, $thenClause,
+                +$skillRule["isActive"], $skillRule["position"], ""]; // tags are omitted
+        }, Rule::HEADERS));
+
+
         // Add each skill resources to a folder
-        foreach ($skillsToExport as $skillInfo) {
+        /*foreach ($skillsToExport as $skillInfo) {
             $skill = self::getSkillById($skillInfo["id"]);
             $skillFolder = $skill->getDataFolder(true, $skillInfo["name"]);
 
@@ -1272,7 +1345,7 @@ class Skill
                 $filePath = $skillFolder . "/" . $file;
                 $zip->addFile($filePath, $skillFolderName . "/" . $file);
             }
-        }
+        }*/
 
         $zip->close();
         return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];

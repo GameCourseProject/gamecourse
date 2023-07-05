@@ -577,23 +577,18 @@ class Tier
             $increment = self::parse(null, Utils::nullify($tier[$indexes["increment"]]), "increment");
             $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
 
-            $skillTrees = SkillTree::getSkillTrees($courseId);
-            foreach($skillTrees as $skillTree){
-                $skillTreeId = $skillTree["id"];
-                $tier = self::getTierByName($skillTreeId, $name);
+            $skillTreeId = SKillTree::getSkillTreeInView($courseId);
+            $tier = self::getTierByName($skillTreeId, $name);
 
-                if ($tier){ // Tier already exists
-                    if ($replace) { // replace
-                        $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
-
-                    }
-                } else { // tier doesn't exist
-                    self::addTier($skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
-
-                    return 1;
+            if ($tier){ // Tier already exists
+                if ($replace) { // replace
+                    $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
                 }
-                return 0;
+            } else { // tier doesn't exist
+                self::addTier($skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
+                return 1;
             }
+            return 0;
         }, $file);
 
         // Remove temporary folder
@@ -634,25 +629,6 @@ class Tier
             return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
                 $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
         }, self::HEADERS));
-
-        // Add tier costs if virtual currency is enabled
-        /*if (array_search("VirtualCurrency", $course->getModules(true,true))){
-
-            $tierCosts = [];
-            foreach($tiersToExport as $tierInfo){
-                $tier = self::getTierById($tierInfo["id"]);
-                $tierCostType = $tier->getCostType();
-                $tierCost = $tier->getCost();
-                $tierIncrement = $tier->getIncrement();
-                $tierMinRating = $tier->getMinRating();
-
-                array_push($tierCosts, [$tierInfo["id"], $tierCostType, $tierCost, $tierIncrement, $tierMinRating]);
-            }
-
-            $zip->addFromString("tiersCost.csv", Utils::exportToCSV($tierCosts, function ($tierCost) {
-                return [$tierCost[0], $tierCost[1], $tierCost[2], $tierCost[3], $tierCost[4]];
-            }, self::HEADER_TIER_COST));
-        }*/
 
         $zip->close();
         return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
