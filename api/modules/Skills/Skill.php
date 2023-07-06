@@ -997,7 +997,7 @@ class Skill
      * @return Rule
      * @throws Exception
      */
-    private static function addRule(int $courseId, int $tierId, int $positionInTier, bool $hasWildcardDependency,
+    public static function addRule(int $courseId, int $tierId, int $positionInTier, bool $hasWildcardDependency,
                                     string $skillName, array $dependencies): Rule
     {
         // Find rule position

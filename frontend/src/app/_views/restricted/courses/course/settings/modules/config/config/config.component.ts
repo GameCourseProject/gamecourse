@@ -235,6 +235,7 @@ export class ConfigComponent implements OnInit {
 
       } else {
         if (this.fImport.valid) {
+          console.log("Here");
           list.loading.action = true;
 
           try {
@@ -637,8 +638,9 @@ export class ConfigComponent implements OnInit {
   }
 
   resetImport() {
-    this.importData = {file: null, replace: true};
+    this.importData = {file: null, replace: false};
     this.fImport.resetForm();
+    this.itemToManage = null;
   }
 
   resetUnpickedRadios(group: string, picked: string) {

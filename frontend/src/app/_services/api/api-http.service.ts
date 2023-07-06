@@ -2626,6 +2626,23 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public setSkillTreeInView(courseID: number, skillTreeID: number, status: boolean): Observable<void> {
+    const data = {
+      courseId: courseID,
+      skillTreeId: skillTreeID,
+      status: status
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'setSkillTreeInView');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res) );
+  }
+
 
   // Virtual Currency
 

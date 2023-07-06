@@ -57,8 +57,8 @@ export class SkillsComponent implements OnInit {
   @ViewChild('fDependency', { static: false }) fDependency: NgForm;
 
   // IMPORT
-  importData: {file: File, replace: boolean} = {file: null, replace: true};
-  @ViewChild('fImport', { static: false }) fImport: NgForm;
+  skillsImportData: {file: File, replace: boolean} = {file: null, replace: true};
+  @ViewChild('fSkillsImport', { static: false }) fSkillsImport: NgForm;
 
   constructor(
     private api: ApiHttpService,
@@ -361,6 +361,10 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  hey($event){
+    console.log($event);
+  }
+
   async doAction(table: 'tiers' | 'skills', action: string) {
     if (table === 'tiers') { // TIERS
       if (action === Action.IMPORT) {
@@ -451,16 +455,19 @@ export class SkillsComponent implements OnInit {
   }
 
   async importTiers(){
-    if (this.fImport.valid) {
+    if (this.fSkillsImport.valid) {
       this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
 
-      const file = await ResourceManager.getBase64(this.importData.file);
-      const nrSkillsImported = await this.api.importModuleItems(this.courseID, "Skills", "Tiers", file, this.importData.replace).toPromise();
+      await this.api.setSkillTreeInView(this.courseID, this.skillTreeInView.id, true).toPromise();
+      const file = await ResourceManager.getBase64(this.skillsImportData.file);
+      const nrSkillsImported = await this.api.importModuleItems(this.courseID, "Skills", "Tiers", file, this.skillsImportData.replace).toPromise();
 
-
+      await this.api.setSkillTreeInView(this.courseID, this.skillTreeInView.id, false).toPromise();
       this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
       ModalService.closeModal('tier-import');
-      AlertService.showAlert(AlertType.SUCCESS, nrSkillsImported + ' ' + Tier + (nrSkillsImported != 1 ? 's' : '') + ' imported');
+      AlertService.showAlert(AlertType.SUCCESS, nrSkillsImported + ' Tier' + (nrSkillsImported != 1 ? 's' : '') + ' imported');
+
+      this.buildTiersTable(this.skillTreeInView.id);
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
@@ -552,22 +559,25 @@ export class SkillsComponent implements OnInit {
     // });
   }
 
-  importSkills() {
-    /*if (this.fImport.valid) {
-      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
+  async importSkills() {
+    if (this.fSkillsImport.valid) {
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = true;
 
-      const file = await ResourceManager.getBase64(this.importData.file);
-      const nrSkillsImported = await this.api.importModuleItems(this.courseID, "Skills", )
+      const file = await ResourceManager.getBase64(this.skillsImportData.file);
+      const nrSkillsImported = await this.api.importModuleItems(this.courseID, "Skills", "Tiers", file, this.skillsImportData.replace).toPromise();
 
-      this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = false;
 
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');*/
+      this.getSkillTreeInfo(this.skillTreeInView.id).loading.tiers = false;
+      ModalService.closeModal('tier-import');
+      AlertService.showAlert(AlertType.SUCCESS, nrSkillsImported + ' ' + Tier + (nrSkillsImported != 1 ? 's' : '') + ' imported');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
 
   }
 
   resetImport(){
-    this.importData = {file: null, replace: true};
-    this.fImport.resetForm();
+    this.skillsImportData = {file: null, replace: true};
+    this.fSkillsImport.resetForm();
   }
 
   /*** --------------------------------------------- ***/

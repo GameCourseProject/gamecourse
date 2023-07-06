@@ -17,7 +17,7 @@ class Tier
     const TABLE_SKILL_TIER_COST = 'skill_tier_cost';
 
     const HEADERS = [   // headers for import/export functionality
-        "name", "reward", "position", "isActive", "costType", "cost", "increment, minRating"
+        "name", "reward", "position", "isActive", "costType", "cost", "increment", "minRating"
     ];
 
     const WILDCARD = "Wildcard";
@@ -550,8 +550,6 @@ class Tier
      */
     public static function importTiers(int $courseId, string $contents, bool $replace = true): int
     {
-        $course = new Course($courseId);
-
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
@@ -569,15 +567,15 @@ class Tier
 
         $nrTiersImported = Utils::importFromCSV(self::HEADERS, function ($tier, $indexes) use ($courseId, $replace) {
             $name = Utils::nullify($tier[$indexes["name"]]);
-            $reward = self::parse(null, Utils::nullify($tier[$indexes["reward"]]), "reward");
+            $reward = self::parse(null, $tier[$indexes["reward"]], "reward");
             $position = self::parse(null, Utils::nullify($tier[$indexes["position"]]), "position");
             $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
             $costType = Utils::nullify($tier[$indexes["costType"]]);
-            $cost = self::parse(null, Utils::nullify($tier[$indexes["cost"]]), "cost");
-            $increment = self::parse(null, Utils::nullify($tier[$indexes["increment"]]), "increment");
+            $cost = self::parse(null, $tier[$indexes["cost"]], "cost");
+            $increment = self::parse(null, $tier[$indexes["increment"]], "increment");
             $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
 
-            $skillTreeId = SKillTree::getSkillTreeInView($courseId);
+            $skillTreeId = SKillTree::getSkillTreeInView($courseId)->getId();
             $tier = self::getTierByName($skillTreeId, $name);
 
             if ($tier){ // Tier already exists

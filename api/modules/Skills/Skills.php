@@ -82,6 +82,7 @@ class Skills extends Module
 
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
+
     }
 
     /**
@@ -575,5 +576,22 @@ class Skills extends Module
     public function userHasWildcardAvailable(int $userId, int $skillTreeId): bool
     {
         return $this->getUserTotalAvailableWildcards($userId, $skillTreeId) > 0;
+    }
+
+
+    /*** -------- Skill Trees --------- ***/
+
+    /**
+     *
+     * Sets a specific skillTree status (either inView or not) given its id
+     *
+     * @param int $skillTreeId
+     * @param bool $status
+     * @return void
+     * @throws Exception
+     */
+    public static function setSkillTreeInView(int $skillTreeId, bool $status){
+        $skillTree = new SkillTree($skillTreeId);
+        $skillTree->setInView($status);
     }
 }

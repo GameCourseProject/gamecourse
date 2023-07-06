@@ -391,4 +391,20 @@ class SkillsController
         $info = ["info" => $userStreaks, "total" => $awardsModule->getUserStreaksTotalReward($userId)];
         API::response($info);
     }
+
+    /**
+     * @throws Exception
+     */
+    public function setSkillTreeInView(){
+        API::requireValues("courseId", "skillTreeId", "status");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $skillTreeId = API::getValue("skillTreeId", "int");
+        $status = API::getValue("status", "bool");
+        Skills::setSkillTreeInView($skillTreeId, $status);
+}
 }
