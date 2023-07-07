@@ -624,6 +624,26 @@ class SkillTree
                             $isCollab = self::parse(null, $skill[$indexes["isCollab"]], "isCollab");
                             $isExtra = self::parse(null, $skill[$indexes["isExtra"]], "isExtra");
 
+                            $ruleIndex = null;
+                            // We need to see if there's already a rule with the skill's name in the system before importing skill
+                            foreach ($skillsRules as $index => $skillRule){
+                                if ($skillRule["name"] == $name){
+                                    $ruleIndex = $index;
+                                    break;
+                                }
+                            }
+
+                            $rule = $skillsRules[$ruleIndex]["rule"];
+
+                            $sectionId = Section::getSectionIdByModule($courseId, "Skills");
+                            $sectionRulesNames = array_map(function ($sectionRule) {return $sectionRule["name"];}, Rule::getRulesOfSection($sectionId));
+                            // rule already exists in system
+                            if (in_array($rule["name"], $sectionRulesNames)){
+                                // remove existing rule first
+                                $ruleToDelete = Rule::getRuleByName($courseId, $rule["name"]);
+                                Rule::deleteRule($ruleToDelete->getId());
+                            }
+
                             $skillsTiersIndex = null;
                             foreach ($skillsAndTiers as $index => $element) {
                                 if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
@@ -632,40 +652,20 @@ class SkillTree
                                 }
                             }
 
+                            // Add new skill (will add rule with template text)
                             $importedTier = Tier::getTierByName($skillTree->getId(), $skillsAndTiers[$skillsTiersIndex]["tier"]);
                             $skill = Skill::addSkill($importedTier->getId(), $name, $color, $page, $isCollab, $isExtra, []);  // FIXME dependencies missing
 
-                            $ruleIndex = null;
-                            foreach($skillsRules as $index => $skillsRule){
-                                if ($skillsRule["name"] == $name){
-                                    $ruleIndex = $index;
-                                    break;
-                                }
-                            }
+                            // Edit rule with imported information
+                            $ruleToEdit = Rule::getRuleByName($courseId, $rule["name"]);
+                            $ruleToEdit->editRule($skill->getName(), $rule["description"],
+                                $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
+                                Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
+                                $rule["tags"]
+                            );
 
-                            if ($ruleIndex) { // it means there's a rule to be imported
-                                $rule = $skillsRules[$ruleIndex]["rule"];
-                                $sectionId = Section::getSectionIdByModule($courseId, "Skills");
-                                $sectionRulesNames = array_map(function ($sectionRule) {return $sectionRule["name"];}, Rule::getRulesOfSection($sectionId));
-
-                                // rule already exists in system
-                                if (in_array($rule["name"], $sectionRulesNames)){
-                                    $ruleToEdit = Rule::getRuleByName($courseId, $rule["name"]);
-                                    $ruleToEdit->editRule($rule["name"], $rule["description"],
-                                        $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                                        Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                                        $rule["tags"]
-                                    );
-                                } else { // rule doesn't exist in system
-                                    Rule::addRule($courseId, $sectionId, $rule["name"], $rule["description"],
-                                        $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                                        Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                                        $rule["tags"]);
-                                }
-                            }
                         }, $skillsFile);
                     }
-
                 }
                 return 1;
             }
