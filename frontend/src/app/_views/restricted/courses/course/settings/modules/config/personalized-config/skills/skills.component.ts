@@ -361,10 +361,6 @@ export class SkillsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  hey($event){
-    console.log($event);
-  }
-
   async doAction(table: 'tiers' | 'skills', action: string) {
     if (table === 'tiers') { // TIERS
       if (action === Action.IMPORT) {
@@ -387,8 +383,8 @@ export class SkillsComponent implements OnInit {
         ModalService.openModal('skill-import');
 
       } else if (action === Action.EXPORT) {
-        let tiers = this.skillTreesInfo.map(info => { return info.tiers.map(tier => { return tier.id })});
-        const contents = await this.api.exportModuleItems(this.courseID, "Skills", "Skills", tiers.flat()).toPromise();
+        let skills = this.skillTreesInfo.map(info => { return info.skills.map(skill => { return skill.id })});
+        const contents = await this.api.exportModuleItems(this.courseID, "Skills", "Skills", skills.flat()).toPromise();
         DownloadManager.downloadAsZip(contents.path, this.api, this.courseID);
         // this.exportSkills(this.getSkillTreeInfo(this.skillTreeInView.id).skills);
 

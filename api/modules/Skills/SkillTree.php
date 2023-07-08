@@ -344,7 +344,7 @@ class SkillTree
 
     /**
      * Imports skill trees into a given course from a .zip file containing
-     * a FIXME: refactor.
+     * FIXME: ONLY CONSIDERS 1 SKILL TREE
      *
      * Returns the nr. of skill trees imported.
      *
@@ -369,9 +369,17 @@ class SkillTree
         $zip->close();
         Utils::deleteFile($tempFolder, "skillTrees.zip");
 
-
+        // Load of all possible files in zip
         $file = file_get_contents($tempFolder . "/skillTrees.csv");
-        $nrSkillTreesImported = Utils::importFromCSV(self::HEADERS, function($skillTree, $indexes) use ($courseId, $replace, $tempFolder) {
+        $tierFile = file_get_contents($tempFolder . "/tiers.csv");
+        $skillsFile = file_get_contents($tempFolder . "/skills.csv");
+        $skillsAndTiersFile = file_get_contents($tempFolder . "/skillsTiers.csv");
+        $skillsRulesFile = file_get_contents($tempFolder . "/skillsRules.csv");
+        $skillDependenciesFile = file_get_contents($tempFolder . "/skillDependencies.csv");
+
+
+        $nrSkillTreesImported = Utils::importFromCSV(self::HEADERS, function($skillTree, $indexes)
+            use ($courseId, $replace, $tierFile, $skillsFile, $skillsAndTiersFile, $skillsRulesFile, $skillDependenciesFile) {
             $name = Utils::nullify($skillTree[$indexes["name"]]);
             $maxReward = self::parse(null, Utils::nullify($skillTree[$indexes["maxReward"]]), "maxReward");
 
@@ -381,290 +389,25 @@ class SkillTree
                     $skillTree->editSkillTree($name, $maxReward);
 
                     // Import tiers and skills
-                    $tierFile = file_get_contents($tempFolder . "/tiers.csv");
                     if ($tierFile){ // There are tiers to be imported
-                        Utils::importFromCSV(Tier::HEADERS, function ($tier, $indexes) use ($courseId, $replace, $skillTree) {
-                            $name = Utils::nullify($tier[$indexes["name"]]);
-                            $reward = self::parse(null, $tier[$indexes["reward"]], "reward");
-                            $position = self::parse(null, $tier[$indexes["position"]], "position");
-                            $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
-                            $costType = Utils::nullify($tier[$indexes["costType"]]);
-                            $cost = self::parse(null, $tier[$indexes["cost"]], "cost");
-                            $increment = self::parse(null, $tier[$indexes["increment"]], "increment");
-                            $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
-
-
-                            $tier = Tier::getTierByName($skillTree->getId(), $name);
-
-                            if ($tier){ // Tier already exists
-                                if ($replace) { // replace
-                                    $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
-                                }
-                            } else { // tier doesn't exist
-                                Tier::addTier($skillTree->getId(), $name, $reward, $costType, $cost, $increment, $minRating);
-                                return 1;
-                            }
-                            return 0;
-                        }, $tierFile);
-
-                        $skillsFile = file_get_contents($tempFolder . "/skills.csv");
-                        $skillsAndTiersFile = file_get_contents($tempFolder . "/skills-tiers.csv");
-                        $skillsRulesFile = file_get_contents($tempFolder . "/skillsRules.csv");
+                        Tier::importTiersAction($courseId, $tierFile, $replace, $skillTree);
 
                         // Skills exist, have connection with tiers and have rules associated
                         if ($skillsFile && $skillsAndTiersFile && $skillsRulesFile) {
 
-                            // Prepares relation between tiers and skills
-                            $skillsAndTiers = [];
-                            Utils::importFromCSV(["tier", "skill"], function ($element, $indexes) use (&$skillsAndTiers) {
-                                $tier = Utils::nullify($element[$indexes["tier"]]);
-                                $skills = Utils::nullify($element[$indexes["skill"]]);
-
-                                $skillsArray = explode(", ", $skills);
-                                array_push($skillsAndTiers, ["tier" => $tier, "skill" => $skillsArray]);
-                            }, $skillsAndTiersFile);
-
-                            // Prepare relation between skills and rules
-                            $skillsRules = [];
-                            Utils::importFromCSV(Rule::HEADERS, function($rule, $indexes) use (&$skillsRules, $replace, $courseId) {
-                                $name = Utils::nullify($rule[$indexes["name"]]);
-                                $description = Utils::nullify($rule[$indexes["description"]]);
-                                $whenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
-                                $thenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
-                                $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
-                                $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
-
-                                $tags = [];
-                                $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
-                                if ($tagsIds) {
-                                    $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
-                                        return Rule::courseHasTag($courseId, $tag);
-                                    });
-
-                                    foreach ($tagsIds as $tagId){
-                                        $tag = Tag::getTagById($tagId);
-                                        array_push($tags, $tag);
-                                    }
-                                }
-
-                                array_push($skillsRules, ["name" => $name, "rule" => [
-                                    "name" => $name, "description" => $description, "whenClause" => $whenClause,
-                                    "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
-                                ]]);
-                            }, $skillsRulesFile);
-
-                            // Import skills
-                            Utils::importFromCSV(Skill::HEADERS, function ($skill, $indexes) use ($courseId, $replace,
-                                $skillsAndTiers, $skillTree, $skillsRules) {
-                                $name = Utils::nullify($skill[$indexes["name"]]);
-                                $color = Utils::nullify($skill[$indexes["color"]]);
-                                $page = Utils::nullify($skill[$indexes["page"]]);
-                                $isCollab = self::parse(null, Utils::nullify($skill[$indexes["isCollab"]]), "isCollab");
-                                $isExtra = self::parse(null, Utils::nullify($skill[$indexes["isExtra"]]), "isExtra");
-                                $isActive = self::parse(null, Utils::nullify($skill[$indexes["isActive"]]), "isActive");
-                                $position = self::parse(null, $skill[$indexes["position"]], "position");
-
-                                $skills = Skill::getSkillsOfSkillTree($skillTree->getId());
-                                $flagFound = false;
-                                $index = 0;
-                                foreach ($skills as $skillElement) {
-                                    if ($skillElement["name"] === $name){ // skill already exists
-                                        $skill = Skill::getSkillById($skillElement["id"]);
-                                        $flagFound = true;
-                                        if ($replace){ // replace
-                                            $dependencies = $skill->getDependencies();
-
-                                            $skillsTiersIndex = null;
-                                            foreach ($skillsAndTiers as $index => $element) {
-                                                if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
-                                                    $skillsTiersIndex = $index;
-                                                    break;
-                                                }
-                                            }
-
-                                            $tierId = Tier::getTierByName($skillTree->getId(), $skillsAndTiers[$skillsTiersIndex]["tier"])->getId();
-                                            // FIXME - Dependencies should also be imported as a new file
-                                            $skill->editSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $isActive, $position, $dependencies);
-
-                                            $rule = $skillsRules[$name];
-                                            if ($rule) { // rule exists in skill and needs to be edited
-                                                $sectionId = Section::getSectionIdByModule($courseId, "Skills");
-                                                $sectionRules = Rule::getRulesOfSection($sectionId);
-
-                                                foreach ($sectionRules as $sectionRule){
-                                                    if ($sectionRule["name"] === $name){
-                                                        $ruleToEdit = Rule::getRuleById($sectionRule["id"]);
-                                                        $ruleToEdit->editRule($rule["name"], $rule["description"],
-                                                            $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                                                            Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                                                            $rule["tags"]
-                                                        );
-                                                        break;
-                                                    }
-                                                }
-                                            } else { // rule doesn't exist
-                                                $skill->addRule($courseId, $tierId, $index, $skill->hasWildcardDependency(), $skill->getName(), $dependencies);
-                                            }
-                                        }
-                                        break;
-                                    }
-                                    $index++;
-                                }
-
-                                if (!$flagFound) { // skill doesn't exist
-
-                                    $skillsTiersIndex = null;
-                                    foreach ($skillsAndTiers as $index => $element) {
-                                        if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
-                                            $skillsTiersIndex = $index;
-                                            break;
-                                        }
-                                    }
-
-                                    $importedTier = Tier::getTierByName($skillTree->getId(), $skillsAndTiers[$skillsTiersIndex]["tier"]);
-                                    Skill::addSkill($importedTier->getId(), $name, $color, $page, $isCollab, $isExtra, []);  // FIXME dependencies missing
-
-                                    $sectionId = Section::getSectionIdByModule($courseId, "Skills");
-                                    $rule = $skillsRules[$name];
-                                    Rule::addRule($courseId, $sectionId, $rule["name"], $rule["description"],
-                                        $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                                        Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                                        $rule["tags"]);
-                                    return 1;
-                                }
-                                return 0;
-
-                            }, $skillsFile);
+                            Skill::importSkillsActions($courseId, $replace, $skillsFile, $skillDependenciesFile, $skillsRulesFile, $skillsAndTiersFile, $skillTree);
                         }
                     }
                 }
             } else { // skillTree doesn't exist
                 $skillTree = self::addSkillTree($courseId, $name, $maxReward);
 
-                $tierFile = file_get_contents($tempFolder . "/tiers.csv");
                 if ($tierFile) { // There are tiers to be imported
-
-                    Utils::importFromCSV(Tier::HEADERS, function ($tier, $indexes) use ($courseId, $replace, $skillTree) {
-                        $name = Utils::nullify($tier[$indexes["name"]]);
-                        $reward = self::parse(null, $tier[$indexes["reward"]], "reward");
-                        $position = self::parse(null, $tier[$indexes["position"]], "position");
-                        $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
-                        $costType = Utils::nullify($tier[$indexes["costType"]]);
-                        $cost = self::parse(null, $tier[$indexes["cost"]], "cost");
-                        $increment = self::parse(null, $tier[$indexes["increment"]], "increment");
-                        $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
-
-                        $tier = Tier::getTierByName($skillTree->getId(), $name);
-
-                        if ($tier){ // Tier already exists
-                            if ($replace) { // replace
-                                $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
-                            }
-                        } else { // tier doesn't exist
-                            Tier::addTier($skillTree->getId(), $name, $reward, $costType, $cost, $increment, $minRating);
-                            return 1;
-                        }
-                        return 0;
-
-                    }, $tierFile);
-
-
-                    $skillsFile = file_get_contents($tempFolder . "/skills.csv");
-                    $skillsAndTiersFile = file_get_contents($tempFolder . "/skills-tiers.csv");
-                    $skillsRulesFile = file_get_contents($tempFolder . "/skillsRules.csv");
+                    Tier::importTiersAction($courseId, $tierFile, $replace, $skillTree);
 
                     // Skills exist, have connection with tiers and have rules associated
                     if ($skillsFile && $skillsAndTiersFile && $skillsRulesFile) {
-
-                        // Prepares relation between tiers and skills
-                        $skillsAndTiers = [];
-                        Utils::importFromCSV(["tier", "skill"], function ($element, $indexes) use (&$skillsAndTiers) {
-                            $tier = Utils::nullify($element[$indexes["tier"]]);
-                            $skills = Utils::nullify($element[$indexes["skill"]]);
-
-                            $skillsArray = explode(", ", $skills);
-                            array_push($skillsAndTiers, ["tier" => $tier, "skill" => $skillsArray]);
-                        }, $skillsAndTiersFile);
-
-                        // Prepare relation between skills and rules
-                        $skillsRules = [];
-                        Utils::importFromCSV(Rule::HEADERS, function($rule, $indexes) use (&$skillsRules, $replace, $courseId) {
-                            $name = Utils::nullify($rule[$indexes["name"]]);
-                            $description = Utils::nullify($rule[$indexes["description"]]);
-                            $whenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
-                            $thenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
-                            $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
-                            $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
-
-                            $tags = [];
-                            $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
-                            if ($tagsIds) {
-                                $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
-                                    return Rule::courseHasTag($courseId, $tag);
-                                });
-
-                                foreach ($tagsIds as $tagId){
-                                    $tag = Tag::getTagById($tagId);
-                                    array_push($tags, $tag);
-                                }
-                            }
-
-                            array_push($skillsRules, ["name" => $name, "rule" => [
-                                "name" => $name, "description" => $description, "whenClause" => $whenClause,
-                                "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
-                            ]]);
-                        }, $skillsRulesFile);
-
-                        // Import Skills
-                        Utils::importFromCSV(Skill::HEADERS, function ($skill, $indexes) use ($courseId, $replace,
-                            $skillsAndTiers, $skillTree, $skillsRules) {
-                            $name = Utils::nullify($skill[$indexes["name"]]);
-                            $color = Utils::nullify($skill[$indexes["color"]]);
-                            $page = Utils::nullify($skill[$indexes["page"]]);
-                            $isCollab = self::parse(null, $skill[$indexes["isCollab"]], "isCollab");
-                            $isExtra = self::parse(null, $skill[$indexes["isExtra"]], "isExtra");
-
-                            $ruleIndex = null;
-                            // We need to see if there's already a rule with the skill's name in the system before importing skill
-                            foreach ($skillsRules as $index => $skillRule){
-                                if ($skillRule["name"] == $name){
-                                    $ruleIndex = $index;
-                                    break;
-                                }
-                            }
-
-                            $rule = $skillsRules[$ruleIndex]["rule"];
-
-                            $sectionId = Section::getSectionIdByModule($courseId, "Skills");
-                            $sectionRulesNames = array_map(function ($sectionRule) {return $sectionRule["name"];}, Rule::getRulesOfSection($sectionId));
-                            // rule already exists in system
-                            if (in_array($rule["name"], $sectionRulesNames)){
-                                // remove existing rule first
-                                $ruleToDelete = Rule::getRuleByName($courseId, $rule["name"]);
-                                Rule::deleteRule($ruleToDelete->getId());
-                            }
-
-                            $skillsTiersIndex = null;
-                            foreach ($skillsAndTiers as $index => $element) {
-                                if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
-                                    $skillsTiersIndex = $index;
-                                    break;
-                                }
-                            }
-
-                            // Add new skill (will add rule with template text)
-                            $importedTier = Tier::getTierByName($skillTree->getId(), $skillsAndTiers[$skillsTiersIndex]["tier"]);
-                            $skill = Skill::addSkill($importedTier->getId(), $name, $color, $page, $isCollab, $isExtra, []);  // FIXME dependencies missing
-
-                            // Edit rule with imported information
-                            $ruleToEdit = Rule::getRuleByName($courseId, $rule["name"]);
-                            $ruleToEdit->editRule($skill->getName(), $rule["description"],
-                                $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                                Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                                $rule["tags"]
-                            );
-
-                        }, $skillsFile);
+                        Skill::importSkillsActions($courseId, $replace, $skillsFile, $skillDependenciesFile, $skillsRulesFile, $skillsAndTiersFile, $skillTree);
                     }
                 }
                 return 1;
@@ -682,6 +425,8 @@ class SkillTree
 
     /**
      * Exports skill trees to a .zip file.
+     * // FIXME -- only considers 1 skill tree
+     * // FIXME -- refactor (its a mess)
      *
      * @param int $courseId
      * @param array $skillTreeIds
@@ -698,7 +443,7 @@ class SkillTree
 
         // Create zip archive to store skill trees' info
         // NOTE: This zip will be automatically deleted after download is complete
-        $zipPath = $tempFolder . "/skillTrees.zip";
+        $zipPath = $tempFolder . "/" . Utils::strip($course->getShort() ?? $course->getName(), '_') . "-skillTrees.zip";
         $zip = new ZipArchive();
         if (!$zip->open($zipPath, ZipArchive::CREATE))
             throw new Exception("Failed to create zip archive.");
@@ -714,48 +459,18 @@ class SkillTree
             $skillTree = new SkillTree($st["id"]);
             $skillsAndTiers = [];
 
-            // Add tiers .csv file
+            // Export tiers in .csv file
             $tiers = $skillTree->getTiers();
+            Tier::exportTiersAction($tiers, $zip, $skillsAndTiers);
 
-            $zip->addFromString("tiers.csv", Utils::exportToCSV($tiers, function ($tier) use (&$skillsAndTiers) {
-                array_push($skillsAndTiers, ["tier" => $tier["name"], "skill" => null ]);
-                return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
-                    $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
-            }, Tier::HEADERS));
-
-            // Add skills .csv file
+            // Export skills in .csv file
             $skills = $skillTree->getSkills();
-            $zip->addFromString("skills.csv", Utils::exportToCSV($skills, function ($skill) use (&$skillsAndTiers) {
-                $tier = Tier::getTierById($skill["tier"]);
-                $index = array_search($tier->getName(), $skillsAndTiers);
+            Skill::exportSkillsActions($courseId, $skills, $zip, $skillsAndTiers);
 
-                if ($skillsAndTiers[$index]["skill"] == null ){
-                    $skillsAndTiers[$index]["skill"] = $skill["name"];
-
-                } else {
-                    $skillsAndTiers[$index]["skill"] .=  ", " . $skill["name"];
-                }
-
-                return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
-            }, Skill::HEADERS));
-
-            $zip->addFromString("skills-tiers.csv", Utils::exportToCSV($skillsAndTiers, function($element) {
+            // Export relation between tiers and skills
+            $zip->addFromString("skillsTiers.csv", Utils::exportToCSV($skillsAndTiers, function($element) {
                 return [$element["tier"], $element["skill"]];
             }, ["tier", "skill"]));
-
-            // Skill's rules as well
-            $skillsSection = RuleSystem::getSectionIdByModule($courseId, "Skills");
-            $skillRules = Rule::getRulesOfSection($skillsSection);
-            $zip->addFromString("skillsRules.csv", Utils::exportToCSV($skillRules, function ($skillRule) {
-                $whenClause = Rule::parseToExportAndImport($skillRule["whenClause"], "export");
-                $thenClause = Rule::parseToExportAndImport($skillRule["thenClause"], "export");
-
-                return [$skillRule["name"], $skillRule["description"], $whenClause, $thenClause,
-                    +$skillRule["isActive"], $skillRule["position"], ""]; // tags are omitted
-            }, Rule::HEADERS));
-
-
-            // FIXME -- dependencies missing
         }
 
         $zip->close();

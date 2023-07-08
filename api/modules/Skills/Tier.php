@@ -568,7 +568,7 @@ class Tier
         $nrTiersImported = Utils::importFromCSV(self::HEADERS, function ($tier, $indexes) use ($courseId, $replace) {
             $name = Utils::nullify($tier[$indexes["name"]]);
             $reward = self::parse(null, $tier[$indexes["reward"]], "reward");
-            $position = self::parse(null, Utils::nullify($tier[$indexes["position"]]), "position");
+            $position = self::parse(null, $tier[$indexes["position"]], "position");
             $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
             $costType = Utils::nullify($tier[$indexes["costType"]]);
             $cost = self::parse(null, $tier[$indexes["cost"]], "cost");
@@ -598,6 +598,44 @@ class Tier
     }
 
     /**
+     * @param int $courseId
+     * @param string $file
+     * @param bool $replace
+     * @param SkillTree|null $skillTree
+     * @return int
+     * @throws Exception
+     */
+    public static function importTiersAction(int $courseId, string $file, bool $replace, SkillTree $skillTree = null): int{
+        return Utils::importFromCSV(self::HEADERS, function ($tier, $indexes) use ($courseId, $replace, $skillTree) {
+            $name = Utils::nullify($tier[$indexes["name"]]);
+            $reward = self::parse(null, $tier[$indexes["reward"]], "reward");
+            $position = self::parse(null, $tier[$indexes["position"]], "position");
+            $isActive = self::parse(null, Utils::nullify($tier[$indexes["isActive"]]), "isActive");
+            $costType = Utils::nullify($tier[$indexes["costType"]]);
+            $cost = self::parse(null, $tier[$indexes["cost"]], "cost");
+            $increment = self::parse(null, $tier[$indexes["increment"]], "increment");
+            $minRating = self::parse(null, Utils::nullify($tier[$indexes["minRating"]]), "minRating");
+
+            if (isset($skillTree)) {
+                $skillTreeId = $skillTree->getId();
+            } else {
+                $skillTreeId = SKillTree::getSkillTreeInView($courseId)->getId();
+            }
+
+            $tier = self::getTierByName($skillTreeId, $name);
+            if ($tier){ // Tier already exists
+                if ($replace) { // replace
+                    $tier->editTier($name, $reward, $position, $isActive, $costType, $cost, $increment, $minRating);
+                }
+            } else { // tier doesn't exist
+                self::addTier($skillTreeId, $name, $reward, $costType, $cost, $increment, $minRating);
+                return 1;
+            }
+            return 0;
+        }, $file);
+    }
+
+    /**
      * Exports tiers of a skill tree to a .zip file.
      *
      * @param int $courseId
@@ -607,8 +645,6 @@ class Tier
      */
     public static function exportTiers(int $courseId, array $tiers): array
     {
-        $course = new Course($courseId);
-
         // Create a temporary folder to work with
         $tempFolder = ROOT_PATH . "temp/" . time();
         mkdir($tempFolder, 0777, true);
@@ -623,15 +659,30 @@ class Tier
         // Add tiers .csv file
         $tiersToExport = array_values(array_filter(self::getTiers($courseId), function ($tier) use ($tiers)
             { return in_array($tier["id"], $tiers); }));
-        $zip->addFromString("tiers.csv", Utils::exportToCSV($tiersToExport, function ($tier) {
-            return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
-                $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
-        }, self::HEADERS));
+        self::exportTiersAction($tiersToExport, $zip);
 
         $zip->close();
         return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
+    /**
+     * Function where the exporting actually takes place.
+     * Also used by the skillTree exporting action - when array $skillsAndTiers take place
+     *
+     * @param array $tiers
+     * @param ZipArchive $zip
+     * @param array|null $skillsAndTiers
+     * @return void
+     */
+    public static function exportTiersAction(array $tiers, ZipArchive &$zip, array &$skillsAndTiers = null){
+        $zip->addFromString("tiers.csv", Utils::exportToCSV($tiers, function ($tier) use (&$skillsAndTiers) {
+            if (is_array($skillsAndTiers)){
+                array_push($skillsAndTiers, ["tier" => $tier["name"], "skill" => null ]);
+            }
+            return [$tier["name"], $tier["reward"], $tier["position"], +$tier["isActive"],
+                $tier["costType"], $tier["cost"], $tier["increment"], $tier["minRating"]];
+        }, self::HEADERS));
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Validations -------------------- ***/

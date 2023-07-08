@@ -6,6 +6,7 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
+use GameCourse\AutoGame\RuleSystem\Tag;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
@@ -638,6 +639,13 @@ class Skill
         }
     }
 
+    public static function setIsWildcard(int $skillId, bool $status){
+        $table = self::TABLE_SKILL_DEPENDENCY_COMBO . " sdc JOIN " . self::TABLE_SKILL_DEPENDENCY .
+            " sd on sdc.dependency=sd.id JOIN " . self::TABLE_SKILL . " s on sd.skill=s.id";
+        $where = ["s.id" => $skillId];
+        Core::database()->update($table, ["sdc.wildcard" => $status], $where);
+    }
+
     /**
      * Checks whether skill exists.
      *
@@ -1267,7 +1275,7 @@ class Skill
                     $skill->editSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $isActive, $position, $dependencies);
 
                     if ($ruleFile){
-                        Rule::importRules($courseId, Section::getSectionIdByModule($courseId, "Skills"), $ruleFile, $replace);
+                        Rule::importRules($courseId, Section::getSectionIdByModule($courseId, Skills::ID), $ruleFile, $replace);
                     }
 
                 }
@@ -1275,7 +1283,7 @@ class Skill
                 self::addSkill();  // FIXME which tier should it be added to?
 
                 if ($ruleFile){
-                    Rule::importRules($courseId, Section::getSectionIdByModule($courseId, "Skills"), $ruleFile, $replace);
+                    Rule::importRules($courseId, Section::getSectionIdByModule($courseId, Skills::ID), $ruleFile, $replace);
                 }
                 return 1;
             }
@@ -1286,6 +1294,219 @@ class Skill
         Utils::deleteDirectory($tempFolder);
         if (Utils::getDirectorySize(ROOT_PATH . "temp") == 0)
             Utils::deleteDirectory(ROOT_PATH . "temp");
+
+        return $nrSkillsImported;
+    }
+
+    /**
+     * @param int $courseId
+     * @param bool $replace
+     * @param string $skillsFile
+     * @param string $skillDependenciesFile
+     * @param string $skillsRulesFile
+     * @param string|null $skillsAndTiersFile
+     * @param SkillTree|null $skillTree
+     * @return int
+     * @throws Exception
+     */
+    public static function importSkillsActions(int $courseId, bool $replace, string $skillsFile, string $skillDependenciesFile,
+                                               string $skillsRulesFile, string $skillsAndTiersFile = null,
+                                               SkillTree $skillTree = null): int {
+
+        // Prepares relation between tiers and skills
+        if (isset($skillsAndTiersFile)){
+            $skillsAndTiers = [];
+            Utils::importFromCSV(["tier", "skill"], function ($element, $indexes) use (&$skillsAndTiers) {
+                $tier = Utils::nullify($element[$indexes["tier"]]);
+                $skills = Utils::nullify($element[$indexes["skill"]]);
+
+                $skillsArray = explode(", ", $skills);
+                array_push($skillsAndTiers, ["tier" => $tier, "skill" => $skillsArray]);
+            }, $skillsAndTiersFile);
+        }
+
+        // Prepare relation between skills and rules
+        $skillsRules = [];
+        Rule::importRulesActions($courseId, $replace, $skillsRulesFile, $skillsRules);
+        /*Utils::importFromCSV(Rule::HEADERS, function($rule, $indexes) use (&$skillsRules, $replace, $courseId) {
+            $name = Utils::nullify($rule[$indexes["name"]]);
+            $description = Utils::nullify($rule[$indexes["description"]]);
+            $whenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
+            $thenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
+            $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
+            $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
+
+            $tags = [];
+            $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
+            if ($tagsIds) {
+                $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
+                    return Rule::courseHasTag($courseId, $tag);
+                });
+
+                foreach ($tagsIds as $tagId){
+                    $tag = Tag::getTagById($tagId);
+                    array_push($tags, $tag);
+                }
+            }
+
+            array_push($skillsRules, ["name" => $name, "rule" => [
+                "name" => $name, "description" => $description, "whenClause" => $whenClause,
+                "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
+            ]]);
+        }, $skillsRulesFile);*/
+
+        // Prepare relation between skills and dependencies
+        $skillDependencies = [];
+        Utils::importFromCSV(["name", "dependencies", "isWildcard"], function($skillDependency, $indexes) use (&$skillDependencies) {
+            $name = $skillDependency[$indexes["name"]];
+            $dependencies = $skillDependency[$indexes["dependencies"]];
+            $isWildcard = $skillDependency[$indexes["isWildcard"]];
+
+            $dependenciesArray = explode(", ", $dependencies);
+            array_push($skillDependencies, ["name" => $name, "dependencies" => $dependenciesArray, "isWildcard" => $isWildcard]);
+
+        }, $skillDependenciesFile);
+
+        // Import skills
+        $mySkills = [];
+        $nrSkillsImported = Utils::importFromCSV(Skill::HEADERS, function ($skill, $indexes) use ($courseId, $replace,
+            $skillsAndTiers, $skillTree, $skillsRules, &$mySkills) {
+            $name = Utils::nullify($skill[$indexes["name"]]);
+            $color = Utils::nullify($skill[$indexes["color"]]);
+            $page = Utils::nullify($skill[$indexes["page"]]);
+            $isCollab = self::parse(null, $skill[$indexes["isCollab"]], "isCollab");
+            $isExtra = self::parse(null, $skill[$indexes["isExtra"]], "isExtra");
+            $isActive = self::parse(null, $skill[$indexes["isActive"]], "isActive");
+            $position = self::parse(null, $skill[$indexes["position"]], "position");
+
+            // only works with importation of skillTree
+            if (isset($skillTree)){
+                $skillTreeId = $skillTree->getId();
+            } else {
+                // TODO -- where to store skills? (in which skillTree)
+                // COMPLETE AND UNCOMMENT
+                // $skillTreeId = ...
+                // $skillTree = new SkillTree($skillTreeId);
+            }
+            $skills = Skill::getSkillsOfSkillTree($skillTreeId);
+
+            $flagFound = false;
+            // See if there's a skill inside the skillTree
+            foreach ($skills as $skillElement) {
+                if ($skillElement["name"] === $name){ // skill already exists
+                    $skill = Skill::getSkillById($skillElement["id"]);
+                    $flagFound = true;
+                    if ($replace){ // replace
+
+                        if ($skillsAndTiers) {
+                            // Only used when importing entire skillTree
+                            $skillsTiersIndex = null;
+                            foreach ($skillsAndTiers as $index => $element) {
+                                if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
+                                    $skillsTiersIndex = $index;
+                                    break;
+                                }
+                            }
+                            $tierName = $skillsAndTiers[$skillsTiersIndex]["tier"];
+
+                        } else {
+                            // TODO -- where to store skills? (in which tier)
+                            // $tierName = ...
+                        }
+
+                        $tierId = Tier::getTierByName($skillTree->getId(), $tierName)->getId();
+
+                        // Dependencies will be dealt later, after all skills have been imported, to avoid non-existing skill errors
+                        $skill->editSkill($tierId, $name, $color, $page, $isCollab, $isExtra, $isActive, $position, []);
+                        array_push($mySkills, $skill->getId());
+
+                        // edit its rule with the new information
+                        $ruleIndex = array_search($name, array_column($skillsRules, 'name'));
+
+                        $rule = $skillsRules[$ruleIndex]["rule"];
+                        $ruleToEdit = Rule::getRuleByName($courseId, $skill->getName());
+                        $ruleToEdit->editRule($rule["name"], $rule["description"],
+                            $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
+                            Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
+                            $rule["tags"]
+                        );
+                    }
+                    break;
+                }
+            }
+
+            if (!$flagFound) { // skill doesn't exist
+
+                // We need to see if there's already a rule with the skill's name in the system before importing new skill
+                $ruleIndex = array_search($name, array_column($skillsRules, 'name'));
+                $rule = $skillsRules[$ruleIndex]["rule"];
+
+                $sectionId = Section::getSectionIdByModule($courseId, Skills::ID);
+                $sectionRulesNames = array_map(function ($sectionRule) {return $sectionRule["name"];}, Rule::getRulesOfSection($sectionId));
+                // rule already exists in system
+                if (in_array($rule["name"], $sectionRulesNames)){
+                    // remove existing rule first
+                    $ruleToDelete = Rule::getRuleByName($courseId, $rule["name"]);
+                    Rule::deleteRule($ruleToDelete->getId());
+                }
+
+                if (isset($skillsAndTiers)){
+                    $skillsTiersIndex = null;
+                    foreach ($skillsAndTiers as $index => $element) {
+                        if (isset($element["skill"]) && is_array($element["skill"]) && in_array($name, $element["skill"])) {
+                            $skillsTiersIndex = $index;
+                            break;
+                        }
+                    }
+                    $tierName = $skillsAndTiers[$skillsTiersIndex]["tier"];
+
+                } else {
+                    // TODO -- where to store skills? (in which tier)
+                }
+
+                $tierId = Tier::getTierByName($skillTree->getId(), $tierName)->getId();
+                // Add new skill (will add rule with template text)
+                // Dependencies will be dealt later, after all skills have been imported, to avoid non-existing skill errors
+                $skill = Skill::addSkill($tierId, $name, $color, $page, $isCollab, $isExtra, []);
+                array_push($mySkills, $skill->getId());
+
+                // Edit rule with imported information
+                $ruleToEdit = Rule::getRuleByName($courseId, $rule["name"]);
+                $ruleToEdit->editRule($skill->getName(), $rule["description"],
+                    $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
+                    Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
+                    $rule["tags"]
+                );
+                return 1;
+            }
+            return 0;
+        }, $skillsFile);
+
+        // FIXME -- To be tested - dont delete
+        /*foreach ($mySkills as $skillElement){
+            $mySkill = new Skill($skillElement);
+
+            $skillDependenciesArray = [];
+            $index = null;
+
+            $matchingDependencies = array_filter($skillDependencies, function ($element) use ($mySkill) {
+                return isset($element["dependencies"])
+                    && is_array($element["dependencies"])
+                    && $element["name"] == $mySkill->getName();
+            });
+
+            if (!empty($matchingDependencies)) {
+                $element = reset($matchingDependencies); // Get the first matching element
+                $index = key($matchingDependencies); // Get the index of the first matching element
+
+                $skillDependenciesArray = array_map(function ($dependency) use ($courseId) {
+                    return Skill::getSkillByName($courseId, $dependency)->getData();
+                }, $element["dependencies"]);
+            }
+        }*/
+
+        //$mySkill->setDependencies($skillDependenciesArray);
+        //$mySkill->setIsWildcard($mySkill->getId(), Skill::parse(null, $skillDependencies[$index]["isWildcard"], "isWildcard"));
 
         return $nrSkillsImported;
     }
@@ -1314,43 +1535,72 @@ class Skill
             throw new Exception("Failed to create zip archive.");
 
         // Add skills .csv file
-        $skillsToExport = array_values(array_filter(self::getSkills($courseId), function ($skill) use ($skillIds) { return in_array($skill["id"], $skillIds); }));
-        $zip->addFromString("skills.csv", Utils::exportToCSV($skillsToExport, function ($skill) {
-            return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
-        }, self::HEADERS));
-
-        $skillsSection = RuleSystem::getSectionIdByModule($courseId, "Skills");
-        $skillRules = Rule::getRulesOfSection($skillsSection);
-        $zip->addFromString("skillsRules.csv", Utils::exportToCSV($skillRules, function ($skillRule) {
-            $whenClause = Rule::parseToExportAndImport($skillRule["whenClause"], "export");
-            $thenClause = Rule::parseToExportAndImport($skillRule["thenClause"], "export");
-
-            return [$skillRule["name"], $skillRule["description"], $whenClause, $thenClause,
-                +$skillRule["isActive"], $skillRule["position"], ""]; // tags are omitted
-        }, Rule::HEADERS));
-
-
-        // Add each skill resources to a folder
-        /*foreach ($skillsToExport as $skillInfo) {
-            $skill = self::getSkillById($skillInfo["id"]);
-            $skillFolder = $skill->getDataFolder(true, $skillInfo["name"]);
-
-            // Create folder
-            $skillFolderName = Utils::getDirectoryName($skillFolder);
-            $zip->addEmptyDir($skillFolderName);
-
-            // Export resources
-            foreach (Utils::getDirectoryContents($skillFolder) as $file) {
-                $file = $file["name"] . "." . $file["extension"];
-                $filePath = $skillFolder . "/" . $file;
-                $zip->addFile($filePath, $skillFolderName . "/" . $file);
-            }
-        }*/
+        $skillsToExport = array_values(array_filter(self::getSkills($courseId), function ($skill) use ($skillIds) {
+            return in_array($skill["id"], $skillIds); }));
+        self::exportSkillsActions($courseId, $skillsToExport, $zip);
 
         $zip->close();
         return ["extension" => ".zip", "path" => str_replace(ROOT_PATH, API_URL . "/", $zipPath)];
     }
 
+    /**
+     * Function where the exporting actually takes place.
+     * Also exports dependencies between skills.
+     * SkillTree.php uses this function to export relation between skills and tiers.
+     *
+     * @param int $courseId
+     * @param array $skills
+     * @param ZipArchive $zip
+     * @param array|null $skillsAndTiers
+     * @return void
+     * @throws Exception
+     */
+    public static function exportSkillsActions(int $courseId, array $skills, ZipArchive &$zip, array &$skillsAndTiers = null){
+        $skillDependencies = [];
+        // Exports skills and prepares relation between skills and its dependencies
+        // (also prepares relation between skills and tiers when exporting entire skillTree)
+        $zip->addFromString("skills.csv", Utils::exportToCSV($skills, function ($skill) use (&$skillDependencies, &$skillsAndTiers) {
+            if (is_array($skillsAndTiers)){
+                $tierName = Tier::getTierById($skill["tier"])->getName();
+                $tierSkillIndex = array_search($tierName, array_column($skillsAndTiers, 'tier'));
+
+                if ($skillsAndTiers[$tierSkillIndex]["skill"] == null ){
+                    $skillsAndTiers[$tierSkillIndex]["skill"] = $skill["name"];
+
+                } else {
+                    $skillsAndTiers[$tierSkillIndex]["skill"] .=  ", " . $skill["name"];
+                }
+            }
+
+            $skillElement =  Skill::getSkillById($skill["id"]);
+            $skillDependencies[] = ["name" => $skillElement->getName(), "dependencies" => null, "isWildcard" =>
+                Skill::parse(null, $skillElement->isWildcard(), "isWildcard")];
+
+            $dependencyNames = [];
+            $dependencies =  $skillElement->getDependencies();
+            foreach ($dependencies as $dependencyPair){
+                foreach ($dependencyPair as $dependency){
+                    $dependencyNames[] = $dependency["name"];
+                }
+            }
+
+            if (!empty($dependencyNames)) {
+                $lastIndex = count($skillDependencies) - 1;
+                $skillDependencies[$lastIndex]["dependencies"] = implode(", ", $dependencyNames);
+            }
+            return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
+        }, self::HEADERS));
+
+        // Exports dependencies
+        $zip->addFromString("skillDependencies.csv", Utils::exportToCSV($skillDependencies, function ($skillDependency) {
+            return [$skillDependency["name"], $skillDependency["dependencies"], +$skillDependency["isWildcard"]];
+        }, ["name", "dependencies", "isWildcard"]));
+
+        // Exports skills' rules
+        $skillsSection = RuleSystem::getSectionIdByModule($courseId, Skills::ID);
+        $skillRules = Rule::getRulesOfSection($skillsSection);
+        $zip->addFromString("skillsRules.csv", Rule::exportRulesActions($skillRules));
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Validations -------------------- ***/
@@ -1526,10 +1776,10 @@ class Skill
      * @param string|null $fieldName
      * @return array|bool|int|mixed|null
      */
-    private static function parse(array $skill = null, $field = null, string $fieldName = null)
+    public static function parse(array $skill = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "tier", "position", "rule"];
-        $boolValues = ["isCollab", "isExtra", "isActive"];
+        $boolValues = ["isCollab", "isExtra", "isActive", "isWildcard"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $skill, $field, $fieldName);
     }

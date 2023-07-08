@@ -235,7 +235,6 @@ export class ConfigComponent implements OnInit {
 
       } else {
         if (this.fImport.valid) {
-          console.log("Here");
           list.loading.action = true;
 
           try {
@@ -260,7 +259,7 @@ export class ConfigComponent implements OnInit {
       }
 
     } else if (action === Action.EXPORT) {
-      this.exportItems(list, list.items);
+      await this.exportItems(list, list.items);
 
     } else if (action.containsWord('Create')) {
       this.mode = 'create';

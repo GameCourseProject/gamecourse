@@ -504,7 +504,20 @@ class Rule
      * @throws Exception
      */
     public static function importRules(int $courseId, int $sectionId, string $file, bool $replace = true): int {
-        return Utils::importFromCSV(self::HEADERS, function ($rule, $indexes) use ($replace, $courseId, $sectionId) {
+        return self::importRulesActions($courseId, $replace, $file, null, $sectionId);
+    }
+
+    /**
+     * @param int $courseId
+     * @param bool $replace
+     * @param string $file
+     * @param array|null $skillsRules
+     * @param int|null $sectionId
+     * @return int
+     * @throws Exception
+     */
+    public static function importRulesActions(int $courseId, bool $replace, string $file, array &$skillsRules = null, int $sectionId = null): int{
+        return Utils::importFromCSV(self::HEADERS, function($rule, $indexes) use ($courseId, $replace, &$skillsRules, $sectionId) {
             $name = Utils::nullify($rule[$indexes["name"]]);
             $description = Utils::nullify($rule[$indexes["description"]]);
             $whenClause = Utils::nullify(self::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
@@ -521,24 +534,32 @@ class Rule
 
                 foreach ($tagsIds as $tagId){
                     $tag = Tag::getTagById($tagId);
-                    array_push($tags, $tag);
+                    $tags[] = $tag;
                 }
             }
 
-            $rule = self::getRuleByName($courseId, $name);
-            if ($rule) { // rule already exists
-                if ($replace) // replace
-                    $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+            // used for skills importation
+            if (is_array($skillsRules)){
+                $skillsRules[] = ["name" => $name, "rule" => [
+                    "name" => $name, "description" => $description, "whenClause" => $whenClause,
+                    "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
+                ]];    
+            } else if (isset($sectionId)) { // used for importing ONLY rules (isolated from skills)
+                $rule = self::getRuleByName($courseId, $name);
+                if ($rule) { // rule already exists
+                    if ($replace) // replace
+                        $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
 
-            } else { // rule doesn't exist
-                Rule::addRule($courseId, $sectionId, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
-                return 1;
+                } else { // rule doesn't exist
+                    Rule::addRule($courseId, $sectionId, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+                    return 1;
+                }
+
+                return 0;
             }
-
-            return 0;
-            }, $file);
+            return null;
+        }, $file);
     }
-
 
     /**
      * @param int $courseId
@@ -547,13 +568,22 @@ class Rule
      */
     public static function exportRules(int $courseId, array $ruleIds): string {
         $ruleToExport = array_values(array_filter(self::getRules($courseId), function ($rule) use ($ruleIds) { return in_array($rule["id"], $ruleIds); }));
-        return Utils::exportToCSV(
-            $ruleToExport,
-            function ($rule) {
-                return [$rule["name"], $rule["description"], $rule["whenClause"], $rule["thenClause"], $rule["position"], +$rule["isActive"],
-                    implode(" ", (new Rule($rule["id"]))->getTags())];
-            },
-            self::HEADERS);
+        return self::exportRulesActions($ruleToExport);
+    }
+
+    /**
+     * @param array $rules
+     * @return string
+     */
+    public static function exportRulesActions(array $rules): string
+    {
+        return Utils::exportToCSV($rules, function ($rule) {
+            $whenClause = Rule::parseToExportAndImport($rule["whenClause"], "export");
+            $thenClause = Rule::parseToExportAndImport($rule["thenClause"], "export");
+
+            return [$rule["name"], $rule["description"], $whenClause, $thenClause,
+                +$rule["isActive"], $rule["position"], (new Rule($rule["id"]))->getTags()];
+        }, self::HEADERS);
     }
 
     /*** ---------------------------------------------------- ***/
