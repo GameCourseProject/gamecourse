@@ -1328,32 +1328,6 @@ class Skill
         // Prepare relation between skills and rules
         $skillsRules = [];
         Rule::importRulesActions($courseId, $replace, $skillsRulesFile, $skillsRules);
-        /*Utils::importFromCSV(Rule::HEADERS, function($rule, $indexes) use (&$skillsRules, $replace, $courseId) {
-            $name = Utils::nullify($rule[$indexes["name"]]);
-            $description = Utils::nullify($rule[$indexes["description"]]);
-            $whenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["whenClause"]], "import"));
-            $thenClause = Utils::nullify(Rule::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
-            $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
-            $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
-
-            $tags = [];
-            $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
-            if ($tagsIds) {
-                $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
-                    return Rule::courseHasTag($courseId, $tag);
-                });
-
-                foreach ($tagsIds as $tagId){
-                    $tag = Tag::getTagById($tagId);
-                    array_push($tags, $tag);
-                }
-            }
-
-            array_push($skillsRules, ["name" => $name, "rule" => [
-                "name" => $name, "description" => $description, "whenClause" => $whenClause,
-                "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
-            ]]);
-        }, $skillsRulesFile);*/
 
         // Prepare relation between skills and dependencies
         $skillDependencies = [];

@@ -543,7 +543,7 @@ class Rule
                 $skillsRules[] = ["name" => $name, "rule" => [
                     "name" => $name, "description" => $description, "whenClause" => $whenClause,
                     "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
-                ]];    
+                ]];
             } else if (isset($sectionId)) { // used for importing ONLY rules (isolated from skills)
                 $rule = self::getRuleByName($courseId, $name);
                 if ($rule) { // rule already exists

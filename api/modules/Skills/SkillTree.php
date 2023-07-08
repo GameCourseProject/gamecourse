@@ -373,8 +373,8 @@ class SkillTree
         $file = file_get_contents($tempFolder . "/skillTrees.csv");
         $tierFile = file_get_contents($tempFolder . "/tiers.csv");
         $skillsFile = file_get_contents($tempFolder . "/skills.csv");
-        $skillsAndTiersFile = file_get_contents($tempFolder . "/skillsTiers.csv");
         $skillsRulesFile = file_get_contents($tempFolder . "/skillsRules.csv");
+        $skillsAndTiersFile = file_get_contents($tempFolder . "/skillsTiers.csv");
         $skillDependenciesFile = file_get_contents($tempFolder . "/skillDependencies.csv");
 
 
