@@ -53,7 +53,6 @@ def autogame_terminate(course, start_date=None, finish_date=None):
     courses_running = gc_db.execute_query(query, (True, 0))[0][0]
 
     # Close socket if no course is running
-    """ FIXME - UNCOMMENT LATER
     if courses_running == 0:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -73,7 +72,7 @@ def autogame_terminate(course, start_date=None, finish_date=None):
 
             except KeyboardInterrupt:
                 print("\nInterrupt: You pressed CTRL+C!")
-                exit()"""
+                exit()
 
 def get_targets(course, all_targets=False, targets_list=None):
     """

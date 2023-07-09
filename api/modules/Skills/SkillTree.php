@@ -426,7 +426,6 @@ class SkillTree
     /**
      * Exports skill trees to a .zip file.
      * // FIXME -- only considers 1 skill tree
-     * // FIXME -- refactor (its a mess)
      *
      * @param int $courseId
      * @param array $skillTreeIds
