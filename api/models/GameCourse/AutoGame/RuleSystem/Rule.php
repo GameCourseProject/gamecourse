@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use Utils\Utils;
+use ZipArchive;
 
 /**
  * This is the Rule model, which implements the necessary methods
@@ -504,7 +505,8 @@ class Rule
      * @throws Exception
      */
     public static function importRules(int $courseId, int $sectionId, string $file, bool $replace = true): int {
-        return self::importRulesActions($courseId, $replace, $file, null, $sectionId);
+        $skillsRules = null;
+        return self::importRulesActions($courseId, $replace, $file, $skillsRules, $sectionId);
     }
 
     /**
@@ -524,34 +526,33 @@ class Rule
             $thenClause = Utils::nullify(self::parseToExportAndImport($rule[$indexes["thenClause"]], "import"));
             $position = self::parse(null, Utils::nullify($rule[$indexes["position"]]), "position");
             $isActive = self::parse(null, Utils::nullify($rule[$indexes["isActive"]]), "isActive");
+            $tags = Utils::nullify($rule[$indexes["tags"]]);
 
-            $tags = [];
-            $tagsIds = Utils::nullify($rule[$indexes["tags"]]);
-            if ($tagsIds) {
-                $tagsIds = array_filter(array_map("trim", preg_split("/\s+/", $tagsIds)), function ($tag) use ($courseId) {
-                    return self::courseHasTag($courseId, $tag);
-                });
+            $tagsToExport = [];
+            if ($tags){
+                $tagIds = explode(',', $tags);
 
-                foreach ($tagsIds as $tagId){
-                    $tag = Tag::getTagById($tagId);
-                    $tags[] = $tag;
+                foreach ($tagIds as $tagId){
+                    $tag = Tag::getTagById($tagId)->getData();
+                    $tagsToExport[] = $tag;
                 }
+
             }
 
             // used for skills importation
             if (is_array($skillsRules)){
                 $skillsRules[] = ["name" => $name, "rule" => [
                     "name" => $name, "description" => $description, "whenClause" => $whenClause,
-                    "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tags
+                    "thenClause" => $thenClause, "position" => $position, "isActive" => $isActive, "tags" => $tagsToExport
                 ]];
             } else if (isset($sectionId)) { // used for importing ONLY rules (isolated from skills)
                 $rule = self::getRuleByName($courseId, $name);
                 if ($rule) { // rule already exists
                     if ($replace) // replace
-                        $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+                        $rule->editRule($name, $description, $whenClause, $thenClause, $position, $isActive, $tagsToExport);
 
                 } else { // rule doesn't exist
-                    Rule::addRule($courseId, $sectionId, $name, $description, $whenClause, $thenClause, $position, $isActive, $tags);
+                    Rule::addRule($courseId, $sectionId, $name, $description, $whenClause, $thenClause, $position, $isActive, $tagsToExport);
                     return 1;
                 }
 
@@ -562,11 +563,15 @@ class Rule
     }
 
     /**
+     * FIXME -- refactor for the case that rule tags are not wanted to export (add optional argument maybe?)
+     *
      * @param int $courseId
      * @param array $ruleIds
      * @return string
+     * @throws Exception
      */
-    public static function exportRules(int $courseId, array $ruleIds): string {
+    public static function exportRules(int $courseId, array $ruleIds): string
+    {
         $ruleToExport = array_values(array_filter(self::getRules($courseId), function ($rule) use ($ruleIds) { return in_array($rule["id"], $ruleIds); }));
         return self::exportRulesActions($ruleToExport);
     }
@@ -582,7 +587,7 @@ class Rule
             $thenClause = Rule::parseToExportAndImport($rule["thenClause"], "export");
 
             return [$rule["name"], $rule["description"], $whenClause, $thenClause,
-                +$rule["isActive"], $rule["position"], (new Rule($rule["id"]))->getTags()];
+                +$rule["isActive"], $rule["position"], ""];
         }, self::HEADERS);
     }
 

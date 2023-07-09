@@ -6,7 +6,6 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\AutoGame\RuleSystem\Rule;
 use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
-use GameCourse\AutoGame\RuleSystem\Tag;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
@@ -1402,7 +1401,7 @@ class Skill
                         $ruleToEdit->editRule($rule["name"], $rule["description"],
                             $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
                             Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                            $rule["tags"]
+                            []
                         );
                     }
                     break;
@@ -1448,8 +1447,7 @@ class Skill
                 $ruleToEdit = Rule::getRuleByName($courseId, $rule["name"]);
                 $ruleToEdit->editRule($skill->getName(), $rule["description"],
                     $rule["whenClause"], $rule["thenClause"], intval($rule["position"]),
-                    Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"),
-                    $rule["tags"]
+                    Rule::parse(null, Utils::nullify($rule["isActive"]), "isActive"), []
                 );
                 return 1;
             }
