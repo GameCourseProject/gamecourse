@@ -93,8 +93,7 @@
                   [showTabs]="false"
                   [tabs]="whenTabs"
                   [required]="true"
-                  [previewFunction] = "true"
-                  (sendFunctionSelection)="functionSelection = $event"
+                  (debugSelection)="debugSelection = $event"
                   (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.whenClause = $event"
                 ></app-input-code>
@@ -108,8 +107,6 @@
                   [showTabs]="false"
                   [tabs]="thenTabs"
                   [required]="true"
-                  [previewFunction] = "true"
-                  (sendFunctionSelection)="functionSelection = $event"
                   (isCompleted)="isCompleted = $event"
                   (valueChange)="ruleToManage.thenClause = $event"
                 ></app-input-code>
@@ -133,9 +130,8 @@
                   [helperPosition]="'right'"
                   [size]="'lg'"
                   [tabs]="additionalToolsTabs"
-                  [receiveFunctionSelection]="functionSelection"
                   (valueChange)="changeMetadata($event)"
-                  (runOutput)="preview($event[0], $event[1])"
+                  (runOutput)="preview($event)"
                   (refreshOutput)="getPreviewOutput($event)"
                 ></app-input-code>
               </div>

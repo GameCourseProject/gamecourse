@@ -141,7 +141,7 @@ export class SectionsComponent implements OnInit {
          await this.parseMetadata();
          this.metadataCodeInput =
            [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata,
-             placeholder: "Autogame global variables:"}];
+             debug: false, placeholder: "Autogame global variables:"}];
        }
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?

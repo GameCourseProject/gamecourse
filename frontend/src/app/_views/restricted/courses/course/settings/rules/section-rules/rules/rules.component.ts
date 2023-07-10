@@ -7,8 +7,7 @@ import {
   CustomFunction,
   CodeTab,
   OutputTab,
-  ReferenceManualTab,
-  MySelection
+  ReferenceManualTab
 } from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
@@ -50,7 +49,7 @@ export class RulesComponent implements OnInit {
   whenTabs: CodeTab[];
   thenTabs: CodeTab[];
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab )[];
-  functionSelection: MySelection;
+  debugSelection: string;
   functions: CustomFunction[];
   ELfunctions: CustomFunction[];
   namespaces: string[];
@@ -130,6 +129,7 @@ export class RulesComponent implements OnInit {
       [{ name: 'Code', type: "code", active: true,
         highlightQuery: '[] # COMPLETE THIS:',
         value: this.ruleToManage.whenClause,
+        debug: true,
         mode: "python", placeholder: "Rule \'When\' clause",
         customFunctions: this.functions.concat(this.ELfunctions)}];
 
@@ -137,14 +137,17 @@ export class RulesComponent implements OnInit {
       [{ name: 'Code', type: "code", active: true,
         highlightQuery: '[] # COMPLETE THIS:',
         value: this.ruleToManage.thenClause,
+        debug: false,
         mode: "python", placeholder: "Rule \'Then\' clause", customFunctions: this.functions }]
 
     this.additionalToolsTabs =
       [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces },
-       { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, placeholder: "Autogame global variables:"},
-       { name: 'Preview Function', type: "output", active: false, running: null, specificFunction: true, value: null },
-       { name: 'Preview Rule', type: "output", active: false, running: null, specificFunction: false, runMessage: 'Preview Rule', value: null }]
+       { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, debug: false, placeholder: "Autogame global variables:"},
+       { name: 'Debug', type: "output", active: false, running: null, value: null,
+         tutorialMessage: '<strong>Select a breakpoint and start debugging!<br></strong> (Results will only show up until the 1st breakpoint)',
+         runMessage: 'Start debugging' },
+       { name: 'Preview Rule', type: "output", active: false, running: null, runMessage: 'Preview Rule', value: null }]
   }
 
   async getMetadata() {
@@ -254,16 +257,18 @@ export class RulesComponent implements OnInit {
     await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
   }
 
-  async preview(indexTab: number, selection: MySelection){
+  async preview(indexTab: number){
     let tab = this.additionalToolsTabs[indexTab];
 
     if (tab.active && (tab as OutputTab).running){
-      // Preview Function
-      if (indexTab === 2 && (tab as OutputTab).specificFunction){
-        await this.api.previewFunction(this.course.id, selection.library, selection.functionName, selection.argumentsArray).toPromise();
+      // Debug
+      if (indexTab === 2){
+        console.log(this.debugSelection);
+        // FIXME
+        // await this.api.previewFunction(this.course.id, selection.library, selection.functionName, selection.argumentsArray).toPromise();
       }
       // Preview Rule
-      else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
+      else if (indexTab === 3){
         this.ruleToManage.whenClause = this.parseFunctions(this.ruleToManage.whenClause);
         this.ruleToManage.thenClause = this.parseFunctions(this.ruleToManage.thenClause);
 
@@ -279,13 +284,13 @@ export class RulesComponent implements OnInit {
 
     if (tab.active && (tab as OutputTab).running) {
 
-      // Preview Function
-      if (indexTab === 2 && (tab as OutputTab).specificFunction){
+      // Debug
+      if (indexTab === 2){
         (tab as OutputTab).value = await this.api.getPreviewFunctionOutput(this.course.id).toPromise();
       }
 
       // Preview Rule
-      else if (indexTab === 3 && !(tab as OutputTab).specificFunction){
+      else if (indexTab === 3){
         (tab as OutputTab).value = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
       }
     }

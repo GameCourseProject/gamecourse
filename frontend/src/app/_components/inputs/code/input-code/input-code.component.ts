@@ -1,9 +1,9 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {basicSetup, EditorView} from "codemirror";
-import {Compartment, EditorState, Range, StateEffect, StateField} from "@codemirror/state";
+import {Compartment, EditorState, Range, RangeSet, StateEffect, StateField} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
-import {Decoration, hoverTooltip} from "@codemirror/view";
+import {Decoration, hoverTooltip, gutter, GutterMarker} from "@codemirror/view";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
@@ -30,8 +30,6 @@ import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 
-// import {Observable} from "rxjs";
-
 @Component({
   selector: 'app-input-code',
   templateUrl: './input-code.component.html'
@@ -49,18 +47,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                   // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
-  @Input() previewFunction?: boolean = false;                     // Boolean to make the selection for 'preview function' functionality available
-  // Selection data for 'Preview Function' functionality
-  @Input() receiveFunctionSelection?: MySelection = {
-    selection: "",
-    functionName: null,
-    argumentsArray: null,
-    library: null
-  };
 
   @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab )[] = [
-    { name: 'Code', type: "code", active: true, mode: "python"},
-    { name: 'Output', type: "output", active: false, running: false, specificFunction: false }];
+    { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
+    { name: 'Output', type: "output", active: false, running: false }];
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -72,7 +62,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Output() isCompleted = new EventEmitter<boolean>();
   @Output() runOutput = new EventEmitter<any>();
   @Output() refreshOutput = new EventEmitter<any>();
-  @Output() sendFunctionSelection = new EventEmitter<MySelection>();   // TODO -- explain
+  @Output() debugSelection = new EventEmitter<string>();
 
   options: Completion[] = [];                                     // Editor options for autocompletion
   views: {[tabID: number]: EditorView};                           // All EditorView's sorted by tabs
@@ -91,6 +81,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // REFERENCE MANUAL
   namespaces: Set<string>;
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
+
+  //selection: string
 
   constructor(
     private themeService: ThemingService,
@@ -120,7 +112,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       // Trigger your function here based on the variable change
       this.loadTheme();
     });
-    this.receiveFunctionSelection = this.initMySelection();
   }
 
   // Setups all keywords and functions for code
@@ -273,7 +264,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             //insertCommentCommand(view);
 
             // Manages selection for 'preview function' functionality
-            if (this.previewFunction && update.selectionSet){
+            /*if (this.previewFunction && update.selectionSet){
               let selection = view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to);
 
               let text = selection ? selection.split(/(\w+)\((.*)\)/) : [];
@@ -289,7 +280,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
               }
 
               this.sendFunctionSelection.emit(mySelection);
-            }
+            }*/
 
 
           }
@@ -316,7 +307,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           "&light .cm-tooltip-below" : {
             backgroundColor: "#bec1c4 !important",
           }
-        })
+        }),
+        this.makeGutter(tab)
       ],
     });
 
@@ -347,21 +339,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     // Set number of lines initialized
     const nrLines = tab.nrLines ?? 10;
-    updateToMinNumberOfLines(view, nrLines);
-    function updateToMinNumberOfLines(view, minNumOfLines) {
-      const currentNumOfLines = view.state.doc.lines;
-      let currentStr = view.state.doc.toString();
-
-      if (currentNumOfLines >= minNumOfLines) {
-        return;
-      }
-      const lines = minNumOfLines - currentNumOfLines;
-      const appendLines = "\n".repeat(lines);
-      view.dispatch({
-        changes: {from: currentStr.length, insert: appendLines}
-      })
-    }
-
+    this.updateToMinNumberOfLines(view, nrLines);
 
     if (query) {
 
@@ -410,27 +388,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         }
       })*/
 
-    // FIXME
-    /*const insertCommentCommand = (view: EditorView) => {
-
-      let words = (view.state.doc.toString()).split(/\s+/);
-
-      let lastWord = words.splice(words.length - 2, 1)[0]; // ignore last element (is empty) // FIXME
-
-      if (lastWord && this.isInFunctions(lastWord)) {
-        //console.log(state.selection.ranges.filter(range => range.empty).map(range => {return state.doc.lineAt(range.head).number}));
-        //let lineNr = state.doc.lineAt(state.selection.ranges[-1].head).number
-        //console.log(lineNr);
-        const comment = "# this is a new comment!\n";
-        const line = view.state.doc.lineAt(state.doc.lineAt(state.selection.main.head).number - 1);
-        const tr = view.state.update({changes: {from: line.from, to: line.from, insert: comment}});
-        view.dispatch(tr);
-
-        return true;
-      }
-      return false;
-    }*/
-
   }
 
   // Function to select which language should the editor provide
@@ -449,6 +406,83 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     this.showAlert = (view.state.doc.toString()).includes(query);
   }
 
+  // Creates additional number of lines if desired
+  updateToMinNumberOfLines(view, minNumOfLines) {
+    const currentNumOfLines = view.state.doc.lines;
+    let currentStr = view.state.doc.toString();
+
+    if (currentNumOfLines >= minNumOfLines) {
+      return;
+    }
+    const lines = minNumOfLines - currentNumOfLines;
+    const appendLines = "\n".repeat(lines);
+    view.dispatch({
+      changes: {from: currentStr.length, insert: appendLines}
+    })
+  }
+
+  // Creates visual marker for debugging
+  makeGutter(tab: any){
+    const breakpointEffect = StateEffect.define<{pos: number, on: boolean}>({
+      map: (val, mapping) => ({pos: mapping.mapPos(val.pos), on: val.on})
+    })
+
+    const breakpointState = StateField.define<RangeSet<GutterMarker>>({
+      create() { return RangeSet.empty },
+      update(set, transaction) {
+        set = set.map(transaction.changes)
+        for (let e of transaction.effects) {
+          if (e.is(breakpointEffect)) {
+            if (e.value.on)
+              set = set.update({add: [breakpointMarker.range(e.value.pos)]})
+            else
+              set = set.update({filter: from => from != e.value.pos})
+          }
+        }
+        return set
+      }
+    })
+
+    function toggleBreakpoint(view: EditorView, pos: number) {
+      let breakpoints = view.state.field(breakpointState)
+      let hasBreakpoint = false
+      breakpoints.between(pos, pos, () => {hasBreakpoint = true})
+      view.dispatch({
+        effects: breakpointEffect.of({pos, on: !hasBreakpoint})
+      })
+    }
+
+    const breakpointMarker = new class extends GutterMarker {
+      toDOM() { return document.createTextNode("🔴") }
+    }
+
+    let debugSelection = this.debugSelection;
+    return [
+      breakpointState,
+      gutter({
+        class: "cm-breakpoint-gutter",
+        markers: v => v.state.field(breakpointState),
+        initialSpacer: () => breakpointMarker,
+        domEventHandlers: {
+          mousedown(view, line) {
+            if (tab.debug) {
+              toggleBreakpoint(view, line.from)
+              let nextLine = view.state.doc.lineAt(line.to + 1);
+              let text = view.state.sliceDoc(view.state.selection.main.from, nextLine.from);
+              debugSelection.emit(text);
+              return true
+            } else return false;
+          }
+        }
+      }),
+      EditorView.baseTheme({
+        ".cm-breakpoint-gutter .cm-gutterElement": {
+          color: "red",
+          cursor: "default"
+        }
+      })
+    ]
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Output ------------------- ***/
@@ -456,12 +490,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   getTooltip(tab: OutputTab | CodeTab): string {
     if ((tab as OutputTab).type === "output") {
-      if ((tab as OutputTab).specificFunction) {
-        return (tab as OutputTab).tooltip ?? "Select the function you want to preview alongside its arguments with cursor!";
-      }
-      else if (!(tab as OutputTab).specificFunction) {
-        return (tab as OutputTab).tooltip ?? "Click \'Run\' to simulate output!";
-      }
+      return (tab as OutputTab).tooltip ?? "Click \'Run\' to simulate output!";
     }
     return null;
   }
@@ -476,7 +505,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   simulateOutput(indexTab: number, tab: OutputTab | CodeTab){
     if ((tab as OutputTab).type === "output") {
       (tab as OutputTab).running = true;
-      this.runOutput.emit([indexTab, this.receiveFunctionSelection]);
+      this.runOutput.emit(indexTab);
     }
   }
 
@@ -557,26 +586,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-  /*** --------------------------------------------- ***/
-  /*** ---------------- Manage Data ---------------- ***/
-  /*** --------------------------------------------- ***/
-
-  initMySelection(selection?: string, functionName?: string, argumentsArray?: string[], library?: string): MySelection{
-    return {
-      selection: selection ?? null,
-      functionName: functionName ?? null,
-      argumentsArray: argumentsArray ?? [],
-      library: library ?? null,
-    };
-  }
-
 }
 
 export interface CodeTab {
   name: string,                                    // Name of the tab that will appear above
   type: "code",                                    // Specifies type of tab in editor
   active: boolean,                                 // Indicates which tab is active (only one at a time!)
+  debug: boolean,                                  // Allows debug to occur or not (in case of metadata should be false, for instance)
   highlightQuery?: string,                         // Text to highlight
   value?: string,                                  // Value on init
   mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
@@ -589,14 +605,15 @@ export interface CodeTab {
 
 export interface OutputTab {
   name: string,                              // Name of the tab that will appear above
-  type: "output",                            // Specifies type of tab in editor
+  type: "output",                            // Specifies type of tab in editor (debugging tabs also enter here)
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   running: boolean,                          // Boolean to show if code is running in background
-  specificFunction: boolean,                 // Boolean to indicate whether entire code should be run or only a small selection
+  tutorialMessage?: string,                  // Small message if there's need for a small explanation
   runMessage?: string,                       // Custom message when running code
   value?: string,                            // Output value once run
   tooltip?: string,                          // Message to show by default
 }
+
 
 export interface ReferenceManualTab {
   name: string,                              // Name of the tab that will appear above
@@ -613,11 +630,4 @@ export interface CustomFunction {
   description: string,                                    // Description of the function (what it does + return type)
   args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
-}
-
-export interface MySelection {
-  selection: string,
-  functionName: string,
-  argumentsArray: string[],
-  library: string
 }

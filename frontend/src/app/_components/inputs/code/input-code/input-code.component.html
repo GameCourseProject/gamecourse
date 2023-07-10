@@ -116,14 +116,14 @@
               <div class="ml-2.5">
                 <span><strong>Running...</strong></span><br>
                 <span>
-                  Hold on {{tab.specificFunction ? 'and don\'t  move your cursor!' : '!'}} Results might take a while to appear (click refresh to check for new results).
+                  Hold on! Results might take a while to appear (click refresh to check for new results).
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div *ngIf="tab.specificFunction" class="mt-4">
+        <!--<div *ngIf="tab.specificFunction" class="mt-4">
           <div class="ml-14 mr-14">
             <span>{{getTooltip(tab)}}</span><br>
             <span class="text-sm">e.g. <span class="font-semibold">
@@ -157,9 +157,13 @@
             </div>
           </div>
 
+        </div>-->
+
+        <div *ngIf="tab.tutorialMessage" class="mt-4 justify-center flex">
+          <span [innerHTML]="tab.tutorialMessage"></span>
         </div>
 
-        <div *ngIf="!tab.specificFunction" class="justify-center flex align-middle mt-4">
+        <div class="justify-center flex align-middle mt-4">
           <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
             <button type="button" class="btn btn-success text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="simulateOutput(i, tab)">
               <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
