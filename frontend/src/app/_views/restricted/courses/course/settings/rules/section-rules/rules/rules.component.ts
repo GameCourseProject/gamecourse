@@ -144,10 +144,10 @@ export class RulesComponent implements OnInit {
       [{ name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces },
        { name: 'Metadata', type: "code", active: true, value: this.parsedMetadata, debug: false, placeholder: "Autogame global variables:"},
-       { name: 'Debug', type: "output", active: false, running: null, value: null,
+       { name: 'Debug', type: "output", active: false, running: null, debugOutput: true, value: null,
          tutorialMessage: '<strong>Select a breakpoint and start debugging!<br></strong> (Results will only show up until the 1st breakpoint)',
          runMessage: 'Start debugging' },
-       { name: 'Preview Rule', type: "output", active: false, running: null, runMessage: 'Preview Rule', value: null }]
+       { name: 'Preview Rule', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview Rule', value: null }]
   }
 
   async getMetadata() {
@@ -264,8 +264,15 @@ export class RulesComponent implements OnInit {
       // Debug
       if (indexTab === 2){
         console.log(this.debugSelection);
-        // FIXME
-        // await this.api.previewFunction(this.course.id, selection.library, selection.functionName, selection.argumentsArray).toPromise();
+        if (this.debugSelection) {
+          // FIXME
+          // await this.api.previewFunction(this.course.id, selection.library, selection.functionName, selection.argumentsArray).toPromise();
+          this.debugSelection = null;
+        } else {
+          (tab as OutputTab).running = false;
+          AlertService.showAlert(AlertType.ERROR, 'No breakpoints selected');
+        }
+
       }
       // Preview Rule
       else if (indexTab === 3){

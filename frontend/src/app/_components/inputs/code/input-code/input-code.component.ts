@@ -50,7 +50,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab )[] = [
     { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
-    { name: 'Output', type: "output", active: false, running: false }];
+    { name: 'Output', type: "output", active: false, running: false, debugOutput: false }];
 
   // Validity
   @Input() required?: boolean;                                    // Make it required
@@ -608,6 +608,7 @@ export interface OutputTab {
   type: "output",                            // Specifies type of tab in editor (debugging tabs also enter here)
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   running: boolean,                          // Boolean to show if code is running in background
+  debugOutput: boolean,                      // Tab to show debug results or entire output
   tutorialMessage?: string,                  // Small message if there's need for a small explanation
   runMessage?: string,                       // Custom message when running code
   value?: string,                            // Output value once run
