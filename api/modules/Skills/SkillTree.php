@@ -448,7 +448,9 @@ class SkillTree
             throw new Exception("Failed to create zip archive.");
 
         // Add skill trees .csv file
-        $skillTreesToExport = array_values(array_filter(self::getSkillTrees($courseId), function ($skillTree) use ($skillTreeIds) { return in_array($skillTree["id"], $skillTreeIds); }));
+        $skillTreesToExport = array_values(array_filter(self::getSkillTrees($courseId), function ($skillTree) use ($skillTreeIds) {
+            return in_array($skillTree["id"], $skillTreeIds);
+        }));
         $zip->addFromString("skillTrees.csv", Utils::exportToCSV($skillTreesToExport, function ($skillTree) {
             return [$skillTree["name"], $skillTree["maxReward"]];
         }, self::HEADERS));

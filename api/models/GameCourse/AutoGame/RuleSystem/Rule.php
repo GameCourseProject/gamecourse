@@ -583,8 +583,8 @@ class Rule
     public static function exportRulesActions(array $rules): string
     {
         return Utils::exportToCSV($rules, function ($rule) {
-            $whenClause = Rule::parseToExportAndImport($rule["whenClause"], "export");
-            $thenClause = Rule::parseToExportAndImport($rule["thenClause"], "export");
+            $whenClause = self::parseToExportAndImport($rule["whenClause"], "export");
+            $thenClause = self::parseToExportAndImport($rule["thenClause"], "export");
 
             return [$rule["name"], $rule["description"], $whenClause, $thenClause,
                 +$rule["isActive"], $rule["position"], ""];
@@ -852,12 +852,12 @@ class Rule
      * @param string $mode
      * @return string
      */
-    public static function parseToExportAndImport(string $text, string $mode): string{
-        if ($mode === "export"){
+    private static function parseToExportAndImport(string $text, string $mode): string{
+        if ($mode == "export"){
             $res = str_replace(["\"", "\'", '"'], '\quote\\', $text);
             return str_replace("\n", '\newline\\', $res);
 
-        } else if ($mode === "import"){
+        } else if ($mode == "import"){
             $res = str_replace('\quote\\', "\"", $text);
             return str_replace('\newline\\', "\n", $res);
         } else return $text;

@@ -1346,7 +1346,7 @@ class Skill
             $skillsAndTiers, $skillTree, $skillsRules, &$mySkills) {
             $name = Utils::nullify($skill[$indexes["name"]]);
             $color = Utils::nullify($skill[$indexes["color"]]);
-            $page = Utils::nullify($skill[$indexes["page"]]);
+            $page = Utils::nullify(self::parseToExportAndImport($skill[$indexes["page"]], "import"));
             $isCollab = self::parse(null, $skill[$indexes["isCollab"]], "isCollab");
             $isExtra = self::parse(null, $skill[$indexes["isExtra"]], "isExtra");
             $isActive = self::parse(null, $skill[$indexes["isActive"]], "isActive");
@@ -1527,7 +1527,7 @@ class Skill
      * @return void
      * @throws Exception
      */
-    public static function exportSkillsActions(int $courseId, array $skills, ZipArchive &$zip, array &$skillsAndTiers = null){
+    public static function exportSkillsActions(int $courseId, array $skills, ZipArchive &$zip, array &$skillsAndTiers = null) {
         $skillDependencies = [];
         // Exports skills and prepares relation between skills and its dependencies
         // (also prepares relation between skills and tiers when exporting entire skillTree)
@@ -1560,7 +1560,11 @@ class Skill
                 $lastIndex = count($skillDependencies) - 1;
                 $skillDependencies[$lastIndex]["dependencies"] = implode(", ", $dependencyNames);
             }
-            return [$skill["name"], $skill["color"], $skill["page"], +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
+
+            if (($skill["page"]) !== null) $page = self::parseToExportAndImport($skill["page"], "export");
+            else $page = "";
+
+            return [$skill["name"], $skill["color"], $page, +$skill["isCollab"], +$skill["isExtra"], +$skill["isActive"], $skill["position"]];
         }, self::HEADERS));
 
         // Exports dependencies
@@ -1572,6 +1576,7 @@ class Skill
         $skillsSection = RuleSystem::getSectionIdByModule($courseId, Skills::ID);
         $skillRules = Rule::getRulesOfSection($skillsSection);
         $zip->addFromString("skillsRules.csv", Rule::exportRulesActions($skillRules));
+
     }
 
     /*** ---------------------------------------------------- ***/
@@ -1713,6 +1718,16 @@ class Skill
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/
     /*** ---------------------------------------------------- ***/
+
+    private static function parseToExportAndImport(string $text, string $mode): string {
+        if ($mode == "export") {
+            $res = str_replace(["\"", "\'", '"'], '\quote\\', $text);
+            return str_replace("\n", '\newline\\', $res);
+        } else if ($mode == "import"){
+            $res = str_replace('\quote\\', "\"", $text);
+            return str_replace('\newline\\', "\n", $res);
+        } else return $text;
+    }
 
     /**
      * Updates all page URLs:
