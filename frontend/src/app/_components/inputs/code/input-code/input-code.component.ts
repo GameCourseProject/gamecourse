@@ -282,7 +282,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
               this.sendFunctionSelection.emit(mySelection);
             }*/
 
-
           }
 
         }),
@@ -306,6 +305,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           },
           "&light .cm-tooltip-below" : {
             backgroundColor: "#bec1c4 !important",
+          },
+          " &light .cm-tooltip.cm-completionInfo": {
+            backgroundColor: "#bec1c4 !important"
           }
         }),
         this.makeGutter(tab)

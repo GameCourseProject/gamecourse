@@ -146,7 +146,6 @@ export class SectionsComponent implements OnInit {
 
        let modal = (action === 'remove section') ? action : (action === 'metadata') ?
          'manage-metadata' : 'manage-section';
-       console.log(modal);
        ModalService.openModal(modal);
      }
 

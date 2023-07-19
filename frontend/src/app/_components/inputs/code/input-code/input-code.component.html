@@ -181,7 +181,7 @@
 
         <div *ngIf="!isRunning(tab) && isRunning(tab) !== null && tab.value !== null" class="justify-center flex">
           <textarea class="textarea textarea-bordered textarea-md w-[calc(80%-0.5rem)] h-full
-          bg-transparent text-white border-base-300 mt-4">{{tab.value}}
+          bg-transparent {{getTheme() === 'light' ? 'text-base-content' : 'text-white'}} border-base-300 mt-4">{{tab.value}}
           </textarea>
 
           <div *ngIf="tab.debugOutput" class="mt-4">

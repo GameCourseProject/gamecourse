@@ -29,6 +29,7 @@ export class RulesComponent implements OnInit {
   loading = {
     page: true,
     action: false,
+    discard: false,
     refreshing: false
   };
 
@@ -203,8 +204,8 @@ export class RulesComponent implements OnInit {
     this.rule = await this.api.getRuleById(this.course.id, ruleID).toPromise();
   }
 
-  // FIXME -- hardcoded
   isIncomplete () {
+    // FIXME -- hardcoded
     let query = "logs = [] # COMPLETE THIS:";
 
     // Should only check when editing rules (new rules have empty clauses)
@@ -240,19 +241,25 @@ export class RulesComponent implements OnInit {
     } else if (action === 'prepare closing') {
       ModalService.openModal('exit-management');
     } else if (action === 'exit page'){
+      this.loading.discard = true;
       await this.router.navigate(['rule-system/sections/' + this.section.id], {relativeTo: this.route.parent});
+      this.loading.discard = false;
     } else if (action === 'saving incomplete') {
+      this.loading.discard = true;
       this.ruleToManage.isActive = false;
       await this.doAction('edit rule');
+      this.loading.discard = false;
     }
   }
 
   async saveMetadata(){
     let updatedMetadata = _.cloneDeep(this.parsedMetadata);
+
     // remove comment lines from metadata and clean code before updating
-    updatedMetadata = updatedMetadata.replace(/#[^\n]*\n/g, '');  // comments
-    updatedMetadata = updatedMetadata.replace(/\n\s*\n/g, '');    // empty lines
-    updatedMetadata = updatedMetadata.replace(/(\s*:\s*)/g, ":"); // " : " or ": " or " :" replacing with ":"
+    updatedMetadata = updatedMetadata
+      .replace(/#.*/g, '') // Remove comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/(\s*:\s*)/g, ':'); // Replace ' : ', ' :' and ': ' with ':'
 
     await this.api.updateMetadata(this.course.id, updatedMetadata).toPromise();
   }
@@ -377,19 +384,10 @@ export class RulesComponent implements OnInit {
     });
   }
 
-  changeMetadata(newMetadata: string){
+  async changeMetadata(newMetadata: string){
     this.showAlert = true;
-    //this.metadata = newMetadata;
-    // TODO
-    // show alert saying that this changes for all metadata in this course (so its
-    // general for all rules) + only save metadata in course when save button is pressed
-    // for now just update input metadata with new string
+    this.parsedMetadata = newMetadata;
   }
-
-  /*** --------------------------------------------- ***/
-  /*** -------------- Data Management -------------- ***/
-  /*** --------------------------------------------- ***/
-
 
 }
 

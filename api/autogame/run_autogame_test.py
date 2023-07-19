@@ -104,7 +104,7 @@ if __name__ == "__main__":
 					students[target] = 1
 			else:
 				# get targets
-				students = get_targets(course, None, all_targets)
+				students = get_targets(course, all_targets, None)
 			
 			# Import custom course functions
 			functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)

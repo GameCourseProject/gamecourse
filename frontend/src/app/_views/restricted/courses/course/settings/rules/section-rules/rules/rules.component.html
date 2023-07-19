@@ -174,7 +174,7 @@
                We make it true so the uncompleted warning is not triggered -->
           <button type="submit" class="btn btn-primary" (click)="isCompleted = true; doAction('prepare closing')">
             <!-- Spinner -->
-            <ng-container *ngIf="loading.action">
+            <ng-container *ngIf="loading.discard">
               <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
             </ng-container>
             Discard changes
@@ -208,7 +208,7 @@
   [header]=" !isCompleted ? 'Incomplete lines!' : 'Discard changes?'"
   [submitBtnText]="!isCompleted ? 'Save anyway' : 'Discard'"
   [closeBtnText]="'Cancel'"
-  [actionInProgress] = "loading.action"
+  [actionInProgress] = "loading.discard"
   (submitBtnClicked)="!isCompleted ? doAction('saving incomplete') : doAction('exit page') "
   [xButton]="false"
   [static]="true">

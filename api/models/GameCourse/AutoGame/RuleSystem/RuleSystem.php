@@ -407,13 +407,13 @@ abstract class RuleSystem
         $dbName = DB_NAME;
         $dbUser = DB_USER;
         $dbPass = DB_PASSWORD;
-        $scriptPath = ROOT_PATH . "autogame/run_autogame.py";
-        $rulesPath = ROOT_PATH . "course_data/1-pcm/rules";
+        $scriptPath = ROOT_PATH . "autogame/run_autogame_test.py";
+        $rulesPath = ROOT_PATH . "course_data/1-my_pcm/rules";
         $logsFile = ROOT_PATH . "logs/autogame/autogame_1.txt";
         $cmd = "python \"$scriptPath\" $courseId \"all\" \"$rulesPath\" \"$logsFile\" \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
 
 
-        //system($cmd);
+        system($cmd);
     }
 
     /**
