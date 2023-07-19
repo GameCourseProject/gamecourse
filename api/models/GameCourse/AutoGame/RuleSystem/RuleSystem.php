@@ -2,6 +2,7 @@
 namespace GameCourse\AutoGame\RuleSystem;
 
 use Exception;
+use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Dictionary\Dictionary;
@@ -425,6 +426,7 @@ abstract class RuleSystem
      */
     public static function getPreviewRuleOutput(int $courseId): string {
         // FIXME -- should also check if autogame has done running in test mode
+        // if (AutoGame::isRunning($courseId)) return false; // FIXME -- not sure this includes test mode
 
         $outputPath = self::createTestDataFolder($courseId) . "rule-test-output.txt";
         if (file_exists($outputPath)){

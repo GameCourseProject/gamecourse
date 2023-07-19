@@ -15,7 +15,6 @@ RULES_TESTS_FILE = "rule.txt"
 
 AUTOSAVE = False
 LOGFILE = '/var/www/html/gamecourse/api/logs/autogame-python.log'
-IMPORTED_FUNCTIONS_FOLDER = "/var/www/html/gamecourse/api/autogame/imported-functions"
 
 
 def get_config_metadata(course):
@@ -82,7 +81,6 @@ if __name__ == "__main__":
 		
 
 	with open(output_file ,'w') as lfile:
-
 		# No need to init autogame, since there are no concurrency issues,
 		# and server socket will already be open
 		
@@ -92,6 +90,20 @@ if __name__ == "__main__":
 		# Read and set Metadata
 		METADATA = get_config_metadata(course)
 		scope, logs = {"METADATA" : METADATA, "null": None}, {}
+
+		# Initialize Moodle connector
+		if module_enabled("Moodle"):
+
+			mdl_table = "moodle_config"
+			query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
+			mdl_host, mdl_database, mdl_username, mdl_password = gc_db.execute_query(query, (config.COURSE,))[0]
+			if mdl_password:
+
+				from gamerules.connector.db_connector import connect_to_moodle_db
+
+				connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(),
+									 mdl_password.decode())
+				from gamerules.connector.moodle_connector import *
 
 		try:
 			rs = RuleSystem(path, AUTOSAVE)
@@ -105,9 +117,9 @@ if __name__ == "__main__":
 			else:
 				# get targets
 				students = get_targets(course, all_targets, None)
-			
+
 			# Import custom course functions
-			functions_path = os.path.join(IMPORTED_FUNCTIONS_FOLDER, course)
+			functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
 			functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
 
 			try:
