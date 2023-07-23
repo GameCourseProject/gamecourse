@@ -33,7 +33,7 @@
     </div>
 
     <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
-    <span *ngIf=" sectionsToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
+    <span *ngIf="sectionsToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
 
     <div cdkDropList [id]="'sections-list'" class="dd max-w-none mt-6" (cdkDropListDropped)="drop($event)">

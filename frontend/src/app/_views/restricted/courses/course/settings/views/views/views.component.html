@@ -1,249 +1,66 @@
-<ng-container *ngIf="!loading">
+<div class="w-full relative">
+  <!-- Header -->
+  <app-header [classList]="'text-md'"
+    [title]="'Pages'"
+    [icon]="'feather-file'"
+    [loading]="loading.action">
+  </app-header>
 
   <!-- Search -->
-  <div class="search">
-    <input type="text" id="search_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
-    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
+  <div class="w-[55%] mx-auto mt-5">
+    <app-input-search
+      [id] = "'pages-search'"
+      [items] = "originalPages"
+      [placeholder]="'Search for a specific page...'"
+      (valueChange)="filterPages($event)">
+    </app-input-search>
   </div>
 
-  <!-- Pages -->
-  <div class="section">
-    <div class="divider">
-      <div class="title"><span>Pages</span></div>
-    </div>
+  <span *ngIf="originalPages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
+  <span *ngIf="originalPages.length !== 0 && pagesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
-    <div class="content" id="pages">
-      <div *ngFor="let page of reduceForPages.items" class="card">
-        <div class="color_box">
-          <div class="box"></div>
-          <div class="frame frame-page"></div>
-        </div>
-
-        <div class="footer with_status">
-          <div class="page_info">
-            <span>{{page.name}}</span>
-            <span>(id: {{page.id}})</span>
-          </div>
-
-          <div class="page_actions">
-            <span class="config_icon icon" title="Edit" (click)="editPage(page)"></span>
-            <span class="delete_icon icon" (click)="pageSelected = page; isDeleteVerificationModalOpen = true"></span>
-          </div>
-        </div>
-
-        <div class="status" [ngClass]="{'enable': page.isEnabled, 'disable': !page.isEnabled}">
-          {{page.isEnabled ? 'Enabled' : 'Disabled'}}
-          <div class="background"></div>
-        </div>
-      </div>
-
-      <div class="action-buttons" style="width:30px">
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; this.pageSelected = getEmptyPage(); isPageModalOpen = true;"></div>
-      </div>
-    </div>
-
-    <div *ngIf="searchQuery && reduceForPages.items.length === 0" class="error_box">
-      <div id="empty_pages" class="error_msg">No matches found</div>
-    </div>
+  <div *ngFor="let page of pagesToShow" class="module_card">
+    <!-- TODO (last card should be for adding a page (?) -->
+    <div class="icon" [style.background-image]="'feather-file'"></div>
+    <div class="text">HELLO THIS IS THE DESCRIPTION</div>
   </div>
 
-  <!-- View Templates -->
-  <div class="section">
-    <div class="divider">
-      <div class="title"><span>View Templates</span></div>
-    </div>
+  <!-- Divider -->
+  <div class="divider -mt-2"></div>
 
-    <div class="content" id="view_templates">
-      <div *ngFor="let template of reduceForViewTemplates.items" class="card">
-        <div class="color_box">
-          <div class="box"></div>
-          <div class="frame frame-page">
-            <span class="edit_icon" title="Edit" [routerLink]="'templates/' + (template | as : Template).id + '/editor'"></span>
-          </div>
-        </div>
+  <!-- Header -->
+  <app-header [classList]="'text-md'"
+    [title]="'Templates'"
+    [icon]="'feather-layout'"
+    [loading]="loading.action">
+  </app-header>
 
-        <div class="footer">
-          <div class="page_name">{{(template | as : Template).name}}</div>
-          <div class="template_actions">
-            <span class="config_icon icon" title="Edit" (click)="editTemplate(template)"></span>
-            <span *ngIf="!(template | as : Template).isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
-            <span *ngIf="(template | as : Template).isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
-            <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
-            <span class="delete_icon icon" title="Remove" (click)="templateSelected = template; isDeleteVerificationModalOpen = true"></span>
-          </div>
-        </div>
-      </div>
+  <!-- Template actions -->
+  <app-top-actions
+    [rightActions]="[{action: 'Create Template', icon: 'feather-layout', color: 'primary', outline: true},
+                       {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+                        {action: Action.IMPORT + ' template(s)', icon:'jam-download'},
+                        {action: Action.EXPORT + ' all templates', icon:'jam-upload'}
+                      ]}]"
+    (btnClicked)="prepareModal($event)">
+  </app-top-actions>
 
-      <div class="action-buttons">
-        <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
-        <div class="icon add_icon" title="New" (click)="mode = 'add'; templateSelected = getEmptyTemplate(); isTemplateModalOpen = true;"></div>
-      </div>
-    </div>
+  <!-- Template table -->
+  <app-table
+    *ngIf="table.showTable"
+    [id]="'template-table'"
+    [classList]="'mt-5'"
+    [headers] = "table.headers"
+    [data]="table.data"
+    [options]="table.options"
+    [loading]="loading.table"
+    (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"></app-table>
 
-    <div *ngIf="searchQuery && reduceForViewTemplates.items.length === 0" class="error_box">
-      <div id="empty_templates" class="error_msg">No matches found</div>
-    </div>
-  </div>
-
-  <!-- Global Templates -->
-  <div class="section">
-    <div class="divider">
-      <div class="title"><span>Global Templates</span></div>
-    </div>
-
-    <div class="content" id="global_templates">
-      <div *ngFor="let template of reduceForGlobalTemplates.items" class="card">
-        <div class="color_box">
-          <div class="box"></div>
-          <div class="frame frame-page">
-            <span *ngIf="(template | as : Template).courseId !== courseID" class="add_icon_no_outline"
-                  (click)="useGlobal(template)"></span>
-          </div>
-        </div>
-
-        <div class="footer">
-          <div class="page_name">{{template.name}}</div>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="searchQuery && reduceForGlobalTemplates.items.length === 0" class="error_box">
-      <div id="empty_globals" class="error_msg">No matches found</div>
-    </div>
-  </div>
-
-</ng-container>
-
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
 </div>
 
 
-<!-- New / Edit Page Modal -->
-<ng-container *ngIf="isPageModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isPageModalOpen"-->
-<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
-<!--    [templateRef]="newPageModal"-->
-<!--    (closeBtnClicked)="clear(); isPageModalOpen = false;"-->
-<!--    [actionInProgress]="saving">-->
-<!--  </app-modal>-->
+<ng-container *ngIf="!loading.page">
+
+
+
 </ng-container>
-
-<ng-template #newPageModal>
-
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} page:</div>
-
-  <div class="content">
-    <div class="inputs" style="padding-bottom: 26px">
-      <!-- Name -->
-      <div class="name full">
-        <input type="text" class="form__input" id="page_name" placeholder="Name *" [(ngModel)]="pageSelected.name">
-        <label for="page_name" class="form__label">Name</label>
-      </div>
-
-      <!-- View template -->
-      <select class="form__input pages_info" [(ngModel)]="pageSelected.viewId">
-        <option [ngValue]="null" disabled selected>Select a view template *</option>
-        <option *ngFor="let template of allViewTemplates" [ngValue]="template.viewId" label="{{template.name}}">{{template.name}}</option>
-      </select>
-    </div>
-
-    <div id="active_page" class="row">
-      <div class="on_off">
-        <span>Enable Page</span>
-        <label class="switch">
-          <input type="checkbox" [checked]="pageSelected.isEnabled" (change)="pageSelected.isEnabled = !pageSelected.isEnabled">
-          <span class="slider round"></span>
-        </label>
-      </div>
-    </div>
-
-    <button class="cancel" (click)="isPageModalOpen = false; clear()"> Cancel </button>
-    <button class="save_btn" (click)="savePage(pageSelected)" [disabled]="!isReadyToSubmit('page')"> Save </button>
-  </div>
-
-</ng-template>
-
-
-<!-- New / Edit Template Modal -->
-<ng-container *ngIf="isTemplateModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isTemplateModalOpen"-->
-<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
-<!--    [templateRef]="newTemplateModal"-->
-<!--    (closeBtnClicked)="isTemplateModalOpen = false; clear()"-->
-<!--    [actionInProgress]="saving">-->
-<!--  </app-modal>-->
-</ng-container>
-
-<ng-template #newTemplateModal>
-
-  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} template:</div>
-
-  <div class="content">
-    <div class="inputs" style="padding-bottom: 26px">
-      <!-- Name -->
-      <div class="name full">
-        <input type="text" class="form__input" id="template_name" placeholder="Name *" [(ngModel)]="templateSelected.name">
-        <label for="template_name" class="form__label">Name</label>
-      </div>
-
-      <!-- Role Type -->
-      <select class="form__input pages_info" id="new_view_role" [(ngModel)]="templateSelected.roleType">
-        <option [ngValue]="null" disabled selected>Select a role type *</option>
-        <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
-      </select>
-    </div>
-
-    <button class="cancel" (click)="isTemplateModalOpen = false; clear()"> Cancel </button>
-    <button class="save_btn" (click)="saveTemplate(templateSelected)" [disabled]="!isReadyToSubmit('template')"> Save </button>
-  </div>
-
-</ng-template>
-
-
-<!-- Delete Verification Modal -->
-<ng-container *ngIf="isDeleteVerificationModalOpen">
-<!--  <app-verification-modal-->
-<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
-<!--    [id]="'delete-view'"-->
-<!--    [text]="'Are you sure you want to delete this ' + (pageSelected ? 'page' : 'template') + '?'"-->
-<!--    [target]="(pageSelected ? 'Page' : 'Template') + ': ' + (pageSelected?.name || templateSelected?.name) + ' (id: ' + (pageSelected?.id || templateSelected?.id) + ')'"-->
-<!--    [positiveBtnText]="'Delete'"-->
-<!--    (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"-->
-<!--    (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
-<!--    (closeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
-<!--    [actionInProgress]="saving">-->
-<!--  </app-verification-modal>-->
-</ng-container>
-
-<!-- Import Modal -->
-<ng-container *ngIf="isImportModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isImportModalOpen"-->
-<!--    [id]="'import-template'"-->
-<!--    [templateRef]="importModal"-->
-<!--    (closeBtnClicked)="isImportModalOpen = false"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [innerClickEvents]="false"-->
-<!--    [classList]="'verification'">-->
-<!--  </app-modal>-->
-</ng-container>
-
-<ng-template #importModal>
-
-  <div class="warning">Please select a .txt file to be imported</div>
-  <app-input-file
-    [id]="'import_template'"
-    [accept]="['.txt']"
-    [classList]="'config_input'"
-    (valueChange)="onFileSelected($event)">
-  </app-input-file>
-
-  <div class="confirmation_btns">
-    <button (click)="importTemplate()">Import Template</button>
-  </div>
-
-</ng-template>

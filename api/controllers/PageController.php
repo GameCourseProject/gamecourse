@@ -7,6 +7,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -137,6 +138,26 @@ class PageController
         API::response($userPages);
     }
 
+    /*** --------------------------------------------- ***/
+    /*** ------------------- Views ------------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Gets all View Templates in the course
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getViewTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        $views = ViewHandler::getViews();
+        API::response($views);
+    }
 
     /*** --------------------------------------------- ***/
     /*** ----------------- Rendering ----------------- ***/

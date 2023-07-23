@@ -36,7 +36,6 @@ export class SectionsComponent implements OnInit {
   originalSections: RuleSection[] = [];             // Sections of course
   sections: RuleSection[] = [];                     // Copy of original sections (used as auxiliary variable for setting priority)
   nrRules: {[sectionId: number]: number} = [];      // Dictionary with number of rules per section
-  filteredSections: RuleSection[] = [];             // Section search
 
   // Section actions -- general manipulation (create/edit/remove/set priority/see details)
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
@@ -57,6 +56,7 @@ export class SectionsComponent implements OnInit {
   // SEARCH & FILTER
   reduce = new Reduce();
   sectionsToShow: RuleSection[] = [];
+  filteredSections: RuleSection[] = [];             // Section search
 
   metadata: {[variable: string]: number}[];
   parsedMetadata: string;

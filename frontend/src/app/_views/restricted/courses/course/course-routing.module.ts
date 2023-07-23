@@ -19,6 +19,7 @@ import { AdaptationComponent } from "./settings/adaptation/adaptation.component"
 import { SectionsComponent } from "./settings/rules/sections.component";
 import { SectionRulesComponent } from "./settings/rules/section-rules/section-rules.component";
 import { RulesComponent } from "./settings/rules/section-rules/rules/rules.component";
+import {ViewsComponent} from "./settings/views/views/views.component";
 
 const routes: Routes = [
   {
@@ -76,7 +77,7 @@ const routes: Routes = [
       },
       {
         path: 'pages',
-        component: ComingSoonComponent,
+        component: ViewsComponent,
       },
       {
         path: 'pages/templates/:id/editor',

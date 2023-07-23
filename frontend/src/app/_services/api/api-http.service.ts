@@ -2760,24 +2760,17 @@ export class ApiHttpService {
 
   // General
   // TODO: refactor
-  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
+  public getViewTemplates(courseID: number): Observable<Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'listViews');
+      qs.push('request', 'getViewTemplates');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {
-          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
-          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
-          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
-          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
-        }
-      }) );
+      .pipe( map((res: any) => res['data'].map(obj => Template.fromDatabase(obj))));
   }
 
 
