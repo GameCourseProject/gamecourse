@@ -1,17 +1,27 @@
-<div
-  [id]="id"
-  [ngClass]="classList"></div>
+<div id="input-rich-text-header" class="form-control w-full {{classList}}">
 
-<app-file-picker-modal
-  [isModalOpen]="isPickingImage"
-  [id]="'rick-text-image-picker'"
-  [type]="'image/*, video/*, audio/*'"
-  [courseFolder]="courseFolder"
-  [whereToStore]="whereToStore"
-  [positiveBtnText]="'Select'"
-  (positiveBtnClicked)="addFile($event)"
-  (negativeBtnClicked)="isPickingImage = false"
-  (closeBtnClicked)="isPickingImage = false"
-  [actionInProgress]="isAddingImage"
-  [innerClickEvents]="false">
-</app-file-picker-modal>
+  <!-- Label -->
+  <label *ngIf="title" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
+    <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
+    <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <div [id]="id"
+       [ngClass]="classList">
+  </div>
+
+  <app-file-picker-modal
+    [isModalOpen]="isPickingImage"
+    [id]="'rick-text-image-picker'"
+    [type]="'image/*, video/*, audio/*'"
+    [courseFolder]="courseFolder"
+    [whereToStore]="whereToStore"
+    [positiveBtnText]="'Select'"
+    (positiveBtnClicked)="addFile($event)"
+    (negativeBtnClicked)="isPickingImage = false"
+    (closeBtnClicked)="isPickingImage = false"
+    [actionInProgress]="isAddingImage"
+    [innerClickEvents]="false">
+  </app-file-picker-modal>
+
+</div>

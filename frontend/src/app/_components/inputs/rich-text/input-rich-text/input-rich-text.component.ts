@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {Observable} from "rxjs";
 
 import * as Quill from 'quill';
@@ -15,18 +15,22 @@ import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.servi
   templateUrl: './input-rich-text.component.html',
   styleUrls: ['./input-rich-text.component.scss']
 })
-export class InputRichTextComponent implements OnInit {
+export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   // Essentials
   @Input() id: string;                        // Unique id
   @Input() placeholder: string;               // Message to show by default
   @Input() init: string;                      // Value on init
-  @Input() canInit: Observable<void>;         // Trigger init
 
   // Extras
-  @Input() classList?: string;                // Classes to add
-  @Input() options?: any;                     // Quill options
-  @Input() container?: string;                // Container ID
+  @Input() title?: string;                                          // Textarea title
+  @Input() helperText?: string;                                     // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';    // Helper position
+  @Input() disabled?: boolean;                                      // Make it disabled
+  @Input() required?: boolean;                                      // Make it required
+  @Input() classList?: string;                                      // Classes to add
+  @Input() options?: any;                                           // Quill options
+  @Input() container?: string;                                      // Container ID
 
   // Image upload & search
   @Input() courseFolder: string;              // Course data folder path (where to look for images)
@@ -47,8 +51,10 @@ export class InputRichTextComponent implements OnInit {
     this.resourceManager = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(): void {
-    this.canInit.subscribe(() => this.initQuill());
+  ngOnInit(){}
+
+  ngAfterViewInit(): void {
+    this.initQuill();
   }
 
   initQuill() {
@@ -83,6 +89,7 @@ export class InputRichTextComponent implements OnInit {
     }
 
     this.options['placeholder'] = this.placeholder;
+
     if (this.container) this.options['scrollingContainer'] = '#' + this.container;
 
     Quill.register({

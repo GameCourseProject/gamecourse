@@ -340,6 +340,23 @@
 
       </div>
 
+      <div class="w-full pt-2 mt-10">
+
+        <app-input-rich-text
+          [id]="'skill-description'"
+          [classList]="'h-96'"
+          [title]="'Skill page description'"
+          [helperText]="'Detailed description for this skill'"
+          [helperPosition]="'right'"
+          [placeholder]="'Write here the detailed description for this skill...'"
+          [container]="'editor'"
+          [courseFolder]="courseFolder"
+          [whereToStore]="'skills/' + (skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('_') : '')"
+          [init]="skillToManage.page"
+          (valueChange)="skillToManage.page = $event">
+        </app-input-rich-text>
+      </div>
+
       <div *ngIf="skillToManage.tierID && showDependencies()">
         <!-- Add dependency -->
         <div class="w-full md:w-2/3 mt-5">

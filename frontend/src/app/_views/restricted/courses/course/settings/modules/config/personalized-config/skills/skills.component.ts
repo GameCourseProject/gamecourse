@@ -13,6 +13,7 @@ import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 
+import { BehaviorSubject, Observable } from 'rxjs';
 import * as _ from 'lodash';
 import {DownloadManager} from "../../../../../../../../../_utils/download/download-manager";
 import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
@@ -32,6 +33,8 @@ export class SkillsComponent implements OnInit {
 
   VCEnabled: boolean;
   VCName: string;
+
+  canInit: any;
 
   skillTrees: SkillTree[];
   skillTreesInfo: {
@@ -74,7 +77,7 @@ export class SkillsComponent implements OnInit {
       if (this.VCEnabled) await this.getVCName();
 
       await this.initSkillTreesInfo(this.courseID);
-      // await this.getCourseDataFolder();
+      await this.getCourseDataFolder();
 
       this.loading.page = false;
     });
@@ -326,6 +329,7 @@ export class SkillsComponent implements OnInit {
       } else if (action === Action.EDIT) {
         this.skillMode = 'edit';
         this.skillToManage = this.initSkillToManage(skillToActOn);
+
         ModalService.openModal('skill-manage');
 
       } else if (action === Action.DELETE) {
@@ -391,6 +395,7 @@ export class SkillsComponent implements OnInit {
       } else if (action === 'Create skill') {
         this.skillMode = 'create';
         this.skillToManage = this.initSkillToManage();
+
         ModalService.openModal('skill-manage');
       }
     }
