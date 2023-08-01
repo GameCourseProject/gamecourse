@@ -75,7 +75,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
               ['link', 'image', 'video', 'code-block']
             ],
             handlers: {
-              'image': () => that.isPickingImage = true
+              'image': () => this.onImageUpload()
             }
           },
           imageResize: {},
@@ -106,6 +106,10 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
     this.quill.on('text-change', function (delta, oldDelta, source) {
       that.valueChange.emit(that.quill.root.innerHTML);
     });
+  }
+
+  onImageUpload(){
+    this.isPickingImage = true;
   }
 
   addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
