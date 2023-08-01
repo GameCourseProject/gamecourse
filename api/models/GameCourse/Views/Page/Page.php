@@ -330,6 +330,7 @@ class Page
             $viewTree = ViewHandler::buildView($page["viewRoot"], Aspect::getAspects($courseId, $userid, true));
             if (!empty($viewTree)) $availablePagesForUser[] = $page;
         }
+
         return $availablePagesForUser;
     }
 

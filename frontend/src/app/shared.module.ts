@@ -130,6 +130,7 @@ import {
   featherXCircle
 } from "@ng-icons/feather-icons";
 
+
 import {
   jamDownload,
   jamEyeF,
@@ -174,7 +175,9 @@ import {
   tablerCoin,
   tablerColorSwatch,
   tablerCopy,
+  tablerDeviceDesktop,
   tablerEye,
+  tablerEyeOff,
   tablerFlame,
   tablerFlask,
   tablerGavel,
@@ -198,7 +201,6 @@ import {
   tablerUserCircle,
   tablerUsers
 } from "@ng-icons/tabler-icons";
-
 
 @NgModule({
   declarations: [
@@ -436,8 +438,10 @@ import {
       tablerCloudUpload,
       tablerCoin,
       tablerColorSwatch,
+      tablerDeviceDesktop,
       tablerCopy,
       tablerEye,
+      tablerEyeOff,
       tablerFlame,
       tablerFlask,
       tablerGavel,

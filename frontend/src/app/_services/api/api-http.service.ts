@@ -2760,10 +2760,10 @@ export class ApiHttpService {
 
   // General
   // TODO: refactor
-  public getViewTemplates(courseID: number): Observable<Template[]> {
+  public getViews(courseID: number): Observable<Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'getViewTemplates');
+      qs.push('request', 'getViews');
       qs.push('courseId', courseID);
     };
 
@@ -2855,7 +2855,7 @@ export class ApiHttpService {
       courseId: courseID,
       pageName: page.name,
       viewId: page.viewId,
-      isEnabled: page.isEnabled ? 1 : 0
+      isEnabled: page.isVisible ? 1 : 0
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2875,7 +2875,7 @@ export class ApiHttpService {
       pageId: page.id,
       pageName: page.name,
       viewId: page.viewId,
-      isEnabled: page.isEnabled
+      isEnabled: page.isVisible
     };
 
     const params = (qs: QueryStringParameters) => {

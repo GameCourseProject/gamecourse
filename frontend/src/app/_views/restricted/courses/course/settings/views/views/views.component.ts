@@ -5,7 +5,6 @@ import {ApiHttpService} from "../../../../../../../_services/api/api-http.servic
 import {UpdateService} from "../../../../../../../_services/update.service";
 
 import {Page} from "../../../../../../../_domain/views/pages/page";
-import {Template} from "../../../../../../../_domain/views/templates/template";
 import {Reduce} from "../../../../../../../_utils/lists/reduce";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Action} from 'src/app/_domain/modules/config/Action';
@@ -13,6 +12,8 @@ import {NgForm} from "@angular/forms";
 import {TableDataType} from "../../../../../../../_components/tables/table-data/table-data.component";
 
 import * as _ from "lodash";
+import {View} from 'src/app/_domain/views/view';
+import {Template} from "../../../../../../../_domain/views/templates/template";
 
 @Component({
   selector: 'app-views',
@@ -29,9 +30,8 @@ export class ViewsComponent implements OnInit {
 
   course: Course;                       // Specific course in which pages are being manipulated
 
-  originalPages: Page[] = [];           // Pages of course
-  pages: Page[];                        // Copy of original pages (used as auxiliary variable for setting priority)
-  viewTemplates: Template[];            // Templates of views inside course
+  pages: Page[] = [];           // Pages of course
+  views: Template[];                // Views inside course
 
 
   // SEARCH AND FILTER
@@ -45,16 +45,42 @@ export class ViewsComponent implements OnInit {
   importData: {file: File, replace: boolean} = { file: null, replace: true };
   @ViewChild('fImport', {static: false}) fImport: NgForm;
 
-  // TABLE
-  table: {
+  // TABLES
+  pagesTable: {
     headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
     data: {type: TableDataType, content: any}[][],
     options: any,
-    showTable: boolean
+    showTable: boolean,
+    loading: boolean
   } = {
     headers: [
-      {label: 'Name', align:'left'},
-      {label: 'Role', align: 'middle'},
+      {label: 'Position', align: 'middle'},
+      {label: 'Name', align: 'middle'},
+      {label: 'Visible', align: 'middle'},
+      {label: 'Actions'}
+    ],
+    data: null,
+    options: {
+      order: [ 0 , 'asc'],
+      columnDefs: [
+        { type: 'natural', targets: [0,1] },
+        { searchable: false, targets: [0,2] },
+        { orderable: false, targets: [2] }
+      ]
+    },
+    showTable: false,
+    loading: false
+  }
+
+  viewsTable: {
+    headers: {label: string, align?: 'left' | 'middle' | 'right'}[],
+    data: {type: TableDataType, content: any}[][],
+    options: any,
+    showTable: boolean,
+    loading: boolean
+  } = {
+    headers: [
+      {label: 'Name', align:'middle'},
       {label: 'Global', align: 'middle'},
       {label: 'Actions'}
     ],
@@ -63,11 +89,12 @@ export class ViewsComponent implements OnInit {
       order: [ 0 , 'asc'],
       columnDefs: [
         { type: 'natural', targets: [0] },
-        { searchable: false, targets: [1,2] },
+        { searchable: false, targets: [1] },
         { orderable: false, targets: [1] }
       ]
     },
-    showTable: false
+    showTable: false,
+    loading: false
   }
 
   /*allPages: Page[];
@@ -119,7 +146,7 @@ export class ViewsComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getPages(courseID);
-      await this.getViewTemplates(courseID);
+      await this.getViews(courseID);
 
       this.loading.page = false;
     });
@@ -135,12 +162,18 @@ export class ViewsComponent implements OnInit {
 
   async getPages(courseID: number) {
     this.pages = await this.api.getCoursePages(courseID).toPromise();
+    this.pages.sort((a, b) => a.position - b.position);
+
+    this.filteredPages = this.pages;
+    this.pagesToShow = this.pages;
+
+    await this.buildPagesTable();
   }
 
-  async getViewTemplates(courseID: number) {
-    this.viewTemplates = await this.api.getViewTemplates(courseID).toPromise();
+  async getViews(courseID: number) {
+    this.views = await this.api.getViews(courseID).toPromise();
 
-    await this.buildTable();
+    await this.buildViewsTable();
 
     /*this.api.getViewsList(this.courseID)
       .pipe( finalize(() => this.loading = false) )
@@ -157,44 +190,70 @@ export class ViewsComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------------- Table ------------------- ***/
+  /*** ------------------ Tables ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async buildTable(): Promise<void> {
-    this.loading.table = true;
+  async buildPagesTable(): Promise<void> {
+    this.pagesTable.loading = true;
 
-    this.table.showTable = false;
-    setTimeout(() => this.table.showTable = true, 0);
+    this.pagesTable.showTable = false;
+    setTimeout(() => this.pagesTable.showTable = true, 0);
 
     const data : { type: TableDataType; content: any }[][] = [];
 
-    this.viewTemplates.forEach(template => {
+    this.pages.forEach(page => {
       data.push([
-        {type: TableDataType.TEXT, content: { value: template.name, valueFormat: 'none' }},
-        {type: TableDataType.SELECT, content: {
-            selectId: "template-" + template.id,
-            selectValue: [], // FIXME
-            selectOptions: [], // FIXME
-            selectMultiple: false,
-            selectRequire: true, // FIXME -- check??
-            selectPlaceholder: "Select role",
-            selectSearch: true
-          }},
-        {type: TableDataType.TOGGLE, content: { toggleId: 'isGlobal', toggleValue: template.isGlobal }},
+        {type: TableDataType.NUMBER, content: { value: page.position }},
+        {type: TableDataType.TEXT, content: { text: page.name }},
+        {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: page.isVisible}},
         {type: TableDataType.ACTIONS, content: {actions: [
               Action.EDIT,
-              {action: 'Duplicate', icon: 'tabler-copy', color: 'primary'},
+              { action: Action.DUPLICATE },
+              { action: Action.MOVE_UP, disabled: page.position === 0 },
+              { action: Action.MOVE_DOWN, disabled: page.position === this.pages.length },
               Action.REMOVE,
               Action.EXPORT
             ]}}
       ]);
     });
 
-    this.table.data = _.cloneDeep(data);
-    this.loading.table = false;
+    this.pagesTable.data = _.cloneDeep(data);
+    console.log(this.pagesTable);
+    this.pagesTable.loading = false;
+
   }
 
-  async doActionOnTable(action:string, row: number, col: number): Promise<void> {
+  async buildViewsTable(): Promise<void> {
+    this.viewsTable.loading = true;
+
+    this.viewsTable.showTable = false;
+    setTimeout(() => this.viewsTable.showTable = true, 0);
+
+    const data : { type: TableDataType; content: any }[][] = [];
+
+    this.views.forEach(view => {
+      data.push([
+        {type: TableDataType.TEXT, content: { text: view.name }},
+        {type: TableDataType.TOGGLE, content: { toggleId: 'isGlobal', toggleValue: view.isGlobal }},
+        {type: TableDataType.ACTIONS, content: {actions: [
+              Action.VIEW,
+              Action.DUPLICATE,
+              Action.EDIT,
+              Action.EXPORT,
+              Action.REMOVE
+            ]}}
+      ]);
+    });
+
+    this.viewsTable.data = _.cloneDeep(data);
+
+    this.viewsTable.loading = false;
+    console.log(this.viewsTable);
+
+  }
+
+
+  async doActionOnTable(table: string, action:string, row: number, col: number): Promise<void> {
     // TODO
   }
 
@@ -202,8 +261,14 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async prepareModal(action: string){
-    // TODO
+  async prepareModal(table: string, action: string){
+    if (table === 'pages') {
+      if (action === Action.IMPORT) {
+
+      }
+    } else if (table === 'views') {
+
+    }
   }
 
 
@@ -224,7 +289,7 @@ export class ViewsComponent implements OnInit {
       this.pagesToShow = pages;
     }
 
-    else this.pagesToShow = this.originalPages;
+    else this.pagesToShow = this.pages;
   }
 
   /*reduceList(query?: string): void {

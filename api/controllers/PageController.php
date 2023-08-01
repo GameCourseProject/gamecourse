@@ -148,7 +148,7 @@ class PageController
      * @return void
      * @throws Exception
      */
-    public function getViewTemplates(){
+    public function getViews(){
         API::requireValues("courseId");
 
         $courseId = API::getValue("courseId", "int");

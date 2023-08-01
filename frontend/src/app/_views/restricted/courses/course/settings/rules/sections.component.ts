@@ -99,7 +99,7 @@ export class SectionsComponent implements OnInit {
     this.filteredSections = this.originalSections;
     this.sectionsToShow = this.originalSections;
 
-    for (let i = 0; i <  this.originalSections.length; i++){
+    for (let i = 0; i <  this.originalSections.length; i++) {
       // Get number of rules per section
       this.nrRules[this.originalSections[i].id] = (await this.api.getRulesOfSection(this.course.id, this.originalSections[i].id).toPromise()).length;
     }
