@@ -13,7 +13,6 @@ import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 
-import { BehaviorSubject, Observable } from 'rxjs';
 import * as _ from 'lodash';
 import {DownloadManager} from "../../../../../../../../../_utils/download/download-manager";
 import {ResourceManager} from "../../../../../../../../../_utils/resources/resource-manager";
@@ -33,8 +32,6 @@ export class SkillsComponent implements OnInit {
 
   VCEnabled: boolean;
   VCName: string;
-
-  canInit: any;
 
   skillTrees: SkillTree[];
   skillTreesInfo: {
@@ -395,7 +392,6 @@ export class SkillsComponent implements OnInit {
       } else if (action === 'Create skill') {
         this.skillMode = 'create';
         this.skillToManage = this.initSkillToManage();
-
         ModalService.openModal('skill-manage');
       }
     }
@@ -715,10 +711,10 @@ export class SkillsComponent implements OnInit {
     return true;
   }
 
-  initTextEditor() {
-    // setTimeout(() => this.skillModalRendered.next(), 0);
-    // return [];
-  }
+  /*initTextEditor() {
+    setTimeout(() => this.skillModalRendered.next(), 0);
+    return [];
+  }*/
 
   goToSkillPage(skill: Skill) {
     this.router.navigate(['./skills', skill.id, 'preview'], {relativeTo: this.route.parent.parent})

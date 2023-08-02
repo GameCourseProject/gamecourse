@@ -1,4 +1,116 @@
+<app-modal
+  [id]="'file-picker-' + id"
+  [classList]="classList"
+  [templateRef]="FILE_PICKER"
+  [header]="'Upload file'"
+  [submitBtnText]="positiveBtnText"
+  [closeBtnText]="negativeBtnText"
+  [actionInProgress]="actionInProgress"
+  [static]="innerClickEvents"
+></app-modal>
 
+<ng-template #FILE_PICKER>
+  <div class="ml-1">
+    <div class="w-full flex">
+      <div class="w-[calc(50%-0.25rem)]">
+        <div class="bg-base-300 h-[32rem] overflow-y-auto overflow-x-auto">
+          <div><span class="text-sm"><strong>Upload</strong></span></div>
+          <div><span class="text-sm"><strong>Browse</strong></span></div>
+        </div>
+      </div>
+
+
+      <div class="h-[34rem] overflow-y-auto overflow-x-auto mt-2">
+        TODO
+            <!--<span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 mt-40 justify-center">
+              Select a function
+            </span>
+
+        <div *ngIf="selectedFunction" class="ml-2">
+          <div class="border-b border-gray-200 mb-4">
+            <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
+          </div>
+
+          <div class="mb-4">
+            <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
+
+            <div *ngFor="let arg of selectedFunction.args, let i = index">
+                  <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
+                    {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+            </div>
+
+            <span>) : {{selectedFunction.returnType.removeWord('->')}}</span>
+          </div>
+
+          <div><strong>Description: </strong>{{selectedFunction.description}}</div><br>
+
+          <div *ngIf="selectedFunction.name !== 'gamerules'">
+            <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
+          </div><br *ngIf="selectedFunction.name !== 'gamerules'">
+
+          <div><strong>Args:</strong>
+            <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
+              <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+            </ng-container>
+          </div><br>
+
+          <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
+        </div>-->
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div class="w-full flex justify-center">
+    <app-spinner *ngIf="loading" [size]="'md'" [color]="'primary'"></app-spinner>
+  </div>
+
+  <!--<div>
+    <div class="wrapper">
+      <div class="tab">
+        <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
+        <button class="tablinks" [ngClass]="{'active': mode === 'browse'}" (click)="mode = 'browse'">Browse file</button>
+      </div>
+
+      <div class="tabcontent">
+        <ng-container *ngIf="mode === 'upload'">
+          <div class="full" style="margin-top: 20px">
+            <app-input-file
+              [id]="'input-file'"
+              [accept]="type.split(', ')"
+              (valueChange)="onFileSelected($event)">
+            </app-input-file>
+
+            <div class="name full">
+              <input type="text" id="name" placeholder="File name *" class="form__input" required [(ngModel)]="fileToUploadName">
+              <label for="name" class="form__label">Name</label>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="mode === 'browse'">
+          <div class="top_browser">
+            <div id="back" (click)="goOutside()"></div>
+            <div class="path">
+              <span id="browse-path">{{path}}</span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <ng-container *ngFor="let item of getFolderContents(contents, path)">
+              <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
+                   (click)="goInside(item)">
+                <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
+                     [src]="getItemIcon(item)">
+                <span>{{item.name}}</span>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>-->
+</ng-template>
 
 
 
@@ -12,7 +124,7 @@
 <!--  [actionInProgress]="actionInProgress"-->
 <!--  [innerClickEvents]="innerClickEvents">-->
 <!--</app-modal>-->
-<div> <!-- TODO: REFACTOR !! -->
+<!--<div>
   <div class="wrapper">
     <div class="tab">
       <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
@@ -60,8 +172,8 @@
   <button class="cancel_btn" (click)="isModalOpen = false; negativeBtnClicked.emit()">Cancel</button>
   <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="isModalOpen = false; submit()">Select</button>
 
-  <!-- Loader -->
+  Loader
   <div *ngIf="loading" id="page-loading">
     <img src="assets/loader/loader.gif" alt="loader">
   </div>
-</div>
+</div>-->

@@ -4,6 +4,7 @@ import {ApiHttpService} from "../../../_services/api/api-http.service";
 import {exists} from "../../../_utils/misc/misc";
 import {finalize} from "rxjs/operators";
 import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
+import {ModalService} from "../../../_services/modal.service";
 
 @Component({
   selector: 'app-file-picker-modal',
@@ -12,13 +13,13 @@ import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service"
 })
 export class FilePickerModalComponent implements OnInit {
 
-  @Input() id?: string;                                 // Modal id
+  @Input() id: string;                                  // Modal id
   @Input() type: string;                                // File type to pick from
   @Input() courseFolder: string;                        // Course data folder path (where to look for images)
   @Input() whereToStore: string;                        // Folder path of where to store images (relative to course folder)
   @Input() classList?: string;                          // Classes to append
 
-  @Input() isModalOpen: boolean;                        // Whether the modal is visible
+  //@Input() isModalOpen: boolean;                        // Whether the modal is visible
   @Input() actionInProgress?: boolean;                  // Show loader while action in progress
   @Input() innerClickEvents: boolean = true;            // Whether to close the modal when clicking outside
 
@@ -60,6 +61,7 @@ export class FilePickerModalComponent implements OnInit {
   ngOnInit(): void {
     this.path = this.courseFolder;
     this.getContents();
+    ModalService.openModal('file-picker-' + this.id);
   }
 
   onFileSelected(files: FileList): void {

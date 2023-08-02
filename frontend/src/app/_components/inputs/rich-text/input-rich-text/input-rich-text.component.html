@@ -7,12 +7,10 @@
   </label>
 
   <div [id]="id"
-       [ngClass]="classList"
-  >
+       [ngClass]="classList">
   </div>
 
-  <app-file-picker-modal
-    [isModalOpen]="isPickingImage"
+  <app-file-picker-modal *ngIf="isPickingImage"
     [id]="'rick-text-image-picker'"
     [type]="'image/*, video/*, audio/*'"
     [courseFolder]="courseFolder"

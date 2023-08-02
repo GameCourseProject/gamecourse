@@ -1,5 +1,4 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Observable} from "rxjs";
 
 import * as Quill from 'quill';
 // import htmlEditButton from 'quill-html-edit-button';
@@ -110,6 +109,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   onImageUpload(){
     this.isPickingImage = true;
+    console.log(this.isPickingImage);
   }
 
   addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
