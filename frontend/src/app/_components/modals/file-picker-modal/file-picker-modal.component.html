@@ -46,16 +46,16 @@
           </span>
 
           <div *ngIf="root.contents.length > 0 && !loading" class="mt-4">
-            <ng-container *ngFor="let content of root.contents, let i = index">
-              <div class="grid grid-cols-2">
-                <div class="flex flex-col items-center flex-wrap">
-                  <div class="btn btn-ghost">
-                    <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
-                  </div>
+            <div class="grid grid-cols-3 gap-4">
+              <ng-container *ngFor="let content of root.contents, let i = index">
+                <div class="flex flex-col items-center whitespace-normal">
+                  <div class="btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
+                       (click)="toggleItems(root.contents, i)">
 
-                  <div class="btn btn-ghost {{content.selected ? 'border border-3 border-base-content' : ''}}"
-                       (click)="toggleItems(root.contents ,i)">
+                    <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
+
                     <img *ngIf="content.type === ContentType.FILE && isImage(content)"
+                         class="w-[3.75rem]"
                        [src]="content.previewPhoto.get('SafeUrl')" alt="image-file-preview" />
 
                     <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
@@ -65,9 +65,12 @@
                            name="feather-volume2" size="4rem"></ng-icon>
                   </div>
 
-                  <span class="font-semibold text-sm text-base-content mt-1">{{content.name}}</span>
+                  <div class="justify-center">
+                    <span class="whitespace-normal w-[5rem] font-semibold text-sm text-base-content mt-1">{{content.name}}</span>
+                  </div>
+
                 </div>
-              </div>
+              </ng-container>
               <!--
               flex items-start p-0 relative btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100
                           border-base-200 border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-[8rem]
@@ -83,7 +86,7 @@
                   </div>
                 </ng-container>
               </div>-->
-            </ng-container>
+            </div>
           </div>
 
         <!--<div class="top_browser">
