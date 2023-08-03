@@ -5,7 +5,9 @@ use Exception;
 
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Badges\Badges;
 use GameCourse\Module\Module;
+use GameCourse\Module\Skills\Skills;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
@@ -738,19 +740,39 @@ class CourseController
     /**
      * Get contents of course data folder.
      *
-     * @param int $courseId
      * @throws Exception
      */
     public function getCourseDataFolderContents()
     {
-        API::requireValues("courseId");
+        API::requireValues("courseId", "moduleId");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
 
-        API::response($course->getDataFolderContents());
+        $module = API::getValue("moduleId") ?? null;
+
+        if ($module == "skills"){
+            $skillsModule = new Skills(new Course($courseId));
+            $contents = $skillsModule->getDataFolderContents();
+
+            foreach ($contents as &$item){
+                $item["previewUrl"] = API_URL . "/" . $course->getDataFolder(false) . "/" . $skillsModule->getDataFolder(false) . "/" . $item["name"];
+            }
+
+            API::response($contents);
+
+        } else if ($module == "badges") {
+            $badgesModule = new Badges(new Course($courseId));
+            API::response($badgesModule->getDataFolderContents());
+
+        } // complete here with more modules if needed
+
+        else {
+            API::response($course->getDataFolderContents());
+        }
+
     }
 
     /**

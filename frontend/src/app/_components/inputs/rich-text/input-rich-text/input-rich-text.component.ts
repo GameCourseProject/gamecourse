@@ -8,6 +8,7 @@ import {exists} from "../../../../_utils/misc/misc";
 import {ResourceManager} from "../../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
+import {ApiHttpService} from "../../../../_services/api/api-http.service";
 
 @Component({
   selector: 'app-input-rich-text',
@@ -45,15 +46,19 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
   resourceManager: ResourceManager;
 
   constructor(
+    private api: ApiHttpService,
     private sanitizer: DomSanitizer,
   ) {
     this.resourceManager = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(){}
+  ngOnInit(){
+  }
 
   ngAfterViewInit(): void {
     this.initQuill();
+    console.log(this.courseFolder);
+    console.log(this.whereToStore);
   }
 
   initQuill() {

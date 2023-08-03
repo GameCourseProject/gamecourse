@@ -349,7 +349,7 @@
           [helperPosition]="'right'"
           [placeholder]="'Write here the future page for this skill\'s description...'"
           [container]="'editor'"
-          [courseFolder]="courseFolder"
+          [courseFolder]="courseFolder + '/skills'"
           [whereToStore]="'skills/' + (skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('_') : '')"
           [init]="skillToManage.page"
           (valueChange)="skillToManage.page = $event">

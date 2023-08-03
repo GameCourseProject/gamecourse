@@ -1,63 +1,112 @@
 <app-modal
   [id]="'file-picker-' + id"
-  [classList]="classList"
   [templateRef]="FILE_PICKER"
   [header]="'Upload file'"
   [submitBtnText]="positiveBtnText"
   [closeBtnText]="negativeBtnText"
   [actionInProgress]="actionInProgress"
   [static]="innerClickEvents"
+  (submitBtnClicked)="submit()"
+  (onClose)="reset()"
 ></app-modal>
 
 <ng-template #FILE_PICKER>
-  <div class="ml-1">
-    <div class="w-full flex">
-      <div class="w-[calc(50%-0.25rem)]">
-        <div class="bg-base-300 h-[32rem] overflow-y-auto overflow-x-auto">
-          <div><span class="text-sm"><strong>Upload</strong></span></div>
-          <div><span class="text-sm"><strong>Browse</strong></span></div>
+  <div class="w-full" style="height: 20rem !important;">
+      <div class="tabs justify-center">
+        <ng-container *ngFor="let tab of tabs, let i = index">
+          <a class="tab tab-bordered {{tab.selected ? 'tab-active font-semibold' : ''}}" (click)="toggleItems(tabs, i)">{{tab.name.capitalize()}}</a>
+        </ng-container>
+      </div>
+
+    <ng-container *ngFor="let tab of tabs">
+      <div *ngIf="tab.name === 'upload' && tab.selected" class="mt-4">
+        <app-input-file
+          [id]="'input-file'"
+          [color]="'primary'"
+          [accept]="type.split(', ')"
+          [helperPosition]="'right'"
+          [helperText]="'File to import to the skill\'s description'"
+          (valueChange)="onFileSelected($event)">
+        </app-input-file>
+      </div>
+
+      <div *ngIf="tab.name === 'browse' && tab.selected">
+        <div class="w-[calc(100%-2rem)] mt-4">
+          <div class="inline-block justify-center flex mb-1.5 align-middle">
+            <div class="btn btn-xs btn-ghost btn-circle tooltip" data-tip="Home" (click)="reset()">
+              <ng-icon name="feather-home" size="1.2rem" color="primary"></ng-icon>
+            </div>
+            <div class="border-2 rounded-box ml-1.5 overflow-x-auto">
+              <span class="text-sm px-3">{{path}}</span>
+            </div>
+          </div>
+
+          <span *ngIf="root.contents.length === 0 && !loading" class="text-base-content text-opacity-50 justify-center flex mt-10">
+            Nothing to display.
+          </span>
+
+          <div *ngIf="root.contents.length > 0 && !loading" class="mt-4">
+            <ng-container *ngFor="let content of root.contents, let i = index">
+              <div class="grid grid-cols-2">
+                <div class="flex flex-col items-center flex-wrap">
+                  <div class="btn btn-ghost">
+                    <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
+                  </div>
+
+                  <div class="btn btn-ghost {{content.selected ? 'border border-3 border-base-content' : ''}}"
+                       (click)="toggleItems(root.contents ,i)">
+                    <img *ngIf="content.type === ContentType.FILE && isImage(content)"
+                       [src]="content.previewPhoto.get('SafeUrl')" alt="image-file-preview" />
+
+                    <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
+                           name="tabler-movie" size="4rem"></ng-icon>
+
+                    <ng-icon *ngIf="content.type === ContentType.FILE && isAudio(content)"
+                           name="feather-volume2" size="4rem"></ng-icon>
+                  </div>
+
+                  <span class="font-semibold text-sm text-base-content mt-1">{{content.name}}</span>
+                </div>
+              </div>
+              <!--
+              flex items-start p-0 relative btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100
+                          border-base-200 border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-[8rem]
+
+
+              <div class="grid">
+                <ng-container *ngFor="let item of getFolderContents(content, path)">
+                  <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
+                       (click)="goInside(item)">
+                    <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
+                         [src]="getItemIcon(item)">
+                    <span>{{item.name}}</span>
+                  </div>
+                </ng-container>
+              </div>-->
+            </ng-container>
+          </div>
+
+        <!--<div class="top_browser">
+          <div id="back" (click)="goOutside()"></div>
+          <div class="path">
+            <span id="browse-path">{{path}}</span>
+          </div>
+        </div>
+
+        <div class="grid">
+          <ng-container *ngFor="let item of getFolderContents(contents, path)">
+            <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
+                 (click)="goInside(item)">
+              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
+                   [src]="getItemIcon(item)">
+              <span>{{item.name}}</span>
+            </div>
+          </ng-container>
+        </div>-->
+
         </div>
       </div>
-
-
-      <div class="h-[34rem] overflow-y-auto overflow-x-auto mt-2">
-        TODO
-            <!--<span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 mt-40 justify-center">
-              Select a function
-            </span>
-
-        <div *ngIf="selectedFunction" class="ml-2">
-          <div class="border-b border-gray-200 mb-4">
-            <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
-          </div>
-
-          <div class="mb-4">
-            <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
-
-            <div *ngFor="let arg of selectedFunction.args, let i = index">
-                  <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                    {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
-            </div>
-
-            <span>) : {{selectedFunction.returnType.removeWord('->')}}</span>
-          </div>
-
-          <div><strong>Description: </strong>{{selectedFunction.description}}</div><br>
-
-          <div *ngIf="selectedFunction.name !== 'gamerules'">
-            <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
-          </div><br *ngIf="selectedFunction.name !== 'gamerules'">
-
-          <div><strong>Args:</strong>
-            <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
-              <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
-            </ng-container>
-          </div><br>
-
-          <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
-        </div>-->
-      </div>
-    </div>
+    </ng-container>
   </div>
 
   <!-- Loader -->
@@ -110,6 +159,7 @@
       </div>
     </div>
   </div>-->
+
 </ng-template>
 
 
