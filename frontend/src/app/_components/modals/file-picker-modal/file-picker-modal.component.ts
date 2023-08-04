@@ -11,7 +11,6 @@ import {DomSanitizer} from "@angular/platform-browser";
 @Component({
   selector: 'app-file-picker-modal',
   templateUrl: './file-picker-modal.component.html',
-  //styleUrls: ['./file-picker-modal.component.scss']
 })
 export class FilePickerModalComponent implements OnInit {
 
@@ -109,19 +108,42 @@ export class FilePickerModalComponent implements OnInit {
       this.root = item;               // New root
     }
 
-    console.log(this.root);
     this.loading = false;
     return contents;
   }
 
-  /*** ---------------------------------------------- ***/
-  /*** ----------------- Navigation ----------------- ***/
-  /*** ---------------------------------------------- ***/
+  /*** -------------------------------------------- ***/
+  /*** ----------------- General ------------------ ***/
+  /*** -------------------------------------------- ***/
 
   onFileSelected(files: FileList): void {
     this.fileToUpload = files.item(0);
   }
 
+  async submit() {
+    if (this.fileToUpload) {
+      // Save file in server
+      await ResourceManager.getBase64(this.fileToUpload).then(data => this.file = data);
+      const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
+      this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUpload.name)
+        .subscribe(
+          path => {
+            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
+            this.closeBtnClicked.emit();
+            this.reset();
+          })
+
+    } else {
+      // FIXME
+      this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
+      this.closeBtnClicked.emit();
+      this.reset();
+    }
+  }
+
+  /*** ---------------------------------------------- ***/
+  /*** ----------------- Navigation ----------------- ***/
+  /*** ---------------------------------------------- ***/
 
   /*getFolderContents(folder: any, path: string): ContentItem[] {
     console.log(path);
@@ -198,27 +220,6 @@ export class FilePickerModalComponent implements OnInit {
     return (exists(this.fileToUpload) && exists(this.fileToUpload.name) && !this.fileToUpload.name.isEmpty()) ||
       exists(this.file);
   }*/
-
-  async submit() {
-    if (this.fileToUpload) {
-      // Save file in server
-      await ResourceManager.getBase64(this.fileToUpload).then(data => this.file = data);
-      const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
-      this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUpload.name)
-        .subscribe(
-          path => {
-            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
-            this.closeBtnClicked.emit();
-            this.reset();
-          })
-
-    } else {
-      // FIXME
-      this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
-      this.closeBtnClicked.emit();
-      this.reset();
-    }
-  }
 
   calculatePath(){
     this.loading = true;
