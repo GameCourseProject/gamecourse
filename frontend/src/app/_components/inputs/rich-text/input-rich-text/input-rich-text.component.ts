@@ -12,8 +12,7 @@ import {ApiHttpService} from "../../../../_services/api/api-http.service";
 
 @Component({
   selector: 'app-input-rich-text',
-  templateUrl: './input-rich-text.component.html',
-  styleUrls: ['./input-rich-text.component.scss']
+  templateUrl: './input-rich-text.component.html'
 })
 export class InputRichTextComponent implements OnInit, AfterViewInit {
 
@@ -21,6 +20,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
   @Input() id: string;                        // Unique id
   @Input() placeholder: string;               // Message to show by default
   @Input() init: string;                      // Value on init
+  @Input() moduleId?: string;                 // In case the rich-text its to open in a module config
 
   // Extras
   @Input() title?: string;                                          // Textarea title
@@ -57,8 +57,6 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initQuill();
-    console.log(this.courseFolder);
-    console.log(this.whereToStore);
   }
 
   initQuill() {

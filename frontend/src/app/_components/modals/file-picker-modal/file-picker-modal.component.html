@@ -6,6 +6,7 @@
   [closeBtnText]="negativeBtnText"
   [actionInProgress]="actionInProgress"
   [static]="innerClickEvents"
+  [classList]="classList"
   (submitBtnClicked)="submit()"
   (onClose)="reset()"
 ></app-modal>
@@ -31,12 +32,16 @@
       </div>
 
       <div *ngIf="tab.name === 'browse' && tab.selected">
-        <div class="w-[calc(100%-2rem)] mt-4">
-          <div class="inline-block justify-center flex mb-1.5 align-middle">
-            <div class="btn btn-xs btn-ghost btn-circle tooltip" data-tip="Home" (click)="reset()">
-              <ng-icon name="feather-home" size="1.2rem" color="primary"></ng-icon>
+        <div class="w-full mt-4">
+
+          <div class="flex justify-center">
+            <div class="btn btn-sm btn-ghost btn-circle tooltip ml-4" data-tip="Back" (click)="calculatePath()">
+              <ng-icon name="tabler-arrow-back-up" size="1.5rem" color="primary"></ng-icon>
             </div>
-            <div class="border-2 rounded-box ml-1.5 overflow-x-auto">
+            <div class="btn btn-sm btn-ghost btn-circle tooltip ml-1" data-tip="Home" (click)="reset()">
+              <ng-icon name="feather-home" size="1.5rem" color="primary"></ng-icon>
+            </div>
+            <div class="border-2 rounded-box ml-1.5 whitespace-nowrap overflow-x-auto">
               <span class="text-sm px-3">{{path}}</span>
             </div>
           </div>
@@ -50,7 +55,8 @@
               <ng-container *ngFor="let content of root.contents, let i = index">
                 <div class="flex flex-col items-center whitespace-normal">
                   <div class="btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
-                       (click)="toggleItems(root.contents, i)">
+                       (click)="toggleItems(root.contents, i)"
+                       (dblclick)="content.type === ContentType.FOLDER ? getFolderContents(content) : ''">
 
                     <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
 

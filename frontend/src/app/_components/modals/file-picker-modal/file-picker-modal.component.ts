@@ -20,8 +20,9 @@ export class FilePickerModalComponent implements OnInit {
   @Input() courseFolder: string;                        // Course data folder path (where to look for images)
   @Input() whereToStore: string;                        // Folder path of where to store images (relative to course folder)
   @Input() classList?: string;                          // Classes to append
+  @Input() moduleId?: string;                           // In case the file-picker its to open in a module config
 
-  //@Input() isModalOpen: boolean;                        // Whether the modal is visible
+  //@Input() isModalOpen: boolean;                      // Whether the modal is visible
   @Input() actionInProgress?: boolean;                  // Show loader while action in progress
   @Input() innerClickEvents: boolean = true;            // Whether to close the modal when clicking outside
 
@@ -32,23 +33,23 @@ export class FilePickerModalComponent implements OnInit {
   @Output() positiveBtnClicked: EventEmitter<{path: string, type: 'image' | 'video' | 'audio'}> = new EventEmitter();
   @Output() negativeBtnClicked: EventEmitter<void> = new EventEmitter();
 
+  // FILE EXTENSIONS
   readonly imageExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
   readonly videoExtensions = ['.mp4', '.mov', '.wmv', '.avi', '.avchd', '.webm', '.mpeg-2'];
   readonly audioExtensions = ['.mp3', '.mpeg', '.wav', '.wave', '.mid', '.midi'];
 
-  fileToUpload: File;
-
+  // UPLOAD FILE VARIABLES
   file: string | ArrayBuffer;
-  filePreview: ResourceManager;
-
+  fileToUpload: File;
   fileType: 'image' | 'video' | 'audio';
 
+  // GENERAL VARIABLES
+  courseID: number;
   loading: boolean;
   path: string;
-  originalRoot: ContentItem;
-  root: ContentItem;
 
-  //contents: ContentItem[];
+  originalRoot: ContentItem;                            // 'Home' -- most outer folder from where the files can be selected
+  root: ContentItem;                                    // For further navigation (other folders inside the 'originalRoot')
 
   // Tabs for option to upload file or browse files in system
   tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'upload', selected: true }, { name: 'browse', selected: false }];
@@ -56,8 +57,7 @@ export class FilePickerModalComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private sanitizer: DomSanitizer,
-  ) {
-  }
+  ) { }
 
   get ContentType(): typeof ContentType {
     return ContentType;
@@ -73,24 +73,27 @@ export class FilePickerModalComponent implements OnInit {
 
   async ngOnInit() {
     this.path = this.courseFolder;
+    this.courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
 
     this.originalRoot = {
       name: 'root',
       type: ContentType.FOLDER,
+      contents: await this.getFolderContents(),
       extension: this.path,
-      contents: await this.getRootContents(),
       selected: false
     }
     this.root = this.originalRoot;
 
-    console.log(this.root);
     ModalService.openModal('file-picker-' + this.id);
   }
 
-  async getRootContents(): Promise<ContentItem[]> {
+  async getFolderContents(item?: ContentItem): Promise<ContentItem[]> {
     this.loading = true;
-    const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
-    let contents = await this.api.getCourseDataFolderContents(courseID, 'skills').toPromise();
+
+    let contents = item ? item.contents : await this.api.getCourseDataFolderContents(this.courseID, this.moduleId).toPromise();
+
+    // Sort folders first
+    contents.sort((a, b) => a.type === ContentType.FOLDER ? -1 : 1);
 
     // Prepare preview photos for image files
     for (let i = 0; i < contents.length; i++){
@@ -101,17 +104,24 @@ export class FilePickerModalComponent implements OnInit {
       }
     }
 
+    if (item) {
+      this.path += '/' + item.name;   // New path to show in the bar
+      this.root = item;               // New root
+    }
+
+    console.log(this.root);
     this.loading = false;
     return contents;
   }
 
-  /*** --------------------------------------------- ***/
-  /*** ------------------ General ------------------ ***/
-  /*** --------------------------------------------- ***/
+  /*** ---------------------------------------------- ***/
+  /*** ----------------- Navigation ----------------- ***/
+  /*** ---------------------------------------------- ***/
 
   onFileSelected(files: FileList): void {
     this.fileToUpload = files.item(0);
   }
+
 
   /*getFolderContents(folder: any, path: string): ContentItem[] {
     console.log(path);
@@ -203,35 +213,61 @@ export class FilePickerModalComponent implements OnInit {
           })
 
     } else {
+      // FIXME
       this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
       this.closeBtnClicked.emit();
       this.reset();
     }
   }
 
+  calculatePath(){
+    this.loading = true;
+
+    if (this.root !== this.originalRoot){
+      // new path with last word removed
+      const split = this.path.split('/');
+      this.path = this.path.split('/').slice(0, split.length - 1).join('/');
+
+      if (this.path === this.courseFolder) this.root = this.originalRoot;
+
+      else {
+        // get last word of path
+        let path = this.path;
+        let lastWord = path.split('/').pop() || '';
+
+        this.root = this.goBack(this.originalRoot, lastWord);
+      }
+    }
+
+    this.loading = false;
+  }
+
+  goBack(item: ContentItem, lastWord: string): ContentItem | null {
+
+    if (item.type === ContentType.FOLDER && item.name === lastWord) {
+      return item;
+    }
+
+    if (item.contents) {
+      for (const content of item.contents) {
+        const result = this.goBack(content, lastWord);
+        if (result) {
+          return result;
+        }
+      }
+
+    }
+    return null;
+  }
+
   reset() {
     this.fileToUpload = null;
     this.file = null;
     this.fileType = null;
+
+    this.path = this.courseFolder;
     this.root = this.originalRoot;
-    //ModalService.closeModal('file-picker-' + this.id);
   }
-
-  /*getItemIcon(item: ContentItem): string {
-    if (item.type === ContentType.FOLDER)
-      return 'assets/icons/folder.svg';
-
-    if (this.imageExtensions.includes(item.extension.toLowerCase()))
-      return ApiEndpointsService.API_ENDPOINT + '/' + this.path + '/' + item.name;
-
-    if (this.videoExtensions.includes(item.extension.toLowerCase()))
-      return 'assets/icons/file-video.svg';
-
-    if (this.audioExtensions.includes(item.extension.toLowerCase()))
-      return 'assets/icons/file-audio.svg';
-
-    return 'assets/icons/file.svg';
-  }*/
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
@@ -239,6 +275,7 @@ export class FilePickerModalComponent implements OnInit {
 
   toggleItems(items: any[], index: number) {
     for (let i = 0; i < items.length; i++) {
+      if (items[i].type === ContentType.FOLDER) continue; // dont make folders selected
       items[i].selected = i === index;
     }
     return items;

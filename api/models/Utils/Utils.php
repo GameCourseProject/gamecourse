@@ -4,6 +4,8 @@ namespace Utils;
 use DateTime;
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
+use GameCourse\Module\Skills\Skills;
 
 /**
  * Holds a set of utility functions that can be used

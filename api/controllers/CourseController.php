@@ -755,13 +755,7 @@ class CourseController
 
         if ($module == "skills"){
             $skillsModule = new Skills(new Course($courseId));
-            $contents = $skillsModule->getDataFolderContents();
-
-            foreach ($contents as &$item){
-                $item["previewUrl"] = API_URL . "/" . $course->getDataFolder(false) . "/" . $skillsModule->getDataFolder(false) . "/" . $item["name"];
-            }
-
-            API::response($contents);
+            API::response($skillsModule->getDataFolderContents());
 
         } else if ($module == "badges") {
             $badgesModule = new Badges(new Course($courseId));

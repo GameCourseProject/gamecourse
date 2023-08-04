@@ -351,6 +351,7 @@
           [container]="'editor'"
           [courseFolder]="courseFolder + '/skills'"
           [whereToStore]="'skills/' + (skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('_') : '')"
+          [moduleId]="'skills'"
           [init]="skillToManage.page"
           (valueChange)="skillToManage.page = $event">
         </app-input-rich-text>
