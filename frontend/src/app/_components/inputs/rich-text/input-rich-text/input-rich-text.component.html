@@ -10,7 +10,7 @@
        [ngClass]="classList">
   </div>
 
-  <app-file-picker-modal *ngIf="isPickingImage"
+  <app-file-picker-modal
     [id]="'rick-text-image-picker'"
     [type]="'image/*, video/*, audio/*'"
     [courseFolder]="courseFolder"
@@ -18,9 +18,6 @@
     [moduleId]="moduleId"
     [positiveBtnText]="'Select'"
     (positiveBtnClicked)="addFile($event)"
-    (negativeBtnClicked)="isPickingImage = false"
-    (closeBtnClicked)="isPickingImage = false"
-    [actionInProgress]="isAddingImage"
     [innerClickEvents]="false">
   </app-file-picker-modal>
 

@@ -711,10 +711,17 @@ export class SkillsComponent implements OnInit {
     return true;
   }
 
-  /*initTextEditor() {
-    setTimeout(() => this.skillModalRendered.next(), 0);
-    return [];
-  }*/
+  previewSkill(){
+    console.log("previewSkill function")
+    if (this.skillMode === 'create'){
+      console.log("create mode");
+      //await this.router.navigate(['rule-system/sections/' + this.section.id + '/new-rule'], {relativeTo: this.route.parent});
+      this.router.navigate(['skills/new-skill/preview'], {relativeTo: this.route.parent});
+    } else if (this.skillMode === 'edit'){
+      this.router.navigate(['./skills', this.skillToManage.id, 'preview'], {relativeTo: this.route.parent.parent})
+    }
+
+  }
 
   goToSkillPage(skill: Skill) {
     this.router.navigate(['./skills', skill.id, 'preview'], {relativeTo: this.route.parent.parent})

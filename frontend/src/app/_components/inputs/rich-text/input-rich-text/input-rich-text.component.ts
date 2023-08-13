@@ -1,6 +1,7 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 
-import * as Quill from 'quill';
+import * as QuillNamespace from 'quill';
+const Quill: any = QuillNamespace;
 // import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
 
@@ -9,6 +10,8 @@ import {ResourceManager} from "../../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {FilePickerModalComponent} from "../../../modals/file-picker-modal/file-picker-modal.component";
+
 
 @Component({
   selector: 'app-input-rich-text',
@@ -38,12 +41,12 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  quill: Quill;
-
-  isPickingImage: boolean;
-  isAddingImage: boolean;
+  quill: QuillNamespace;                      // editor
+  isPickingImage: boolean;                    // Indicates if file picker modal is open or not
 
   resourceManager: ResourceManager;
+
+  @ViewChild(FilePickerModalComponent) filePickerModal: FilePickerModalComponent;
 
   constructor(
     private api: ApiHttpService,
@@ -57,9 +60,27 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initQuill();
+
+    // For audio files
+    const BlockEmbed = Quill.import('blots/embed');
+
+    class AudioBlot extends BlockEmbed {
+      static create(url) {
+        const node = super.create();
+        node.setAttribute('controls', 'true');
+        node.setAttribute('src', url);
+        return node;
+      }
+    }
+    AudioBlot.blotName = 'audio';
+    AudioBlot.tagName = 'audio';
+
+    Quill.register(AudioBlot);
+
   }
 
   initQuill() {
+
     if (this.quill) return;
 
     const that = this;
@@ -77,8 +98,8 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
               ['link', 'image', 'video', 'code-block']
             ],
             handlers: {
-              'image': () => this.onImageUpload()
-            }
+              'image': () => that.onImageUpload()
+            },
           },
           imageResize: {},
           // htmlEditButton: {},
@@ -86,7 +107,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
             matchVisual: false
           }
         },
-        theme: 'snow'
+        theme: 'snow',
       };
     }
 
@@ -111,14 +132,19 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
   }
 
   onImageUpload(){
-    this.isPickingImage = true;
-    console.log(this.isPickingImage);
+    this.filePickerModal.openModal();
   }
 
   addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
     this.resourceManager.set(ApiEndpointsService.API_ENDPOINT + '/' + file.path);
+
     const url = this.resourceManager.get('URL');
-    this.quill.insertEmbed(this.quill.getSelection(true).index, file.type, url); // FIXME: embed audio
+    this.quill.focus();
+    let range = this.quill.getSelection(true);
+
+    this.quill.insertEmbed(range.index, file.type, url);
   }
 
 }
+
+

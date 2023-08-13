@@ -288,6 +288,7 @@
      [submitBtnText]="skillMode === 'create' ? skillMode?.capitalize() + ' skill' : 'Save'"
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
      (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
+     (extraBtnClicked)="previewSkill()"
      (onClose)="resetSkillToManage()">
   </app-modal>
 

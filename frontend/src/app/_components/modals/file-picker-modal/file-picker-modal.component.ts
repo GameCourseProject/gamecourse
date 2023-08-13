@@ -21,16 +21,13 @@ export class FilePickerModalComponent implements OnInit {
   @Input() classList?: string;                          // Classes to append
   @Input() moduleId?: string;                           // In case the file-picker its to open in a module config
 
-  //@Input() isModalOpen: boolean;                      // Whether the modal is visible
   @Input() actionInProgress?: boolean;                  // Show loader while action in progress
   @Input() innerClickEvents: boolean = true;            // Whether to close the modal when clicking outside
 
   @Input() positiveBtnText: string;                     // Positive btn text
   @Input() negativeBtnText: string = 'Cancel';          // Negative btn text
 
-  @Output() closeBtnClicked: EventEmitter<void> = new EventEmitter();
   @Output() positiveBtnClicked: EventEmitter<{path: string, type: 'image' | 'video' | 'audio'}> = new EventEmitter();
-  @Output() negativeBtnClicked: EventEmitter<void> = new EventEmitter();
 
   // FILE EXTENSIONS
   readonly imageExtensions = ['.png', '.jpg', '.jpeg', '.gif'];
@@ -40,7 +37,7 @@ export class FilePickerModalComponent implements OnInit {
   // UPLOAD FILE VARIABLES
   file: string | ArrayBuffer;
   fileToUpload: File;
-  fileType: 'image' | 'video' | 'audio';
+  //fileType: 'image' | 'video' | 'audio';
 
   // GENERAL VARIABLES
   courseID: number;
@@ -62,10 +59,6 @@ export class FilePickerModalComponent implements OnInit {
     return ContentType;
   }
 
-  /*get ApiEndpointsService(): typeof ApiEndpointsService {
-    return ApiEndpointsService;
-  }*/
-
   /*** ------------------------------------------ ***/
   /*** ------------------ Init ------------------ ***/
   /*** ------------------------------------------ ***/
@@ -82,7 +75,9 @@ export class FilePickerModalComponent implements OnInit {
       selected: false
     }
     this.root = this.originalRoot;
+  }
 
+  openModal() {
     ModalService.openModal('file-picker-' + this.id);
   }
 
@@ -129,17 +124,21 @@ export class FilePickerModalComponent implements OnInit {
         .subscribe(
           path => {
             this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
-            this.closeBtnClicked.emit();
             this.reset();
           })
 
     } else {
-      // FIXME
-      this.positiveBtnClicked.emit({path: this.file as string, type: this.fileType});
-      this.closeBtnClicked.emit();
+
+      let item = this.root.contents.find(content => content.selected);
+
+      const fileType: 'image' | 'video' | 'audio' = this.isImage(item) ? 'image' : this.isAudio(item) ? 'audio' : 'video';
+
+      this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
       this.reset();
     }
   }
+
+
 
   /*** ---------------------------------------------- ***/
   /*** ----------------- Navigation ----------------- ***/
@@ -261,10 +260,16 @@ export class FilePickerModalComponent implements OnInit {
     return null;
   }
 
-  reset() {
+  reset(icon: boolean = false) {
+    if (!icon) ModalService.closeModal('file-picker-' + this.id);
+
+    // makes everything unselected (removes borders)
+    for (let i = 0; i < this.root.contents.length; i++){
+      this.root.contents[i].selected = false;
+    }
+
     this.fileToUpload = null;
     this.file = null;
-    this.fileType = null;
 
     this.path = this.courseFolder;
     this.root = this.originalRoot;
@@ -279,7 +284,6 @@ export class FilePickerModalComponent implements OnInit {
       if (items[i].type === ContentType.FOLDER) continue; // dont make folders selected
       items[i].selected = i === index;
     }
-    return items;
   }
 
   isImage(content: ContentItem): boolean {
@@ -292,6 +296,15 @@ export class FilePickerModalComponent implements OnInit {
 
   isAudio(content: ContentItem): boolean {
     return this.audioExtensions.includes(content.extension);
+  }
+
+  // sees if there's a file selected
+  isSelected(): boolean {
+    if (this.root) {
+      for (let i = 0; i < this.root.contents.length; i++){
+        if (this.root.contents[i].selected) return false;
+      }
+    } return true;
   }
 
 }
