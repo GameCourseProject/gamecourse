@@ -49,6 +49,8 @@ export class SkillsComponent implements OnInit {
   @ViewChild('fTier', { static: false }) fTier: NgForm;
 
   skillMode: 'create' | 'edit';
+  skillDeleteMode: 'delete'| 'discard';
+  skillPageMode: 'editor' | 'preview';
   skillToManage: SkillManageData = this.initSkillToManage();
   skillToDelete: Skill;
   @ViewChild('fSkill', { static: false }) fSkill: NgForm;
@@ -325,13 +327,14 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === Action.EDIT) {
         this.skillMode = 'edit';
+        this.skillPageMode = 'editor';
         this.skillToManage = this.initSkillToManage(skillToActOn);
 
         ModalService.openModal('skill-manage');
 
       } else if (action === Action.DELETE) {
         this.skillToDelete = skillToActOn;
-        ModalService.openModal('skill-delete-verification');
+        this.openDeletionModal();
 
       } else if (action === Action.MOVE_UP || action === Action.MOVE_DOWN) {
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
@@ -357,6 +360,26 @@ export class SkillsComponent implements OnInit {
     }
   }
 
+  openDeletionModal(discardChanges: boolean = false){
+    let skillToManage = _.cloneDeep(this.skillToManage);
+    discardChanges ? this.skillDeleteMode = 'discard' : this.skillDeleteMode = 'delete';
+    ModalService.openModal('skill-delete-verification');
+    if (this.skillDeleteMode === 'discard'){
+      ModalService.openModal('skill-manage');
+      this.skillToManage = skillToManage;
+    }
+  }
+
+  closeDiscardModal(){
+    this.skillDeleteMode = null;
+    ModalService.closeModal('skill-delete-verification');
+  }
+
+  discardChanges() {
+    this.closeDiscardModal();
+    ModalService.closeModal('skill-manage');
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes discarded');
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -391,6 +414,7 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === 'Create skill') {
         this.skillMode = 'create';
+        this.skillPageMode = 'editor';
         this.skillToManage = this.initSkillToManage();
         ModalService.openModal('skill-manage');
       }
@@ -633,6 +657,10 @@ export class SkillsComponent implements OnInit {
   }
 
   resetSkillToManage() {
+    if (this.skillDeleteMode){
+      return;
+    }
+
     this.skillMode = null;
     this.skillToManage = this.initSkillToManage();
     this.fSkill.resetForm();
@@ -709,18 +737,6 @@ export class SkillsComponent implements OnInit {
     const skillTier = this.getSkillTreeInfo(this.skillTreeInView.id).tiers.find(tier => tier.id === parseInt(this.skillToManage.tierID.substring(3)));
     if (skillTier.position === 0 || skillTier.isWildcard()) return false;
     return true;
-  }
-
-  previewSkill(){
-    console.log("previewSkill function")
-    if (this.skillMode === 'create'){
-      console.log("create mode");
-      //await this.router.navigate(['rule-system/sections/' + this.section.id + '/new-rule'], {relativeTo: this.route.parent});
-      this.router.navigate(['skills/new-skill/preview'], {relativeTo: this.route.parent});
-    } else if (this.skillMode === 'edit'){
-      this.router.navigate(['./skills', this.skillToManage.id, 'preview'], {relativeTo: this.route.parent.parent})
-    }
-
   }
 
   goToSkillPage(skill: Skill) {

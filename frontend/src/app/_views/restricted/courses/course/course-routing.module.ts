@@ -124,11 +124,6 @@ const routes: Routes = [
     ]
   },
   {
-    path: 'skills/new-skill/preview',
-    component: SkillPageComponent,
-    canActivate: [CourseAdminGuard]
-  },
-  {
     path: 'participation/:key',
     component: SubmitParticipationPageComponent
   },
