@@ -126,6 +126,7 @@ import {
   featherUserCheck,
   featherUserPlus,
   featherUsers,
+  featherVolume2,
   featherX,
   featherXCircle
 } from "@ng-icons/feather-icons";
@@ -180,10 +181,12 @@ import {
   tablerEyeOff,
   tablerFlame,
   tablerFlask,
+  tablerFolder,
   tablerGavel,
   tablerGift,
   tablerIdBadge2,
   tablerListNumbers,
+  tablerMovie,
   tablerMessage2,
   tablerPaperclip,
   tablerPlug,
@@ -201,6 +204,7 @@ import {
   tablerUserCircle,
   tablerUsers
 } from "@ng-icons/tabler-icons";
+
 
 @NgModule({
   declarations: [
@@ -376,7 +380,6 @@ import {
       featherAlertTriangle,
       featherArrowRightCircle,
       featherCheckCircle,
-      featherFile,
       featherHome,
       featherInfo,
       featherLayout,
@@ -394,6 +397,7 @@ import {
       featherUserCheck,
       featherUserPlus,
       featherUsers,
+      featherVolume2,
       featherX,
       featherXCircle,
 
@@ -442,14 +446,16 @@ import {
       tablerCopy,
       tablerEye,
       tablerEyeOff,
+      tablerFolder,
       tablerFlame,
       tablerFlask,
       tablerGavel,
       tablerGift,
       tablerIdBadge2,
-      tablerNewSection,
       tablerListNumbers,
+      tablerNewSection,
       tablerMessage2,
+      tablerMovie,
       tablerPaperclip,
       tablerPresentation,
       tablerPlug,

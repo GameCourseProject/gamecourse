@@ -281,13 +281,15 @@
      [size]="'lg'"
      [header]="skillMode?.capitalize() + ' skill'"
      [closeBtnText]="'Discard ' + (skillMode === 'create' ? 'skill' : 'changes')"
-     [extraBtnText]="'Preview'"
+     [extraBtnText]="skillPageMode === 'editor' ? 'Preview' : 'Close Preview'"
      [extraBtnColor]="'secondary'"
      [extraBtnOutline]="true"
      [extraBtnDisabled]="!skillToManage.page"
      [submitBtnText]="skillMode === 'create' ? skillMode?.capitalize() + ' skill' : 'Save'"
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
      (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
+     (extraBtnClicked)="skillPageMode = skillPageMode === 'preview' ? 'editor' : 'preview'"
+     (closeBtnClicked)="openDeletionModal(true)"
      (onClose)="resetSkillToManage()">
   </app-modal>
 
@@ -340,6 +342,30 @@
 
       </div>
 
+      <div class="w-full pt-2 mt-3">
+        <app-input-rich-text *ngIf="skillPageMode === 'editor'"
+          [id]="'skill-description'"
+          [classList]="'h-96'"
+          [title]="'Skill page description'"
+          [helperText]="'Detailed description for this skill'"
+          [helperPosition]="'right'"
+          [placeholder]="'Write here the future page for this skill\'s description...'"
+          [container]="'editor'"
+          [courseFolder]="courseFolder + '/skills'"
+          [whereToStore]="'skills/' + (skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('_') : '')"
+          [moduleId]="'skills'"
+          [init]="skillToManage.page"
+          (valueChange)="skillToManage.page = $event">
+        </app-input-rich-text>
+
+        <div *ngIf="skillPageMode === 'preview'">
+          <span class="label-text text-lg font-semibold">Description preview</span>
+          <div class="prose max-w-[95ch] border-base-content border-opacity-70 border-2 mt-3" [innerHTML]="skillToManage.page | sanitizeHTML"></div>
+
+        </div>
+
+      </div>
+
       <div *ngIf="skillToManage.tierID && showDependencies()">
         <!-- Add dependency -->
         <div class="w-full md:w-2/3 mt-5">
@@ -381,15 +407,16 @@
   </ng-template>
 
   <!-- Delete Verification Modal -->
-  <app-simple-modal *ngIf="skillToDelete"
+  <app-simple-modal *ngIf="skillDeleteMode === 'delete' || skillDeleteMode === 'discard'"
     [id]="'skill-delete-verification'"
-    [title]="'Delete skill'"
-    [text]="'Are you sure you want to delete skill \'' + skillToDelete?.name + '\'? You won\'t be able to undo this action.'"
-    [submitBtnText]="'Delete'"
+    [title]="skillDeleteMode === 'delete' ? 'Delete skill' : skillDeleteMode === 'discard' ? 'Discard changes' : ''"
+    [text]="'Are you sure you want to ' + (skillDeleteMode === 'delete' ? 'delete skill \'' + skillToDelete?.name + '\'' :
+            'discard changes') + '? You won\'t be able to undo this action.'"
+    [submitBtnText]="skillDeleteMode.capitalize()"
     [submitBtnColor]="'error'"
     [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
-    (submitBtnClicked)="deleteSkill(skillToDelete)"
-    (onClose)="skillToDelete = null">
+    (submitBtnClicked)="skillDeleteMode === 'delete' ? deleteSkill(skillToDelete) : discardChanges()"
+    (onClose)="closeDiscardModal()">
   </app-simple-modal>
 
   <!-- Import Modal -->

@@ -1076,11 +1076,12 @@ export class ApiHttpService {
 
   // Course Data
 
-  public getCourseDataFolderContents(courseID: number): Observable<ContentItem[]> {
+  public getCourseDataFolderContents(courseID: number, module?: string): Observable<ContentItem[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'getCourseDataFolderContents');
       qs.push('courseId', courseID);
+      if (module !== null) qs.push('moduleId', module);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

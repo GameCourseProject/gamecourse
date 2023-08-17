@@ -1,7 +1,7 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Observable} from "rxjs";
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 
-import * as Quill from 'quill';
+import * as QuillNamespace from 'quill';
+const Quill: any = QuillNamespace;
 // import htmlEditButton from 'quill-html-edit-button';
 import imageResize from 'quill-image-resize';
 
@@ -9,24 +9,31 @@ import {exists} from "../../../../_utils/misc/misc";
 import {ResourceManager} from "../../../../_utils/resources/resource-manager";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
+import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {FilePickerModalComponent} from "../../../modals/file-picker-modal/file-picker-modal.component";
+
 
 @Component({
   selector: 'app-input-rich-text',
-  templateUrl: './input-rich-text.component.html',
-  styleUrls: ['./input-rich-text.component.scss']
+  templateUrl: './input-rich-text.component.html'
 })
-export class InputRichTextComponent implements OnInit {
+export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   // Essentials
   @Input() id: string;                        // Unique id
   @Input() placeholder: string;               // Message to show by default
   @Input() init: string;                      // Value on init
-  @Input() canInit: Observable<void>;         // Trigger init
+  @Input() moduleId?: string;                 // In case the rich-text its to open in a module config
 
   // Extras
-  @Input() classList?: string;                // Classes to add
-  @Input() options?: any;                     // Quill options
-  @Input() container?: string;                // Container ID
+  @Input() title?: string;                                          // Textarea title
+  @Input() helperText?: string;                                     // Text for helper tooltip
+  @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';    // Helper position
+  @Input() disabled?: boolean;                                      // Make it disabled
+  @Input() required?: boolean;                                      // Make it required
+  @Input() classList?: string;                                      // Classes to add
+  @Input() options?: any;                                           // Quill options
+  @Input() container?: string;                                      // Container ID
 
   // Image upload & search
   @Input() courseFolder: string;              // Course data folder path (where to look for images)
@@ -34,24 +41,46 @@ export class InputRichTextComponent implements OnInit {
 
   @Output() valueChange = new EventEmitter<string>();
 
-  quill: Quill;
-
-  isPickingImage: boolean;
-  isAddingImage: boolean;
+  quill: QuillNamespace;                      // editor
+  isPickingImage: boolean;                    // Indicates if file picker modal is open or not
 
   resourceManager: ResourceManager;
 
+  @ViewChild(FilePickerModalComponent) filePickerModal: FilePickerModalComponent;
+
   constructor(
+    private api: ApiHttpService,
     private sanitizer: DomSanitizer,
   ) {
     this.resourceManager = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(): void {
-    this.canInit.subscribe(() => this.initQuill());
+  ngOnInit(){
+  }
+
+  ngAfterViewInit(): void {
+    this.initQuill();
+
+    // For audio files
+    const BlockEmbed = Quill.import('blots/embed');
+
+    class AudioBlot extends BlockEmbed {
+      static create(url) {
+        const node = super.create();
+        node.setAttribute('controls', 'true');
+        node.setAttribute('src', url);
+        return node;
+      }
+    }
+    AudioBlot.blotName = 'audio';
+    AudioBlot.tagName = 'audio';
+
+    Quill.register(AudioBlot);
+
   }
 
   initQuill() {
+
     if (this.quill) return;
 
     const that = this;
@@ -69,8 +98,8 @@ export class InputRichTextComponent implements OnInit {
               ['link', 'image', 'video', 'code-block']
             ],
             handlers: {
-              'image': () => that.isPickingImage = true
-            }
+              'image': () => that.onImageUpload()
+            },
           },
           imageResize: {},
           // htmlEditButton: {},
@@ -78,11 +107,12 @@ export class InputRichTextComponent implements OnInit {
             matchVisual: false
           }
         },
-        theme: 'snow'
+        theme: 'snow',
       };
     }
 
     this.options['placeholder'] = this.placeholder;
+
     if (this.container) this.options['scrollingContainer'] = '#' + this.container;
 
     Quill.register({
@@ -101,10 +131,20 @@ export class InputRichTextComponent implements OnInit {
     });
   }
 
+  onImageUpload(){
+    this.filePickerModal.openModal();
+  }
+
   addFile(file: {path: string, type: 'image' | 'video' | 'audio'}) {
     this.resourceManager.set(ApiEndpointsService.API_ENDPOINT + '/' + file.path);
+
     const url = this.resourceManager.get('URL');
-    this.quill.insertEmbed(this.quill.getSelection(true).index, file.type, url); // FIXME: embed audio
+    this.quill.focus();
+    let range = this.quill.getSelection(true);
+
+    this.quill.insertEmbed(range.index, file.type, url);
   }
 
 }
+
+

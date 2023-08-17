@@ -927,7 +927,22 @@ abstract class Module
      */
     public function getDataFolderContents(): array
     {
-        return Utils::getDirectoryContents($this->getDataFolder());
+        $contents =  Utils::getDirectoryContents($this->getDataFolder());
+
+        return $this->getDataFolderContentsUrl($contents);
+    }
+
+    public function getDataFolderContentsUrl(array $contents): array{
+        foreach ($contents as &$item){
+            $objectPath = $this->getDataFolder() . DIRECTORY_SEPARATOR . $item["name"];
+            if (is_dir($objectPath)) { // directory
+                $item["contents"] = self::getDataFolderContentsUrl($item["contents"]);
+            } else { // file
+                $item["previewUrl"] = API_URL . DIRECTORY_SEPARATOR . $this->getCourse()->getDataFolder(false) .
+                    DIRECTORY_SEPARATOR . $this->getDataFolder(false) . DIRECTORY_SEPARATOR . $item["name"];
+            }
+        }
+        return $contents;
     }
 
     /**
