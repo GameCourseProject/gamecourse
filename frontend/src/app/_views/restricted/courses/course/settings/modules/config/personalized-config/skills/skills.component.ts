@@ -49,7 +49,6 @@ export class SkillsComponent implements OnInit {
   @ViewChild('fTier', { static: false }) fTier: NgForm;
 
   skillMode: 'create' | 'edit';
-  skillDeleteMode: 'delete'| 'discard';
   skillPageMode: 'editor' | 'preview';
   skillToManage: SkillManageData = this.initSkillToManage();
   skillToDelete: Skill;
@@ -327,14 +326,14 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === Action.EDIT) {
         this.skillMode = 'edit';
-        this.skillPageMode = 'editor';
         this.skillToManage = this.initSkillToManage(skillToActOn);
+        this.skillPageMode = 'editor';
 
         ModalService.openModal('skill-manage');
 
       } else if (action === Action.DELETE) {
         this.skillToDelete = skillToActOn;
-        this.openDeletionModal();
+        ModalService.openModal('skill-delete-verification');
 
       } else if (action === Action.MOVE_UP || action === Action.MOVE_DOWN) {
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
@@ -360,25 +359,9 @@ export class SkillsComponent implements OnInit {
     }
   }
 
-  openDeletionModal(discardChanges: boolean = false){
-    let skillToManage = _.cloneDeep(this.skillToManage);
-    discardChanges ? this.skillDeleteMode = 'discard' : this.skillDeleteMode = 'delete';
-    ModalService.openModal('skill-delete-verification');
-    if (this.skillDeleteMode === 'discard'){
-      ModalService.openModal('skill-manage');
-      this.skillToManage = skillToManage;
-    }
-  }
 
   closeDiscardModal(){
-    this.skillDeleteMode = null;
     ModalService.closeModal('skill-delete-verification');
-  }
-
-  discardChanges() {
-    this.closeDiscardModal();
-    ModalService.closeModal('skill-manage');
-    AlertService.showAlert(AlertType.SUCCESS, 'Changes discarded');
   }
 
   /*** --------------------------------------------- ***/
@@ -414,8 +397,8 @@ export class SkillsComponent implements OnInit {
 
       } else if (action === 'Create skill') {
         this.skillMode = 'create';
-        this.skillPageMode = 'editor';
         this.skillToManage = this.initSkillToManage();
+        this.skillPageMode = 'editor';
         ModalService.openModal('skill-manage');
       }
     }
@@ -657,10 +640,6 @@ export class SkillsComponent implements OnInit {
   }
 
   resetSkillToManage() {
-    if (this.skillDeleteMode){
-      return;
-    }
-
     this.skillMode = null;
     this.skillToManage = this.initSkillToManage();
     this.fSkill.resetForm();
