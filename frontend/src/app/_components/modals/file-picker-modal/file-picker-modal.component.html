@@ -62,7 +62,7 @@
                     <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
 
                     <img *ngIf="content.type === ContentType.FILE && isImage(content)"
-                         class="w-[3.75rem]"
+                         class="w-[3.75rem] h-[4rem]"
                        [src]="content.previewPhoto.get('SafeUrl')" alt="image-file-preview" />
 
                     <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"

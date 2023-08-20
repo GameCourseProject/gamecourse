@@ -289,7 +289,6 @@
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
      (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
      (extraBtnClicked)="skillPageMode = skillPageMode === 'preview' ? 'editor' : 'preview'"
-     (closeBtnClicked)="openDeletionModal(true)"
      (onClose)="resetSkillToManage()">
   </app-modal>
 
@@ -360,7 +359,7 @@
 
         <div *ngIf="skillPageMode === 'preview'">
           <span class="label-text text-lg font-semibold">Description preview</span>
-          <div class="prose max-w-[95ch] border-base-content border-opacity-70 border-2 mt-3" [innerHTML]="skillToManage.page | sanitizeHTML"></div>
+          <div class="prose max-w-[95ch] mt-3 p-4" [innerHTML]="skillToManage.page | sanitizeHTML"></div>
 
         </div>
 
@@ -407,15 +406,14 @@
   </ng-template>
 
   <!-- Delete Verification Modal -->
-  <app-simple-modal *ngIf="skillDeleteMode === 'delete' || skillDeleteMode === 'discard'"
+  <app-simple-modal *ngIf="skillToDelete"
     [id]="'skill-delete-verification'"
-    [title]="skillDeleteMode === 'delete' ? 'Delete skill' : skillDeleteMode === 'discard' ? 'Discard changes' : ''"
-    [text]="'Are you sure you want to ' + (skillDeleteMode === 'delete' ? 'delete skill \'' + skillToDelete?.name + '\'' :
-            'discard changes') + '? You won\'t be able to undo this action.'"
-    [submitBtnText]="skillDeleteMode.capitalize()"
+    [title]="'Delete skill'"
+    [text]="'Are you sure you want to delete skill \'' + skillToDelete?.name + '\' ? You won\'t be able to undo this action.'"
+    [submitBtnText]="'Delete'"
     [submitBtnColor]="'error'"
     [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
-    (submitBtnClicked)="skillDeleteMode === 'delete' ? deleteSkill(skillToDelete) : discardChanges()"
+    (submitBtnClicked)="deleteSkill(skillToDelete)"
     (onClose)="closeDiscardModal()">
   </app-simple-modal>
 
