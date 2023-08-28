@@ -118,7 +118,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
     Quill.register({
       'modules/imageResize': imageResize,
       // 'modules/htmlEditButton': htmlEditButton
-    });
+    }, true);
 
     const container = $('#' + this.id)[0] as HTMLElement;
     this.quill = new Quill(container, this.options);

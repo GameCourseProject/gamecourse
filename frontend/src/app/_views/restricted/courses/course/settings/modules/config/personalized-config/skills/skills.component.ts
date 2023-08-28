@@ -359,7 +359,6 @@ export class SkillsComponent implements OnInit {
     }
   }
 
-
   closeDiscardModal(){
     ModalService.closeModal('skill-delete-verification');
   }
