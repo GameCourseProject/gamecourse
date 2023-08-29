@@ -11,14 +11,14 @@ import {Action} from 'src/app/_domain/modules/config/Action';
 import {NgForm} from "@angular/forms";
 import {TableDataType} from "../../../../../../../_components/tables/table-data/table-data.component";
 
+import * as moment from "moment";
 import * as _ from "lodash";
 import {View} from 'src/app/_domain/views/view';
 import {Template} from "../../../../../../../_domain/views/templates/template";
 
 @Component({
   selector: 'app-views',
-  templateUrl: './views.component.html',
-  //styleUrls: ['./views.component.scss']
+  templateUrl: './views.component.html'
 })
 export class ViewsComponent implements OnInit {
 
@@ -261,14 +261,8 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async prepareModal(table: string, action: string){
-    if (table === 'pages') {
-      if (action === Action.IMPORT) {
-
-      }
-    } else if (table === 'views') {
-
-    }
+  async prepareModal(action: string){
+    // TODO
   }
 
 
@@ -460,6 +454,11 @@ export class ViewsComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+
+  calculateDate(date: Date): string{
+    return date.toLocaleDateString("en-GB").split(", ")[0];
+  }
 
   /*onFileSelected(files: FileList): void {
     this.importedFile = files.item(0);

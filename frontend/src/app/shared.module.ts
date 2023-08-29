@@ -115,6 +115,7 @@ import {
   featherLogOut,
   featherMenu,
   featherMoon,
+  featherMoreVertical,
   featherMove,
   featherPlayCircle,
   featherPlusCircle,
@@ -133,6 +134,7 @@ import {
 
 
 import {
+  jamCircleF,
   jamDownload,
   jamEyeF,
   jamGoogle,
@@ -380,12 +382,14 @@ import {
       featherAlertTriangle,
       featherArrowRightCircle,
       featherCheckCircle,
+      featherFile,
       featherHome,
       featherInfo,
       featherLayout,
       featherLogOut,
       featherMenu,
       featherMoon,
+      featherMoreVertical,
       featherMove,
       featherPlayCircle,
       featherPlusCircle,
@@ -401,7 +405,7 @@ import {
       featherX,
       featherXCircle,
 
-
+      jamCircleF,
       jamDownload,
       jamEyeF,
       jamGoogle,
