@@ -49,6 +49,7 @@ export class SkillsComponent implements OnInit {
   @ViewChild('fTier', { static: false }) fTier: NgForm;
 
   skillMode: 'create' | 'edit';
+  skillPageMode: 'editor' | 'preview';
   skillToManage: SkillManageData = this.initSkillToManage();
   skillToDelete: Skill;
   @ViewChild('fSkill', { static: false }) fSkill: NgForm;
@@ -74,7 +75,7 @@ export class SkillsComponent implements OnInit {
       if (this.VCEnabled) await this.getVCName();
 
       await this.initSkillTreesInfo(this.courseID);
-      // await this.getCourseDataFolder();
+      await this.getCourseDataFolder();
 
       this.loading.page = false;
     });
@@ -326,6 +327,8 @@ export class SkillsComponent implements OnInit {
       } else if (action === Action.EDIT) {
         this.skillMode = 'edit';
         this.skillToManage = this.initSkillToManage(skillToActOn);
+        this.skillPageMode = 'editor';
+
         ModalService.openModal('skill-manage');
 
       } else if (action === Action.DELETE) {
@@ -356,6 +359,9 @@ export class SkillsComponent implements OnInit {
     }
   }
 
+  closeDiscardModal(){
+    ModalService.closeModal('skill-delete-verification');
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -391,6 +397,7 @@ export class SkillsComponent implements OnInit {
       } else if (action === 'Create skill') {
         this.skillMode = 'create';
         this.skillToManage = this.initSkillToManage();
+        this.skillPageMode = 'editor';
         ModalService.openModal('skill-manage');
       }
     }
@@ -708,11 +715,6 @@ export class SkillsComponent implements OnInit {
     const skillTier = this.getSkillTreeInfo(this.skillTreeInView.id).tiers.find(tier => tier.id === parseInt(this.skillToManage.tierID.substring(3)));
     if (skillTier.position === 0 || skillTier.isWildcard()) return false;
     return true;
-  }
-
-  initTextEditor() {
-    // setTimeout(() => this.skillModalRendered.next(), 0);
-    // return [];
   }
 
   goToSkillPage(skill: Skill) {

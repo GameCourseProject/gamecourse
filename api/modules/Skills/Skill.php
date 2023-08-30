@@ -1194,6 +1194,7 @@ class Skill
     public function getDataFolderContents(): array
     {
         return Utils::getDirectoryContents($this->getDataFolder());
+
     }
 
     /**
