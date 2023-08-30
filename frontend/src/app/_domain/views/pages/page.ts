@@ -5,7 +5,7 @@ export class Page {
   private _course: number;
   private _name: string;
   private _isVisible: boolean;
-  private _viewId: number;
+  private _viewRoot: number;
   private _creationTimestamp: Date;
   private _updateTimestamp: Date;
   private _visibleFrom: Date;
@@ -21,11 +21,11 @@ export class Page {
     this._course = course;
     this._name = name;
     this._isVisible = isVisible;
-    this._viewId = viewRoot;
-    this._creationTimestamp = new Date(creationTimestamp);
-    this._updateTimestamp = new Date(updateTimestamp);
-    this._visibleFrom = new Date(visibleFrom);
-    this._visibleUntil = new Date(visibleUntil);
+    this._viewRoot = viewRoot;
+    this._creationTimestamp = creationTimestamp !== null ? new Date(creationTimestamp) : null;
+    this._updateTimestamp = updateTimestamp !== null ? new Date(updateTimestamp) : null;
+    this._visibleFrom = visibleFrom !== null ? new Date (visibleFrom) : null;
+    this._visibleUntil = visibleUntil !== null ? new Date(visibleUntil) : null;
     this._position = position;
     //this._roleType = roleType;
     //this._seqId = seqId;
@@ -65,11 +65,11 @@ export class Page {
   }
 
   get viewId(): number {
-    return this._viewId;
+    return this._viewRoot;
   }
 
   set viewId(value: number) {
-    this._viewId = value;
+    this._viewRoot = value;
   }
 
   get creationTimestamp(): Date {
@@ -144,7 +144,7 @@ export class Page {
       obj.course,
       obj.name,
       obj.isVisible,
-      obj.viewId ?? null,
+      obj.viewRoot ?? null,
       obj.creationTimestamp ?? null,
       obj.updateTimestamp ?? null,
       obj.visibleFrom ?? null,
@@ -167,7 +167,7 @@ export interface PageDatabase {
   name: string;
   course: number;
   isVisible: boolean;
-  viewId: number;
+  viewRoot: number;
   //roleType?: string;
   //seqId?: string;
   //theme?: string;

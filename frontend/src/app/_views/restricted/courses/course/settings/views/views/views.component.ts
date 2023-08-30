@@ -9,11 +9,16 @@ import {Reduce} from "../../../../../../../_utils/lists/reduce";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Action} from 'src/app/_domain/modules/config/Action';
 import {NgForm} from "@angular/forms";
-import { ModalService } from 'src/app/_services/modal.service';
+import {ModalService} from 'src/app/_services/modal.service';
+import {AlertService, AlertType} from "../../../../../../../_services/alert.service";
+
+import * as _ from 'lodash';
+import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-views',
-  templateUrl: './views.component.html'
+  templateUrl: './views.component.html',
+  styleUrls: ['./views.component.scss']
 })
 export class ViewsComponent implements OnInit {
 
@@ -25,7 +30,7 @@ export class ViewsComponent implements OnInit {
 
   course: Course;                 // Specific course in which pages are being manipulated
   pages: Page[] = [];             // Pages of course
-  arrangingPages: Page[];         // Copy of pages for arranging
+  arrangingPages: Page[];         // Copy of pages for arranging modal
 
   actions: { icon: string, description: string, type: 'management' | 'configuration' }[] =
     [{ icon: 'feather-type', description: 'Rename', type: 'management' },
@@ -37,6 +42,8 @@ export class ViewsComponent implements OnInit {
      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration' }];
 
   mode: 'arrange' | 'delete' | 'remove page' | 'visibility' | 'make public-private';
+
+  pageToManage: PageManageData;
 
   // SEARCH AND FILTER
   reduce = new Reduce();
@@ -122,39 +129,117 @@ export class ViewsComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------------ Actions ------------------ ***/
+  /*** -------------- Top Actions ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  doAction(action:string){
-    // TODO
-  }
 
   async prepareModal(modal: string){
     modal = modal.toLowerCase();
     if (modal === 'arrange pages'){
-      this.arrangingPages = this.pages;
+      this.arrangingPages = _.cloneDeep(this.pagesToShow);
       this.mode = 'arrange';
       ModalService.openModal('arrange-pages');
 
     } else if (modal === 'import page(s) from PC'){
+      // TODO
 
     } else if (modal === 'import page from GameCourse'){
+      // TODO
 
     } else if (modal === 'export all pages'){
-
+      // TODO
     }
 
   }
 
-  resetChanges(){
-    if (this.mode === 'arrange') this.arrangingPages = null;
+  async arrangePages(){
+    this.loading.action = true;
+    this.pagesToShow = this.arrangingPages;
 
-    this.mode = null;
+    // Save new positions
+    for (let i = 0; i < this.pagesToShow.length; i++){
+      if (this.pagesToShow[i].position === i) continue; // if order hasn't changed, skip the edition step (less accesses to DB)
+      this.pagesToShow[i].position = i;
+      let page = this.initPageToManage(this.pagesToShow[i]);
+      await this.api.editPage(this.course.id, page).toPromise();
+    }
+
+    this.loading.action = false;
+    AlertService.showAlert(AlertType.SUCCESS, 'Pages\' order saved successfully');
+    ModalService.closeModal('arrange-pages');
   }
 
-  arrangePages(){
-    this.pages = this.arrangingPages;
-    ModalService.closeModal('arrange-pages');
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  doAction(action:string, page: Page){
+    action = action.toLowerCase();
+
+    if (action === 'rename'){
+
+
+    } else if (action === 'preview'){
+      // TODO
+
+    } else if (action === 'make public/private'){
+      this.pageToManage = this.initPageToManage(page);
+      this.mode = 'make public-private';
+      ModalService.openModal('make-public-private-page')
+
+    } else if (action === 'configure visibility'){
+
+
+    } else if (action === 'export'){
+
+
+    } else if (action === 'duplicate'){
+
+
+    } else if (action === 'delete'){
+      this.pageToManage = this.initPageToManage(page);
+      this.mode = 'delete';
+      ModalService.openModal('delete-page');
+    }
+
+  }
+
+  async deletePage(){
+    this.loading.action = true;
+
+    const index = this.pagesToShow.findIndex(page => page.id === this.pageToManage.id);
+    await this.api.deletePage(this.course.id, this.pageToManage.id).toPromise();
+    this.pagesToShow.splice(index, 1);
+
+    this.pages = this.pagesToShow;
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + this.pageToManage.name + '\' deleted successfully.')
+    ModalService.closeModal('delete-page');
+    this.loading.action = false;
+  }
+
+  async makePublicAndPrivate(){
+    this.loading.action = true;
+
+    this.pageToManage.isVisible = !this.pageToManage.isVisible;
+    const newPage = await this.api.editPage(this.course.id, this.pageToManage).toPromise();
+    const index = this.pagesToShow.findIndex(page => page.id === this.pageToManage.id);
+    this.pagesToShow.splice(index, 1, newPage);
+
+    this.pages = this.pagesToShow;
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + this.pageToManage.name + '\' ' +
+      (this.pageToManage.isVisible ? 'published' : 'make private'));
+    ModalService.closeModal('make-public-private-page');
+
+    this.loading.action = false;
+  }
+
+  resetChanges(){
+    if (this.mode === 'arrange') this.arrangingPages = null;
+    if (this.mode === 'delete') this.pageToManage = null;
+
+    this.mode = null;
+    console.log("resetting changes");
   }
 
   /*** --------------------------------------------- ***/
@@ -176,11 +261,6 @@ export class ViewsComponent implements OnInit {
 
     else this.pagesToShow = this.pages;
   }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------- Pages ------------------- ***/
-  /*** --------------------------------------------- ***/
 
   /*savePage(page: Page): void {
     this.saving = true;
@@ -236,6 +316,9 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  drop(event: CdkDragDrop<string[]>){
+    moveItemInArray(this.arrangingPages, event.previousIndex, event.currentIndex);
+  }
 
   calculateDate(date: Date): string{
     return date.toLocaleDateString("en-GB").split(", ")[0];
@@ -271,4 +354,37 @@ export class ViewsComponent implements OnInit {
     this.templateSelected = null;
   }*/
 
+  /*** --------------------------------------------- ***/
+  /*** ----------------- Manage Data --------------- ***/
+  /*** --------------------------------------------- ***/
+
+  initPageToManage(page?: Page): PageManageData {
+    const pageData: PageManageData = {
+      course: page?.course ?? this.course.id,
+      name: page?.name ?? null,
+      isVisible: page?.isVisible ?? false,
+      viewRoot: page?.viewId ?? null,
+      creationTimestamp: page?.creationTimestamp ?? null,
+      updateTimestamp: page?.updateTimestamp ?? null,
+      visibleFrom: page?.visibleFrom ?? null,
+      visibleUntil: page?.visibleUntil ?? null,
+      position: page?.position ?? null
+    };
+    if (page) pageData.id = page.id;
+    return pageData;
+  }
+
+}
+
+export interface PageManageData {
+  id?: number,
+  course?: number,
+  name?: string,
+  isVisible?: boolean,
+  viewRoot?: number,
+  creationTimestamp?: Date,
+  updateTimestamp?: Date,
+  visibleFrom?: Date,
+  visibleUntil?: Date,
+  position?: number
 }

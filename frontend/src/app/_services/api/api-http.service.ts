@@ -73,6 +73,7 @@ import {
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
+import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 
 @Injectable({
   providedIn: 'root'
@@ -2869,14 +2870,16 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  // TODO: refactor
-  public editPage(courseID: number, page: Page): Observable<void> {
+  public editPage(courseID: number, page: PageManageData): Observable<Page> {
     const data = {
       courseId: courseID,
       pageId: page.id,
-      pageName: page.name,
-      viewId: page.viewId,
-      isEnabled: page.isVisible
+      name: page.name,
+      isVisible: page.isVisible,
+      viewRoot: page.viewRoot,
+      visibleFrom: page.visibleFrom,
+      visibleUntil: page.visibleUntil,
+      position: page.position
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2886,14 +2889,14 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
   }
 
-  // TODO: refactor
-  public deletePage(courseID: number, page: Page): Observable<any> {
+
+  public deletePage(courseID: number, pageId: number): Observable<void> {
     const data = {
       courseId: courseID,
-      pageId: page.id,
+      pageId: pageId,
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2903,7 +2906,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe(map( (res:any) => res) );
   }
 
   public importPages(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {

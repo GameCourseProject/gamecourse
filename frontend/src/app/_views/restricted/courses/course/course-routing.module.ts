@@ -49,7 +49,7 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: SectionsComponent
+        component: ComingSoonComponent
       },
       {
         path: 'rule-system/sections/:sectionId',

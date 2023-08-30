@@ -55,7 +55,7 @@
               </button>
 
               <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
-                <li *ngFor="let action of actions; let i = index" (click)="doAction(action.description)">
+                <li *ngFor="let action of actions; let i = index" (click)="doAction(action.description, page)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>
@@ -79,17 +79,77 @@
 
 
 <!-- Arrange Pages Modal -->
-<app-modal *ngIf="mode"
+<app-modal *ngIf="mode === 'arrange'"
            [id]="'arrange-pages'"
            [templateRef]="ARRANGE"
            [header]="mode?.capitalize() + ' order of pages'"
            [closeBtnText]="'Discard'"
            [submitBtnText]="'Save'"
+           [size]="'md'"
            [actionInProgress]="loading.action"
            (submitBtnClicked)="arrangePages()"
            (onClose)="resetChanges()">
 </app-modal>
-
 <ng-template #ARRANGE>
+  <div class="w-full flex flex-wrap -mt-1">
+    <span>The order here defined will be the order in which pages will <strong>appear in the sidebar</strong> once visible</span>
+  </div>
 
+  <div cdkDropList [id]="'pages-list'" class="dd max-w-none mt-4" (cdkDropListDropped)="drop($event)">
+    <div class="dd-item" *ngFor="let page of arrangingPages" cdkDrag>
+      <div class="justify-center flex">
+        <!-- Move -->
+        <div *ngIf="arrangingPages.length > 1" class="tooltip absolute -ml-[45%] mt-2" data-tip="Move">
+          <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+            <ng-icon name="tabler-arrows-vertical" size="1.2rem"></ng-icon>
+            <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+          </button>
+        </div>
+
+        <!-- Card -->
+        <div class="dd-content border-primary border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
+          <div class="card-body py-1">
+            <span class="self-center font-semibold text-md">{{page.name}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Delete Modal -->
+<app-modal *ngIf="mode === 'delete' && pageToManage"
+           [id]="'delete-page'"
+           [templateRef]="DELETE"
+           [header]="mode?.capitalize() + ' page \'' + pageToManage.name + '\'?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Delete'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="deletePage()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #DELETE>
+  <div class="w-full flex flex-wrap -mt-1">
+    <span>Are your sure you want to delete '<strong>{{pageToManage.name}}</strong>' page? This action <strong>cannot be undone</strong>.</span>
+  </div>
+</ng-template>
+
+<!-- Make public / private modal -->
+<app-modal *ngIf="mode === 'make public-private' && pageToManage"
+           [id]="'make-public-private-page'"
+           [templateRef]="MAKE_PUBLIC_PRIVATE"
+           [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isVisible ? 'private' : 'public') + '?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Yes'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="makePublicAndPrivate()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #MAKE_PUBLIC_PRIVATE>
+  <div class="w-full flex flex-wrap -mt-1">
+    <span>{{pageToManage.isVisible ? 'This page will stop being available for other courses.' :
+      'This page will be available for other courses to use.'}}</span>
+  </div>
 </ng-template>

@@ -138,6 +138,53 @@ class PageController
         API::response($userPages);
     }
 
+    /**
+     * Updates page in the DB
+     * @return void
+     * @throws Exception
+     */
+    public function editPage(){
+        API::requireValues("courseId", "pageId", "name", "isVisible", "viewRoot", "visibleFrom",
+            "visibleUntil", "position");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        $pageId = API::getValue("pageId", "int");
+        $page = Page::getPageById($pageId);
+
+        // Get rest of the values
+        $name = API::getValue("name");
+        $isVisible = API::getValue("isVisible", "bool");
+        $viewRoot = API::getValue("viewRoot", "int"); // FIXME --> is it needed?
+        $visibleFrom = API::getValue("visibleFrom") ?? null;
+        $visibleUntil = API::getValue("visibleUntil") ?? null;
+        $position = API::getValue("position", "int");
+
+        $pageInfo = $page->editPage($name, $isVisible, $visibleFrom, $visibleUntil, $position)->getData();
+
+        API::response($pageInfo);
+    }
+
+    /**
+     * Removes page from DB given its ID and course
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function deletePage(){
+        API::requireValues("courseId", "pageId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        $pageId = API::getValue("pageId", "int");
+
+        Page::deletePage($pageId);
+    }
+
     /*** --------------------------------------------- ***/
     /*** ------------------- Views ------------------- ***/
     /*** --------------------------------------------- ***/
