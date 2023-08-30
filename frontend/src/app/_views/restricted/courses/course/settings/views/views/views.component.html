@@ -8,32 +8,21 @@
     [loading]="loading.action">
   </app-header>
 
-  <!-- Pages table actions -->
+  <!-- Pages top actions -->
   <app-top-actions
     [classList]="'-mt-6'"
     [leftActions]="[{action: 'Arrange Pages', icon: 'feather-move'}]"
     [rightActions]="[{action: 'Create new Page', icon: 'feather-file', color: 'primary', outline: true},
                        {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                        {action: Action.IMPORT + ' page(s)', icon:'jam-download'},
+                        {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
+                        {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
                         {action: Action.EXPORT + ' all pages', icon:'jam-upload'}
                       ]}]"
     (btnClicked)="prepareModal($event)">
   </app-top-actions>
 
-  <!-- Pages table
-  <app-table
-    *ngIf="pagesTable.showTable"
-    [id]="'page-table'"
-    [classList]="'mt-5'"
-    [headers] = "pagesTable.headers"
-    [data]="pagesTable.data"
-    [options]="pagesTable.options"
-    [loading]="pagesTable.loading"
-    (btnClicked)="doActionOnTable('pages', $event.type, $event.row, $event.col)"></app-table>-->
-
-
   <!-- Search-->
-  <div class="w-[40%] mx-auto mt-5">
+  <div class="w-[40%] mx-auto my-5">
     <app-input-search
       [id] = "'pages-search'"
       [items] = "pages"
@@ -42,13 +31,13 @@
     </app-input-search>
   </div>
 
-  <span *ngIf="false && pages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
+  <span *ngIf="pages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   <span *ngIf="pages.length !== 0 && pagesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
-  <div class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
+  <!-- Pages cards -->
+  <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let page of pagesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <!--  border border-4 border-{{page.isVisible ? 'success' : 'error'}} -->
         <figure class="relative w-full aspect-square">
           <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
           <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999">
@@ -64,87 +53,43 @@
               <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </button>
-              <ul tabindex="0" class="dropdown-content z-[1] menu shadow bg-base-300 rounded-box w-52">
-                <li class="border-b border-3 border-gray-800">
-                  <ng-icon name="jam-pencil-f" size="1.2" class="text-warning"><span class="font-semibold">Edit</span></ng-icon>
+
+              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+                <li *ngFor="let action of actions; let i = index" (click)="doAction(action.description)">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
+                    <ng-icon [name]="action.icon" size="1.3rem"></ng-icon>
+                    <span class="font-semibold">{{action.description}}</span>
+                  </div>
                 </li>
-                <li><span class="font-semibold">Rename</span></li>
-                <li class="border-b border-3 border-gray-800"><span class="font-semibold">Preview</span></li>
-                <li><span class="font-semibold">Make {{page.isVisible ? 'private' : 'public'}}</span></li>
-                <li><span class="font-semibold">Configure visibility</span></li>
-                <li><span class="font-semibold">Export</span></li>
-                <li><span class="font-semibold">Duplicate</span></li>
-                <li><span class="font-semibold">Delete</span></li>
               </ul>
+
             </div>
           </div>
           <p class="text-sm"><strong>Last edited:</strong> {{calculateDate(page.updateTimestamp)}}</p>
         </div>
 
-
-        <!--<div class="card-body">
-          <div class="card-actions justify-start">
-            <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mt-4 -ml-4">
-              <ng-icon name="feather-x" size="1.2rem" class="text-error"></ng-icon>
-            </button>
-          </div>
-          <span class="flex justify-center font-semibold">{{page.name}}</span>
-          <div class="card-actions justify-end flex -mr-4 -mb-4">
-            <button class="btn btn-sm btn-ghost btn-circle h-10 w-10">
-              <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.5rem" class="text-primary"></ng-icon>
-            </button>
-
-            <button class="btn btn-sm btn-ghost btn-circle h-10 w-10 -ml-3">
-              <ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"></ng-icon>
-            </button>
-          </div>
-        </div>-->
       </div>
     </div>
 
   </div>
 
-
-
-  <!--<div class="card w-full bg-base-100 shadow-xl mt-6">
-    <div class="card-body">
-
-      <app-header
-        [classList]="'text-md'"
-        [title]="'Views'"
-        [icon]="'tabler-eye'"
-        [loading]="loading.action">
-      </app-header>
-
-      <app-top-actions
-        [classList]="'-mt-6'"
-        [rightActions]="[{action: 'Create new View', icon: 'tabler-eye', color: 'primary', outline: true},
-                       {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                        {action: Action.IMPORT + ' view(s) from PC', icon:'tabler-device-desktop'},
-                        {action: Action.IMPORT + ' view(s) from GameCourse', icon:'jam-download'},
-                        {action: Action.EXPORT + ' all views', icon:'jam-upload'}
-                      ]}]"
-        (btnClicked)="prepareModal($event)">
-      </app-top-actions>
-
-      <app-table
-        *ngIf="viewsTable.showTable"
-        [id]="'view-table'"
-        [classList]="'mt-5'"
-        [headers] = "viewsTable.headers"
-        [data]="viewsTable.data"
-        [options]="viewsTable.options"
-        [loading]="viewsTable.loading"
-        (btnClicked)="doActionOnTable('views', $event.type, $event.row, $event.col)"></app-table>
-
-    </div>
-  </div>-->
-
+  <!-- Loader -->
+  <app-loader [loading]="loading.page"></app-loader>
 </div>
 
 
-<ng-container *ngIf="!loading.page">
+<!-- Arrange Pages Modal -->
+<app-modal *ngIf="mode"
+           [id]="'arrange-pages'"
+           [templateRef]="ARRANGE"
+           [header]="mode?.capitalize() + ' order of pages'"
+           [closeBtnText]="'Discard'"
+           [submitBtnText]="'Save'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="arrangePages()"
+           (onClose)="resetChanges()">
+</app-modal>
 
+<ng-template #ARRANGE>
 
-
-</ng-container>
+</ng-template>

@@ -1,9 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {Reduce} from "../../../../../../_utils/lists/reduce";
 import {Action} from 'src/app/_domain/modules/config/Action';
-import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
 
-import {Rule} from "../../../../../../_domain/rules/rule";
 import {Course} from "../../../../../../_domain/courses/course";
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -12,7 +10,6 @@ import {AlertService, AlertType} from "../../../../../../_services/alert.service
 import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {RuleSection} from "../../../../../../_domain/rules/RuleSection";
-import {RuleTag} from "../../../../../../_domain/rules/RuleTag";
 import {ThemingService} from "../../../../../../_services/theming/theming.service";
 
 import * as _ from "lodash";
@@ -234,81 +231,6 @@ export class SectionsComponent implements OnInit {
 
     this.loading.action = false;
   }
-
-
-  /*** --------------------------------------------- ***/
-  /*** -------------------- Tags ------------------- ***/
-  /*** --------------------------------------------- ***/
-
-  /*async assignRules(event: Rule[]) {
-    for (let i = 0; i < event.length; i++) {
-      this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
-      this.ruleToManage.tags = (event[i].tags).map(tag => {
-        return initTagToManage(this.course.id, tag)
-      });
-      await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
-    }
-  }*/
-
-  /*
-  async createTag(): Promise<void> {
-    if (this.t.valid) {
-      this.loading.action = true;
-
-      this.tagToManage.course = this.course.id;
-
-      this.tagToManage.color = this.colorToHexa(this.tagToManage.color);
-
-      const newTag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise();
-      const obj = RuleTag.toJason(newTag);
-      this.availableTags.push(obj);
-
-      // Add to input select NOT WORKING!! FIXME
-      this.selectedTags.push('' + newTag.id + '-' + newTag.name);
-
-      this.loading.action = false;
-      ModalService.closeModal('manage-tag');
-      this.resetTagManage();
-      AlertService.showAlert(AlertType.SUCCESS, 'Tag \'' + newTag.name + '\' created');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
-
-
-  assignTags() {
-    if (this.selectedTags.length > 0){
-      let tags = [];
-      for (let i = 0;  i < this.selectedTags.length; i++){
-        const data = this.selectedTags[i].split(/-(.*)/s);
-        const tag = this.tags.find(element => element.id === parseInt(data[0]) && element.name === data[1]);
-        tags.push(RuleTag.toJason(tag));
-      }
-      this.ruleToManage.tags = tags;
-    }
-  }
-*/
-  /* async createDefaultTag(courseID: number): Promise<void> {
-     const defaultTag = this.initTagToManage();
-     defaultTag.course = courseID;
-     defaultTag.name = "extra-credit";
-     defaultTag.color = this.colorToHexa("primary");
-
-     const obj = await this.api.createTag(clearEmptyValues(defaultTag)).toPromise();
-     this.availableTags.push(obj);
-   }
-   removeTag(tag: TagManageData){
-       this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
-   }
-
-   submitTags(){
-     this.submitedTags = [];
-     for (let i = 0; i < this.selectedTags.length ; i++){
-       let newTag = new RuleTag(this.selectedTags[i].id, this.selectedTags[i].name, this.selectedTags[i].color);
-       this.submitedTags.push(newTag);
-     }
-     ModalService.closeModal('manage-tag');
-     this.resetTagManage();
-   }*/
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/

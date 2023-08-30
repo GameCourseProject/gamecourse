@@ -176,7 +176,7 @@
 <!-- Manage Autogame Metadata -->
 <app-modal *ngIf="sectionMode === 'metadata'"
            [id] = "'manage-metadata'"
-           [templateRef]="MANAGE_SECTION_PRIORITY"
+           [templateRef]="MANAGE_METADATA"
            [size] = "'lg'"
            [header] = "sectionMode?.capitalize()"
            [submitBtnText]="'Save'"
@@ -185,7 +185,7 @@
            (submitBtnClicked)="saveMetadata()"
            (closeBtnClicked)="parsedMetadata = null;">
 </app-modal>
-<ng-template #MANAGE_SECTION_PRIORITY>
+<ng-template #MANAGE_METADATA>
   <!-- Description -->
   <div class="w-full flex flex-wrap -mt-1">
     <span>GameCourse's Rule System is arranged by a <strong>set of sections that have rules</strong> inside them. <br>

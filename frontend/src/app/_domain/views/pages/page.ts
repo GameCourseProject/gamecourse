@@ -162,7 +162,7 @@ export class Page {
   }
 }
 
-interface PageDatabase {
+export interface PageDatabase {
   id: number;
   name: string;
   course: number;
