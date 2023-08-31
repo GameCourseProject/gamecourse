@@ -304,7 +304,7 @@ class Page
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
 
-        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where);
+        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
         // Add public pages from other courses
         $publicPages = Core::database()->selectMultiple(self::TABLE_PAGE, ["isPublic" => true]);
 
@@ -316,12 +316,8 @@ class Page
             }
         }
 
-        // Merge both arrays
-        $finalPages = array_merge($filteredPages, $pages);
-
-        // Sort based on position
-        $positions = array_column($finalPages, "position");
-        array_multisort($positions, $finalPages);
+        // Merge both arrays (pages from other courses come last!)
+        $finalPages = array_merge($pages, $filteredPages);
 
         foreach ($finalPages as &$page) { $page = self::parse($page); }
 

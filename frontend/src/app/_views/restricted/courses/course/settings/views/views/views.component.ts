@@ -121,7 +121,6 @@ export class ViewsComponent implements OnInit {
 
   async getPages(courseID: number) {
     this.pages = await this.api.getCoursePages(courseID).toPromise();
-    this.pages.sort((a, b) => a.position - b.position);
 
     this.filteredPages = this.pages;
     this.pagesToShow = this.pages;
@@ -153,19 +152,29 @@ export class ViewsComponent implements OnInit {
 
   async arrangePages(){
     this.loading.action = true;
-    this.pagesToShow = this.arrangingPages;
 
-    // Save new positions
-    for (let i = 0; i < this.pagesToShow.length; i++){
-      if (this.pagesToShow[i].position === i) continue; // if order hasn't changed, skip the edition step (less accesses to DB)
-      this.pagesToShow[i].position = i;
-      let page = this.initPageToManage(this.pagesToShow[i]);
-      await this.api.editPage(this.course.id, page).toPromise();
+    if (!this.checkOrder()){
+      AlertService.showAlert(AlertType.ERROR, 'Pages from other courses need to be at the end');
+      this.arrangingPages = this.pagesToShow;
+    }
+    else {
+      // Save new positions
+      for (let i = 0; i < this.pagesToShow.length; i++){
+        // if order hasn't changed or course of page it's not current course, skip the edition step (less accesses to DB)
+        if (this.pagesToShow[i].position === i || this.pagesToShow[i].course !== this.course.id) continue;
+        this.pagesToShow[i].position = i;
+        let page = this.initPageToManage(this.pagesToShow[i]);
+        await this.api.editPage(this.course.id, page).toPromise();
+      }
+
+      this.pagesToShow = this.arrangingPages;
+      this.pages = this.arrangingPages;
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Pages\' order saved successfully');
+      ModalService.closeModal('arrange-pages');
     }
 
     this.loading.action = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'Pages\' order saved successfully');
-    ModalService.closeModal('arrange-pages');
   }
 
   /*** --------------------------------------------- ***/
@@ -226,13 +235,13 @@ export class ViewsComponent implements OnInit {
     page.isPublic = !page.isPublic;
     console.log(page);
     const newPage = await this.api.editPage(this.course.id, page).toPromise();
+
     const index = this.pagesToShow.findIndex(myPage => myPage.id === page.id);
-    console.log(index);
-    this.pagesToShow.splice(index, 1, newPage);
+    if (newPage.course === this.course.id) this.pagesToShow.splice(index, 1, newPage);
+    else if (newPage.course === this.course.id && !newPage.isPublic) this.pagesToShow.splice(index, 1);
 
     this.pages = this.pagesToShow;
 
-    console.log("pages: ", this.pages);
     console.log("pagesToShow: ", this.pagesToShow);
 
     AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' ' +
@@ -329,7 +338,30 @@ export class ViewsComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   drop(event: CdkDragDrop<string[]>){
+
     moveItemInArray(this.arrangingPages, event.previousIndex, event.currentIndex);
+
+    // check if pages from other courses are at the end of list
+    if (!this.checkOrder()){
+      AlertService.showAlert(AlertType.ERROR, 'Pages from other courses need to be at the end.');
+      moveItemInArray(this.arrangingPages, event.previousIndex, event.currentIndex);
+    }
+  }
+
+  checkOrder(){
+    const pagesSorted = _.cloneDeep(this.arrangingPages);
+    const pagesUnsorted = _.cloneDeep(this.arrangingPages).filter(page => page.course !== this.course.id);
+
+    // sorts pages so that the first ones are the pages in current course and removes those
+    pagesSorted.sort((a, b) => {
+      if (a.course === this.course.id && b.course !== this.course.id) return -1;
+      else if (a.course !== this.course.id && b.course === this.course.id) return 1;
+      else return 0;
+    }).filter(page => page.course !== this.course.id);
+
+    console.log(pagesUnsorted);
+    console.log(pagesSorted);
+    return pagesSorted === pagesUnsorted;
   }
 
   calculateDate(date: Date): string{
