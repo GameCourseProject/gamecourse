@@ -72,6 +72,7 @@
 
             </div>
           </div>
+          <p class="text-sm"><strong></strong></p>
           <p class="text-sm"><strong>Last edited:</strong> {{calculateDate(page.updateTimestamp)}}</p>
         </div>
 
@@ -106,7 +107,7 @@
     <div class="dd-item" *ngFor="let page of arrangingPages" cdkDrag>
       <div class="justify-center flex">
         <!-- Move -->
-        <div *ngIf="arrangingPages.length > 1 && page.course === course.id" class="tooltip absolute -ml-[45%] mt-2" data-tip="Move">
+        <div *ngIf="arrangingPages.length > 1" class="tooltip absolute -ml-[45%] mt-2" data-tip="Move">
           <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
             <ng-icon name="tabler-arrows-vertical" size="1.2rem"></ng-icon>
             <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
@@ -114,7 +115,18 @@
         </div>
 
         <!-- Card -->
-        <div class="dd-content {{page.course !== course.id ? 'border-gray-400': 'border-primary'}} border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
+        <div class="dd-content border-primary border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
+          <div class="card-body py-1">
+            <span class="self-center font-semibold text-md">{{page.name}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngFor="let page of publicPages">
+      <div class="justify-center flex">
+        <!-- Card -->
+        <div class="dd-content order-gray-400 border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
           <div class="card-body py-1">
             <span class="self-center font-semibold text-md">{{page.name}}</span>
           </div>

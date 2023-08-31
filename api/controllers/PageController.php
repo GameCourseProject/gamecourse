@@ -100,6 +100,25 @@ class PageController
     }
 
     /**
+     * @return void
+     * @throws Exception
+     */
+    public function getPublicPages()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $outsideCourse = API::getValue("outsideCourse", "bool") ?? false;
+        $publicPages = Page::getPublicPages($courseId, $outsideCourse);
+
+        API::response($publicPages);
+    }
+
+    /**
      * Gets course pages available for a given user according to their roles.
      * Option for 'visible'.
      *

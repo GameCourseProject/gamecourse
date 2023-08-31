@@ -2822,6 +2822,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
   }
 
+  public getPublicPages(courseID: number, outsideCourse?: boolean): Observable<Page[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getPublicPages');
+      qs.push('courseId', courseID);
+      if (outsideCourse !== undefined) qs.push('outsideCourse', outsideCourse);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
+
+  }
+
   public getUserPages(courseID: number, userID: number, isVisible?: boolean): Observable<Page[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);

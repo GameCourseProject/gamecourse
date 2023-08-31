@@ -305,23 +305,36 @@ class Page
         if ($visible !== null) $where["isVisible"] = $visible;
 
         $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
+
+        foreach ($pages as &$page) { $page = self::parse($page); }
+
+        return $pages;
+    }
+
+    /**
+     * Gets all public
+     *
+     * @param int $courseId
+     * @return array
+     */
+    public static function getPublicPages(int $courseId, ?bool $outsideCourse = false): array
+    {
         // Add public pages from other courses
         $publicPages = Core::database()->selectMultiple(self::TABLE_PAGE, ["isPublic" => true]);
 
-        // Removes public pages from the current course (those are already in the $pages array)
-        $filteredPages = [];
-        foreach ($publicPages as $publicPage) {
-            if (intval($publicPage["course"]) !== $courseId) {
-                $filteredPages[] = $publicPage;
+        $filteredPages = $publicPages;
+        if ($outsideCourse){
+            // Removes public pages from the current course (those are already in the $pages array)
+            $filteredPages = [];
+            foreach ($publicPages as $publicPage) {
+                if (intval($publicPage["course"]) !== $courseId) {
+                    $filteredPages[] = $publicPage;
+                }
             }
         }
 
-        // Merge both arrays (pages from other courses come last!)
-        $finalPages = array_merge($pages, $filteredPages);
-
-        foreach ($finalPages as &$page) { $page = self::parse($page); }
-
-        return $finalPages;
+        foreach ($filteredPages as &$page) { $page = self::parse($page); }
+        return $filteredPages;
     }
 
     /**
