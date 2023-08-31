@@ -11,12 +11,13 @@ export class Page {
   private _visibleFrom: Date;
   private _visibleUntil: Date;
   private _position: number;
+  private _isPublic: boolean;
   //private _roleType: RoleTypeId;
   //private _seqId: number;
   //private _theme: string;
 
   constructor(id: number, course: number, name: string, isVisible: boolean, viewRoot: number, creationTimestamp: string, updateTimestamp: string,
-              visibleFrom: string, visibleUntil: string, position: number) {
+              visibleFrom: string, visibleUntil: string, position: number, isPublic: boolean) {
     this._id = id;
     this._course = course;
     this._name = name;
@@ -27,6 +28,7 @@ export class Page {
     this._visibleFrom = visibleFrom !== null ? new Date (visibleFrom) : null;
     this._visibleUntil = visibleUntil !== null ? new Date(visibleUntil) : null;
     this._position = position;
+    this._isPublic = isPublic;
     //this._roleType = roleType;
     //this._seqId = seqId;
     //this._theme = theme;
@@ -112,6 +114,14 @@ export class Page {
     this._position = value;
   }
 
+  get isPublic(){
+    return this._isPublic;
+  }
+
+  set isPublic(value: boolean){
+    this._isPublic = value;
+  }
+
   /*get roleType(): RoleTypeId {
     return this._roleType;
   }
@@ -149,7 +159,8 @@ export class Page {
       obj.updateTimestamp ?? null,
       obj.visibleFrom ?? null,
       obj.visibleUntil ?? null,
-      obj.position
+      obj.position,
+      obj.isPublic
       /*parseInt(obj.id) || null,
       obj.name,
       parseInt(obj.course) || null,
@@ -176,4 +187,5 @@ export interface PageDatabase {
   visibleFrom: string;
   visibleUntil: string;
   position: number;
+  isPublic: boolean;
 }

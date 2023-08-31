@@ -31,7 +31,7 @@
     </app-input-search>
   </div>
 
-  <span *ngIf="pages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
+  <span *ngIf="!loading.page && pages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   <span *ngIf="pages.length !== 0 && pagesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
   <!-- Pages cards -->
@@ -40,7 +40,14 @@
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
         <figure class="relative w-full aspect-square">
           <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
-          <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999">
+          <div class="absolute top-1 right-1 -z-999">
+            <button class="btn btn-sm btn-secondary btn-circle hover:text-base-content tooltip tooltip-left"
+                    data-tip="Make public/private" (click)="doAction('make public/private', page)">
+              <ng-icon name="{{page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
+                       class="text-white"></ng-icon>
+            </button>
+          </div>
+          <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer">
             <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isVisible ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
             <span class="font-semibold my-0.5">{{page.isVisible ? 'Active' : 'Inactive'}}</span>
           </div>
@@ -139,7 +146,7 @@
 <app-modal *ngIf="mode === 'make public-private' && pageToManage"
            [id]="'make-public-private-page'"
            [templateRef]="MAKE_PUBLIC_PRIVATE"
-           [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isVisible ? 'private' : 'public') + '?'"
+           [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isPublic ? 'private' : 'public') + '?'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Yes'"
            [submitBtnColor]="'error'"
@@ -148,6 +155,27 @@
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #MAKE_PUBLIC_PRIVATE>
+  <div class="flex flex-wrap -mt-1">
+    <span class="w-full" *ngIf="pageToManage.isPublic">This page will <strong>stop being available</strong>
+      for other courses. Do you wish to proceed?</span>
+    <span class="w-full" *ngIf="!pageToManage.isPublic">This page will be <strong>available for other courses to
+      use and modify.</strong> Do you wish to proceed?</span>
+  </div>
+</ng-template>
+
+<!-- TODO: Configure visibility modal -->
+<app-modal *ngIf="mode === 'visibility' && pageToManage"
+           [id]="'configure-visibility'"
+           [templateRef]="VISIBILITY"
+           [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isVisible ? 'private' : 'public') + '?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Yes'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="makePublicAndPrivate()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #VISIBILITY>
   <div class="w-full flex flex-wrap -mt-1">
     <span>{{pageToManage.isVisible ? 'This page will stop being available for other courses.' :
       'This page will be available for other courses to use.'}}</span>

@@ -2879,7 +2879,8 @@ export class ApiHttpService {
       viewRoot: page.viewRoot,
       visibleFrom: page.visibleFrom,
       visibleUntil: page.visibleUntil,
-      position: page.position
+      position: page.position,
+      isPublic: page.isPublic
     };
 
     const params = (qs: QueryStringParameters) => {

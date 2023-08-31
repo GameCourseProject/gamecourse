@@ -88,6 +88,10 @@ class Page
         return $this->getData("isVisible");
     }
 
+    public function isPublic(): bool{
+        return $this->getData("isPublic");
+    }
+
     /**
      * Gets page data from the database.
      *
@@ -179,6 +183,15 @@ class Page
     public function setPosition(int $position)
     {
         $this->setData(["position" => $position]);
+    }
+
+    /**
+     * @param bool $isPublic
+     * @return void
+     * @throws Exception
+     */
+    public function setPublic(bool $isPublic){
+        $this->setData(["isPublic" => +$isPublic]);
     }
 
     /**
@@ -290,9 +303,29 @@ class Page
     {
         $where = ["course" => $courseId];
         if ($visible !== null) $where["isVisible"] = $visible;
-        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
-        foreach ($pages as &$page) { $page = self::parse($page); }
-        return $pages;
+
+        $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where);
+        // Add public pages from other courses
+        $publicPages = Core::database()->selectMultiple(self::TABLE_PAGE, ["isPublic" => true]);
+
+        // Removes public pages from the current course (those are already in the $pages array)
+        $filteredPages = [];
+        foreach ($publicPages as $publicPage) {
+            if (intval($publicPage["course"]) !== $courseId) {
+                $filteredPages[] = $publicPage;
+            }
+        }
+
+        // Merge both arrays
+        $finalPages = array_merge($filteredPages, $pages);
+
+        // Sort based on position
+        $positions = array_column($finalPages, "position");
+        array_multisort($positions, $finalPages);
+
+        foreach ($finalPages as &$page) { $page = self::parse($page); }
+
+        return $finalPages;
     }
 
     /**
@@ -437,7 +470,7 @@ class Page
      * @return Page
      * @throws Exception
      */
-    public function editPage(string $name, bool $isVisible, ?string $visibleFrom = null, ?string $visibleUntil = null,
+    public function editPage(string $name, bool $isVisible, bool $isPublic, ?string $visibleFrom = null, ?string $visibleUntil = null,
                              ?int $position = null, ?array $viewTreeChanges = null): Page
     {
         $this->setData([
@@ -445,7 +478,8 @@ class Page
             "isVisible" => +$isVisible,
             "visibleFrom" => $visibleFrom,
             "visibleUntil" => $visibleUntil,
-            "position" => $position
+            "position" => $position,
+            "isPublic" => +$isPublic
         ]);
 
         // Update view tree, if changes were made
@@ -825,7 +859,7 @@ class Page
     private static function parse(array $page = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "course", "position", "viewRoot", "position"];
-        $boolValues = ["isVisible"];
+        $boolValues = ["isVisible", "isPublic"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues], $page, $field, $fieldName);
     }

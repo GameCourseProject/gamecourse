@@ -187,7 +187,9 @@ export class ViewsComponent implements OnInit {
       ModalService.openModal('make-public-private-page')
 
     } else if (action === 'configure visibility'){
-
+      this.pageToManage = this.initPageToManage(page);
+      this.mode = 'visibility';
+      ModalService.openModal('configure-visibility');
 
     } else if (action === 'export'){
 
@@ -220,18 +222,28 @@ export class ViewsComponent implements OnInit {
   async makePublicAndPrivate(){
     this.loading.action = true;
 
-    this.pageToManage.isVisible = !this.pageToManage.isVisible;
-    const newPage = await this.api.editPage(this.course.id, this.pageToManage).toPromise();
-    const index = this.pagesToShow.findIndex(page => page.id === this.pageToManage.id);
+    const page = _.cloneDeep(this.pageToManage);
+    page.isPublic = !page.isPublic;
+    console.log(page);
+    const newPage = await this.api.editPage(this.course.id, page).toPromise();
+    const index = this.pagesToShow.findIndex(myPage => myPage.id === page.id);
+    console.log(index);
     this.pagesToShow.splice(index, 1, newPage);
 
     this.pages = this.pagesToShow;
 
-    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + this.pageToManage.name + '\' ' +
-      (this.pageToManage.isVisible ? 'published' : 'make private'));
+    console.log("pages: ", this.pages);
+    console.log("pagesToShow: ", this.pagesToShow);
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' ' +
+      (page.isPublic ? 'published' : 'make private'));
     ModalService.closeModal('make-public-private-page');
 
     this.loading.action = false;
+  }
+
+  async configureVisibility(){
+    // TODO
   }
 
   resetChanges(){
@@ -368,7 +380,8 @@ export class ViewsComponent implements OnInit {
       updateTimestamp: page?.updateTimestamp ?? null,
       visibleFrom: page?.visibleFrom ?? null,
       visibleUntil: page?.visibleUntil ?? null,
-      position: page?.position ?? null
+      position: page?.position ?? null,
+      isPublic: page?.isPublic ?? false
     };
     if (page) pageData.id = page.id;
     return pageData;
@@ -386,5 +399,6 @@ export interface PageManageData {
   updateTimestamp?: Date,
   visibleFrom?: Date,
   visibleUntil?: Date,
-  position?: number
+  position?: number,
+  isPublic?: boolean
 }

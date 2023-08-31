@@ -145,7 +145,7 @@ class PageController
      */
     public function editPage(){
         API::requireValues("courseId", "pageId", "name", "isVisible", "viewRoot", "visibleFrom",
-            "visibleUntil", "position");
+            "visibleUntil", "position", "isPublic");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -161,8 +161,9 @@ class PageController
         $visibleFrom = API::getValue("visibleFrom") ?? null;
         $visibleUntil = API::getValue("visibleUntil") ?? null;
         $position = API::getValue("position", "int");
+        $isPublic = API::getValue("isPublic", "bool");
 
-        $pageInfo = $page->editPage($name, $isVisible, $visibleFrom, $visibleUntil, $position)->getData();
+        $pageInfo = $page->editPage($name, $isVisible, $isPublic, $visibleFrom, $visibleUntil, $position)->getData();
 
         API::response($pageInfo);
     }
