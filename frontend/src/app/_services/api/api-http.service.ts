@@ -2908,7 +2908,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
   }
 
-
   public deletePage(courseID: number, pageId: number): Observable<void> {
     const data = {
       courseId: courseID,
@@ -2923,6 +2922,23 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map( (res:any) => res) );
+  }
+
+  public copyPage(courseID: number, pageID: number, creationMode: string): Observable<Page>{
+    const data = {
+      courseId: courseID,
+      pageId: pageID,
+      creationMode: creationMode
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'copyPage');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res: any) => Page.fromDatabase(res['data'])) );
   }
 
   public importPages(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {

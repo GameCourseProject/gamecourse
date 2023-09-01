@@ -205,6 +205,28 @@ class PageController
         Page::deletePage($pageId);
     }
 
+    /**
+     * Creates a copy of a given page in a specific course
+     * @return void
+     * @throws Exception
+     */
+    public function copyPage(){
+        API::requireValues("courseId", "pageId", "creationMode");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        // Get rest of values
+        $pageId = API::getValue("pageId", "int");
+        $creationMode = API::getValue("creationMode");
+
+        $page = new Page($pageId);
+        $copy = $page->copyPage($creationMode)->getData();
+
+        API::response($copy);
+    }
+
     /*** --------------------------------------------- ***/
     /*** ------------------- Views ------------------- ***/
     /*** --------------------------------------------- ***/

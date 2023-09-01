@@ -1,4 +1,6 @@
 import {RoleTypeId} from "../../roles/role-type";
+import {Moment} from "moment";
+import {dateFromDatabase} from "../../../_utils/misc/misc";
 
 export class Page {
   private _id: number;
@@ -6,27 +8,27 @@ export class Page {
   private _name: string;
   private _isVisible: boolean;
   private _viewRoot: number;
-  private _creationTimestamp: Date;
-  private _updateTimestamp: Date;
-  private _visibleFrom: Date;
-  private _visibleUntil: Date;
+  private _creationTimestamp: Moment;
+  private _updateTimestamp: Moment;
+  private _visibleFrom: Moment;
+  private _visibleUntil: Moment;
   private _position: number;
   private _isPublic: boolean;
   //private _roleType: RoleTypeId;
   //private _seqId: number;
   //private _theme: string;
 
-  constructor(id: number, course: number, name: string, isVisible: boolean, viewRoot: number, creationTimestamp: string, updateTimestamp: string,
-              visibleFrom: string, visibleUntil: string, position: number, isPublic: boolean) {
+  constructor(id: number, course: number, name: string, isVisible: boolean, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment,
+              visibleFrom: Moment, visibleUntil: Moment, position: number, isPublic: boolean) {
     this._id = id;
     this._course = course;
     this._name = name;
     this._isVisible = isVisible;
     this._viewRoot = viewRoot;
-    this._creationTimestamp = creationTimestamp !== null ? new Date(creationTimestamp) : null;
-    this._updateTimestamp = updateTimestamp !== null ? new Date(updateTimestamp) : null;
-    this._visibleFrom = visibleFrom !== null ? new Date (visibleFrom) : null;
-    this._visibleUntil = visibleUntil !== null ? new Date(visibleUntil) : null;
+    this._creationTimestamp = creationTimestamp;
+    this._updateTimestamp = updateTimestamp;
+    this._visibleFrom = visibleFrom;
+    this._visibleUntil = visibleUntil;
     this._position = position;
     this._isPublic = isPublic;
     //this._roleType = roleType;
@@ -74,35 +76,35 @@ export class Page {
     this._viewRoot = value;
   }
 
-  get creationTimestamp(): Date {
+  get creationTimestamp(): Moment {
     return this._creationTimestamp;
   }
 
-  set creationTimestamp(value: Date) {
+  set creationTimestamp(value: Moment) {
     this._creationTimestamp = value;
   }
 
-  get updateTimestamp(): Date {
+  get updateTimestamp(): Moment {
     return this._updateTimestamp;
   }
 
-  set updateTimestamp(value: Date) {
+  set updateTimestamp(value: Moment) {
     this._updateTimestamp = value;
   }
 
-  get visibleFrom(): Date {
+  get visibleFrom(): Moment {
     return this._visibleFrom;
   }
 
-  set visibleFrom(value: Date) {
+  set visibleFrom(value: Moment) {
     this._visibleFrom = value;
   }
 
-  get visibleUntil(): Date {
+  get visibleUntil(): Moment {
     return this._visibleUntil;
   }
 
-  set visibleUntil(value: Date) {
+  set visibleUntil(value: Moment) {
     this._visibleUntil = value;
   }
 
@@ -155,10 +157,10 @@ export class Page {
       obj.name,
       obj.isVisible,
       obj.viewRoot ?? null,
-      obj.creationTimestamp ?? null,
-      obj.updateTimestamp ?? null,
-      obj.visibleFrom ?? null,
-      obj.visibleUntil ?? null,
+      dateFromDatabase(obj.creationTimestamp),
+      dateFromDatabase(obj.updateTimestamp),
+      dateFromDatabase(obj.visibleFrom),
+      dateFromDatabase(obj.visibleUntil),
       obj.position,
       obj.isPublic
       /*parseInt(obj.id) || null,
