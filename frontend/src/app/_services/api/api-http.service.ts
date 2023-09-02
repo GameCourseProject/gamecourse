@@ -2954,6 +2954,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
+  public exportPages(courseID: number, pages: number[]): Observable<{extension: string, file?: string, path?: string}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'exportPages');
+      qs.push('courseId', courseID);
+      qs.push('pagesIds', pages);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        return {extension: res['data']['extension'], path: res['data']['path']};
+      }));
+
+  }
 
   // Templates
   // TODO: refactor

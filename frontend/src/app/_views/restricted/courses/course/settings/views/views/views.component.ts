@@ -16,6 +16,9 @@ import * as _ from 'lodash';
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 import {ThemingService} from "../../../../../../../_services/theming/theming.service";
 import {Moment} from "moment";
+import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
+import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
+import {Tier} from "../../../../../../../_domain/modules/config/personalized-config/skills/tier";
 
 @Component({
   selector: 'app-views',
@@ -39,7 +42,7 @@ export class ViewsComponent implements OnInit {
 
   pageToManage: PageManageData;
   publicPagesCourses: {[publicPageId: number]: string} = {};  // Names from public pages' courses
-  mode: 'rename' | 'arrange' | 'delete' | 'remove page' | 'visibility' | 'make public-private' | 'duplicate';
+  mode: 'import-pc' | 'import-gc' | 'rename' | 'arrange' | 'delete' | 'remove page' | 'visibility' | 'make public-private' | 'duplicate';
 
   // Actions for pages
   actions: { icon: string, description: string, type: 'management' | 'configuration',
@@ -70,7 +73,7 @@ export class ViewsComponent implements OnInit {
   pagesToShow: Page[] = [];
   filteredPages: Page[] = [];                   // Pages search
 
-  @ViewChild('f', {static: false}) f: NgForm;   // Page form
+  @ViewChild('fPage', {static: false}) fPage: NgForm;   // Page form
 
   // Import action
   importData: {file: File, replace: boolean} = { file: null, replace: true };
@@ -131,21 +134,22 @@ export class ViewsComponent implements OnInit {
   /*** -------------- Top Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async prepareModal(modal: string){
-    modal = modal.toLowerCase();
-    if (modal === 'arrange pages') {
+  async doTopAction(event: string){
+    event = event.toLowerCase();
+    if (event === 'arrange pages') {
       this.arrangingPages = _.cloneDeep(this.coursePages);
       this.mode = 'arrange';
       ModalService.openModal('arrange-pages');
 
-    } else if (modal === 'import page(s) from PC'){
+    } else if (event === 'import page(s) from pc'){
+      this.mode = 'import-pc';
+      ModalService.openModal('page-import');
+
+    } else if (event === 'import page from gamecourse'){
       // TODO
 
-    } else if (modal === 'import page from GameCourse'){
-      // TODO
-
-    } else if (modal === 'export all pages'){
-      // TODO
+    } else if (event === 'export all pages'){
+      await this.exportPages(this.pagesToShow);
     }
 
   }
@@ -175,7 +179,7 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  doAction(action:string, page: Page) {
+  async doAction(action:string, page: Page) {
     action = action.toLowerCase();
 
     if (action === 'rename') {
@@ -206,7 +210,7 @@ export class ViewsComponent implements OnInit {
       }
 
     } else if (action === 'export') {
-      // TODO
+      await this.exportPages([page]);
 
     } else if (action === 'duplicate') {
       this.pageToManage = this.initPageToManage(page);
@@ -244,7 +248,7 @@ export class ViewsComponent implements OnInit {
     this.loading.action = false;
   }
 
-  // FIXME : Refactor makePublicAndPrivate() + configureVisibility() + renamePage() + copyPage() --> Big common parts
+  // FIXME : Refactor makePublicAndPrivate() + configureVisibility() + renamePage() + duplicatePage() --> Big common parts
   async makePublicAndPrivate(){
     this.loading.action = true;
 
@@ -273,79 +277,87 @@ export class ViewsComponent implements OnInit {
   }
 
   async configureVisibility(){
-    this.loading.action = true;
+    if (this.fPage.valid){
+      this.loading.action = true;
 
-    const page = _.cloneDeep(this.pageToManage);
-    page.isVisible = !page.isVisible;
-    if (page.visibleFrom === '') page.visibleFrom = null;
-    if (page.visibleUntil === '') page.visibleUntil = null;
+      const page = _.cloneDeep(this.pageToManage);
+      page.isVisible = !page.isVisible;
+      if (page.visibleFrom === '') page.visibleFrom = null;
+      if (page.visibleUntil === '') page.visibleUntil = null;
 
-    // make invisible
-    if (!page.isVisible) {
-      page.visibleFrom = null;
-      page.visibleUntil = null;
-    }
+      // make invisible
+      if (!page.isVisible) {
+        page.visibleFrom = null;
+        page.visibleUntil = null;
+      }
 
-    let origin: 'course' | 'public';
-    if (page.course === this.course.id) origin = 'course';
-    else origin = 'public';
+      let origin: 'course' | 'public';
+      if (page.course === this.course.id) origin = 'course';
+      else origin = 'public';
 
-    const newPage = await this.api.editPage(this.course.id, page).toPromise();
-    let index = origin === 'course' ?
+      const newPage = await this.api.editPage(this.course.id, page).toPromise();
+      let index = origin === 'course' ?
         this.coursePages.findIndex(myPage => myPage.id === page.id) :
         this.publicPages.findIndex(myPage => myPage.id === page.id);
 
-    origin === 'course' ? this.coursePages.splice(index, 1, newPage) : this.publicPages.splice(index, 1, newPage);
+      origin === 'course' ? this.coursePages.splice(index, 1, newPage) : this.publicPages.splice(index, 1, newPage);
 
-    this.pages = this.coursePages.concat(this.publicPages);
-    this.pagesToShow = this.pages;
+      this.pages = this.coursePages.concat(this.publicPages);
+      this.pagesToShow = this.pages;
 
-    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
-      (page.isVisible ? 'visible' : 'not visible'));
-    ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
+      AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
+        (page.isVisible ? 'visible' : 'not visible'));
+      ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
+      this.loading.action = false;
 
-    this.loading.action = false;
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+
   }
 
   async renamePage(){
-    this.loading.action = true;
+    if (this.fPage.valid){
+      this.loading.action = true;
 
-    let origin: 'course' | 'public';
-    if (this.pageToManage.course === this.course.id) origin = 'course';
-    else origin = 'public';
+      let origin: 'course' | 'public';
+      if (this.pageToManage.course === this.course.id) origin = 'course';
+      else origin = 'public';
 
-    const newPage = await this.api.editPage(this.course.id, this.pageToManage).toPromise();
-    let index = origin === 'course' ?
-      this.coursePages.findIndex(myPage => myPage.id === this.pageToManage.id) :
-      this.publicPages.findIndex(myPage => myPage.id === this.pageToManage.id);
+      const newPage = await this.api.editPage(this.course.id, this.pageToManage).toPromise();
+      let index = origin === 'course' ?
+        this.coursePages.findIndex(myPage => myPage.id === this.pageToManage.id) :
+        this.publicPages.findIndex(myPage => myPage.id === this.pageToManage.id);
 
-    origin === 'course' ? this.coursePages.splice(index, 1, newPage) : this.publicPages.splice(index, 1, newPage);
+      origin === 'course' ? this.coursePages.splice(index, 1, newPage) : this.publicPages.splice(index, 1, newPage);
 
-    this.pages = this.coursePages.concat(this.publicPages);
-    this.pagesToShow = this.pages;
+      this.pages = this.coursePages.concat(this.publicPages);
+      this.pagesToShow = this.pages;
 
-    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + this.pageToManage.name + '\' successfully renamed.');
-    ModalService.closeModal('rename');
+      AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + this.pageToManage.name + '\' successfully renamed.');
+      ModalService.closeModal('rename');
+      this.loading.action = false;
 
-    this.loading.action = false;
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form.');
+
   }
 
   async duplicatePage(){
-    this.loading.action = true;
+    if (this.fPage.valid){
+      this.loading.action = true;
 
-    const page = _.cloneDeep(this.pageToManage);
-    let origin = page.course === this.course.id ? 'course' : 'public';
-    let newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
+      const page = _.cloneDeep(this.pageToManage);
+      let origin = page.course === this.course.id ? 'course' : 'public';
+      let newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
 
-    origin === 'course' ? this.coursePages.push(newPage) : this.publicPages.push(newPage);
+      origin === 'course' ? this.coursePages.push(newPage) : this.publicPages.push(newPage);
 
-    this.pages = this.coursePages.concat(this.publicPages);
-    this.pagesToShow = this.pages;
+      this.pages = this.coursePages.concat(this.publicPages);
+      this.pagesToShow = this.pages;
 
-    AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
-    ModalService.closeModal('duplicate');
+      AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
+      ModalService.closeModal('duplicate');
+      this.loading.action = false;
 
-    this.loading.action = false;
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form.');
 
   }
 
@@ -364,9 +376,46 @@ export class ViewsComponent implements OnInit {
       this.pageToManage = null;
       this.optionSelected = null;
 
+    } else if (this.mode === 'import-pc'){
+      this.importData = {file: null, replace: true};
+      this.fImport.resetForm();
     }
 
     this.mode = null;
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** -------------- Import / Export -------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async importPages() {
+    if (this.fImport.valid){
+      this.loading.action = true;
+
+      const file = await ResourceManager.getBase64(this.importData.file);
+      const nrPagesImported = await this.api.importPages(this.course.id, file, this.importData.replace).toPromise();
+
+      // Update list of pages
+      await this.getPages(this.course.id);
+
+      this.loading.action = false;
+      ModalService.closeModal('page-import');
+      AlertService.showAlert(AlertType.SUCCESS, nrPagesImported + ' Page' + (nrPagesImported != 1 ? 's' : '') + ' imported')
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form.');
+
+  }
+
+  async exportPages(pages: Page[]){
+    if (pages.length === 0) AlertService.showAlert(AlertType.WARNING, 'There are no pages to export');
+    else {
+      this.loading.action = true;
+
+      const contents = await this.api.exportPages(this.course.id, pages.map(page => page.id)).toPromise();
+      await DownloadManager.downloadAsZip(contents.path, this.api, this.course.id);
+
+      this.loading.action = false;
+    }
   }
 
   /*** --------------------------------------------- ***/

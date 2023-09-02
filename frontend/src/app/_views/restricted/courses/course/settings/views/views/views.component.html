@@ -13,12 +13,12 @@
     [classList]="'-mt-6'"
     [leftActions]="[{action: 'Arrange Pages', icon: 'feather-move'}]"
     [rightActions]="[{action: 'Create new Page', icon: 'feather-file', color: 'primary', outline: true},
-                       {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                        {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
-                        {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
-                        {action: Action.EXPORT + ' all pages', icon:'jam-upload'}
-                      ]}]"
-    (btnClicked)="prepareModal($event)">
+                     {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+                      {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
+                      {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
+                      {action: Action.EXPORT + ' all pages', icon:'jam-upload'}
+                     ]}]"
+    (btnClicked)="doTopAction($event)">
   </app-top-actions>
 
   <!-- Search-->
@@ -220,11 +220,11 @@
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
            [size]="'md'"
-           (submitBtnClicked)="f.onSubmit(null); configureVisibility()"
+           (submitBtnClicked)="fPage.onSubmit(null); configureVisibility()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #VISIBILITY>
-  <form #f="ngForm">
+  <form #fPage="ngForm">
     <div class="w-full flex flex-wrap -mt-1">
       <span>This page is currently: <strong class="text-error">Not visible</strong></span>
       <span class="mt-3">Turning it <strong>'visible' will make it appear on the sidebar</strong> for all students from this course
@@ -233,7 +233,7 @@
 
     <app-input-checkbox
       [id]="'page-visible-checkbox'"
-      [form]="f"
+      [form]="fPage"
       [classList]="'mt-4'"
       [(value)]="visibilityCheckbox"
       [label]="'Make page visible only for certain period'"
@@ -244,7 +244,7 @@
       <div class="w-2/5">
         <app-input-date
           [id]="'visible-from'"
-          [form]="f"
+          [form]="fPage"
           [(value)]="pageToManage.visibleFrom"
           [placeholder]="'Visible start date'"
           [topLabel]="'Visible from'"
@@ -255,7 +255,7 @@
       <div class="w-2/5">
         <app-input-date
           [id]="'visible-until'"
-          [form]="f"
+          [form]="fPage"
           [(value)]="pageToManage.visibleUntil"
           [placeholder]="'Visible end date'"
           [topLabel]="'Visible until'"
@@ -299,14 +299,14 @@
            [submitBtnText]="'Save'"
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
-           (submitBtnClicked)="f.onSubmit(null); renamePage()"
+           (submitBtnClicked)="fPage.onSubmit(null); renamePage()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #RENAME>
-  <form #f="ngForm">
+  <form #fPage="ngForm">
     <app-input-text
       [id] = "'page-name'"
-      [form] = "f"
+      [form] = "fPage"
       [classList]="'w-full flex flex-wrap'"
       [(value)] = "pageToManage.name"
       [placeholder]="'Page name'"
@@ -331,11 +331,11 @@
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
            [size]="'md'"
-           (submitBtnClicked)="f.onSubmit(null); duplicatePage()"
+           (submitBtnClicked)="fPage.onSubmit(null); duplicatePage()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #DUPLICATE>
-  <form #f="ngForm">
+  <form #fPage="ngForm">
     <div class="w-full flex flex-wrap mb-3">
       <span class="font-semibold w-full">Choose one of the following options for duplicating '{{pageToManage.name}}'<span class="text-secondary ml-1">*</span>
       </span>
@@ -344,7 +344,7 @@
         <app-input-radio
           [id]="'by-reference'"
           [group] = "'duplicate-option'"
-          [form] = "f"
+          [form] = "fPage"
           [optionValue] = "duplicateOptions[0].char"
           [color]="'secondary'"
           [classList]="'mt-2'"
@@ -357,7 +357,7 @@
         <app-input-radio
           [id]="'by-value'"
           [group] = "'duplicate-option'"
-          [form] = "f"
+          [form] = "fPage"
           [optionValue] = "duplicateOptions[1].char"
           [color]="'secondary'"
           [classList]="'mt-2'"
@@ -386,5 +386,53 @@
         </span>
       </div>
     </div>
+  </form>
+</ng-template>
+
+<!-- Import Modal -->
+<app-modal *ngIf="mode === 'import-pc'"
+  [id]="'page-import'"
+  [templateRef]="IMPORT"
+  [header]="'Import Page(s) from PC'"
+  [submitBtnText]="'Import'"
+  [actionInProgress]="loading.action"
+  (submitBtnClicked)="fImport.onSubmit(null); importPages()"
+  (onClose)="resetChanges()">
+</app-modal>
+<ng-template #IMPORT>
+  <div class="prose flex items-center gap-1 mb-3">
+    <p class="mb-0">Upload a .ZIP file containing pages information</p>
+    <app-import-helper
+      [id]="'import-helper'"
+      [format]="'.zip'"
+      [requirements]="[]"
+    >
+    </app-import-helper>
+  </div>
+
+  <form #fImport="ngForm">
+
+    <!-- File -->
+    <app-input-file
+      [id]="'import-file'"
+      [form]="fImport"
+      [accept]="['.zip']"
+      [size]="'sm'"
+      [color]="'primary'"
+      [required]="true"
+      (valueChange)="this.importData.file = $event.item(0)">
+    </app-input-file>
+
+    <!-- Replace -->
+    <app-input-checkbox
+      [id]="'import-replace'"
+      [form]="fImport"
+      [(value)]="importData.replace"
+      [color]="'secondary'"
+      [classList]="'mt-2'"
+      [label]="'Replace duplicates'"
+      [labelPosition]="'right'">
+    </app-input-checkbox>
+
   </form>
 </ng-template>

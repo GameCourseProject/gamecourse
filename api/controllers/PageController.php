@@ -318,5 +318,20 @@ class PageController
         API::response($nrPagesImported);
     }
 
-    // TODO: export
+    /**
+     * Export page(s) from a given course.
+     * @throws Exception
+     */
+    public function exportPages(){
+        API::requireValues("courseId", "pagesIds");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $pagesIds = API::getValue("pagesIds", "array");
+
+        API::response(Page::exportPages($courseId, $pagesIds));
+    }
 }
