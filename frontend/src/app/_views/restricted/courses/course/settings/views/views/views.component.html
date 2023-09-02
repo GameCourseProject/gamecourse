@@ -43,7 +43,7 @@
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
               <button class="btn btn-sm btn-{{page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="doAction('make public/private', page)">
+                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
                 <ng-icon name="{{page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
                          class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-black' : 'text-white')}}">
                 </ng-icon>
@@ -51,7 +51,7 @@
             </ng-container>
             <ng-template #defaultButton>
               <button class="btn btn-sm btn-{{!page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="doAction('make public/private', page)">
+                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
                 <ng-icon name="{{!page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
                          class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-white' : 'text-dark')}}">
                 </ng-icon>
@@ -59,7 +59,7 @@
             </ng-template>
           </div>
           <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="doAction('configure visibility', page)">
+            (click)="chooseAction('configure visibility', page)">
             <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isVisible ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
             <span class="font-semibold my-0.5">{{page.isVisible ? 'Visible' : 'Not visible'}}</span>
           </div>
@@ -74,7 +74,7 @@
               </button>
 
               <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
-                <li *ngFor="let action of actions; let i = index" (click)="doAction(action.description, page)">
+                <li *ngFor="let action of actions; let i = index" (click)="chooseAction(action.description, page)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>
@@ -160,7 +160,7 @@
            [submitBtnText]="'Delete'"
            [submitBtnColor]="'error'"
            [actionInProgress]="loading.action"
-           (submitBtnClicked)="deletePage()"
+           (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #DELETE>
@@ -191,7 +191,7 @@
            [submitBtnText]="'Yes'"
            [submitBtnColor]="'error'"
            [actionInProgress]="loading.action"
-           (submitBtnClicked)="makePublicAndPrivate()"
+           (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #MAKE_PUBLIC_PRIVATE>
@@ -220,7 +220,7 @@
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
            [size]="'md'"
-           (submitBtnClicked)="fPage.onSubmit(null); configureVisibility()"
+           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #VISIBILITY>
@@ -278,7 +278,7 @@
            [submitBtnColor]="'error'"
            [actionInProgress]="loading.action"
            [size]="'md'"
-           (submitBtnClicked)="configureVisibility()"
+           (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #NOT_VISIBILITY>
@@ -299,7 +299,7 @@
            [submitBtnText]="'Save'"
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
-           (submitBtnClicked)="fPage.onSubmit(null); renamePage()"
+           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #RENAME>
@@ -331,7 +331,7 @@
            [submitBtnColor]="'primary'"
            [actionInProgress]="loading.action"
            [size]="'md'"
-           (submitBtnClicked)="fPage.onSubmit(null); duplicatePage()"
+           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
            (onClose)="resetChanges()">
 </app-modal>
 <ng-template #DUPLICATE>
@@ -389,17 +389,17 @@
   </form>
 </ng-template>
 
-<!-- Import Modal -->
+<!-- Import from PC Modal -->
 <app-modal *ngIf="mode === 'import-pc'"
-  [id]="'page-import'"
-  [templateRef]="IMPORT"
+  [id]="'page-import-pc'"
+  [templateRef]="IMPORT_PC"
   [header]="'Import Page(s) from PC'"
   [submitBtnText]="'Import'"
   [actionInProgress]="loading.action"
   (submitBtnClicked)="fImport.onSubmit(null); importPages()"
   (onClose)="resetChanges()">
 </app-modal>
-<ng-template #IMPORT>
+<ng-template #IMPORT_PC>
   <div class="prose flex items-center gap-1 mb-3">
     <p class="mb-0">Upload a .ZIP file containing pages information</p>
     <app-import-helper
@@ -435,4 +435,22 @@
     </app-input-checkbox>
 
   </form>
+</ng-template>
+
+<!-- Import from GameCourse Modal -->
+<app-modal *ngIf="mode === 'import-gc'"
+           [id]="'page-import-gc'"
+           [templateRef]="IMPORT_GC"
+           [header]="'Import Page from GameCourse'"
+           [submitBtnText]="'Import'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="fImport.onSubmit(null); importPages()"
+           (onClose)="resetChanges()">
+</app-modal>
+<!-- FIXME - should there be folder in course_data for public pages? -->
+<ng-template #IMPORT_GC>
+  <app-file-picker-modal
+    [id]="'file-picker-import-gc'"
+    [type]="'text/*'"
+  ></app-file-picker-modal>
 </ng-template>
