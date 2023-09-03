@@ -20,8 +20,10 @@ export class ViewsEditorComponent implements OnInit {
 
   course: Course;                 // Specific course in which page exists
   page: Page;                     // page where information will be saved
-
   pageToManage: PageManageData;   // Manage data
+
+  // Preview mode selected to render
+  previewMode: 'raw' | 'mock' | 'real' = 'raw';
 
   constructor(
     private api: ApiHttpService,
@@ -51,12 +53,25 @@ export class ViewsEditorComponent implements OnInit {
     })
   }
 
+  /*** --------------------------------------------- ***/
+  /*** -------------------- Init ------------------- ***/
+  /*** --------------------------------------------- ***/
+
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
   async getPage(pageID: number): Promise<void> {
     this.page = await this.api.getPageById(pageID).toPromise();
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  getIcon(mode: string): string {
+    if (mode === this.previewMode) return 'tabler-check';
+    else return '';
   }
 
 }

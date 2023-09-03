@@ -25,15 +25,15 @@
 
   <!-- TODO: Add icons -->
   <app-top-actions
-    [leftActions]="[{action: 'Undo', icon: ''}, {action: 'Redo', icon: ''}]"
-    [rightActions]="[{action: 'Versions', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
+    [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
+    [rightActions]="[{action: 'Versions', icon: 'tabler-caret-down', color: 'primary', outline: true,  dropdown: [
                         {action: 'Create version'},
                         {action: 'Manage versions'}
                       ]},
-                       {action: 'Preview', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                        {action: 'Raw (default)', icon:''},
-                        {action: 'Layout preview (mock data)', icon:''},
-                        {action: 'Final preview (real data)', icon:''}
+                       {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
+                        {action: 'Raw (default)', icon: getIcon('raw')},
+                        {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
+                        {action: 'Final preview (real data)', icon: getIcon('real')}
                       ]}]">
   </app-top-actions>
 
