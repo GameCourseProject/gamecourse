@@ -62,7 +62,13 @@ if __name__ == "__main__":
                 print(table_name + " - IMPORTED SUCCESSFULLY")
 
         print("---------------------------------")
-        print(str(len(list)) + " file(s) imported.")
+        if len(sys.argv) == 6:
+            msg = "1 file exported"
+
+        else:
+            msg = str(len(tables)) + "file(s) exported."
+
+        print(msg)
 
         # Enable foreign key checks again
         cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
@@ -70,3 +76,6 @@ if __name__ == "__main__":
         # Close the cursor and connection
         cursor.close()
         cnx.close()
+
+    else:
+        print("Arguments missing.")

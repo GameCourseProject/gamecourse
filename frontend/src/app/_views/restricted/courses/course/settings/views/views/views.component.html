@@ -39,7 +39,10 @@
     <div *ngFor="let page of pagesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
         <figure class="relative w-full aspect-square">
+
+          <!-- FIXME: Replace <img> with screenshots of pages -->
           <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
+
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
               <button class="btn btn-sm btn-{{page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"

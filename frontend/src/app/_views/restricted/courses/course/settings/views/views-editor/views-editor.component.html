@@ -9,7 +9,7 @@
 
   <ng-container>
     <div class="flex flex-wrap items-center">
-      <button type="button" class="btn btn-sm btn-ghost btn-circle">
+      <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="closeEditor()">
         <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
       </button>
       <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Pages'</i></span>
@@ -23,7 +23,6 @@
     </div>
   </div>
 
-  <!-- TODO: Add icons -->
   <app-top-actions
     [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
     [rightActions]="[{action: 'Versions', icon: 'tabler-caret-down', color: 'primary', outline: true,  dropdown: [
@@ -36,5 +35,78 @@
                         {action: 'Final preview (real data)', icon: getIcon('real')}
                       ]}]">
   </app-top-actions>
+
+  <div *ngIf="!loading.page" class="flex space-x-4 mt-4">
+    <!-- Menu of icons (for actions) -->
+    <div class="w-[8%]">
+      <div class="card card-compact bg-base-100 h-96 shadow-xl flex flex-col items-center">
+
+        <div class="dropdown dropdown-right">
+          <button class="btn btn-xs btn-ghost btn-circle mt-4 mb-4">
+            <ng-icon name="{{optionSelected === 'add-component' ? 'jam-plus-circle-f' : 'jam-plus-circle'}}" size="1.7rem"
+                     data-tip="Add component" class="tooltip tooltip-right hover:cursor-pointer
+                   {{optionSelected === 'add-component' ? 'text-primary' : 'text-dark'}}"
+                     (click)="selectOption('add-component')">
+            </ng-icon>
+          </button>
+
+          <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+            <li>
+              <div class="flex flex-col items-center">
+                <span class="font-semibold">Component1</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <span class="font-semibold">Component2</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <span class="font-semibold">Component3</span>
+              </div>
+            </li>
+            <li>
+              <div>
+                <span class="font-semibold">Component4</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+          <ng-icon name="{{optionSelected === 'add-component' ? 'jam-plus-circle-f' : 'jam-plus-circle'}}" size="1.7rem"
+                   data-tip="Add component" class="mt-4 mb-4 tooltip tooltip-right hover:cursor-pointer
+                   {{optionSelected === 'add-component' ? 'text-primary' : 'text-dark'}}"
+                   (click)="selectOption('add-component')">
+          </ng-icon>
+          <ng-icon name="{{optionSelected === 'add-section' ? 'jam-grid-f' : 'jam-grid'}}" size="1.7rem"
+                   data-tip="Add section" class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
+                   {{optionSelected === 'add-section' ? 'text-primary' : 'text-dark'}}"
+                   (click)="selectOption('add-section')">
+          </ng-icon>
+          <ng-icon name="{{optionSelected === 'choose-layout' ? 'jam-layout-f' : 'jam-layout'}}" size="1.7rem"
+                   data-tip="Choose layout" class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
+                   {{optionSelected === 'choose-layout' ? 'text-primary' : 'text-dark'}}"
+                   (click)="selectOption('choose-layout')">
+          </ng-icon>
+          <ng-icon name="feather-move" size="1.7rem" data-tip="Rerrange components"
+                   class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
+                   {{optionSelected === 'rearrange' ? 'text-primary' : 'text-dark'}}"
+                   (click)="selectOption('rearrange')">
+          </ng-icon>
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="flex-grow">
+      <div class="card card-compact bg-base-100 shadow-xl h-96">
+        <!-- TODO -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Loader -->
+  <app-loader [loading]="loading.page"></app-loader>
 
 </div>

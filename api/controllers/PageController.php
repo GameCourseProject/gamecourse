@@ -232,6 +232,25 @@ class PageController
     /*** --------------------------------------------- ***/
 
     /**
+     * Gets all existing viewTypes from DB
+     * @return void
+     * @throws Exception
+     */
+    public function getViewTypes(){
+        API::requireValues("courseId", "idsOnly");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        $idsOnly = API::getValue("idsOnly", "bool") ?? false;
+
+        $viewTypes = ViewHandler::getViewTypes($idsOnly);
+        API::response($viewTypes);
+
+    }
+
+    /**
      * Gets all View Templates in the course
      *
      * @return void

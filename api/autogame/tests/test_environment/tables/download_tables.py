@@ -32,18 +32,22 @@ if __name__ == "__main__":
         cnx = mysql.connector.connect(user=sys.argv[3], password=sys.argv[4], host=sys.argv[1], database=sys.argv[2])
         cursor = cnx.cursor(prepared=True)
 
-        # Delete all files before starting download
-        file_list = glob.glob(os.path.join(output_directory, '*'))
-
-        # Iterate over the files and delete 1 by 1
-        for file_path in file_list:
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-
         if len(sys.argv) == 6:
+            # Delete file before downloading
+            file_path = os.path.join(output_directory, sys.argv[5] + '.csv')
+            os.remove(file_path)
+
             query = "SELECT * FROM " + sys.argv[5] + ";"
 
         else:
+            # Delete all files before starting download
+            file_list = glob.glob(os.path.join(output_directory, '*'))
+
+            # Iterate over the files and delete 1 by 1
+            for file_path in file_list:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+
             query = "SHOW TABLES"
 
         cursor.execute(query)
@@ -56,7 +60,7 @@ if __name__ == "__main__":
                 table_name = table[0].decode()
 
             file_name = f"{table_name}.csv"
-            file_path = output_directory + file_name
+            file_path = os.path.join(output_directory, file_name)
 
             # Retrieve data from the table
             query = "SELECT * FROM " + table_name + ";"
@@ -79,7 +83,16 @@ if __name__ == "__main__":
                 break
 
         print("---------------------------------")
-        print(str(len(tables)) + " file(s) exported.")
+        if len(sys.argv) == 6:
+            msg = "1 file exported"
+
+        else:
+            msg = str(len(tables)) + " file(s) exported."
+
+        print(msg)
 
         cursor.close()
         cnx.close()
+
+    else:
+        print("Arguments missing.")

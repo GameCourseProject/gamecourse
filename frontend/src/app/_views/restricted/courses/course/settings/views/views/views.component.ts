@@ -28,8 +28,7 @@ export class ViewsComponent implements OnInit {
 
   loading = {
     page: true,
-    action: false,
-    table: false
+    action: false
   };
 
   course: Course;                 // Specific course in which pages are being manipulated
