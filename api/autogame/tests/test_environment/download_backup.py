@@ -7,30 +7,34 @@ import mysql.connector
 import subprocess
 
 # List of python scripts to run when downloading data
+# (path from current directory)
 download_scripts = [
-    #'/course_data/copy_course_data.py',
-    './tables/download_tables.py'
+    '/course_data/copy_course_data.py',
+    '/tables/download_tables.py'
 ]
 
-# CLI prompt: python3 [dbHost] [dbName] [dbUser] [dbPass] [table_name]
+# CLI prompt: python3 download_backup.py [dbHost] [dbName] [dbUser] [dbPass]
 if __name__ == "__main__":
     """
         This script is the responsible for downloading all data to back up.
         This includes downloading all tables from DB and copying the course_data folder.
-        
-        Optional to pass a specific table_name to download
     """
 
     args = sys.argv[1:]
-    print(args)
+    args.append('backup')
 
-    for script in download_scripts:
-        try:
-            subprocess.run(['python', script] + args, check=True)
+
+    try:
+        for script in download_scripts:
+            full_path = os.path.dirname(os.path.abspath(__file__)) + script
+            subprocess.run(['python3', full_path] + args, check=True)
             print(f"'{script}' done")
 
-        except subprocess.CalledProcessError as e:
-            print(f"Error running '{script}': {e}")
+        print("---------------------------------")
+        print("All data backed up successfully.")
 
-        except Exception as e:
-            print(f"Error: {e}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error running : {e}")
+
+    except Exception as e:
+        print(f"Error: {e}")

@@ -63,3 +63,4 @@ autogame/imported-functions/*/
 
 # Testing environment
 autogame/tests/test_environment/tables/tables_files/
+autogame/tests/test_environment/course_data/course_data_files/
