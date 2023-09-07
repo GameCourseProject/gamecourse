@@ -9,7 +9,7 @@ if __name__ == "__main__":
     """
         This script copies all the information inside the course_data folder into 
         the course_data_files folder of this directory.
-        
+
         Last argument backup only indicates if the file is being called from the download_backup.py script.
     """
 

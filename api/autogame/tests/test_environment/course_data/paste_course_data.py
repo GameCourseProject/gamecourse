@@ -8,7 +8,7 @@ import os, sys, shutil, json, csv, glob
 if __name__ == "__main__":
     """
         This script pastes all the information from course_data_files into the course_data folder.
-        
+
         Last argument backup is optional only indicates if the file is being called from the upload_backup.py script.
     """
 

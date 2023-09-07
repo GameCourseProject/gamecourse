@@ -10,7 +10,7 @@ if __name__ == "__main__":
     """
         This script uploads the information from cvs files inside the directory 
         tables_files into the DB. It acts as a re-instantiation of the DB for the testing environment.
-        
+
         Last argument its either [table_name] or [backup]:
             * table_name: When running this script only by itself, its optional to pass a specific table_name to upload
             * backup: Indicates when this script is being called from the upload_backup.py script
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         cursor = cnx.cursor(prepared=True)
 
         if len(sys.argv) == 6 and sys.argv[5] != 'backup':
-            list = [sys.argv[5]+ ".csv"]
+            list = [sys.argv[5] + ".csv"]
         else:
             list = os.listdir(input_directory)
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
                 if len(data) > 0:
                     # Construct the SQL INSERT statement and execute it to insert the data into the table
-                    query = "INSERT INTO " + table_name + f" VALUES ({', ' . join(['%s'] * len(data[0]))});"
+                    query = "INSERT INTO " + table_name + f" VALUES ({', '.join(['%s'] * len(data[0]))});"
 
                     parsed_data = []
                     for column in data:
@@ -64,7 +64,6 @@ if __name__ == "__main__":
 
                 if (len(sys.argv) == 6 and sys.argv[5] != 'backup') or len(sys.argv) == 5:
                     print(table_name + " - IMPORTED SUCCESSFULLY")
-
 
         if len(sys.argv) == 6 and sys.argv[5] != 'backup':
             msg = "1 file exported"

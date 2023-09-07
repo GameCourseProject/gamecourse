@@ -22,7 +22,7 @@ def decode_item(item):
 if __name__ == "__main__":
     """
         This script downloads information from the db's tables so later the DB can be re-instantiated for testing.
-        
+
         Last argument its either [table_name] or [backup]:
             * table_name: When running this script only by itself, its optional to pass a specific table_name to download
             * backup: Indicates when this script is being called from the download_backup.py script
