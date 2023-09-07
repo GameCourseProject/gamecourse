@@ -10,6 +10,7 @@ import { SanitizeHTMLPipe } from "./_pipes/sanitize-html.pipe";
 // Directives
 import { ClickedOutsideDirective } from "./_directives/clicked-outside.directive";
 import { ViewSelectionDirective } from "./_directives/view-selection.directive";
+import { ScrollableDragDirective } from "./_directives/scrollable-drag.directive";
 import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
 import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
 import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
@@ -209,6 +210,7 @@ import {
 
     ClickedOutsideDirective,
     ViewSelectionDirective,
+    ScrollableDragDirective,
     GoToPageDirective,
     ShowTooltipDirective,
     TableDataCustomDirective,
@@ -365,7 +367,8 @@ import {
     ComingSoonComponent,
 
     NgIconsModule,
-    FormsModule
+    FormsModule,
+    ScrollableDragDirective
   ],
   imports: [
     CommonModule,
