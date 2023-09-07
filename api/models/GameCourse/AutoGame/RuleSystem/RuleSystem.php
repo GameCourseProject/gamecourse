@@ -291,8 +291,7 @@ abstract class RuleSystem
         $dbPass = DB_PASSWORD;
 
         $scriptPath = ROOT_PATH . "autogame/get_functions.py";
-        // FIXME -- change "python" to "python3"
-        $cmd = "python \"$scriptPath\" $courseId \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
+        $cmd = "python3 \"$scriptPath\" $courseId \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
 
         $output = null;
         exec($cmd, $output);
@@ -343,7 +342,7 @@ abstract class RuleSystem
     public static function getMetadata(int $courseId){
 
         $scriptPath = ROOT_PATH . "autogame/get_metadata.py";
-        $cmd = "python \"$scriptPath\" $courseId"; // FIXME -- change "python" to "python3"
+        $cmd = "python3 \"$scriptPath\" $courseId";
 
         $output = null;
         exec($cmd, $output);
@@ -395,26 +394,6 @@ abstract class RuleSystem
 
         // FIXME -- Uncomment later
         // AutoGame::run($courseId, true, null, true);
-
-        /*
-         * Ends up using command: (Use in terminal to test)
-         * "python C:\xampp\htdocs\gamecourse\api\inc/../autogame/run_autogame_test.py 1 all
-         * "C:\xampp\htdocs\gamecourse\api\inc/../course_data/1-pcm/rules"
-         * "C:\xampp\htdocs\gamecourse\api\inc/../logs/autogame/autogame_1.txt" "localhost" "gamecourse" "root" """
-         */
-
-        // NOTE: ITS HARDCODED
-        $dbHost = DB_HOST;
-        $dbName = DB_NAME;
-        $dbUser = DB_USER;
-        $dbPass = DB_PASSWORD;
-        $scriptPath = ROOT_PATH . "autogame/run_autogame_test.py";
-        $rulesPath = ROOT_PATH . "course_data/1-my_pcm/rules";
-        $logsFile = ROOT_PATH . "logs/autogame/autogame_1.txt";
-        $cmd = "python \"$scriptPath\" $courseId \"all\" \"$rulesPath\" \"$logsFile\" \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
-
-
-        system($cmd);
     }
 
     /**

@@ -59,7 +59,9 @@ autogame/imported-functions/*/
 !/autogame/config/samples
 !/autogame/config/samples/**
 /inc/config_testing.php
+/inc/config_production.php
 
 
 # Testing environment
-autogame/tests/test_environment/tables_files/
+autogame/tests/test_environment/tables/tables_files/
+autogame/tests/test_environment/course_data/course_data_files/
