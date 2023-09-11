@@ -77,11 +77,11 @@ const routes: Routes = [
       },
       {
         path: 'pages',
-        component: ComingSoonComponent,
+        component: ViewsComponent,
       },
       {
         path: 'pages/editor/:id',
-        component: ComingSoonComponent
+        component: ViewsEditorComponent
       },
       {
         path: 'pages/editor/new-page',
