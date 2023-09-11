@@ -81,194 +81,178 @@ export class ViewsEditorComponent implements OnInit {
             { title: ViewType.BLOCK,
               isSelected: false,
               helper: 'Component composed by other components.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.BUTTON,
               isSelected: false,
               helper: 'Component that displays different types of buttons.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.CHART,
               isSelected: false,
               helper: 'Component composed by other components.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.COLLAPSE,
               isSelected: false,
               helper: 'Component that can hide or show other components.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.ICON,
               isSelected: false,
               helper: 'Displays an icon.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.IMAGE,
               isSelected: false,
               helper: 'Displays either simple static visual components or more complex ones built using expressions',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.TABLE,
               isSelected: false,
               helper: 'Displays a table with columns and rows. Can display a variable number of headers as well.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
             { title: ViewType.TEXT,
               isSelected: false,
               helper: 'Displays either simle static written components or more complex ones built using expressions.',
-              items: {
-                system: {
-                  title : 'System',
+              items: [
+                { type: 'System',
                   isSelected: false,
-                  helper: 'System components are provided by GameCourse and already configured and ready for use.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
                 },
-                custom: {
-                  title: 'Custom',
+                { type: 'Custom',
                   isSelected: false,
-                  helper: 'Custom components are created by users in this course.',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
                 },
-                shared: {
-                  title: 'Shared',
+                {
+                  type: 'Shared',
                   isSelected: false,
-                  helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
-                  items: [] // FIXME: should get them from backend
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
                 }
-              }
+              ]
             },
           ]
       }},
@@ -305,17 +289,23 @@ export class ViewsEditorComponent implements OnInit {
   /*** ------------------------------------------------ ***/
 
   selectOption(option: Option) {
+    console.log("ANTES: ", this.options);
     // if there's another option already selected
-    let index = this.options.findIndex(op => op.isSelected);
-    if (index !== -1 && this.options[index] !== option) {
-      this.options[index].isSelected = false;
-      this.activeSubMenu = null;
+    let flag = false;
+    for (let i = 0; i < this.options.length; i++) {
+      if (this.options[i] === option){
+        flag = true;
+        continue;
+      }
+      this.options[i].isSelected = false;
     }
 
+    if (flag) this.resetMenus();
     option.isSelected = !option.isSelected;
 
     // No menus active
     if (!option.isSelected) this.resetMenus();
+    console.log("DPS: ", this.options);
   }
 
   triggerSubMenu(subMenu: SubMenu, index: number) {
@@ -328,7 +318,6 @@ export class ViewsEditorComponent implements OnInit {
 
     // Trigger the selected subMenu
     subMenu.isSelected = !subMenu.isSelected;
-
     this.activeSubMenu = subMenu.isSelected ? subMenu : null;
   }
 
@@ -342,19 +331,17 @@ export class ViewsEditorComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getCourseColor(): string {
-    return this.course.color;
-  }
-
   getIcon(mode: string): string {
     if (mode === this.previewMode) return 'tabler-check';
     else return '';
   }
 
-  getItems(option?: Option, subItems?: SubMenu) {
-    if (option) return Object.keys(option.subMenu.items);
-    if (subItems) return Object.keys(subItems.items);
-    else return [];
+  getItems(option: Option) {
+    return Object.keys(option.subMenu.items);
+  }
+
+  getCategoryListItem(): CategoryList[]{
+    return this.activeSubMenu.items as CategoryList[];
   }
 
   resetMenus(){
@@ -362,16 +349,22 @@ export class ViewsEditorComponent implements OnInit {
     for (let i = 0; i < this.options.length; i++){
       this.options[i].isSelected = false;
 
-      for (const key in this.options[i].subMenu.items) {
-        this.options[i].subMenu.items[key].isSelected = false;
+      for (let j = 0; j < this.options[i].subMenu?.items.length; i++){
+        this.options[i].subMenu.items[j].isSelected = false;
       }
     }
   }
 
-  selectItemType(){
-    for (const item in this.activeSubMenu){
-      this.activeSubMenu.items[item].isSelected = !this.activeSubMenu.items[item].isSelected;
+  selectCategory(index: number){
+    // reset all categories previously selected
+    let items = this.activeSubMenu.items
+    for (let i = 0; i < items.length; i ++){
+      if (i === index) continue;
+      this.activeSubMenu.items[i].isSelected = false;
     }
+
+    // toggle selected category
+    this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
   }
 
 }
@@ -388,11 +381,18 @@ export interface SubMenu {
   title: string,
   isSelected?: boolean,
   helper?: string,
-  items: SubMenu[] | { system: SubMenu, custom: SubMenu, shared: SubMenu } | null
+  items: SubMenu[] | CategoryList[]
 }
 
 export interface CategoryList {
-  category: 'System' | 'Custom' | 'Shared',
-  items: []
+  type?: 'System' | 'Custom' | 'Shared',
+  isSelected: boolean,
+  helper?: TypeHelper,
+  list: any | { category: string, items: any[] }
+}
 
+export enum TypeHelper {
+  SYSTEM = 'System components are provided by GameCourse and already configured and ready for use.',
+  CUSTOM = 'Custom components are created by users in this course.',
+  SHARED = 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses.'
 }

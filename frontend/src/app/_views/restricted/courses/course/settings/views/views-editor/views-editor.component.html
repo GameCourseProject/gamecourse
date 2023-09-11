@@ -49,7 +49,7 @@
                      (click)="selectOption(option)">
             </ng-icon>
           </button>
-          <div *ngIf="option.isSelected && option.description === 'Rearrange'" class="z-[1] border border-1 border-primary
+          <div *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-[1] border border-1 border-primary
             absolute left-8 -mt-10 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
             <div class="p-4">
               <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
@@ -63,24 +63,24 @@
               </div>
             </div>
 
-            <div *ngIf="activeSubMenu" class="z-[1] border border-1 border-primary absolute left-[12.5rem] w-60
+            <div *ngIf="activeSubMenu" class="z-[1] border border-1 border-primary absolute left-[12.5rem] w-[20rem]
               rounded rounded-xl shadow-lg bg-primary bg-opacity-60 card card-compact">
               <div class="p-4">
                 <h2 class="text-xl font-semibold text-center text-white mb-2">{{activeSubMenu.title.capitalize()}}</h2>
                 <div class="w-full bg-base-300 rounded-xl flex">
-                  <div class="border-r border-1.5 border-gray-500 w-[calc(50%-0.25rem)]">
+                  <div class="border-r border-1.5 border-gray-500 w-[calc(34% + 0.25rem)]">
                     <ul>
-                      <li *ngFor="let item of getItems(null, activeSubMenu)">
-                        <div class="mt-1 ml-4 hover:cursor-pointer hover:text-secondary text-semibold
-                        {{ activeSubMenu.items[item].isSelected ? 'badge badge-secondary' : '' }}" (click)="selectItemType()">
-                          <span>{{item}}</span>
+                      <li *ngFor="let item of getCategoryListItem(), let i = index">
+                        <div class="mt-1 mb-1 mx-3 hover:cursor-pointer hover:badge-secondary text-semibold
+                        badge badge-secondary badge-lg {{ item.isSelected ? '' : 'badge-outline' }}" (click)="selectCategory(i)">
+                          <span class="hover:text-white">{{item?.type}}</span>
                         </div>
                       </li>
                     </ul>
                   </div>
 
                   <div class="overflow-y-auto overflow-x-auto mt-2">
-                    <span class="text-base-content text-opacity-50 p-5 text-sm">Select category</span>
+                    <span class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
                   </div>
 
                 </div>
