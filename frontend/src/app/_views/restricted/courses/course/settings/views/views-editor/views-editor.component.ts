@@ -25,6 +25,7 @@ export class ViewsEditorComponent implements OnInit {
   previewMode: 'raw' | 'mock' | 'real' = 'raw';   // Preview mode selected to render
 
   options: Option[];
+  activeSubMenu: SubMenu;
 
   constructor(
     private api: ApiHttpService,
@@ -70,166 +71,200 @@ export class ViewsEditorComponent implements OnInit {
   setOptions(){
     // FIXME: move to backend maybe ?
     this.options =  [
-      { icon: 'jam-plus-circle', iconSelected: 'jam-plus-circle-f',
-        isSelected: false, description: 'Add component',
+      { icon: 'jam-plus-circle',
+        iconSelected: 'jam-plus-circle-f',
+        isSelected: false,
+        description: 'Add component',
         subMenu: {
           title: 'Components',
           items: [
             { title: ViewType.BLOCK,
+              isSelected: false,
               helper: 'Component composed by other components.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.BUTTON,
+              isSelected: false,
               helper: 'Component that displays different types of buttons.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.CHART,
+              isSelected: false,
               helper: 'Component composed by other components.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.COLLAPSE,
+              isSelected: false,
               helper: 'Component that can hide or show other components.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.ICON,
+              isSelected: false,
               helper: 'Displays an icon.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.IMAGE,
+              isSelected: false,
               helper: 'Displays either simple static visual components or more complex ones built using expressions',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.TABLE,
+              isSelected: false,
               helper: 'Displays a table with columns and rows. Can display a variable number of headers as well.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
               }
             },
             { title: ViewType.TEXT,
+              isSelected: false,
               helper: 'Displays either simle static written components or more complex ones built using expressions.',
               items: {
                 system: {
                   title : 'System',
+                  isSelected: false,
                   helper: 'System components are provided by GameCourse and already configured and ready for use.',
                   items: [] // FIXME: should get them from backend
                 },
                 custom: {
                   title: 'Custom',
+                  isSelected: false,
                   helper: 'Custom components are created by users in this course.',
                   items: [] // FIXME: should get them from backend
                 },
                 shared: {
                   title: 'Shared',
+                  isSelected: false,
                   helper: 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses',
                   items: [] // FIXME: should get them from backend
                 }
@@ -237,20 +272,31 @@ export class ViewsEditorComponent implements OnInit {
             },
           ]
       }},
-      { icon: 'jam-grid', iconSelected: 'jam-grid-f', isSelected: false,
+      { icon: 'jam-grid',
+        iconSelected: 'jam-grid-f',
+        isSelected: false,
         description: 'Add Section',
         subMenu: {
           title: 'Sections',
           helper: 'Small pages parts that are already configured and come from modules.',
           items: []
       }},
-      { icon: 'jam-layout', iconSelected: 'jam-layout-f', isSelected: false, description: 'Choose Layout',
+      { icon: 'jam-layout',
+        iconSelected: 'jam-layout-f',
+        isSelected: false,
+        description: 'Choose Layout',
         subMenu: {
           title: 'Templates',
           helper: 'Templates are final drafts of pages that have not been published yet. Its a layout of what a future page will look like.',
-          items: [] }},
-      { icon: 'feather-move', iconSelected: 'feather-move', isSelected: false, description: 'Rearrange',
-        subMenu: {title: 'Rearrange' }}
+          items: []
+        }
+      },
+      {
+        icon: 'feather-move',
+        iconSelected: 'feather-move',
+        isSelected: false,
+        description: 'Rearrange'
+      }
     ];
   }
 
@@ -260,14 +306,30 @@ export class ViewsEditorComponent implements OnInit {
 
   selectOption(option: Option) {
     // if there's another option already selected
-    let index = this.options.findIndex(op => op.isSelected && op !== option);
-    if (index !== -1) this.options[index].isSelected = !this.options[index].isSelected;
+    let index = this.options.findIndex(op => op.isSelected);
+    if (index !== -1 && this.options[index] !== option) {
+      this.options[index].isSelected = false;
+      this.activeSubMenu = null;
+    }
 
     option.isSelected = !option.isSelected;
+
+    // No menus active
+    if (!option.isSelected) this.resetMenus();
   }
 
-  openSubMenu(option: Option, index: number) {
-    console.log(option.subMenu.items[index].items);
+  triggerSubMenu(subMenu: SubMenu, index: number) {
+    // make all other subMenus not selected
+    let items = this.options[index].subMenu.items;
+    for (const key in items){
+      if (items[key] === subMenu) continue;
+      items[key].isSelected = false;
+    }
+
+    // Trigger the selected subMenu
+    subMenu.isSelected = !subMenu.isSelected;
+
+    this.activeSubMenu = subMenu.isSelected ? subMenu : null;
   }
 
   async closeEditor(){
@@ -289,8 +351,27 @@ export class ViewsEditorComponent implements OnInit {
     else return '';
   }
 
-  getItems(option: Option){
-    return Object.keys(option.subMenu.items);
+  getItems(option?: Option, subItems?: SubMenu) {
+    if (option) return Object.keys(option.subMenu.items);
+    if (subItems) return Object.keys(subItems.items);
+    else return [];
+  }
+
+  resetMenus(){
+    this.activeSubMenu = null;
+    for (let i = 0; i < this.options.length; i++){
+      this.options[i].isSelected = false;
+
+      for (const key in this.options[i].subMenu.items) {
+        this.options[i].subMenu.items[key].isSelected = false;
+      }
+    }
+  }
+
+  selectItemType(){
+    for (const item in this.activeSubMenu){
+      this.activeSubMenu.items[item].isSelected = !this.activeSubMenu.items[item].isSelected;
+    }
   }
 
 }
@@ -300,11 +381,18 @@ export interface Option {
   iconSelected: string,
   isSelected: boolean,
   description: string,
-  subMenu: subMenu
+  subMenu?: SubMenu
 }
 
-export interface subMenu {
+export interface SubMenu {
   title: string,
+  isSelected?: boolean,
   helper?: string,
-  items?: subMenu[] | { system: subMenu, custom: subMenu, shared: subMenu } | null
+  items: SubMenu[] | { system: SubMenu, custom: SubMenu, shared: SubMenu } | null
+}
+
+export interface CategoryList {
+  category: 'System' | 'Custom' | 'Shared',
+  items: []
+
 }

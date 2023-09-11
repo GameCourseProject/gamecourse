@@ -41,7 +41,7 @@
     <div class="w-[8%]">
       <div class="card card-compact bg-base-100 h-96 shadow-xl flex flex-col items-center">
 
-        <div *ngFor="let option of options;" class="relative inline-block text-left">
+        <div *ngFor="let option of options; let j = index" class="relative inline-block text-left">
           <button class="btn btn-xs btn-ghost btn-circle mt-3 mb-3">
             <ng-icon name="{{option.isSelected ? option.iconSelected : option.icon }}" size="1.7rem"
                      class="tooltip tooltip-right hover:cursor-pointer
@@ -49,20 +49,46 @@
                      (click)="selectOption(option)">
             </ng-icon>
           </button>
-          <div *ngIf="option.isSelected" class="z-[1] border border-1 border-primary absolute left-8 -mt-10 w-48
-              rounded rounded-lg shadow-lg bg-base-300 card card-compact">
+          <div *ngIf="option.isSelected && option.description === 'Rearrange'" class="z-[1] border border-1 border-primary
+            absolute left-8 -mt-10 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
             <div class="p-4">
               <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
-              <div class="bg-primary bg-opacity-60 rounded-lg flex">
+              <div class="bg-primary bg-opacity-60 rounded-xl flex">
                 <ul>
-                  <li *ngFor="let item of getItems(option), let i = index" (click)="openSubMenu(option, i)"
-                    class="my-1.5 ml-5 block text-gray-700 font-semibold hover:text-white hover:cursor-pointer">
+                  <li *ngFor="let item of getItems(option), let i = index" (click)="triggerSubMenu(option.subMenu.items[item], j)"
+                    class="my-1.5 ml-5 block {{option.subMenu.items[item].isSelected ? 'text-white' : 'text-gray-700' }} font-semibold hover:text-white hover:cursor-pointer">
                     <span>{{option.subMenu.items[item].title.capitalize()}}</span>
                   </li>
                 </ul>
               </div>
             </div>
+
+            <div *ngIf="activeSubMenu" class="z-[1] border border-1 border-primary absolute left-[12.5rem] w-60
+              rounded rounded-xl shadow-lg bg-primary bg-opacity-60 card card-compact">
+              <div class="p-4">
+                <h2 class="text-xl font-semibold text-center text-white mb-2">{{activeSubMenu.title.capitalize()}}</h2>
+                <div class="w-full bg-base-300 rounded-xl flex">
+                  <div class="border-r border-1.5 border-gray-500 w-[calc(50%-0.25rem)]">
+                    <ul>
+                      <li *ngFor="let item of getItems(null, activeSubMenu)">
+                        <div class="mt-1 ml-4 hover:cursor-pointer hover:text-secondary text-semibold
+                        {{ activeSubMenu.items[item].isSelected ? 'badge badge-secondary' : '' }}" (click)="selectItemType()">
+                          <span>{{item}}</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="overflow-y-auto overflow-x-auto mt-2">
+                    <span class="text-base-content text-opacity-50 p-5 text-sm">Select category</span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
           </div>
+
         </div>
 
         <!--<div *ngFor="let option of options; let i = index">
