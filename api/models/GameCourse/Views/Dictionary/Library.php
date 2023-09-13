@@ -66,7 +66,7 @@ abstract class Library
     /**
      * Gets library functions metadata. This is useful for
      * Expression Language auto-complete functionality.
-     *
+     * TODO: Each getFunctions from library should also include description of each argument
      * @return array|null
      */
     public function getFunctions(): ?array

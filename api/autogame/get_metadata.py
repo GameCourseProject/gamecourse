@@ -7,7 +7,7 @@ import json
 from run_autogame import get_metadata
 from tests import context
 
-# CLI prompt: python3 get_functions.py [courseId]
+# CLI prompt: python3 get_metadata.py [courseId]
 if __name__ == "__main__":
     """
     This script retrieves information regarding the metadata of autogame on a given course
