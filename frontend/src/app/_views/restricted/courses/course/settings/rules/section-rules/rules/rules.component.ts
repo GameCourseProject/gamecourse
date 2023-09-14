@@ -4,15 +4,15 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Course} from "../../../../../../../../_domain/courses/course";
 import {RuleTag} from "../../../../../../../../_domain/rules/RuleTag";
 import {
-  CustomFunction,
   CodeTab,
+  CustomFunction,
   OutputTab,
   ReferenceManualTab
 } from "../../../../../../../../_components/inputs/code/input-code/input-code.component"
 import {Subject} from "rxjs";
 
 import * as _ from "lodash";
-import { Rule } from "src/app/_domain/rules/rule";
+import {Rule} from "src/app/_domain/rules/rule";
 import {clearEmptyValues} from "../../../../../../../../_utils/misc/misc";
 import {AlertService, AlertType} from "../../../../../../../../_services/alert.service";
 import {NgForm} from "@angular/forms";
@@ -179,11 +179,18 @@ export class RulesComponent implements OnInit {
 
     for (let i = 0; i < this.functions.length; i++) {
       let description = this.functions[i].description;
-      let returnType = description.indexOf(":returns:");
-      let finalString = description.slice(returnType);
-      this.functions[i].returnType = finalString.replace(":returns:", "-> ");
+      const startMarker = ":example:";
+      const startIndex = description.indexOf(startMarker);
 
-      this.functions[i].description = description.slice(0, returnType);
+      if (startIndex !== -1) {
+        const exampleText = description.substring(startIndex + startMarker.length).trim();
+        this.functions[i].example = exampleText;
+        description = description.substring(0, startIndex).trim();
+      }
+
+// Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
+      this.functions[i].description = description;
+      this.functions[i].returnType = "-> " + this.functions[i].returnType;
     }
 
     this.ELfunctions = await this.api.getELFunctions().toPromise();

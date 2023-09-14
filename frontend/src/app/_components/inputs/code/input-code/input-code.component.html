@@ -68,7 +68,7 @@
 
 
           <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2">
-            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 mt-40 justify-center">
+            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
               Select a function
             </span>
 
@@ -77,28 +77,47 @@
                 <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
-              <div class="mb-4">
+              <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
                 <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
-
                 <div *ngFor="let arg of selectedFunction.args, let i = index">
-                  <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                    {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                    <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
+                      {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
                 </div>
 
-                <span>) : {{selectedFunction.returnType.removeWord('->')}}</span>
+                <span>) : {{selectedFunction.returnType}}</span>
               </div>
 
-              <div><strong>Description: </strong>{{selectedFunction.description}}</div><br>
+              <div *ngIf="selectedFunction.args.length === 0" class="mb-4">
+                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
+              </div>
+
+              <div><span><strong>Description: </strong>{{selectedFunction.description}}</span></div><br *ngIf="selectedFunction.example">
+              <div *ngIf="selectedFunction.example">
+                <span><strong>Example: </strong></span><br>
+                <span *ngFor="let examplePart of getExampleParts(selectedFunction.example)" class="text-sm">
+                  <div class="ml-4"><strong>></strong> {{examplePart}}</div>
+                </span>
+              </div><br>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
               </div><br *ngIf="selectedFunction.name !== 'gamerules'">
 
-              <div><strong>Args:</strong>
-                <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
-                  <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
-                </ng-container>
-              </div><br>
+              <div *ngIf="selectedFunction.name === 'gamerules'">
+                <span><strong>Args:</strong></span><br>
+                <span *ngFor="let arg of selectedFunction.args, let i = index" class="text-sm">
+                  <div class="ml-4"><strong>- {{arg.name}} : </strong>{{arg.description}}</div>
+                </span>
+              </div><br *ngIf="selectedFunction.name === 'gamerules'">
+
+              <!-- Replace later when argument's descriptions are added (in backend) -->
+              <ng-container *ngIf="selectedFunction.name !== 'gamerules' && selectedFunction.args.length > 0">
+                <div><strong>Args:</strong>
+                  <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
+                    <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                  </ng-container>
+                </div><br>
+              </ng-container>
 
               <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
             </div>

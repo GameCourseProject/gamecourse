@@ -549,6 +549,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  getExampleParts(text: string){
+    text = '\n' + text;
+    return (text.split('\n>')).slice(1);
+  }
+
   containsFunctions(namespace: string) {
     let namespaces = this.functionsToShow.map(fx => fx.name);
     return namespaces.includes(namespace)
@@ -631,6 +636,7 @@ export interface CustomFunction {
   name: string,                                           // Name of the module or library the function belongs to
   keyword: string,                                        // Name of the function
   description: string,                                    // Description of the function (what it does + return type)
-  args: {name: string, optional: boolean, type: any}[],   // Arguments that each function receives
+  example?: string
+  args: {name: string, optional: boolean, type: string, description: string}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
 }
