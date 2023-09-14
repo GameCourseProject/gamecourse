@@ -291,7 +291,7 @@ abstract class RuleSystem
         $dbPass = DB_PASSWORD;
 
         $scriptPath = ROOT_PATH . "autogame/get_functions.py";
-        $cmd = "python \"$scriptPath\" $courseId \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
+        $cmd = "python3 \"$scriptPath\" $courseId \"$dbHost\" \"$dbName\" \"$dbUser\" \"$dbPass\"";
 
         $output = null;
         exec($cmd, $output);
@@ -378,7 +378,7 @@ abstract class RuleSystem
     public static function getMetadata(int $courseId){
 
         $scriptPath = ROOT_PATH . "autogame/get_metadata.py";
-        $cmd = "python \"$scriptPath\" $courseId";
+        $cmd = "python3 \"$scriptPath\" $courseId";
 
         $output = null;
         exec($cmd, $output);
