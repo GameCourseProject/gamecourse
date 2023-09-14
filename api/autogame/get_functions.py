@@ -21,6 +21,7 @@ if __name__ == "__main__":
 
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "imported-functions", course)
         res = import_functions_from_rulepath(path, info=True)
+
         if len(res) == 3:
             functions, fpaths, info = res
 
