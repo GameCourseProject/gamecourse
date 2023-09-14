@@ -7,7 +7,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def rule_effect(func):
-	""" decorator that wraps the result of a function in a special Output """
 	from ..rules import Effect
 	def func_wrapper(*args, **kwargs):
 		return Effect(func(*args, **kwargs))
@@ -74,7 +73,8 @@ def import_functions_from_rulepath (p, info=False):
 	if not os.path.exists(p):
 		return functions, fpaths
 	import imp
-
+	import inspect
+	effect_rules = []
 	for entry in os.listdir(p):
 		# skip private names
 		if entry.startswith("_"):
@@ -98,6 +98,28 @@ def import_functions_from_rulepath (p, info=False):
 			   or not hasattr(obj,"__gamerules__"):
 				continue
 			if hasattr(obj,"__rule_effect__"):
+				rule_info = {}
+				rule_info["name"] = name
+				rule_info["description"] = obj.__doc__
+				rule_info["args"] = []
+
+				for param in inspect.signature(obj).parameters.values():
+					argument = {}
+					argument["name"] = param.name
+					argument["description"] = None
+					if (param.default is param.empty):
+						argument["type"] = None
+						argument["optional"] = "0"
+					else:
+						if param.default != None:
+							argument["type"] = type(param.default).__name__
+						else:
+							argument["type"] = None
+						argument["optional"] = "1"
+
+					rule_info["args"].append(argument)
+
+				effect_rules.append(rule_info)
 				obj = rule_effect(obj)
 			functions[name] = obj
 			fpaths.add(module_path,name)
@@ -106,6 +128,7 @@ def import_functions_from_rulepath (p, info=False):
 	else:
 		from inspect import signature, getdoc, cleandoc
 		info = []
+
 		for func in functions:
 			function_info = {}
 			function_info["moduleId"] = "gamerules"
@@ -116,24 +139,34 @@ def import_functions_from_rulepath (p, info=False):
 			func_args = functions[func].__code__.co_varnames[:functions[func].__code__.co_argcount]
 			func_sig = signature(functions[func])
 
-			description = getdoc(functions[func])
+			found = next((dict for dict in effect_rules if dict["name"] == func), None)
 
-			for param in func_sig.parameters.values():
-				argument = {}
-				argument["name"] = param.name
-				if (param.default is param.empty):
-					argument["type"] = None
-					argument["optional"] = "0"
-				else:
-					if param.default != None:
-						argument["type"] = type(param.default).__name__
-					else:
+			if found:
+				description = found["description"]
+				for param in found["args"]:
+					function_info["args"].append(param)
+
+			else:
+				description = getdoc(functions[func])
+
+				for param in func_sig.parameters.values():
+					argument = {}
+					argument["name"] = param.name
+					argument["description"] = None
+					if (param.default is param.empty):
 						argument["type"] = None
-					argument["optional"] = "1"
+						argument["optional"] = "0"
+					else:
+						if param.default != None:
+							argument["type"] = type(param.default).__name__
+						else:
+							argument["type"] = None
+						argument["optional"] = "1"
 
-				function_info["args"].append(argument)
+					function_info["args"].append(argument)
 
-			function_info["description"] = "" if description == None else description.replace("  ", "")
+			function_info["description"] = "" if description is None else description.replace("  ", "")
+			function_info["returnType"] = None
 			info.append(function_info)
 		return functions, fpaths, info
 

@@ -298,13 +298,42 @@ abstract class RuleSystem
         $funcs = array();
         if ($output != null && sizeof($output) > 0) {
             $funcs = json_decode($output[0]);
-            //var_dump($funcs);
+
         }
 
-        $myFunctions = [];
-        foreach ($funcs as $function){
-            var_dump($function);
-            //$myFunction["name"] = $function
+        // Parsing documentation before sending it to frontend
+        foreach($funcs as $function){
+            $text = $function->description;
+            $descriptionStartPos = strpos($text, ":description:");
+            $descriptionEndPos = strpos($text, ":arg");
+
+            if ($descriptionStartPos !== false && $descriptionEndPos !== false) {
+                $function->description = trim(substr($text, $descriptionStartPos + strlen(":description:"),
+                    $descriptionEndPos - $descriptionStartPos - strlen(":description:")));
+
+                $returnsStartPos = strpos($text, ":returns:");
+                $function->returnType = trim(substr($text, $returnsStartPos + strlen(":returns:")));
+
+                $args = $function->args;
+                foreach ($args as $arg) {
+                    $argStartPos = strpos($text, ":arg " . $arg->name . ":");
+                    $argEndPos = strpos($text, ":type " . $arg->name . ":");
+
+                    $arg->description = trim(substr($text, $argStartPos + strlen(":arg " . $arg->name . ":"),
+                        $argEndPos - $argStartPos - strlen(":arg " . $arg->name . ":")));
+
+                    $typeStartPos = $argEndPos + strlen(":type " . $arg->name . ":");
+                    $typeEndPos = strpos($text, ":arg", $argEndPos + 1);
+
+                    // No more args, only :returns:
+                    if ($typeEndPos === false) {
+                        $typeEndPos = strpos($text, ":returns:");
+                    }
+
+                    $arg->type = trim(substr($text, $typeStartPos, $typeEndPos - $typeStartPos));
+
+                }
+            }
         }
 
         return $funcs;

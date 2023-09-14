@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import config, re
 
-from decorators import rule_function, rule_effect
+from decorators import rule_function, rule_effect, rule_effect_doc
 from gamerules.connector import gamecourse_connector as connector
 
 
@@ -395,15 +395,15 @@ def get_url_view_logs(target, name=None):
 @rule_function
 def get_consecutive_logs(logs):
     """
-    :description: Gets consecutive logs on a set of logs. The order is defined by the log's 1st number in description:
+    :description: Gets consecutive logs on a set of logs. The order is defined by the log's 1st number in description.
     :example:
-        > "1" -> order 1
-        > "Quiz 1" -> order 1
-        > "1 - Quiz" -> order 1
-        > "Quiz 1 (22/01/2023)" -> will raise error
-        > "1 - Quiz (22/01/2023)" -> will raise error
-        > "Quiz (22/01/2023) - 1" -> will raise error
-        > "Quiz" -> will raise error
+        > "1" ==> order 1
+        > "Quiz 1" ==> order 1
+        > "1 - Quiz" ==> order 1
+        > "Quiz 1 (22/01/2023)" ==> will raise error
+        > "1 - Quiz (22/01/2023)" ==> will raise error
+        > "Quiz (22/01/2023) - 1" ==> will raise error
+        > "Quiz" ==> will raise error
 
 
     :arg logs: List of logs
@@ -853,7 +853,7 @@ def compute_lvl(val, *lvls):
     """
     :description: The purpose of this function is to determine which level a value belongs to.
                   It does so by matching the 'val' against the lvl requirements in 'lvls', when the 'val' is
-                  GREATER OR EQUAL to a lvl requirement it returns that lvl
+                  GREATER OR EQUAL to a lvl requirement it returns that lvl.
     :example:
         > compute_lvl(val=5, 2,4,6) ==> returns 2
         > compute_lvl(val=5, 1,5) ==> returns 2
@@ -1013,10 +1013,10 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 ### Awarding items
 
 @rule_effect
+@rule_effect_doc
 def award(target, award_type, description, reward, instance=None, unique=True, award_id=None):
     """
-    :description: Awards a single prize to a specific target. NOTE: will not retract, but will not award twice if unique.
-                  Updates award if reward has changed.
+    :description: Awards a single prize to a specific target. NOTE: will not retract, but will not award twice if unique. Updates award if reward has changed.
 
     :arg target: Student id to award. If no specific student, use 'target' keyword, which refers to
                  the student for whom the rule is being executed.
