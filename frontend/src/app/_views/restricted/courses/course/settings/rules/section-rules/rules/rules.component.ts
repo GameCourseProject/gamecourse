@@ -19,6 +19,7 @@ import {NgForm} from "@angular/forms";
 import {RuleSection} from "../../../../../../../../_domain/rules/RuleSection";
 import {ModalService} from "../../../../../../../../_services/modal.service";
 import {moveItemInArray} from "@angular/cdk/drag-drop";
+import {ThemingService} from "../../../../../../../../_services/theming/theming.service";
 
 @Component({
   selector: 'app-rules',
@@ -40,6 +41,10 @@ export class RulesComponent implements OnInit {
   ruleToManage: RuleManageData;                 // Manage data
   tags: RuleTag[];                              // Rule tags
   nameTags : {value: string, text: string}[];   // Tags with names formatted for the select-input
+
+  // Tutorial Modal
+  gettingStartedIndex: number = 1;
+  gettingStarted: boolean;                      // Modal for tutorial at beginning
 
   // Autogame metadata
   metadata: {[variable: string]: number}[];
@@ -65,7 +70,8 @@ export class RulesComponent implements OnInit {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private themingService: ThemingService
   ) {  }
 
   /*** --------------------------------------------- ***/
@@ -102,6 +108,8 @@ export class RulesComponent implements OnInit {
 
         this.isIncomplete();
         this.prepareCodeInputTabs();
+        this.gettingStarted = true;
+        ModalService.openModal('getting-started');
         this.loading.page = false;
       })
     })
@@ -183,12 +191,11 @@ export class RulesComponent implements OnInit {
       const startIndex = description.indexOf(startMarker);
 
       if (startIndex !== -1) {
-        const exampleText = description.substring(startIndex + startMarker.length).trim();
-        this.functions[i].example = exampleText;
+        this.functions[i].example = description.substring(startIndex + startMarker.length).trim();
         description = description.substring(0, startIndex).trim();
       }
 
-// Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
+      // Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
       this.functions[i].description = description;
       this.functions[i].returnType = "-> " + this.functions[i].returnType;
     }
@@ -317,6 +324,12 @@ export class RulesComponent implements OnInit {
     }
   }
 
+  closeTutorial(){
+    this.gettingStartedIndex = 0;
+    this.gettingStarted = false;
+    ModalService.closeModal('getting-started');
+  }
+
   /*async createRule() {
 
     const newRule = await this.api.createRule(clearEmptyValues(this.ruleToManage)).toPromise();
@@ -394,6 +407,10 @@ export class RulesComponent implements OnInit {
   async changeMetadata(newMetadata: string){
     this.showAlert = true;
     this.parsedMetadata = newMetadata;
+  }
+
+  getTheme(){
+    return this.themingService.getTheme();
   }
 
 }
