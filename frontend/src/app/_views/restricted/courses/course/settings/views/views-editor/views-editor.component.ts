@@ -256,15 +256,6 @@ export class ViewsEditorComponent implements OnInit {
             },
           ]
       }},
-      { icon: 'jam-grid',
-        iconSelected: 'jam-grid-f',
-        isSelected: false,
-        description: 'Add Section',
-        subMenu: {
-          title: 'Sections',
-          helper: 'Small pages parts that are already configured and come from modules.',
-          items: []
-      }},
       { icon: 'jam-layout',
         iconSelected: 'jam-layout-f',
         isSelected: false,
