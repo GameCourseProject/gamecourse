@@ -127,7 +127,10 @@
 
       <!-- Editor output tabs -->
       <div *ngIf="tab.type === 'output' && tab.active">
+        <app-coming-soon></app-coming-soon>
+        <!-- TODO: UNCOMMENT THIS PART LATTER -->
         <!-- Warning message -->
+        <!--
         <div class="justify-center flex">
           <div *ngIf="isRunning(tab)" class="alert alert-warning shadow-lg rounded-lg w-[calc(90%-0.5rem)] mt-4">
             <div>
@@ -142,7 +145,47 @@
           </div>
         </div>
 
-        <!--<div *ngIf="tab.specificFunction" class="mt-4">
+
+        <div *ngIf="tab.tutorialMessage" class="mt-4 justify-center flex">
+          <span [innerHTML]="tab.tutorialMessage"></span>
+        </div>
+
+        <div class="justify-center flex align-middle mt-4">
+          <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
+            <button type="button" class="btn btn-success text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="simulateOutput(i, tab)">
+              <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+              {{tab.runMessage ?? 'Run'}}
+            </button>
+          </div>
+
+          <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
+            <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
+              <ng-icon name="feather-refresh-ccw" size="1.2rem" [color]="getTheme() === 'light' ? 'text-base-content' : 'text-white'"></ng-icon>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!isRunning(tab) && isRunning(tab) !== null && tab.value !== null" class="justify-center flex">
+          <textarea class="textarea textarea-bordered textarea-md w-[calc(80%-0.5rem)] h-full
+          bg-transparent {{getTheme() === 'light' ? 'text-base-content' : 'text-white'}} border-base-300 mt-4">{{tab.value}}
+          </textarea>
+
+          <div *ngIf="tab.debugOutput" class="mt-4">
+            <span><strong>Variables:</strong></span>
+            TODO: Show each variable here
+          </div>
+        </div>-->
+      </div>
+
+    </ng-container>
+
+  </div>
+
+
+</div>
+
+<!--<div *ngIf="tab.specificFunction" class="mt-4">
           <div class="ml-14 mr-14">
             <span>{{getTooltip(tab)}}</span><br>
             <span class="text-sm">e.g. <span class="font-semibold">
@@ -177,42 +220,3 @@
           </div>
 
         </div>-->
-
-        <div *ngIf="tab.tutorialMessage" class="mt-4 justify-center flex">
-          <span [innerHTML]="tab.tutorialMessage"></span>
-        </div>
-
-        <div class="justify-center flex align-middle mt-4">
-          <div class="tooltip tooltip-bottom w-[calc(80%-0.5rem)]" [attr.data-tip]="getTooltip(tab)">
-            <button type="button" class="btn btn-success text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="simulateOutput(i, tab)">
-              <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-              <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-              {{tab.runMessage ?? 'Run'}}
-            </button>
-          </div>
-
-          <div *ngIf="isRunning(tab)" class="tooltip tooltip-bottom" [attr.data-tip]="'Refresh'">
-            <button type="button" class="btn btn-ghost mt-1 gap-2 w-[calc(10%-0.5rem)] mb-1" (click)="refreshingOutput(i, tab)">
-              <ng-icon name="feather-refresh-ccw" size="1.2rem" [color]="getTheme() === 'light' ? 'text-base-content' : 'text-white'"></ng-icon>
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="!isRunning(tab) && isRunning(tab) !== null && tab.value !== null" class="justify-center flex">
-          <textarea class="textarea textarea-bordered textarea-md w-[calc(80%-0.5rem)] h-full
-          bg-transparent {{getTheme() === 'light' ? 'text-base-content' : 'text-white'}} border-base-300 mt-4">{{tab.value}}
-          </textarea>
-
-          <div *ngIf="tab.debugOutput" class="mt-4">
-            <span><strong>Variables:</strong></span>
-            <!-- TODO: Show each variable here -->
-          </div>
-        </div>
-      </div>
-
-    </ng-container>
-
-  </div>
-
-
-</div>

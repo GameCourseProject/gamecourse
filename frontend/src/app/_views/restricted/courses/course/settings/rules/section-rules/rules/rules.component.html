@@ -199,6 +199,87 @@
 
 </div>
 
+<!-- Getting Started Modal -->
+<app-modal *ngIf="gettingStarted"
+  [id]="'getting-started'"
+  [templateRef]="GETTING_STARTED"
+  [header]="'Getting Started'"
+  [submitBtnText]="'Ok, got it!'"
+  [closeBtn]="false"
+  [xButton]="false"
+  [headerMarginBottom]="false"
+  (submitBtnClicked)="closeTutorial()"
+  [actionInProgress] = "loading.action"
+  [static]="true">
+</app-modal>
+<ng-template #GETTING_STARTED>
+  <div class="w-full flex flex-wrap mb-3">
+    <div class="w-full flex flex-wrap border-t border-gray-200">
+      <span class="text-sm mt-2">First time writing a rule? Let's get started!</span>
+    </div>
+  </div>
+
+  <div class="w-full carousel">
+    <div *ngIf="gettingStartedIndex === 1" class="card p-4 w-full bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">What are rules?</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>
+          Rule are a ser of statements that determine the behavior of the course.
+          With them, we are able to define how to calculate the courses' awards and deliver them to students.</p><br>
+        <p>They are composed by a <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>name</i></strong>,
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>description</i></strong>,
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>tags</i></strong>, and
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>when</i></strong> and
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>then</i></strong> clause.</p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 2" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">When Clause</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>when</i></strong> clause contains
+          the requisites that need to be fulfilled in order to trigger the rule.</p><br>
+        <p><strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">Usually, rules get logs in the <i>when</i> clause</strong>,
+          which represent information with all the students' participations in the course.</p><br>
+        <p>For instance, to get all participations of students in lab nº2 we would write:<p>
+        <p class="flex justify-center"><strong><i>get_lab_logs(target, 2)</i></strong></p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 3" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Then Clause</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>then</i></strong> clause contains
+          the effects of what will happen if the preconditions of the <i>When</i> clause are met.</p><br>
+        <p><strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">Usually, rules define what will be
+          rewarded to students in the <i>then</i> clause</strong>.</p><br>
+        <p>For instance, in order to award a grade of 18 points in exam '<i>Exam</i>' to a student defined as <i>target</i>, we would write:<p>
+        <p class="flex justify-center"><strong><i>award_exam_grade(target, "Exam", logs, 18)</i></strong></p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 4" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Use the extra help!</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>The Rule Editor counts with <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>additional tools</i></strong>
+          where supplementary help is displayed if needed.</p><br>
+        <p>This includes a <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">
+          reference manual</strong>, where all functions are defined and explained, as well as their parameters.</p>
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-center w-full py-2 gap-2">
+    <a class="btn btn-xs {{gettingStartedIndex === 1 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 1">1</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 2 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 2">2</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 3 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 3">3</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 4 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 4">4</a>
+  </div>
+</ng-template>
 
 <!-- Discard changed Modal -->
 <app-modal
