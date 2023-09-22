@@ -170,6 +170,33 @@ class SectionTest extends TestCase
         $this->assertEquals(123, $section->getId());
     }
 
+    /**
+     * @test
+     * @return void
+     */
+    public function getExistingSections()
+    {
+        $sections = Section::getSections($this->courseId);
+        $this->assertEquals([
+            [
+                "id" => 2,
+                "course" => 1,
+                "name" => "Graveyard",
+                "position" => 0,
+                "module" => null,
+                "isActive" => true
+            ],
+            [
+                "id" => 1,
+                "course" => 1,
+                "name" => "Miscellaneous",
+                "position" => 1,
+                "module" => null,
+                "isActive" => true
+            ]
+        ], $sections);
+    }
+
 
     /**
      * @test
@@ -258,12 +285,25 @@ class SectionTest extends TestCase
 
     /**
      * @test
+     * @return void
+     * @throws Exception
+     */
+    public function isActive(){
+        $section = Section::addSection($this->courseId, "Section Name");
+        $this->assertTrue($section->isActive());
+    }
+
+    /**
+     * @test
      * @throws Exception
      */
     public function getData()
     {
         $section = Section::addSection($this->courseId, "Section Name");
-        $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null], $section->getData());
+        // Graveyard and Miscellaneous sections are created before this section, hence id = 1 and id = 2 being already taken
+        $this->assertEquals(
+            ["id" => 3, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null, 'isActive' => true],
+            $section->getData());
     }
 
 
@@ -302,7 +342,8 @@ class SectionTest extends TestCase
 
             $this->assertEquals(RuleSystem::getDataFolder($this->courseId) . "/1-NAME.txt", $section->getFile());
             $this->assertTrue(file_exists($section->getFile()));
-            $this->assertEquals(1, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+            // Already counting w/ previous sections (miscellaneous & graveyard)
+            $this->assertEquals(3, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
         }
     }
 
@@ -350,6 +391,17 @@ class SectionTest extends TestCase
 
     /**
      * @test
+     * @return void
+     * @throws Exception
+     */
+    public function setActive(){
+        $section = Section::addSection($this->courseId, "Section Name");
+        $section->setActive(false);
+        $this->assertFalse($section->isActive());
+    }
+
+    /**
+     * @test
      * @dataProvider sectionSuccessProvider
      * @throws Exception
      */
@@ -361,6 +413,7 @@ class SectionTest extends TestCase
         $fieldValues["id"] = $section->getId();
         $fieldValues["course"] = $this->courseId;
         $fieldValues["module"] = null;
+        $fieldValues["isActive"] = true;
         Utils::trim(["name"], $fieldValues);
         $this->assertEquals($section->getData(), $fieldValues);
     }
@@ -378,7 +431,8 @@ class SectionTest extends TestCase
             $this->fail("Exception should have been thrown on 'setDataFailure'");
 
         } catch (Exception $e) {
-            $this->assertEquals(["id" => 1, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null],
+            // Id = 3 because its already counting w/ previous sections (miscellaneous & graveyard)
+            $this->assertEquals(["id" => 3, "course" => $this->courseId, "name" => "Section Name", "position" => 0, "module" => null, "isActive" => true],
                 $section->getData());
         }
     }
@@ -438,7 +492,7 @@ class SectionTest extends TestCase
      */
     public function getSectionByPositionSectionDoesntExist()
     {
-        $this->assertNull(Section::getSectionByPosition($this->courseId, 1));
+        $this->assertNull(Section::getSectionByPosition($this->courseId, 4));
     }
 
 
@@ -448,24 +502,27 @@ class SectionTest extends TestCase
      */
     public function getAllSections()
     {
-        $section1 = Section::addSection($this->courseId, "Section1", 0);
-        $section2 = Section::addSection($this->courseId, "Section2", 1);
+        // Miscellaneous and Graveyard already exist
+        $miscellaneous = new Section(1);
+        $graveyard = new Section(2);
 
-        $course = Course::addCourse("Multimedia Content Production", "MCP", "2022-2023", "#ffffff",
-            null, null, true, true);
-        Section::addSection($course->getId(), "Section3");
+        $section3 = Section::addSection($this->courseId, "Section1", 3);
+        $section4 = Section::addSection($this->courseId, "Section2", 4);
 
         $sections = Section::getSections($this->courseId);
         $this->assertIsArray($sections);
-        $this->assertCount(2, $sections);
+        $this->assertCount(4, $sections);
 
-        $keys = ["id", "course", "name", "position", "module"];
+        $keys = ["id", "course", "name", "position", "module", "isActive"];
         $nrKeys = count($keys);
         foreach ($keys as $key) {
             foreach ($sections as $i => $section) {
                 $this->assertCount($nrKeys, array_keys($section));
                 $this->assertArrayHasKey($key, $section);
-                $this->assertEquals($section[$key], ${"section".($i+1)}->getData($key));
+                if ($i+1 == 1) $name = "graveyard";
+                else if ($i+1 == 2) $name = "miscellaneous";
+                else $name = "section".($i+1);
+                $this->assertEquals($section[$key], ${$name}->getData($key));
             }
         }
     }
@@ -482,7 +539,24 @@ class SectionTest extends TestCase
 
         $sections = Section::getSections($this->courseId);
         $this->assertIsArray($sections);
-        $this->assertEmpty($sections);
+        $this->assertEquals([
+            [
+                "id" => 2,
+                "course" => 1,
+                "name" => "Graveyard",
+                "position" => 0,
+                "module" => null,
+                "isActive" => true
+            ],
+            [
+                "id" => 1,
+                "course" => 1,
+                "name" => "Miscellaneous",
+                "position" => 1,
+                "module" => null,
+                "isActive" => true
+            ]
+        ], $sections);
     }
 
 
@@ -498,7 +572,13 @@ class SectionTest extends TestCase
 
         // Check is added to database
         $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
-        $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => $name, "position" => "0", "module" => null];
+        $sectionData = [
+            "id" => strval($section->getId()),
+            "course" => strval($this->courseId),
+            "name" => $name,
+            "position" => "0",
+            "module" => null,
+            "isActive" => true];
         $this->assertEquals($sectionData, $sectionDB);
 
         // Check section file was created
@@ -521,7 +601,9 @@ class SectionTest extends TestCase
         } catch (Exception|TypeError $e) {
             $section = Core::database()->select(Section::TABLE_RULE_SECTION, ["course" => $this->courseId, "name" => $name]);
             $this->assertEmpty($section);
-            $this->assertEquals(0, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+
+            // Already counting w/ previous sections (miscellaneous & graveyard)
+            $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
         }
     }
 
@@ -538,7 +620,7 @@ class SectionTest extends TestCase
 
         } catch (Exception $e) {
             $sections = Section::getSections($this->courseId);
-            $this->assertCount(1, $sections);
+            $this->assertCount(3, $sections); // Already counting w/ previous sections (miscellaneous & graveyard)
         }
     }
 
@@ -555,7 +637,7 @@ class SectionTest extends TestCase
         // Check is added to database
         $sectionDB = Core::database()->select(Section::TABLE_RULE_SECTION, ["id" => $section->getId()]);
         $sectionData = ["id" => strval($section->getId()), "course" => strval($this->courseId), "name" => "Section Name",
-            "position" => "0", "module" => $moduleId];
+            "position" => "0", "module" => $moduleId, "isActive" => "1"];
         $this->assertEquals($sectionData, $sectionDB);
 
         // Check section file was created
@@ -574,7 +656,7 @@ class SectionTest extends TestCase
         $section1 = Section::addSection($this->courseId, "Section1", 0);
         $section2 = Section::addSection($this->courseId, "Section2", 1);
 
-        $section2->editSection("New Name", 0);
+        $section2->editSection("New Name", 0, true);
 
         // Check is updated on database
         $this->assertEquals("New Name", $section2->getName());
@@ -582,7 +664,8 @@ class SectionTest extends TestCase
         $this->assertEquals(1, $section1->getPosition());
 
         // Check section file was updated
-        $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+        // Already counting w/ previous sections (miscellaneous & graveyard)
+        $this->assertEquals(4, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-New_Name.txt"));
         $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section1.txt"));
     }
@@ -598,11 +681,12 @@ class SectionTest extends TestCase
         $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         try {
-            $section2->editSection($name, 1);
+            $section2->editSection($name, 1, true);
 
         } catch (Exception|TypeError $e) {
             $this->assertEquals("Section2", $section2->getName());
-            $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+            // Already counting w/ previous sections (miscellaneous & graveyard)
+            $this->assertEquals(4, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section2.txt"));
         }
@@ -618,13 +702,15 @@ class SectionTest extends TestCase
         $section2 = Section::addSection($this->courseId, "Section2", 1);
 
         try {
-            $section2->editSection("Section1", 1);
+            $section2->editSection("Section1", 1, true);
 
         } catch (Exception $e) {
             $this->assertEquals("Section2", $section2->getName());
-            $this->assertEquals(2, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+            $this->assertEquals(4, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
             $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Section2.txt"));
+            $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/3-Graveyard.txt"));
+            $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/4-Miscellaneous.txt"));
         }
     }
 
@@ -646,7 +732,8 @@ class SectionTest extends TestCase
         $section->copySection($course2);
 
         // Then
-        $this->assertCount(1, RuleSystem::getSections($course2->getId()));
+        // Already counting w/ previous sections (miscellaneous & graveyard)
+        $this->assertCount(3, RuleSystem::getSections($course2->getId()));
         $this->assertCount(1, RuleSystem::getRules($course2->getId()));
 
         $copiedSection = Section::getSectionByName($course2->getId(), $section->getName());
@@ -661,22 +748,27 @@ class SectionTest extends TestCase
      */
     public function deleteSection()
     {
-        $section1 = Section::addSection($this->courseId, "Section1", 0);
-        $section2 = Section::addSection($this->courseId, "Section2", 1);
+        $section1 = Section::addSection($this->courseId, "Section1", 2);
+        $section2 = Section::addSection($this->courseId, "Section2", 3);
         Section::deleteSection($section1->getId());
 
         $this->assertFalse($section1->exists());
         $this->assertTrue($section2->exists());
-        $this->assertEquals(0, $section2->getPosition());
+        $this->assertEquals(2, $section2->getPosition());
 
+        // Already counting w/ previous sections (miscellaneous & graveyard)
         $sections = Section::getSections($this->courseId);
         $this->assertIsArray($sections);
-        $this->assertCount(1, $sections);
-        $this->assertEquals("Section2", $sections[0]["name"]);
+        $this->assertCount(3, $sections);
+        $this->assertEquals("Graveyard", $sections[0]["name"]);
+        $this->assertEquals("Miscellaneous", $sections[1]["name"]);
+        $this->assertEquals("Section2", $sections[2]["name"]);
 
-        $this->assertEquals(1, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
-        $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
-        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section2.txt"));
+        $this->assertEquals(3, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+        $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/3-Section1.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Graveyard.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Miscellaneous.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/3-Section2.txt"));
     }
 
     /**
@@ -685,13 +777,16 @@ class SectionTest extends TestCase
      */
     public function deleteSectionInexistentSection()
     {
-        Section::addSection($this->courseId, "Section1");
-        Section::deleteSection(2);
+        Section::addSection($this->courseId, "Section1", 2);
+        Section::deleteSection(4); // Already counting w/ previous sections (miscellaneous & graveyard)
 
         $sections = Section::getSections($this->courseId);
         $this->assertIsArray($sections);
-        $this->assertCount(1, $sections);
-        $this->assertEquals("Section1", $sections[0]["name"]);
+        $this->assertCount(3, $sections);
+
+        $this->assertEquals("Graveyard", $sections[0]["name"]);
+        $this->assertEquals("Miscellaneous", $sections[1]["name"]);
+        $this->assertEquals("Section1", $sections[2]["name"]);
     }
 
     /**
@@ -701,8 +796,8 @@ class SectionTest extends TestCase
     public function deleteSectionWithRules()
     {
         // Given
-        $section1 = Section::addSection($this->courseId, "Section1", 0);
-        $section2 = Section::addSection($this->courseId, "Section2", 1);
+        $section1 = Section::addSection($this->courseId, "Section1", 2);
+        $section2 = Section::addSection($this->courseId, "Section2", 3);
 
         $rule1 = $section1->addRule("Rule1", null, "when", "then", 0);
         $rule2 = $section1->addRule("Rule2", null, "when", "then", 1);
@@ -714,16 +809,21 @@ class SectionTest extends TestCase
         // Then
         $this->assertFalse($section1->exists());
         $this->assertTrue($section2->exists());
-        $this->assertEquals(0, $section2->getPosition());
+        $this->assertEquals(2, $section2->getPosition());
 
         $sections = Section::getSections($this->courseId);
         $this->assertIsArray($sections);
-        $this->assertCount(1, $sections);
-        $this->assertEquals("Section2", $sections[0]["name"]);
+        $this->assertCount(3, $sections);
+        $this->assertEquals("Graveyard", $sections[0]["name"]);
+        $this->assertEquals("Miscellaneous", $sections[1]["name"]);
+        $this->assertEquals("Section2", $sections[2]["name"]);
 
-        $this->assertEquals(1, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
+        // Already counting w/ previous sections (miscellaneous & graveyard)
+        $this->assertEquals(3, Utils::getDirectorySize(RuleSystem::getDataFolder($this->courseId)));
         $this->assertFalse(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section1.txt"));
-        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Section2.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/1-Graveyard.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/2-Miscellaneous.txt"));
+        $this->assertTrue(file_exists(RuleSystem::getDataFolder($this->courseId) . "/3-Section2.txt"));
 
         $this->assertFalse($rule1->exists());
         $this->assertFalse($rule2->exists());
@@ -751,7 +851,7 @@ class SectionTest extends TestCase
      */
     public function sectionDoesntExist()
     {
-        $section = new Section(1);
+        $section = new Section(3);
         $this->assertFalse($section->exists());
     }
 

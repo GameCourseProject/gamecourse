@@ -1,0 +1,8 @@
+.toast {
+  transform: translateX(12rem);
+}
+
+.toast:hover {
+  transform: translateX(0);
+  cursor: pointer;
+}
