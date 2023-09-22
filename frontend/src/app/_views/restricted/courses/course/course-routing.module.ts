@@ -85,7 +85,7 @@ const routes: Routes = [
       },
       {
         path: 'pages/editor/new-page',
-        component: ComingSoonComponent
+        component: ViewsEditorComponent
       },
       {
         path: 'themes',
