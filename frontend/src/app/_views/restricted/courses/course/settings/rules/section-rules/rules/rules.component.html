@@ -1,3 +1,20 @@
+<div *ngIf="!loading.page" class="toast toast-top toast-end mt-20 mr-3 transition-transform transform"
+     style="z-index: 1!important;"
+     (mouseenter)="showToast = true"
+     (mouseleave)="showToast = false"
+     [ngClass]="{'translate-x-0': showToast}">
+  <div class="alert alert-info shadow-xl">
+    <div class="justify-end">
+      <strong class="text-white">Need some help?</strong>
+    </div>
+    <div class="justify-end mt-1">
+      <button class="btn btn-sm" (click)="openTutorial()" [ngClass]="{'btn-ghost text-info': !showToast}">
+        <span class="text-white">Check Tutorial!</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div *ngIf="!loading.page" class="w-full relative">
 
   <!-- Header -->
@@ -24,7 +41,7 @@
       </div>
     </div>
 
-    <div class="card w-full bg-base-100 shadow-xl mt-10">
+    <div class="card w-full bg-base-100 shadow-xl mt-4">
       <div class="card-body">
         <div class="card-title flex flex-wrap">
           <span class="w-full">{{rule ? 'Edit rule: \'' + rule.name + '\'' : 'Create new rule'}}</span>
@@ -222,12 +239,32 @@
   <div class="w-full carousel">
     <div *ngIf="gettingStartedIndex === 1" class="card p-4 w-full bg-base-content shadow-xl">
       <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Introducting: The Rule System</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>
+          The <strong class="text-secondary">Rule System</strong> is a component used in GameCourse, which is used to
+          dictate the behavior of each course through different <strong class="text-secondary">rules</strong>.
+        </p><br>
+
+        <p>
+          Overall, the main objective of the rules is to <strong class="text-secondary">get logs and award</strong>
+          something to students based on those logs.
+        </p><br>
+        <p>
+          <i>Logs</i> are records where information about the users' actions are stored.
+        </p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 2" class="card p-4 w-full bg-base-content shadow-xl">
+      <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">What are rules?</span>
       </div>
       <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
         <p>
-          Rule are a ser of statements that determine the behavior of the course.
-          With them, we are able to define how to calculate the courses' awards and deliver them to students.</p><br>
+          <strong class="text-secondary">Rules</strong> are the main component of the Rule System.
+          They are a set of statements that define how to calculate the courses' awards and deliver them to students.</p><br>
+
         <p>They are composed by a <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>name</i></strong>,
           <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>description</i></strong>,
           <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>tags</i></strong>, and
@@ -235,20 +272,20 @@
           <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>then</i></strong> clause.</p>
       </div>
     </div>
-    <div *ngIf="gettingStartedIndex === 2" class="card w-full p-4 bg-base-content shadow-xl">
+    <div *ngIf="gettingStartedIndex === 3" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">When Clause</span>
       </div>
       <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
         <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>when</i></strong> clause contains
           the requisites that need to be fulfilled in order to trigger the rule.</p><br>
-        <p><strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">Usually, rules get logs in the <i>when</i> clause</strong>,
+        <p>Usually, rules <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">get logs in the <i>when</i> clause</strong>,
           which represent information with all the students' participations in the course.</p><br>
-        <p>For instance, to get all participations of students in lab nº2 we would write:<p>
-        <p class="flex justify-center"><strong><i>get_lab_logs(target, 2)</i></strong></p>
+        <p>For instance, to get all participations of students regarding the badge:"lab king" we would write:<p>
+        <p class="flex justify-center"><strong><i>get_logs(target, "lab king")</i></strong></p>
       </div>
     </div>
-    <div *ngIf="gettingStartedIndex === 3" class="card w-full p-4 bg-base-content shadow-xl">
+    <div *ngIf="gettingStartedIndex === 4" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Then Clause</span>
       </div>
@@ -261,7 +298,7 @@
         <p class="flex justify-center"><strong><i>award_exam_grade(target, "Exam", logs, 18)</i></strong></p>
       </div>
     </div>
-    <div *ngIf="gettingStartedIndex === 4" class="card w-full p-4 bg-base-content shadow-xl">
+    <div *ngIf="gettingStartedIndex === 5" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Use the extra help!</span>
       </div>
@@ -273,11 +310,13 @@
       </div>
     </div>
   </div>
+
   <div class="flex justify-center w-full py-2 gap-2">
     <a class="btn btn-xs {{gettingStartedIndex === 1 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 1">1</a>
     <a class="btn btn-xs {{gettingStartedIndex === 2 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 2">2</a>
     <a class="btn btn-xs {{gettingStartedIndex === 3 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 3">3</a>
     <a class="btn btn-xs {{gettingStartedIndex === 4 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 4">4</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 5 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 5">5</a>
   </div>
 </ng-template>
 

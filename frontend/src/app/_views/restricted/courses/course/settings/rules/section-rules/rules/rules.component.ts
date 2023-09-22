@@ -23,7 +23,8 @@ import {ThemingService} from "../../../../../../../../_services/theming/theming.
 
 @Component({
   selector: 'app-rules',
-  templateUrl: 'rules.component.html'
+  templateUrl: 'rules.component.html',
+  styleUrls: ['./rule.component.scss']
 })
 export class RulesComponent implements OnInit {
 
@@ -43,7 +44,8 @@ export class RulesComponent implements OnInit {
   nameTags : {value: string, text: string}[];   // Tags with names formatted for the select-input
 
   // Tutorial Modal
-  gettingStartedIndex: number = 1;
+  showToast: boolean = false;
+  gettingStartedIndex: number;
   gettingStarted: boolean;                      // Modal for tutorial at beginning
 
   // Autogame metadata
@@ -108,8 +110,7 @@ export class RulesComponent implements OnInit {
 
         this.isIncomplete();
         this.prepareCodeInputTabs();
-        this.gettingStarted = true;
-        ModalService.openModal('getting-started');
+        this.openTutorial();
         this.loading.page = false;
       })
     })
@@ -322,6 +323,12 @@ export class RulesComponent implements OnInit {
         (tab as OutputTab).value = await this.api.getPreviewRuleOutput(this.course.id).toPromise();
       }
     }
+  }
+
+  openTutorial(){
+    this.gettingStartedIndex = 1;
+    this.gettingStarted = true;
+    ModalService.openModal('getting-started');
   }
 
   closeTutorial(){
