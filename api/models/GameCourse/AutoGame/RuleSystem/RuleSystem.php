@@ -122,10 +122,10 @@ abstract class RuleSystem
      * @return Section
      * @throws Exception
      */
-    public static function editSection(int $sectionId, string $name, int $position): Section
+    public static function editSection(int $sectionId, string $name, int $position, bool $isActive): Section
     {
         $section = Section::getSectionById($sectionId);
-        return $section->editSection($name, $position);
+        return $section->editSection($name, $position, $isActive);
     }
 
     /**

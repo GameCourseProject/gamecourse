@@ -9,7 +9,7 @@
     </div>
     <div class="justify-end mt-1">
       <button class="btn btn-sm" (click)="openTutorial()" [ngClass]="{'btn-ghost text-info': !showToast}">
-        <span class="text-white">Check Tutorial!</span>
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950 font-semibold'}}">Check Tutorial!</span>
       </button>
     </div>
   </div>
@@ -220,6 +220,7 @@
 <app-modal *ngIf="gettingStarted"
   [id]="'getting-started'"
   [templateRef]="GETTING_STARTED"
+  [size]="'lg'"
   [header]="'Getting Started'"
   [submitBtnText]="'Ok, got it!'"
   [closeBtn]="false"
@@ -236,6 +237,16 @@
     </div>
   </div>
 
+  <div class="flex justify-center w-full py-2 gap-2">
+    <a class="btn btn-xs {{gettingStartedIndex === 1 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 1">1</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 2 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 2">2</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 3 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 3">3</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 4 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 4">4</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 5 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 5">5</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 6 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 6">6</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 7 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 7">7</a>
+  </div>
+
   <div class="w-full carousel">
     <div *ngIf="gettingStartedIndex === 1" class="card p-4 w-full bg-base-content shadow-xl">
       <div class="card-title">
@@ -248,15 +259,64 @@
         </p><br>
 
         <p>
-          Overall, the main objective of the rules is to <strong class="text-secondary">get logs and award</strong>
+          Overall, the main objective of the rules is to <strong class="text-secondary">get logs</strong> and <strong class="text-secondary">award</strong>
           something to students based on those logs.
         </p><br>
-        <p>
-          <i>Logs</i> are records where information about the users' actions are stored.
-        </p>
       </div>
     </div>
     <div *ngIf="gettingStartedIndex === 2" class="card p-4 w-full bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Logs</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>
+          <strong class="text-secondary"><i>Logs</i></strong> are records where all students' interactions are stored.
+          They are the input of the Rule System, and are <strong class="text-secondary">generated for every action performed</strong>
+          in any of the places for which data collection plug-ins are activated.
+        </p><br>
+
+        <p>
+          Example of logs: posting on Moodle, rating a post, recording class attendance, or even manual annotations made by professors about
+          students' behaviour on Google Sheets.
+        </p><br>
+
+        <div><p>Logs' most important parameters include:</p></div>
+        <div>
+          <p class="ml-3"><strong class="text-secondary">Type</strong>: Used to categorize.</p>
+          <p class="ml-3"><strong class="text-secondary">Description</strong>: Explanation about what the student did.</p>
+          <p class="ml-3"><strong class="text-secondary">Rating</strong>: Student's score graded by an evaluator.</p>
+        </div>
+
+        <br>
+        <div><p>
+          To <strong class="text-secondary">get logs (i.e. actions) of students</strong>, we would use the function
+          <strong class="text-secondary"><i>get_logs()</i></strong>. If we wanted to get
+          <strong class="text-secondary">more specific logs</strong> we would use
+          <strong class="text-secondary">other functions</strong>. For example, to get all logs in which students
+          attended lecture nº2 late, we would use the function <i>get_attendance_lecture_late_logs()</i>.
+        </p></div>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 3" class="card p-4 w-full bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Awards</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p><strong class="text-secondary">Awards</strong> are the output of the Rule System and depend on the modules that are enabled in GameCourse.
+          For instance, only if the <i>'Badges'</i> module is enabled, will the Rule System be able to award badges to students,
+          only if the <i>'Virtual Currency'</i> module is enabled, will the Rule System be able to award tokens to students, etc.</p><br>
+
+        <p>Awards will only be <strong class="text-secondary">attributed to students once students achieve something</strong> in the course.
+          For example, if a student attends 50% of the lectures in the course, he/she will receive the 'Amphitheater Lover' badge, etc.</p><br>
+
+        <p>Awards can be given to students through <strong class="text-secondary">different functions</strong>, depending on the
+          <strong class="text-secondary">type of the award</strong>.
+          If, for instance, we want to award students tokens (a.k.a. GameCourse's virtual currency), we would use the function <i>award_tokens()</i>.
+          Similarly, if we want to award students a badge, we would use the function <i>award_badge()</i>, and so on.
+        </p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 4" class="card p-4 w-full bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">What are rules?</span>
       </div>
@@ -265,40 +325,48 @@
           <strong class="text-secondary">Rules</strong> are the main component of the Rule System.
           They are a set of statements that define how to calculate the courses' awards and deliver them to students.</p><br>
 
-        <p>They are composed by a <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>name</i></strong>,
-          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>description</i></strong>,
-          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>tags</i></strong>, and
-          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>when</i></strong> and
-          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>then</i></strong> clause.</p>
-      </div>
-    </div>
-    <div *ngIf="gettingStartedIndex === 3" class="card w-full p-4 bg-base-content shadow-xl">
-      <div class="card-title">
-        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">When Clause</span>
-      </div>
-      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
-        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>when</i></strong> clause contains
-          the requisites that need to be fulfilled in order to trigger the rule.</p><br>
-        <p>Usually, rules <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">get logs in the <i>when</i> clause</strong>,
-          which represent information with all the students' participations in the course.</p><br>
-        <p>For instance, to get all participations of students regarding the badge:"lab king" we would write:<p>
-        <p class="flex justify-center"><strong><i>get_logs(target, "lab king")</i></strong></p>
-      </div>
-    </div>
-    <div *ngIf="gettingStartedIndex === 4" class="card w-full p-4 bg-base-content shadow-xl">
-      <div class="card-title">
-        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Then Clause</span>
-      </div>
-      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
-        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>then</i></strong> clause contains
-          the effects of what will happen if the preconditions of the <i>When</i> clause are met.</p><br>
-        <p><strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}">Usually, rules define what will be
-          rewarded to students in the <i>then</i> clause</strong>.</p><br>
-        <p>For instance, in order to award a grade of 18 points in exam '<i>Exam</i>' to a student defined as <i>target</i>, we would write:<p>
-        <p class="flex justify-center"><strong><i>award_exam_grade(target, "Exam", logs, 18)</i></strong></p>
+        <p>They are composed by:
+        <div>
+          <p class="ml-3"><strong class="text-secondary">Name</strong>: Used to identify the rule.</p>
+          <p class="ml-3"><strong class="text-secondary">Description</strong>: Explanation about what the rule does.</p>
+          <p class="ml-3"><strong class="text-secondary">Tags</strong>: Digital labels useful for filtering rules when searching.</p>
+          <p class="ml-3"><strong class="text-secondary">When clause</strong>: Body of the rule. Contains requisites that need to be fulfilled.</p>
+          <p class="ml-3"><strong class="text-secondary">Then clause</strong>: Body of the rules. Contains actions that will be triggered when requisites are fulfilled.</p>
+        </div>
       </div>
     </div>
     <div *ngIf="gettingStartedIndex === 5" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">When & Then Clause</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>When</i></strong> clause contains
+          the requisites that need to be fulfilled in order to trigger the rule. Usually, the
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>When</i> clause gets and filters logs</strong>,
+          which represent information with students' actions in the course.</p><br>
+
+        <p>The <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>Then</i></strong> clause contains
+          the effects of what will happen if the preconditions of the <i>When</i> clause are met. Usually, the
+          <strong class="{{getTheme() === 'light' ? 'text-secondary' : ''}}"><i>Then</i> clause define what will be
+            rewarded and assign it to students</strong>.</p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 6" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Complete rule example</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>This example of rule gets all logs of students and filter them regarding the "initial tokens", to then award said tokens to
+        students.</p><br>
+
+        <p>When:</p>
+        <p class="flex justify-center"><strong><i>get_logs(target, "initial tokens")</i></strong></p><br>
+
+        <p>Then:<p>
+        <p class="flex justify-center"><strong><i>award_tokens(target, "Initial tokens", logs)</i></strong></p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 7" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Use the extra help!</span>
       </div>
@@ -309,14 +377,6 @@
           reference manual</strong>, where all functions are defined and explained, as well as their parameters.</p>
       </div>
     </div>
-  </div>
-
-  <div class="flex justify-center w-full py-2 gap-2">
-    <a class="btn btn-xs {{gettingStartedIndex === 1 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 1">1</a>
-    <a class="btn btn-xs {{gettingStartedIndex === 2 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 2">2</a>
-    <a class="btn btn-xs {{gettingStartedIndex === 3 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 3">3</a>
-    <a class="btn btn-xs {{gettingStartedIndex === 4 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 4">4</a>
-    <a class="btn btn-xs {{gettingStartedIndex === 5 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 5">5</a>
   </div>
 </ng-template>
 
