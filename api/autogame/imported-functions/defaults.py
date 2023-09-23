@@ -459,6 +459,9 @@ def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_ra
     """
     :description: Gets consecutive logs on a set of logs that meet certain rating specifications.
 
+    :arg logs: List of logs
+    :type logs: list
+
     :arg min_rating: Minimum number of rating that logs should have when filtering
     :type min_rating: int
 
@@ -564,6 +567,7 @@ def get_periodic_logs(logs, number, time, log_type):
     :arg log_type: Determines type of periodicity. There's two options ('absolute' or 'relative'): 'absolute' periodicity
                     checks periodicity in equal periods, beginning at course start date until end date. The 'relative'
                     options checks periodicity starting on the first entry for streak.
+    :type log_type: str
 
     :returns: list
     """
@@ -867,7 +871,7 @@ def compute_lvl(val, *lvls):
     :type val: int
 
     :arg lvls: Levels represent the minimum thresholds for obtaining levels
-    :type: int
+    :type lvls: int
 
     :returns: int
     """
@@ -955,7 +959,7 @@ def get_best_rating(logs):
     :description: Returns the rating of a set of logs. If there are multiple logs, returns the best rating.
 
     :arg logs: List of logs
-    :key logs: list
+    :type logs: list
 
     :returns: int
     """
