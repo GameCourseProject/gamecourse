@@ -47,6 +47,7 @@ export class RulesComponent implements OnInit {
   showToast: boolean = false;
   gettingStartedIndex: number;
   gettingStarted: boolean;                      // Modal for tutorial at beginning
+  videoElement: HTMLVideoElement | null = null;
 
   // Autogame metadata
   metadata: {[variable: string]: number}[];
@@ -419,7 +420,6 @@ export class RulesComponent implements OnInit {
   getTheme(){
     return this.themingService.getTheme();
   }
-
 }
 
 export interface RuleManageData {

@@ -245,20 +245,18 @@
     <a class="btn btn-xs {{gettingStartedIndex === 5 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 5">5</a>
     <a class="btn btn-xs {{gettingStartedIndex === 6 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 6">6</a>
     <a class="btn btn-xs {{gettingStartedIndex === 7 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 7">7</a>
+    <a class="btn btn-xs {{gettingStartedIndex === 8 ? 'btn-active' : 'btn-ghost hover:cursor-pointer' }}" (click)="gettingStartedIndex = 8">8</a>
   </div>
 
   <div class="w-full carousel">
     <div *ngIf="gettingStartedIndex === 1" class="card p-4 w-full bg-base-content shadow-xl">
       <div class="card-title">
-        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Introducting: The Rule System</span>
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Introducing: The Rule System</span>
       </div>
       <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
         <p>
           The <strong class="text-secondary">Rule System</strong> is a component used in GameCourse, which is used to
           dictate the behavior of each course through different <strong class="text-secondary">rules</strong>.
-        </p><br>
-
-        <p>
           Overall, the main objective of the rules is to <strong class="text-secondary">get logs</strong> and <strong class="text-secondary">award</strong>
           something to students based on those logs.
         </p><br>
@@ -280,18 +278,20 @@
           students' behaviour on Google Sheets.
         </p><br>
 
-        <div><p>Logs' most important parameters include:</p></div>
+        <div><p>Logs are characterized by:</p></div>
         <div>
-          <p class="ml-3"><strong class="text-secondary">Type</strong>: Used to categorize.</p>
+          <p class="ml-3"><strong class="text-secondary">Type</strong>: Type of action performed by the student.</p>
           <p class="ml-3"><strong class="text-secondary">Description</strong>: Explanation about what the student did.</p>
           <p class="ml-3"><strong class="text-secondary">Rating</strong>: Student's score graded by an evaluator.</p>
         </div>
 
         <br>
         <div><p>
-          To <strong class="text-secondary">get logs (i.e. actions) of students</strong>, we would use the function
-          <strong class="text-secondary"><i>get_logs()</i></strong>. If we wanted to get
-          <strong class="text-secondary">more specific logs</strong> we would use
+          To <strong class="text-secondary">get logs (i.e. actions) of students</strong>, we would typically use the
+          function <strong class="text-secondary"><i>get_logs()</i></strong>. Parameters to this function can restrict
+          the logs according to values of the fields mentioned above. More specific functions to retrieve certain types
+          of logs are available, for convenience and readability. For instance, if we wanted to get
+          <strong class="text-secondary">more specific logs</strong> we could use
           <strong class="text-secondary">other functions</strong>. For example, to get all logs in which students
           attended lecture nº2 late, we would use the function <i>get_attendance_lecture_late_logs()</i>.
         </p></div>
@@ -307,7 +307,7 @@
           only if the <i>'Virtual Currency'</i> module is enabled, will the Rule System be able to award tokens to students, etc.</p><br>
 
         <p>Awards will only be <strong class="text-secondary">attributed to students once students achieve something</strong> in the course.
-          For example, if a student attends 50% of the lectures in the course, he/she will receive the 'Amphitheater Lover' badge, etc.</p><br>
+          For example, if a student attends 50% of the lectures in the course, they will be rewarded with a badge to highlight that fact, etc.</p><br>
 
         <p>Awards can be given to students through <strong class="text-secondary">different functions</strong>, depending on the
           <strong class="text-secondary">type of the award</strong>.
@@ -331,7 +331,7 @@
           <p class="ml-3"><strong class="text-secondary">Description</strong>: Explanation about what the rule does.</p>
           <p class="ml-3"><strong class="text-secondary">Tags</strong>: Digital labels useful for filtering rules when searching.</p>
           <p class="ml-3"><strong class="text-secondary">When clause</strong>: Body of the rule. Contains requisites that need to be fulfilled.</p>
-          <p class="ml-3"><strong class="text-secondary">Then clause</strong>: Body of the rules. Contains actions that will be triggered when requisites are fulfilled.</p>
+          <p class="ml-3"><strong class="text-secondary">Then clause</strong>: Body of the rule. Contains actions that will be triggered when requisites are fulfilled.</p>
         </div>
       </div>
     </div>
@@ -353,20 +353,47 @@
     </div>
     <div *ngIf="gettingStartedIndex === 6" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
-        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Complete rule example</span>
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">
+          Rule example: <span class="text-secondary">Awarding "Quiz King" badge</span>
+        </span>
       </div>
       <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
-        <p>This example of rule gets all logs of students and filter them regarding the "initial tokens", to then award said tokens to
-        students.</p><br>
+        <p>This example of rule gets all logs of students and filter them regarding the "quiz king" badge, and computes
+          the progress (number of points) from the set of logs and the level obtained by those actions, using the compute_lvl() function.</p><br>
 
-        <p>When:</p>
-        <p class="flex justify-center"><strong><i>get_logs(target, "initial tokens")</i></strong></p><br>
+        <p>It then awards said badge using the award_badge() function passing the target keyword
+          (which indicates the student for whom the rule is being executed), as well as the badge's name, the level,
+          list of logs, and computed progress.</p><br>
 
-        <p>Then:<p>
-        <p class="flex justify-center"><strong><i>award_tokens(target, "Initial tokens", logs)</i></strong></p>
+        <p class="text-secondary"><strong>When:</strong></p>
+        <div class="ml-5">
+          <p># Get actions for "quiz king" badge</p>
+          <p><strong><i>logs = get_logs(target, "quiz king")</i></strong></p><br>
+
+          <p># Get target progress in "quiz king" badge</p>
+          <p><strong><i>progress = len(logs)</i></strong></p><br>
+
+          <p># Compute badge level that the target will be assigned</p>
+          <p><strong><i>lvl = compute_lvl(progress, 1)</i></strong></p>
+        </div><br>
+
+        <p class="text-secondary font-semibold"><strong>Then:</strong><p>
+        <p class="ml-5"><strong><i>award_badge(target, "Quiz King", lvl, logs, progress)</i></strong></p>
       </div>
     </div>
     <div *ngIf="gettingStartedIndex === 7" class="card w-full p-4 bg-base-content shadow-xl">
+      <div class="card-title">
+        <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Metadata</span>
+      </div>
+      <div class="card-body -ml-5 {{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}}">
+        <p>
+          To write rules, we can also apply metadata variables, which are <strong class="text-secondary">global variables
+          for all rules of a course</strong>. They always have the <strong class="text-secondary">same value during the
+          execution</strong> of the rule in the system.These variables are ideal for information that might be common for all rules.
+        </p>
+      </div>
+    </div>
+    <div *ngIf="gettingStartedIndex === 8" class="card w-full p-4 bg-base-content shadow-xl">
       <div class="card-title">
         <span class="{{getTheme() === 'light' ? 'text-white' : 'text-gray-950'}} font-semibold ml-3">Use the extra help!</span>
       </div>
@@ -377,6 +404,16 @@
           reference manual</strong>, where all functions are defined and explained, as well as their parameters.</p>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="gettingStartedIndex === 6" class="mt-3 ml-1">
+    <span>Still confused?<strong> Watch this video!</strong></span>
+  </div>
+  <div *ngIf="gettingStartedIndex === 6" class="mt-3 ml-1">
+    <video #videoPlayer (load)="videoElement = videoPlayer" controls width="400">
+      <source src="./assets/videos/rule_editor_tutorial.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
   </div>
 </ng-template>
 
