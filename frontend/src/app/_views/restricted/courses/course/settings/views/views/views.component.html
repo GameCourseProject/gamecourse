@@ -121,7 +121,7 @@
     <span>The order here defined will be the order in which pages will <strong>appear in the sidebar</strong> once visible</span>
   </div>
 
-  <div cdkDropList [id]="'pages-list'" class="dd max-w-none mt-4" (cdkDropListDropped)="drop($event)">
+  <div cdkDropList [id]="'pages-list'" class="dd max-w-none mt-4 h-75 overflow-y-auto" (cdkDropListDropped)="drop($event)" appScrollableDrag>
     <div class="dd-item" *ngFor="let page of arrangingPages" cdkDrag>
       <div class="justify-center flex">
         <!-- Move -->

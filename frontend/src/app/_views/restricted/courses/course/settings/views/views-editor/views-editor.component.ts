@@ -5,7 +5,7 @@ import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
 
 import {initPageToManage, PageManageData} from "../views/views.component";
-import {ViewType} from "../../../../../../../_domain/views/view-types/view-type";
+import {ViewType} from "src/app/_domain/views/view-types/view-type";
 
 @Component({
   selector: 'app-views-editor',
@@ -23,9 +23,9 @@ export class ViewsEditorComponent implements OnInit {
   pageToManage: PageManageData;   // Manage data
 
   previewMode: 'raw' | 'mock' | 'real' = 'raw';   // Preview mode selected to render
-  optionSelected: 'add-component' | 'add-section' | 'choose-layout' | 'rearrange';
 
-  options: {icon: string, description: string, color: 'primary' | null, subMenu: any}[]; // TODO (for later use)
+  options: Option[];
+  activeSubMenu: SubMenu;
 
   constructor(
     private api: ApiHttpService,
@@ -69,18 +69,247 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   setOptions(){
-    this.options =  [{icon: 'jam-plus-circle', description: 'Add component', color: null, subMenu:
-      [ViewType.BLOCK, ViewType.BUTTON, ViewType.CHART, ViewType.COLLAPSE, ViewType.ICON, ViewType.IMAGE, ViewType.TABLE, ViewType.TEXT]
-    }];
+    // FIXME: move to backend maybe ?
+    this.options =  [
+      { icon: 'jam-plus-circle',
+        iconSelected: 'jam-plus-circle-f',
+        isSelected: false,
+        description: 'Add component',
+        subMenu: {
+          title: 'Components',
+          items: [
+            { title: ViewType.BLOCK,
+              isSelected: false,
+              helper: 'Component composed by other components.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.BUTTON,
+              isSelected: false,
+              helper: 'Component that displays different types of buttons.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.CHART,
+              isSelected: false,
+              helper: 'Component composed by other components.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.COLLAPSE,
+              isSelected: false,
+              helper: 'Component that can hide or show other components.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.ICON,
+              isSelected: false,
+              helper: 'Displays an icon.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.IMAGE,
+              isSelected: false,
+              helper: 'Displays either simple static visual components or more complex ones built using expressions',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.TABLE,
+              isSelected: false,
+              helper: 'Displays a table with columns and rows. Can display a variable number of headers as well.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+            { title: ViewType.TEXT,
+              isSelected: false,
+              helper: 'Displays either simle static written components or more complex ones built using expressions.',
+              items: [
+                { type: 'System',
+                  isSelected: false,
+                  helper: TypeHelper.SYSTEM,
+                  list: [] // FIXME: should get them from backend
+                },
+                { type: 'Custom',
+                  isSelected: false,
+                  helper: TypeHelper.CUSTOM,
+                  list: [] // FIXME: should get them from backend
+                },
+                {
+                  type: 'Shared',
+                  isSelected: false,
+                  helper: TypeHelper.SHARED,
+                  list: [] // FIXME: should get them from backend
+                }
+              ]
+            },
+          ]
+      }},
+      { icon: 'jam-layout',
+        iconSelected: 'jam-layout-f',
+        isSelected: false,
+        description: 'Choose Layout',
+        subMenu: {
+          title: 'Templates',
+          helper: 'Templates are final drafts of pages that have not been published yet. Its a layout of what a future page will look like.',
+          items: []
+        }
+      },
+      {
+        icon: 'feather-move',
+        iconSelected: 'feather-move',
+        isSelected: false,
+        description: 'Rearrange'
+      }
+    ];
   }
 
   /*** ------------------------------------------------ ***/
   /*** -------------------- Actions ------------------- ***/
   /*** ------------------------------------------------ ***/
 
-  selectOption(icon: 'add-component' | 'add-section' | 'choose-layout' | 'rearrange') {
-    if (this.optionSelected !== icon) this.optionSelected = icon;
-    else this.optionSelected = null;
+  selectOption(option: Option) {
+    console.log("ANTES: ", this.options);
+    // if there's another option already selected
+    let flag = false;
+    for (let i = 0; i < this.options.length; i++) {
+      if (this.options[i] === option){
+        flag = true;
+        continue;
+      }
+      this.options[i].isSelected = false;
+    }
+
+    if (flag) this.resetMenus();
+    option.isSelected = !option.isSelected;
+
+    // No menus active
+    if (!option.isSelected) this.resetMenus();
+    console.log("DPS: ", this.options);
+  }
+
+  triggerSubMenu(subMenu: SubMenu, index: number) {
+    // make all other subMenus not selected
+    let items = this.options[index].subMenu.items;
+    for (const key in items){
+      if (items[key] === subMenu) continue;
+      items[key].isSelected = false;
+    }
+
+    // Trigger the selected subMenu
+    subMenu.isSelected = !subMenu.isSelected;
+    this.activeSubMenu = subMenu.isSelected ? subMenu : null;
   }
 
   async closeEditor(){
@@ -93,13 +322,68 @@ export class ViewsEditorComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getCourseColor(): string {
-    return this.course.color;
-  }
-
   getIcon(mode: string): string {
     if (mode === this.previewMode) return 'tabler-check';
     else return '';
   }
 
+  getItems(option: Option) {
+    return Object.keys(option.subMenu.items);
+  }
+
+  getCategoryListItem(): CategoryList[]{
+    return this.activeSubMenu.items as CategoryList[];
+  }
+
+  resetMenus(){
+    this.activeSubMenu = null;
+    for (let i = 0; i < this.options.length; i++){
+      this.options[i].isSelected = false;
+
+      for (let j = 0; j < this.options[i].subMenu?.items.length; i++){
+        this.options[i].subMenu.items[j].isSelected = false;
+      }
+    }
+  }
+
+  selectCategory(index: number){
+    // reset all categories previously selected
+    let items = this.activeSubMenu.items
+    for (let i = 0; i < items.length; i ++){
+      if (i === index) continue;
+      this.activeSubMenu.items[i].isSelected = false;
+    }
+
+    // toggle selected category
+    this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
+  }
+
+}
+
+export interface Option {
+  icon: string,
+  iconSelected: string,
+  isSelected: boolean,
+  description: string,
+  subMenu?: SubMenu
+}
+
+export interface SubMenu {
+  title: string,
+  isSelected?: boolean,
+  helper?: string,
+  items: SubMenu[] | CategoryList[]
+}
+
+export interface CategoryList {
+  type?: 'System' | 'Custom' | 'Shared',
+  isSelected: boolean,
+  helper?: TypeHelper,
+  list: any | { category: string, items: any[] }
+}
+
+export enum TypeHelper {
+  SYSTEM = 'System components are provided by GameCourse and already configured and ready for use.',
+  CUSTOM = 'Custom components are created by users in this course.',
+  SHARED = 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses.'
 }

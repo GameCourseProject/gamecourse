@@ -158,5 +158,6 @@ export enum ChartType {
   COMBO = 'combo',
   LINE = 'line',
   PROGRESS = 'progress',
-  RADAR = 'radar'
+  RADAR = 'radar',
+  PIE = 'pie'
 }

@@ -136,7 +136,6 @@ export class ViewsComponent implements OnInit {
   async doTopAction(event: string){
     event = event.toLowerCase();
     if (event === 'arrange pages') {
-      console.log(this.coursePages);
       this.arrangingPages = _.cloneDeep(this.coursePages);
       this.mode = 'arrange';
       ModalService.openModal('arrange-pages');

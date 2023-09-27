@@ -5,7 +5,7 @@
   <ng-container *ngIf="view.chartType === ChartType.LINE" [ngTemplateOutlet]="DISPLAY_LINE"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.PROGRESS" [ngTemplateOutlet]="DISPLAY_PROGRESS"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.RADAR" [ngTemplateOutlet]="DISPLAY_RADAR"></ng-container>
-  <!-- Add here pie chart as well-->
+  <ng-container *ngIf="view.chartType === ChartType.PIE" [ngTemplateOutlet]="DISPLAY_PIE"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
@@ -217,4 +217,34 @@
   </div>
 </ng-template>
 
-<!-- Add here template for PIE CHART -->
+<ng-template #DISPLAY_PIE>
+  <div [attr.id]="view.cssId"
+       [classList]="classes"
+       [attr.style]="view.styles">
+
+    <app-pie-chart
+      [id]="'v' + view.uniqueId.toString()"
+      [series]="view.data"
+      [classList]="view.classList"
+      [height]="view.options?.height || 'auto'"
+      [width]="view.options?.width || '100%'"
+      [colors]="view.options?.colors || undefined"
+      [labels]="view.options?.labels || undefined"
+      [legend]="view.options?.legend || undefined"
+      [legendPosition]="view.options?.legendPosition || 'bottom'"
+      [title]="view.options?.title || undefined"
+      [subtitle]="view.options?.subtitle || undefined"
+      [align]="view.options?.align || 'left'"
+      [startAngle]="view.options?.startAngle || 0"
+      [endAngle]="view.options?.endAngle || 360"
+      [customScale]="view.options?.customScale || 1"
+      [offsetX]="view.options?.offsetX || 0"
+      [offsetY]="view.options?.offsetY || 0"
+      [expandOnClick]="view.options?.expandOnClick || true"
+      [dataLabels]="view.options?.dataLabels || undefined"
+      [sparkline]="view.options?.sparkline || undefined"
+      [toolbar]="view.options?.toolbar || undefined"
+      [toolbarActions]="view.options?.toolbarActions || []">
+    </app-pie-chart>
+  </div>
+</ng-template>
