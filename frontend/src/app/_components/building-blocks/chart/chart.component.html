@@ -5,6 +5,7 @@
   <ng-container *ngIf="view.chartType === ChartType.LINE" [ngTemplateOutlet]="DISPLAY_LINE"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.PROGRESS" [ngTemplateOutlet]="DISPLAY_PROGRESS"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.RADAR" [ngTemplateOutlet]="DISPLAY_RADAR"></ng-container>
+  <!-- Add here pie chart as well-->
 </ng-container>
 
 <!-- Edit version -->
@@ -215,3 +216,5 @@
     </app-radar-chart>
   </div>
 </ng-template>
+
+<!-- Add here template for PIE CHART -->
