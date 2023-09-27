@@ -58,7 +58,10 @@ autogame/imported-functions/*/
 /autogame/config/**
 !/autogame/config/samples
 !/autogame/config/samples/**
+
+# Configs
 /inc/config_testing.php
+/inc/config_personal_production.php
 /inc/config_production.php
 
 
