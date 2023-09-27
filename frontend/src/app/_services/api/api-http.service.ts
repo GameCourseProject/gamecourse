@@ -73,7 +73,6 @@ import {
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
-import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 
 @Injectable({
   providedIn: 'root'
@@ -2762,17 +2761,24 @@ export class ApiHttpService {
 
   // General
   // TODO: refactor
-  public getViews(courseID: number): Observable<Template[]> {
+  public getViewsList(courseID: number): Observable<{pages: Page[], templates: Template[], globals: Template[], types: RoleType[]}> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'getViews');
+      qs.push('request', 'listViews');
       qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => Template.fromDatabase(obj))));
+      .pipe( map((res: any) => {
+        return {
+          pages: Object.values(res['data']['pages']).map(obj => Page.fromDatabase(obj as any)),
+          templates: res['data']['templates'].map(obj => Template.fromDatabase(obj)),
+          globals: res['data']['globals'].map(obj => Template.fromDatabase(obj)),
+          types: res['data']['types'].map(obj => RoleType.fromDatabase(obj))
+        }
+      }) );
   }
 
 
@@ -2822,21 +2828,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
   }
 
-  public getPublicPages(courseID: number, outsideCourse?: boolean): Observable<Page[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'getPublicPages');
-      qs.push('courseId', courseID);
-      if (outsideCourse !== undefined) qs.push('outsideCourse', outsideCourse);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => Page.fromDatabase(obj))) );
-
-  }
-
   public getUserPages(courseID: number, userID: number, isVisible?: boolean): Observable<Page[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
@@ -2872,7 +2863,7 @@ export class ApiHttpService {
       courseId: courseID,
       pageName: page.name,
       viewId: page.viewId,
-      isEnabled: page.isVisible ? 1 : 0
+      isEnabled: page.isEnabled ? 1 : 0
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2885,17 +2876,14 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public editPage(courseID: number, page: PageManageData): Observable<Page> {
+  // TODO: refactor
+  public editPage(courseID: number, page: Page): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: page.id,
-      name: page.name,
-      isVisible: page.isVisible,
-      viewRoot: page.viewRoot,
-      visibleFrom: page.visibleFrom,
-      visibleUntil: page.visibleUntil,
-      position: page.position,
-      isPublic: page.isPublic
+      pageName: page.name,
+      viewId: page.viewId,
+      isEnabled: page.isEnabled
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2905,13 +2893,14 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
+      .pipe( map((res: any) => res) );
   }
 
-  public deletePage(courseID: number, pageId: number): Observable<void> {
+  // TODO: refactor
+  public deletePage(courseID: number, page: Page): Observable<any> {
     const data = {
       courseId: courseID,
-      pageId: pageId,
+      pageId: page.id,
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -2921,24 +2910,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map( (res:any) => res) );
-  }
-
-  public copyPage(courseID: number, pageID: number, creationMode: string): Observable<Page>{
-    const data = {
-      courseId: courseID,
-      pageId: pageID,
-      creationMode: creationMode
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'copyPage');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map( (res: any) => Page.fromDatabase(res['data'])) );
+      .pipe( map((res: any) => res) );
   }
 
   public importPages(courseID: number, file: string | ArrayBuffer, replace: boolean): Observable<number> {
@@ -2954,21 +2926,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => parseInt(res['data'])) );
   }
 
-  public exportPages(courseID: number, pages: number[]): Observable<{extension: string, file?: string, path?: string}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'exportPages');
-      qs.push('courseId', courseID);
-      qs.push('pagesIds', pages);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        return {extension: res['data']['extension'], path: res['data']['path']};
-      }));
-
-  }
 
   // Templates
   // TODO: refactor

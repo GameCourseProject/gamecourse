@@ -1,459 +1,249 @@
-<div class="w-full relative">
+<ng-container *ngIf="!loading">
 
-  <!-- Header -->
-  <app-header
-    [classList]="'text-md'"
-    [title]="'Pages'"
-    [icon]="'feather-file'"
-    [loading]="loading.action">
-  </app-header>
-
-  <!-- Pages top actions -->
-  <app-top-actions
-    [classList]="'-mt-6'"
-    [leftActions]="[{action: 'Arrange Pages', icon: 'feather-move'}]"
-    [rightActions]="[{action: 'Create new Page', icon: 'feather-file', color: 'primary', outline: true},
-                     {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
-                      {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
-                      {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
-                      {action: Action.EXPORT + ' all pages', icon:'jam-upload'}
-                     ]}]"
-    (btnClicked)="doTopAction($event)">
-  </app-top-actions>
-
-  <!-- Search-->
-  <div class="w-[40%] mx-auto my-5">
-    <app-input-search
-      [id] = "'pages-search'"
-      [items] = "pages"
-      [placeholder]="'Search for a specific page...'"
-      (valueChange)="filterPages($event)">
-    </app-input-search>
+  <!-- Search -->
+  <div class="search">
+    <input type="text" id="search_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
+    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
   </div>
 
-  <span *ngIf="!loading.page && pages.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
-  <span *ngIf="pages.length !== 0 && pagesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
+  <!-- Pages -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Pages</span></div>
+    </div>
 
-  <!-- Pages cards -->
-  <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
-    <div *ngFor="let page of pagesToShow">
-      <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+    <div class="content" id="pages">
+      <div *ngFor="let page of reduceForPages.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page"></div>
+        </div>
 
-          <!-- FIXME: Replace <img> with screenshots of pages -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
-
-          <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
-            <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
-              <button class="btn btn-sm btn-{{page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-black' : 'text-white')}}">
-                </ng-icon>
-              </button>
-            </ng-container>
-            <ng-template #defaultButton>
-              <button class="btn btn-sm btn-{{!page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{!page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-white' : 'text-dark')}}">
-                </ng-icon>
-              </button>
-            </ng-template>
+        <div class="footer with_status">
+          <div class="page_info">
+            <span>{{page.name}}</span>
+            <span>(id: {{page.id}})</span>
           </div>
-          <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="chooseAction('configure visibility', page)">
-            <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isVisible ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
-            <span class="font-semibold my-0.5">{{page.isVisible ? 'Visible' : 'Not visible'}}</span>
-          </div>
-        </figure>
 
-        <div class="card-body -mt-4">
-          <div class="flex justify-between items-center border-b-gray-200 border-b-2">
-            <span class="text-lg font-semibold -mb-2">{{page.name}}</span>
-            <div class="dropdown dropdown-right">
-              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4">
-                <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
-              </button>
-
-              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
-                <li *ngFor="let action of actions; let i = index" (click)="chooseAction(action.description, page)">
-                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
-                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
-                    <span class="font-semibold">{{action.description}}</span>
-                  </div>
-                </li>
-              </ul>
-
-            </div>
-          </div>
-          <div class="mt-2.5">
-            <p *ngIf="page.course !== course.id" class="text-xs"><strong>Imported from:</strong><br></p>
-            <p *ngIf="page.course !== course.id" class="text-xs text-primary">{{publicPagesCourses[page.id]}}</p>
-            <p class="text-xs mt-2"><strong>Last edited:</strong> {{calculateDate(page.updateTimestamp)}}</p>
+          <div class="page_actions">
+            <span class="config_icon icon" title="Edit" (click)="editPage(page)"></span>
+            <span class="delete_icon icon" (click)="pageSelected = page; isDeleteVerificationModalOpen = true"></span>
           </div>
         </div>
 
+        <div class="status" [ngClass]="{'enable': page.isEnabled, 'disable': !page.isEnabled}">
+          {{page.isEnabled ? 'Enabled' : 'Disabled'}}
+          <div class="background"></div>
+        </div>
+      </div>
+
+      <div class="action-buttons" style="width:30px">
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; this.pageSelected = getEmptyPage(); isPageModalOpen = true;"></div>
       </div>
     </div>
 
+    <div *ngIf="searchQuery && reduceForPages.items.length === 0" class="error_box">
+      <div id="empty_pages" class="error_msg">No matches found</div>
+    </div>
   </div>
 
-  <!-- Loader -->
-  <app-loader [loading]="loading.page"></app-loader>
+  <!-- View Templates -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>View Templates</span></div>
+    </div>
+
+    <div class="content" id="view_templates">
+      <div *ngFor="let template of reduceForViewTemplates.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page">
+            <span class="edit_icon" title="Edit" [routerLink]="'templates/' + (template | as : Template).id + '/editor'"></span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="page_name">{{(template | as : Template).name}}</div>
+          <div class="template_actions">
+            <span class="config_icon icon" title="Edit" (click)="editTemplate(template)"></span>
+            <span *ngIf="!(template | as : Template).isGlobal" class="globalize_icon icon" title="Globalize" (click)="globalize(template)"></span>
+            <span *ngIf="(template | as : Template).isGlobal" class="de_globalize_icon icon" title="Deglobalize" (click)="globalize(template)"></span>
+            <span class="export_icon_no_outline icon" title="Export" (click)="exportTemplate(template)"></span>
+            <span class="delete_icon icon" title="Remove" (click)="templateSelected = template; isDeleteVerificationModalOpen = true"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
+        <div class="icon add_icon" title="New" (click)="mode = 'add'; templateSelected = getEmptyTemplate(); isTemplateModalOpen = true;"></div>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && reduceForViewTemplates.items.length === 0" class="error_box">
+      <div id="empty_templates" class="error_msg">No matches found</div>
+    </div>
+  </div>
+
+  <!-- Global Templates -->
+  <div class="section">
+    <div class="divider">
+      <div class="title"><span>Global Templates</span></div>
+    </div>
+
+    <div class="content" id="global_templates">
+      <div *ngFor="let template of reduceForGlobalTemplates.items" class="card">
+        <div class="color_box">
+          <div class="box"></div>
+          <div class="frame frame-page">
+            <span *ngIf="(template | as : Template).courseId !== courseID" class="add_icon_no_outline"
+                  (click)="useGlobal(template)"></span>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="page_name">{{template.name}}</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && reduceForGlobalTemplates.items.length === 0" class="error_box">
+      <div id="empty_globals" class="error_msg">No matches found</div>
+    </div>
+  </div>
+
+</ng-container>
+
+<!-- Loader -->
+<div *ngIf="loading" id="page-loading">
+  <img src="assets/loader/loader.gif" alt="loader">
 </div>
 
 
-<!-- Arrange Pages Modal -->
-<app-modal *ngIf="mode === 'arrange'"
-           [id]="'arrange-pages'"
-           [templateRef]="ARRANGE"
-           [header]="mode?.capitalize() + ' order of pages'"
-           [closeBtnText]="'Discard'"
-           [submitBtnText]="'Save'"
-           [size]="'md'"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="arrangePages()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #ARRANGE>
-  <div class="w-full flex flex-wrap -mt-1">
-    <span>The order here defined will be the order in which pages will <strong>appear in the sidebar</strong> once visible</span>
-  </div>
+<!-- New / Edit Page Modal -->
+<ng-container *ngIf="isPageModalOpen">
+<!--  <app-modal-->
+<!--    [isOpen]="isPageModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
+<!--    [templateRef]="newPageModal"-->
+<!--    (closeBtnClicked)="clear(); isPageModalOpen = false;"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
+</ng-container>
 
-  <div cdkDropList [id]="'pages-list'" class="dd max-w-none mt-4" (cdkDropListDropped)="drop($event)">
-    <div class="dd-item" *ngFor="let page of arrangingPages" cdkDrag>
-      <div class="justify-center flex">
-        <!-- Move -->
-        <div *ngIf="arrangingPages.length > 1" class="tooltip absolute -ml-[45%] mt-2" data-tip="Move">
-          <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
-            <ng-icon name="tabler-arrows-vertical" size="1.2rem"></ng-icon>
-            <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
-          </button>
-        </div>
+<ng-template #newPageModal>
 
-        <!-- Card -->
-        <div class="dd-content border-primary border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
-          <div class="card-body py-1">
-            <span class="self-center font-semibold text-md">{{page.name}}</span>
-          </div>
-        </div>
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} page:</div>
+
+  <div class="content">
+    <div class="inputs" style="padding-bottom: 26px">
+      <!-- Name -->
+      <div class="name full">
+        <input type="text" class="form__input" id="page_name" placeholder="Name *" [(ngModel)]="pageSelected.name">
+        <label for="page_name" class="form__label">Name</label>
+      </div>
+
+      <!-- View template -->
+      <select class="form__input pages_info" [(ngModel)]="pageSelected.viewId">
+        <option [ngValue]="null" disabled selected>Select a view template *</option>
+        <option *ngFor="let template of allViewTemplates" [ngValue]="template.viewId" label="{{template.name}}">{{template.name}}</option>
+      </select>
+    </div>
+
+    <div id="active_page" class="row">
+      <div class="on_off">
+        <span>Enable Page</span>
+        <label class="switch">
+          <input type="checkbox" [checked]="pageSelected.isEnabled" (change)="pageSelected.isEnabled = !pageSelected.isEnabled">
+          <span class="slider round"></span>
+        </label>
       </div>
     </div>
 
-    <div *ngFor="let page of publicPages">
-      <div class="justify-center flex">
-        <!-- Card -->
-        <div class="dd-content order-gray-400 border-opacity-75 card w-[40%] bg-base-100 shadow-xl mt-2">
-          <div class="card-body py-1">
-            <span class="self-center font-semibold text-md">{{page.name}}</span>
-          </div>
-        </div>
+    <button class="cancel" (click)="isPageModalOpen = false; clear()"> Cancel </button>
+    <button class="save_btn" (click)="savePage(pageSelected)" [disabled]="!isReadyToSubmit('page')"> Save </button>
+  </div>
+
+</ng-template>
+
+
+<!-- New / Edit Template Modal -->
+<ng-container *ngIf="isTemplateModalOpen">
+<!--  <app-modal-->
+<!--    [isOpen]="isTemplateModalOpen"-->
+<!--    [id]="mode === 'add' ? 'new-view' : 'edit-view'"-->
+<!--    [templateRef]="newTemplateModal"-->
+<!--    (closeBtnClicked)="isTemplateModalOpen = false; clear()"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-modal>-->
+</ng-container>
+
+<ng-template #newTemplateModal>
+
+  <div class="title">{{mode === 'add' ? 'New' : 'Edit'}} template:</div>
+
+  <div class="content">
+    <div class="inputs" style="padding-bottom: 26px">
+      <!-- Name -->
+      <div class="name full">
+        <input type="text" class="form__input" id="template_name" placeholder="Name *" [(ngModel)]="templateSelected.name">
+        <label for="template_name" class="form__label">Name</label>
       </div>
-    </div>
-  </div>
-</ng-template>
 
-<!-- Delete Modal -->
-<app-modal *ngIf="mode === 'delete' && pageToManage"
-           [id]="'delete-page'"
-           [templateRef]="DELETE"
-           [header]="mode?.capitalize() + ' page \'' + pageToManage.name + '\'?'"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Delete'"
-           [submitBtnColor]="'error'"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #DELETE>
-  <div class="w-full flex flex-wrap">
-    <span>Are your sure you want to delete '<strong>{{pageToManage.name}}</strong>' page? This action <strong> cannot be undone</strong>.</span>
-  </div>
-
-  <div *ngIf="pageToManage.isPublic" class="justify-center flex">
-    <div class="alert alert-warning shadow-lg rounded-lg w-full mt-6">
-      <div>
-        <ng-icon [name]="'feather-alert-triangle'" size="1.2rem"></ng-icon>
-        <div class="ml-2.5">
-          <span>This page might be used by other courses at the moment. Deleting it would also
-            <strong>make it unavailable for them</strong>.</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</ng-template>
-
-<!-- Make public / private modal -->
-<app-modal *ngIf="mode === 'make public-private' && pageToManage"
-           [id]="'make-public-private-page'"
-           [templateRef]="MAKE_PUBLIC_PRIVATE"
-           [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isPublic ? 'private' : 'public') + '?'"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Yes'"
-           [submitBtnColor]="'error'"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #MAKE_PUBLIC_PRIVATE>
-  <div *ngIf="pageToManage.course === course.id" class="flex flex-wrap -mt-1">
-    <span class="w-full" *ngIf="pageToManage.isPublic">This page will <strong>stop being available</strong>
-      for other courses. Do you wish to proceed?</span>
-    <span class="w-full" *ngIf="!pageToManage.isPublic">This page will be <strong>available for other courses to
-      use and modify.</strong> Do you wish to proceed?</span>
-  </div>
-
-  <div *ngIf="pageToManage.course !== course.id" class="flex flex-wrap -mt-1">
-    <span class="w-full" *ngIf="pageToManage.isPublic"><strong>This page belongs to another course</strong>. Making it
-      private will <strong>stop being available for this and other courses</strong>. Do you wish to proceed?</span>
-    <span class="w-full" *ngIf="!pageToManage.isPublic">This page will be <strong>available for other courses to
-      use and modify.</strong> Do you wish to proceed?</span>
-  </div>
-</ng-template>
-
-<!-- Configure visibility modal: Make visible -->
-<app-modal *ngIf="mode === 'visibility' && pageToManage"
-           [id]="'configure-visibility'"
-           [templateRef]="VISIBILITY"
-           [header]="'Configure visibility for \'' + pageToManage.name + '\''"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Save'"
-           [submitBtnColor]="'primary'"
-           [actionInProgress]="loading.action"
-           [size]="'md'"
-           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #VISIBILITY>
-  <form #fPage="ngForm">
-    <div class="w-full flex flex-wrap -mt-1">
-      <span>This page is currently: <strong class="text-error">Not visible</strong></span>
-      <span class="mt-3">Turning it <strong>'visible' will make it appear on the sidebar</strong> for all students from this course
-        {{pageToManage.isPublic ? ', and will be modified in all courses where this page is imported.' : '.'}}</span>
+      <!-- Role Type -->
+      <select class="form__input pages_info" id="new_view_role" [(ngModel)]="templateSelected.roleType">
+        <option [ngValue]="null" disabled selected>Select a role type *</option>
+        <option *ngFor="let type of types" [ngValue]="type.id" label="{{type.name}}">{{type.name}}</option>
+      </select>
     </div>
 
-    <app-input-checkbox
-      [id]="'page-visible-checkbox'"
-      [form]="fPage"
-      [classList]="'mt-4'"
-      [(value)]="visibilityCheckbox"
-      [label]="'Make page visible only for certain period'"
-      [labelPosition]="'right'">
-    </app-input-checkbox>
-
-    <div *ngIf="visibilityCheckbox" class="w-full justify-between mt-4 flex flex-wrap">
-      <div class="w-2/5">
-        <app-input-date
-          [id]="'visible-from'"
-          [form]="fPage"
-          [(value)]="pageToManage.visibleFrom"
-          [placeholder]="'Visible start date'"
-          [topLabel]="'Visible from'"
-          [required]="true"
-        ></app-input-date>
-      </div>
-
-      <div class="w-2/5">
-        <app-input-date
-          [id]="'visible-until'"
-          [form]="fPage"
-          [(value)]="pageToManage.visibleUntil"
-          [placeholder]="'Visible end date'"
-          [topLabel]="'Visible until'"
-          [required]="true"
-        ></app-input-date>
-      </div>
-
-    </div>
-
-  </form>
-</ng-template>
-
-<!-- Configure visibility modal: Make not visible -->
-<app-modal *ngIf="mode === 'visibility' && pageToManage"
-           [id]="'configure-not-visibility'"
-           [templateRef]="NOT_VISIBILITY"
-           [header]="'Configure visibility for \'' + pageToManage.name + '\''"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Yes'"
-           [submitBtnColor]="'error'"
-           [actionInProgress]="loading.action"
-           [size]="'md'"
-           (submitBtnClicked)="doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #NOT_VISIBILITY>
-  <div class="w-full flex flex-wrap -mt-1">
-    <span>This page is currently: <strong class="text-success">Visible</strong></span>
-    <span class="mt-3">Turning it to <strong>'not visible' will hide it from the sidebar</strong> for all
-      students from this course {{pageToManage.isPublic ? ', and will be modified in all courses where this page is imported.' : '.'}}
-      <strong>Do you wish to proceed?</strong></span>
-  </div>
-</ng-template>
-
-<!-- Rename modal -->
-<app-modal *ngIf="mode === 'rename' && pageToManage"
-           [id]="'rename'"
-           [templateRef]="RENAME"
-           [header]="'Rename \'' + pageName + '\''"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Save'"
-           [submitBtnColor]="'primary'"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #RENAME>
-  <form #fPage="ngForm">
-    <app-input-text
-      [id] = "'page-name'"
-      [form] = "fPage"
-      [classList]="'w-full flex flex-wrap'"
-      [(value)] = "pageToManage.name"
-      [placeholder]="'Page name'"
-      [topLabel]="'New name'"
-      [pattern]="'(?!^\\d+$)^.+$'"
-      [patternErrorMessage]="'Page name can\'t be composed of only numbers'"
-      [required]="true"
-      [maxLength]="60"
-      [maxLengthErrorMessage]="'Page name is too long: maximum of 60 characters'">
-    </app-input-text>
-
-  </form>
-</ng-template>
-
-<!-- Duplicate modal -->
-<app-modal *ngIf="mode === 'duplicate' && pageToManage"
-           [id]="'duplicate'"
-           [templateRef]="DUPLICATE"
-           [header]="'Duplicate \'' + pageToManage.name + '\''"
-           [closeBtnText]="'Cancel'"
-           [submitBtnText]="'Duplicate'"
-           [submitBtnColor]="'primary'"
-           [actionInProgress]="loading.action"
-           [size]="'md'"
-           (submitBtnClicked)="fPage.onSubmit(null); doAction()"
-           (onClose)="resetChanges()">
-</app-modal>
-<ng-template #DUPLICATE>
-  <form #fPage="ngForm">
-    <div class="w-full flex flex-wrap mb-3">
-      <span class="font-semibold w-full">Choose one of the following options for duplicating '{{pageToManage.name}}'<span class="text-secondary ml-1">*</span>
-      </span>
-
-      <div class="md:w-2/5">
-        <app-input-radio
-          [id]="'by-reference'"
-          [group] = "'duplicate-option'"
-          [form] = "fPage"
-          [optionValue] = "duplicateOptions[0].char"
-          [color]="'secondary'"
-          [classList]="'mt-2'"
-          [label]="duplicateOptions[0].name"
-          [labelPosition]="'right'"
-          [(value)]="optionSelected"
-        ></app-input-radio>
-      </div>
-      <div class="md:w-2/5">
-        <app-input-radio
-          [id]="'by-value'"
-          [group] = "'duplicate-option'"
-          [form] = "fPage"
-          [optionValue] = "duplicateOptions[1].char"
-          [color]="'secondary'"
-          [classList]="'mt-2'"
-          [label]="duplicateOptions[1].name"
-          [labelPosition]="'right'"
-          [(value)]="optionSelected"
-        ></app-input-radio>
-      </div>
-    </div>
-
-    <!-- Small divider -->
-    <ng-container class="border-b-base-300 border-b-2"></ng-container>
-
-    <div class="mt-6 text-sm">
-      <div>
-        <span class="text-secondary w-full"><strong>Copy by value:</strong></span>
-        <span class="text-opacity-60 w-full">
-          Each copy is an <strong>individual page</strong>.
-          The changes made in the copy version <strong>won't affect</strong> the original page.
-        </span>
-      </div>
-      <div class="mt-1.5">
-        <span class="text-secondary w-full"><strong>Copy by reference:</strong></span>
-        <span class="text-opacity-60 w-full">
-          The changes made in the copy version <strong>will also affect</strong> the original page.
-        </span>
-      </div>
-    </div>
-  </form>
-</ng-template>
-
-<!-- Import from PC Modal -->
-<app-modal *ngIf="mode === 'import-pc'"
-  [id]="'page-import-pc'"
-  [templateRef]="IMPORT_PC"
-  [header]="'Import Page(s) from PC'"
-  [submitBtnText]="'Import'"
-  [actionInProgress]="loading.action"
-  (submitBtnClicked)="fImport.onSubmit(null); importPages()"
-  (onClose)="resetChanges()">
-</app-modal>
-<ng-template #IMPORT_PC>
-  <div class="prose flex items-center gap-1 mb-3">
-    <p class="mb-0">Upload a .ZIP file containing pages information</p>
-    <app-import-helper
-      [id]="'import-helper'"
-      [format]="'.zip'"
-      [requirements]="[]"
-    >
-    </app-import-helper>
+    <button class="cancel" (click)="isTemplateModalOpen = false; clear()"> Cancel </button>
+    <button class="save_btn" (click)="saveTemplate(templateSelected)" [disabled]="!isReadyToSubmit('template')"> Save </button>
   </div>
 
-  <form #fImport="ngForm">
-
-    <!-- File -->
-    <app-input-file
-      [id]="'import-file'"
-      [form]="fImport"
-      [accept]="['.zip']"
-      [size]="'sm'"
-      [color]="'primary'"
-      [required]="true"
-      (valueChange)="this.importData.file = $event.item(0)">
-    </app-input-file>
-
-    <!-- Replace -->
-    <app-input-checkbox
-      [id]="'import-replace'"
-      [form]="fImport"
-      [(value)]="importData.replace"
-      [color]="'secondary'"
-      [classList]="'mt-2'"
-      [label]="'Replace duplicates'"
-      [labelPosition]="'right'">
-    </app-input-checkbox>
-
-  </form>
 </ng-template>
 
-<!-- Import from GameCourse Modal -->
-<app-modal *ngIf="mode === 'import-gc'"
-           [id]="'page-import-gc'"
-           [templateRef]="IMPORT_GC"
-           [header]="'Import Page from GameCourse'"
-           [submitBtnText]="'Import'"
-           [actionInProgress]="loading.action"
-           (submitBtnClicked)="fImport.onSubmit(null); importPages()"
-           (onClose)="resetChanges()">
-</app-modal>
-<!-- FIXME - should there be folder in course_data for public pages? -->
-<ng-template #IMPORT_GC>
-  <app-file-picker-modal
-    [id]="'file-picker-import-gc'"
-    [type]="'text/*'"
-  ></app-file-picker-modal>
+
+<!-- Delete Verification Modal -->
+<ng-container *ngIf="isDeleteVerificationModalOpen">
+<!--  <app-verification-modal-->
+<!--    [isModalOpen]="isDeleteVerificationModalOpen"-->
+<!--    [id]="'delete-view'"-->
+<!--    [text]="'Are you sure you want to delete this ' + (pageSelected ? 'page' : 'template') + '?'"-->
+<!--    [target]="(pageSelected ? 'Page' : 'Template') + ': ' + (pageSelected?.name || templateSelected?.name) + ' (id: ' + (pageSelected?.id || templateSelected?.id) + ')'"-->
+<!--    [positiveBtnText]="'Delete'"-->
+<!--    (positiveBtnClicked)="pageSelected ? deletePage() : deleteTemplate()"-->
+<!--    (negativeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
+<!--    (closeBtnClicked)="clear(); isDeleteVerificationModalOpen = false"-->
+<!--    [actionInProgress]="saving">-->
+<!--  </app-verification-modal>-->
+</ng-container>
+
+<!-- Import Modal -->
+<ng-container *ngIf="isImportModalOpen">
+<!--  <app-modal-->
+<!--    [isOpen]="isImportModalOpen"-->
+<!--    [id]="'import-template'"-->
+<!--    [templateRef]="importModal"-->
+<!--    (closeBtnClicked)="isImportModalOpen = false"-->
+<!--    [actionInProgress]="saving"-->
+<!--    [innerClickEvents]="false"-->
+<!--    [classList]="'verification'">-->
+<!--  </app-modal>-->
+</ng-container>
+
+<ng-template #importModal>
+
+  <div class="warning">Please select a .txt file to be imported</div>
+  <app-input-file
+    [id]="'import_template'"
+    [accept]="['.txt']"
+    [classList]="'config_input'"
+    (valueChange)="onFileSelected($event)">
+  </app-input-file>
+
+  <div class="confirmation_btns">
+    <button (click)="importTemplate()">Import Template</button>
+  </div>
+
 </ng-template>

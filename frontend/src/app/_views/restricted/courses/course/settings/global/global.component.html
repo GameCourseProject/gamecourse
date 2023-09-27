@@ -36,7 +36,7 @@
             <th class="action-column"></th>
           </tr>
           <tr *ngFor="let page of orderBySeqId()">
-            <td>{{page.position}}</td>
+            <td>{{page.seqId}}</td>
             <td>{{page.name}}</td>
             <td class="action-column">
               <div class="icon up_icon" title="Move up" (click)="move(page, 1)"></div>

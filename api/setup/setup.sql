@@ -388,7 +388,6 @@ CREATE TABLE page(
     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
     position                    int unsigned DEFAULT NULL,
-    isPublic                    boolean DEFAULT FALSE,
 
     UNIQUE key(course, name),
     UNIQUE key(course, position),

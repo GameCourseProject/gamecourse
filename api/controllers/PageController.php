@@ -7,7 +7,6 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Page\Page;
-use GameCourse\Views\ViewHandler;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -100,25 +99,6 @@ class PageController
     }
 
     /**
-     * @return void
-     * @throws Exception
-     */
-    public function getPublicPages()
-    {
-        API::requireValues("courseId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCoursePermission($course);
-
-        $outsideCourse = API::getValue("outsideCourse", "bool") ?? false;
-        $publicPages = Page::getPublicPages($courseId, $outsideCourse);
-
-        API::response($publicPages);
-    }
-
-    /**
      * Gets course pages available for a given user according to their roles.
      * Option for 'visible'.
      *
@@ -157,115 +137,6 @@ class PageController
         API::response($userPages);
     }
 
-    /**
-     * Updates page in the DB
-     * @return void
-     * @throws Exception
-     */
-    public function editPage(){
-        API::requireValues("courseId", "pageId", "name", "isVisible", "viewRoot", "visibleFrom",
-            "visibleUntil", "position", "isPublic");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-        API::requireCoursePermission($course);
-
-        $pageId = API::getValue("pageId", "int");
-        $page = Page::getPageById($pageId);
-
-        // Get rest of the values
-        $name = API::getValue("name");
-        $isVisible = API::getValue("isVisible", "bool");
-        $viewRoot = API::getValue("viewRoot", "int"); // FIXME --> is it needed?
-        $visibleFrom = API::getValue("visibleFrom") ?? null;
-        $visibleUntil = API::getValue("visibleUntil") ?? null;
-        $position = API::getValue("position", "int");
-        $isPublic = API::getValue("isPublic", "bool");
-
-        $pageInfo = $page->editPage($name, $isVisible, $isPublic, $visibleFrom, $visibleUntil, $position)->getData();
-
-        API::response($pageInfo);
-    }
-
-    /**
-     * Removes page from DB given its ID and course
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function deletePage(){
-        API::requireValues("courseId", "pageId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-        API::requireCoursePermission($course);
-
-        $pageId = API::getValue("pageId", "int");
-
-        Page::deletePage($pageId);
-    }
-
-    /**
-     * Creates a copy of a given page in a specific course
-     * @return void
-     * @throws Exception
-     */
-    public function copyPage(){
-        API::requireValues("courseId", "pageId", "creationMode");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-        API::requireCoursePermission($course);
-
-        // Get rest of values
-        $pageId = API::getValue("pageId", "int");
-        $creationMode = API::getValue("creationMode");
-
-        $page = new Page($pageId);
-        $copy = $page->copyPage($creationMode)->getData();
-
-        API::response($copy);
-    }
-
-    /*** --------------------------------------------- ***/
-    /*** ------------------- Views ------------------- ***/
-    /*** --------------------------------------------- ***/
-
-    /**
-     * Gets all existing viewTypes from DB
-     * @return void
-     * @throws Exception
-     */
-    public function getViewTypes(){
-        API::requireValues("courseId", "idsOnly");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCoursePermission($course);
-        $idsOnly = API::getValue("idsOnly", "bool") ?? false;
-
-        $viewTypes = ViewHandler::getViewTypes($idsOnly);
-        API::response($viewTypes);
-
-    }
-
-    /**
-     * Gets all View Templates in the course
-     *
-     * @return void
-     * @throws Exception
-     */
-    public function getViews(){
-        API::requireValues("courseId");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCoursePermission($course);
-        $views = ViewHandler::getViews();
-        API::response($views);
-    }
 
     /*** --------------------------------------------- ***/
     /*** ----------------- Rendering ----------------- ***/
@@ -337,20 +208,5 @@ class PageController
         API::response($nrPagesImported);
     }
 
-    /**
-     * Export page(s) from a given course.
-     * @throws Exception
-     */
-    public function exportPages(){
-        API::requireValues("courseId", "pagesIds");
-
-        $courseId = API::getValue("courseId", "int");
-        $course = API::verifyCourseExists($courseId);
-
-        API::requireCourseAdminPermission($course);
-
-        $pagesIds = API::getValue("pagesIds", "array");
-
-        API::response(Page::exportPages($courseId, $pagesIds));
-    }
+    // TODO: export
 }
