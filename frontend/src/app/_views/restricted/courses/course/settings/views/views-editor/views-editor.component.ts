@@ -6,7 +6,6 @@ import {Page} from "src/app/_domain/views/pages/page";
 
 import {initPageToManage, PageManageData} from "../views/views.component";
 import {ViewType} from "src/app/_domain/views/view-types/view-type";
-import * as _ from 'lodash';
 
 @Component({
   selector: 'app-views-editor',
