@@ -33,7 +33,7 @@
     </div>
 
     <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
-    <span *ngIf=" sectionsToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
+    <span *ngIf="sectionsToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
     <div class="rounded-lg border border-base-content border-opacity-20 mt-6 p-2">
       <div cdkDropList [id]="'sections-list'" class="dd max-w-none h-96 overflow-y-auto" (cdkDropListDropped)="drop($event)" appScrollableDrag>
@@ -115,10 +115,8 @@
                 </app-input-toggle>
               </div>
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
 
@@ -177,7 +175,7 @@
 <!-- Manage Autogame Metadata -->
 <app-modal *ngIf="sectionMode === 'metadata'"
            [id] = "'manage-metadata'"
-           [templateRef]="MANAGE_SECTION_PRIORITY"
+           [templateRef]="MANAGE_METADATA"
            [size] = "'lg'"
            [header] = "sectionMode?.capitalize()"
            [submitBtnText]="'Save'"
@@ -186,7 +184,7 @@
            (submitBtnClicked)="saveMetadata()"
            (closeBtnClicked)="parsedMetadata = null;">
 </app-modal>
-<ng-template #MANAGE_SECTION_PRIORITY>
+<ng-template #MANAGE_METADATA>
   <!-- Description -->
   <div class="w-full flex flex-wrap -mt-1">
     <span>GameCourse's Rule System is arranged by a <strong>set of sections that have rules</strong> inside them. <br>
