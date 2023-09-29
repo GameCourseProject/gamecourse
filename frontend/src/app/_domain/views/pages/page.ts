@@ -1,39 +1,24 @@
 import {RoleTypeId} from "../../roles/role-type";
-import {Moment} from "moment";
-import {dateFromDatabase} from "../../../_utils/misc/misc";
 
 export class Page {
   private _id: number;
-  private _course: number;
   private _name: string;
-  private _isVisible: boolean;
-  private _viewRoot: number;
-  private _creationTimestamp: Moment;
-  private _updateTimestamp: Moment;
-  private _visibleFrom: Moment;
-  private _visibleUntil: Moment;
-  private _position: number;
-  private _isPublic: boolean;
-  //private _roleType: RoleTypeId;
-  //private _seqId: number;
-  //private _theme: string;
+  private _courseId: number;
+  private _viewId: number;
+  private _roleType: RoleTypeId;
+  private _seqId: number;
+  private _theme: string;
+  private _isEnabled: boolean;
 
-  constructor(id: number, course: number, name: string, isVisible: boolean, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment,
-              visibleFrom: Moment, visibleUntil: Moment, position: number, isPublic: boolean) {
+  constructor(id: number, name: string, courseId: number, viewId: number, roleType: RoleTypeId, seqId: number, theme: string, isEnabled: boolean) {
     this._id = id;
-    this._course = course;
     this._name = name;
-    this._isVisible = isVisible;
-    this._viewRoot = viewRoot;
-    this._creationTimestamp = creationTimestamp;
-    this._updateTimestamp = updateTimestamp;
-    this._visibleFrom = visibleFrom;
-    this._visibleUntil = visibleUntil;
-    this._position = position;
-    this._isPublic = isPublic;
-    //this._roleType = roleType;
-    //this._seqId = seqId;
-    //this._theme = theme;
+    this._courseId = courseId;
+    this._viewId = viewId;
+    this._roleType = roleType;
+    this._seqId = seqId;
+    this._theme = theme;
+    this._isEnabled = isEnabled;
   }
 
   get id(): number {
@@ -44,14 +29,6 @@ export class Page {
     this._id = value;
   }
 
-  get course(): number {
-    return this._course;
-  }
-
-  set course(value: number) {
-    this._course = value;
-  }
-
   get name(): string {
     return this._name;
   }
@@ -60,71 +37,23 @@ export class Page {
     this._name = value;
   }
 
-  get isVisible(): boolean {
-    return this._isVisible;
+  get courseId(): number {
+    return this._courseId;
   }
 
-  set isVisible(value: boolean) {
-    this._isVisible = value;
+  set courseId(value: number) {
+    this._courseId = value;
   }
 
   get viewId(): number {
-    return this._viewRoot;
+    return this._viewId;
   }
 
   set viewId(value: number) {
-    this._viewRoot = value;
+    this._viewId = value;
   }
 
-  get creationTimestamp(): Moment {
-    return this._creationTimestamp;
-  }
-
-  set creationTimestamp(value: Moment) {
-    this._creationTimestamp = value;
-  }
-
-  get updateTimestamp(): Moment {
-    return this._updateTimestamp;
-  }
-
-  set updateTimestamp(value: Moment) {
-    this._updateTimestamp = value;
-  }
-
-  get visibleFrom(): Moment {
-    return this._visibleFrom;
-  }
-
-  set visibleFrom(value: Moment) {
-    this._visibleFrom = value;
-  }
-
-  get visibleUntil(): Moment {
-    return this._visibleUntil;
-  }
-
-  set visibleUntil(value: Moment) {
-    this._visibleUntil = value;
-  }
-
-  get position(){
-    return this._position;
-  }
-
-  set position(value: number){
-    this._position = value;
-  }
-
-  get isPublic(){
-    return this._isPublic;
-  }
-
-  set isPublic(value: boolean){
-    this._isPublic = value;
-  }
-
-  /*get roleType(): RoleTypeId {
+  get roleType(): RoleTypeId {
     return this._roleType;
   }
 
@@ -146,48 +75,37 @@ export class Page {
 
   set theme(value: string) {
     this._theme = value;
-  }*/
+  }
 
+  get isEnabled(): boolean {
+    return this._isEnabled;
+  }
 
+  set isEnabled(value: boolean) {
+    this._isEnabled = value;
+  }
 
   static fromDatabase(obj: PageDatabase): Page {
     return new Page(
-      obj.id,
-      obj.course,
-      obj.name,
-      obj.isVisible,
-      obj.viewRoot ?? null,
-      dateFromDatabase(obj.creationTimestamp),
-      dateFromDatabase(obj.updateTimestamp),
-      dateFromDatabase(obj.visibleFrom),
-      dateFromDatabase(obj.visibleUntil),
-      obj.position,
-      obj.isPublic
-      /*parseInt(obj.id) || null,
+      parseInt(obj.id) || null,
       obj.name,
       parseInt(obj.course) || null,
       parseInt(obj.viewId) || null,
       obj.roleType as RoleTypeId,
       parseInt(obj.seqId) || null,
       obj.theme,
-      !!parseInt(obj.isEnabled)*/
+      !!parseInt(obj.isEnabled)
     );
   }
 }
 
-export interface PageDatabase {
-  id: number;
+interface PageDatabase {
+  id?: string;
   name: string;
-  course: number;
-  isVisible: boolean;
-  viewRoot: number;
-  //roleType?: string;
-  //seqId?: string;
-  //theme?: string;
-  creationTimestamp: string;
-  updateTimestamp: string;
-  visibleFrom: string;
-  visibleUntil: string;
-  position: number;
-  isPublic: boolean;
+  course?: string;
+  viewId?: string;
+  roleType?: string;
+  seqId?: string;
+  theme?: string;
+  isEnabled?: string;
 }

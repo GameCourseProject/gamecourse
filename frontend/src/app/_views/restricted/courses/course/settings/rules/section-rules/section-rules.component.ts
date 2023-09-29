@@ -133,9 +133,9 @@ export class SectionRulesComponent implements OnInit {
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: rule.isActive, toggleDisabled: this.section.name === 'Graveyard' }},
         {type: TableDataType.ACTIONS, content: {actions: [
               Action.EDIT,
-              {action: Action.DUPLICATE, disabled: this.section.name === 'Graveyard'},
-              {action: Action.MOVE_UP, disabled: rule.position === 0 || this.section.name === 'Graveyard' },
-              {action: Action.MOVE_DOWN, disabled: rule.position === this.sectionRules.length - 1 || this.section.name === 'Graveyard'},
+              {action: 'Duplicate', icon: 'tabler-copy', color: 'primary', disabled: this.section.name === 'Graveyard'},
+              {action: 'Increase priority', icon: 'tabler-arrow-narrow-up', color: 'primary', disabled: rule.position === 0 || this.section.name === 'Graveyard' },
+              {action: 'Decrease priority', icon: 'tabler-arrow-narrow-down', color: 'primary', disabled: rule.position === this.sectionRules.length - 1 || this.section.name === 'Graveyard'},
               Action.REMOVE,
               Action.EXPORT]}
         }

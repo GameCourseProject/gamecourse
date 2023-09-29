@@ -138,15 +138,6 @@ class ViewHandler
         return !empty(Core::database()->select(self::TABLE_VIEW, ["id" => $viewId], "id"));
     }
 
-    /**
-     * Gets all existing viewTypes from DB
-     * @param bool $idsOnly
-     * @return array
-     */
-    public static function getViewTypes(bool $idsOnly = false): array {
-        return ViewType::getViewTypes($idsOnly);
-    }
-
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------- Manipulating views ---------------- ***/

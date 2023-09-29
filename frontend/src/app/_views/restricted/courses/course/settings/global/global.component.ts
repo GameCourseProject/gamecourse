@@ -79,7 +79,7 @@ export class GlobalComponent implements OnInit {
   }
 
   orderBySeqId(): Page[] {
-    return this.activePages.sort((a, b) => a.position - b.position)
+    return this.activePages.sort((a, b) => a.seqId - b.seqId)
   }
 
 
