@@ -48,19 +48,19 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: SectionsComponent
+        component: ComingSoonComponent
       },
       {
         path: 'rule-system/sections/:sectionId',
-        component: SectionRulesComponent
+        component: ComingSoonComponent
       },
       {
         path: 'rule-system/sections/:sectionId/rules/:ruleId',
-        component: RulesComponent
+        component: ComingSoonComponent
       },
       {
         path: 'rule-system/sections/:sectionId/new-rule',
-        component: RulesComponent
+        component: ComingSoonComponent
       },
       {
         path: 'modules',
@@ -79,8 +79,12 @@ const routes: Routes = [
         component: ComingSoonComponent,
       },
       {
-        path: 'pages/templates/:id/editor',
-        component: ViewsEditorComponent
+        path: 'pages/editor/:id',
+        component: ComingSoonComponent
+      },
+      {
+        path: 'pages/editor/new-page',
+        component: ComingSoonComponent
       },
       {
         path: 'themes',

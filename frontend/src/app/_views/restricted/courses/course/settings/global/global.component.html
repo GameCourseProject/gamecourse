@@ -11,11 +11,11 @@
         <p><b>Course Name: </b>{{course.name}}</p>
         <p><b>Course ID: </b>{{course.id}}</p>
         <p><b>Nº. Students: </b>{{course.nrStudents}} <span>({{activeStudents.length}} active)</span></p>
-<!--        <p><b>Awards: </b>{{info.awards}}</p>-->
-<!--        <p><b>Participations: </b>{{info.participations}}</p>-->
+        <!--        <p><b>Awards: </b>{{info.awards}}</p>-->
+        <!--        <p><b>Participations: </b>{{info.participations}}</p>-->
       </div>
 
-<!--      <div><button id="edit_db_button" class="button" (click)="isViewDBModalOpen = true">View Database</button></div>-->
+      <!--      <div><button id="edit_db_button" class="button" (click)="isViewDBModalOpen = true">View Database</button></div>-->
     </div>
   </div>
 
@@ -36,7 +36,7 @@
             <th class="action-column"></th>
           </tr>
           <tr *ngFor="let page of orderBySeqId()">
-            <td>{{page.seqId}}</td>
+            <td>{{page.position}}</td>
             <td>{{page.name}}</td>
             <td class="action-column">
               <div class="icon up_icon" title="Move up" (click)="move(page, 1)"></div>
@@ -65,15 +65,15 @@
 
         <div id="edit-css-file">
           <!--  FIXME - refactor -->
-<!--          <app-input-code
-            [id]="'style-file'"
-            [classList]="'form__input'"
-            [placeholder]="'Write your style here...'"
-            [mode]="'css'"
-            [init]="styles.contents"
-            [canInit]="stylesLoaded"
-            (valueChange)="styles.contents = $event">
-          </app-input-code>-->
+          <!--          <app-input-code
+                      [id]="'style-file'"
+                      [classList]="'form__input'"
+                      [placeholder]="'Write your style here...'"
+                      [mode]="'css'"
+                      [init]="styles.contents"
+                      [canInit]="stylesLoaded"
+                      (valueChange)="styles.contents = $event">
+                    </app-input-code>-->
         </div>
       </ng-container>
     </div>
@@ -89,14 +89,14 @@
 
 <!-- View DB Modal -->
 <ng-container *ngIf="isViewDBModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isViewDBModalOpen"-->
-<!--    [id]="'edit-db'"-->
-<!--    [templateRef]="viewDbModal"-->
-<!--    (closeBtnClicked)="isViewDBModalOpen = false"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [classList]="'verification'">-->
-<!--  </app-modal>-->
+  <!--  <app-modal-->
+  <!--    [isOpen]="isViewDBModalOpen"-->
+  <!--    [id]="'edit-db'"-->
+  <!--    [templateRef]="viewDbModal"-->
+  <!--    (closeBtnClicked)="isViewDBModalOpen = false"-->
+  <!--    [actionInProgress]="saving"-->
+  <!--    [classList]="'verification'">-->
+  <!--  </app-modal>-->
 </ng-container>
 
 <ng-template #viewDbModal>

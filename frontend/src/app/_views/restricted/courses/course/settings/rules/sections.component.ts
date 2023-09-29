@@ -1,9 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {Reduce} from "../../../../../../_utils/lists/reduce";
 import {Action} from 'src/app/_domain/modules/config/Action';
-import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
 
-import {Rule} from "../../../../../../_domain/rules/rule";
 import {Course} from "../../../../../../_domain/courses/course";
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -12,7 +10,6 @@ import {AlertService, AlertType} from "../../../../../../_services/alert.service
 import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../_utils/misc/misc";
 import {RuleSection} from "../../../../../../_domain/rules/RuleSection";
-import {RuleTag} from "../../../../../../_domain/rules/RuleTag";
 import {ThemingService} from "../../../../../../_services/theming/theming.service";
 
 import * as _ from "lodash";
@@ -36,14 +33,13 @@ export class SectionsComponent implements OnInit {
   originalSections: RuleSection[] = [];             // Sections of course
   sections: RuleSection[] = [];                     // Copy of original sections (used as auxiliary variable for setting priority)
   nrRules: {[sectionId: number]: number} = [];      // Dictionary with number of rules per section
-  filteredSections: RuleSection[] = [];             // Section search
 
   // Section actions -- general manipulation (create/edit/remove/set priority/see details)
   sectionActions: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string}[],
-      color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
-      {action: 'metadata', icon: 'tabler-book', color: 'secondary'},
-      {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
-      {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
+    color?: "ghost" | "primary" | "secondary" | "accent" | "neutral" | "info" | "success" | "warning" | "error", disable?: boolean}[]  = [
+    {action: 'metadata', icon: 'tabler-book', color: 'secondary'},
+    {action: 'manage tags', icon: 'tabler-tags', color: 'secondary'},
+    {action: 'add section', icon: 'feather-plus-circle', color: 'primary'}];
 
   tagMode : 'manage tags' | 'add tag' | 'remove tag' | 'edit tag';    // available actions for tags
   sectionMode: 'add section' | 'edit section' | 'remove section' | 'metadata';  // available actions for sections
@@ -57,6 +53,7 @@ export class SectionsComponent implements OnInit {
   // SEARCH & FILTER
   reduce = new Reduce();
   sectionsToShow: RuleSection[] = [];
+  filteredSections: RuleSection[] = [];             // Section search
 
   metadata: {[variable: string]: number}[];
   parsedMetadata: string;
@@ -99,7 +96,7 @@ export class SectionsComponent implements OnInit {
     this.filteredSections = this.originalSections;
     this.sectionsToShow = this.originalSections;
 
-    for (let i = 0; i <  this.originalSections.length; i++){
+    for (let i = 0; i <  this.originalSections.length; i++) {
       // Get number of rules per section
       this.nrRules[this.originalSections[i].id] = (await this.api.getRulesOfSection(this.course.id, this.originalSections[i].id).toPromise()).length;
     }
@@ -133,32 +130,32 @@ export class SectionsComponent implements OnInit {
 
   async prepareManagement(action: string, section?: RuleSection) {
     // Actions for sections general manipulation (adding/editing/removing/metadata actions)
-     if (action === 'metadata'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
-       this.sectionMode = action;
+    if (action === 'metadata'|| action === 'add section' || action === 'edit section' || action === 'remove section') {
+      this.sectionMode = action;
 
-       if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
-       else {
-         await this.parseMetadata();
-         this.metadataCodeInput =
-           [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata,
-             debug: false, placeholder: "Autogame global variables:"}];
-       }
+      if (action !== 'metadata') this.sectionToManage = this.initSectionToManage(section);
+      else {
+        await this.parseMetadata();
+        this.metadataCodeInput =
+          [{ name: 'Metadata', type: "code", active: true, value: this.parsedMetadata,
+            debug: false, placeholder: "Autogame global variables:"}];
+      }
 
-       let modal = (action === 'remove section') ? action : (action === 'metadata') ?
-         'manage-metadata' : 'manage-section';
-       ModalService.openModal(modal);
-     }
+      let modal = (action === 'remove section') ? action : (action === 'metadata') ?
+        'manage-metadata' : 'manage-section';
+      ModalService.openModal(modal);
+    }
 
     // Actions for manipulation INSIDE sections (seeing details -- aka everything related to the rules)
     else if (action === 'see section'){
-       await this.router.navigate(['rule-system/sections/' + section.id ], {relativeTo: this.route.parent});
+      await this.router.navigate(['rule-system/sections/' + section.id ], {relativeTo: this.route.parent});
     }
 
     // Actions related to Tags' general manipulation
     else if (action === 'manage tags' || action === 'add tag' || action === 'remove tag' || action === 'edit tag') {
-       this.tagMode = action;
-       ModalService.openModal(action);
-     }
+      this.tagMode = action;
+      ModalService.openModal(action);
+    }
   }
 
   async doAction(action: string){
@@ -234,81 +231,6 @@ export class SectionsComponent implements OnInit {
 
     this.loading.action = false;
   }
-
-
-  /*** --------------------------------------------- ***/
-  /*** -------------------- Tags ------------------- ***/
-  /*** --------------------------------------------- ***/
-
-  /*async assignRules(event: Rule[]) {
-    for (let i = 0; i < event.length; i++) {
-      this.ruleToManage = initRuleToManage(this.course.id, event[i].section, event[i]);
-      this.ruleToManage.tags = (event[i].tags).map(tag => {
-        return initTagToManage(this.course.id, tag)
-      });
-      await editRule(this.api, this.course.id, this.ruleToManage, this.courseRules);
-    }
-  }*/
-
-  /*
-  async createTag(): Promise<void> {
-    if (this.t.valid) {
-      this.loading.action = true;
-
-      this.tagToManage.course = this.course.id;
-
-      this.tagToManage.color = this.colorToHexa(this.tagToManage.color);
-
-      const newTag = await this.api.createTag(clearEmptyValues(this.tagToManage)).toPromise();
-      const obj = RuleTag.toJason(newTag);
-      this.availableTags.push(obj);
-
-      // Add to input select NOT WORKING!! FIXME
-      this.selectedTags.push('' + newTag.id + '-' + newTag.name);
-
-      this.loading.action = false;
-      ModalService.closeModal('manage-tag');
-      this.resetTagManage();
-      AlertService.showAlert(AlertType.SUCCESS, 'Tag \'' + newTag.name + '\' created');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-  }
-
-
-  assignTags() {
-    if (this.selectedTags.length > 0){
-      let tags = [];
-      for (let i = 0;  i < this.selectedTags.length; i++){
-        const data = this.selectedTags[i].split(/-(.*)/s);
-        const tag = this.tags.find(element => element.id === parseInt(data[0]) && element.name === data[1]);
-        tags.push(RuleTag.toJason(tag));
-      }
-      this.ruleToManage.tags = tags;
-    }
-  }
-*/
-  /* async createDefaultTag(courseID: number): Promise<void> {
-     const defaultTag = this.initTagToManage();
-     defaultTag.course = courseID;
-     defaultTag.name = "extra-credit";
-     defaultTag.color = this.colorToHexa("primary");
-
-     const obj = await this.api.createTag(clearEmptyValues(defaultTag)).toPromise();
-     this.availableTags.push(obj);
-   }
-   removeTag(tag: TagManageData){
-       this.selectedTags.splice(this.selectedTags.indexOf(tag), 1);
-   }
-
-   submitTags(){
-     this.submitedTags = [];
-     for (let i = 0; i < this.selectedTags.length ; i++){
-       let newTag = new RuleTag(this.selectedTags[i].id, this.selectedTags[i].name, this.selectedTags[i].color);
-       this.submitedTags.push(newTag);
-     }
-     ModalService.closeModal('manage-tag');
-     this.resetTagManage();
-   }*/
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Helpers ----------------- ***/

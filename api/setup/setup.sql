@@ -3,25 +3,25 @@
 /*** ---------------------------------------------------- ***/
 
 CREATE TABLE user(
-	id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
+    id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
     name 	                    varchar(60) NOT NULL,
     email 	                    varchar(60) UNIQUE,
-	major 	                    varchar(8),
-	nickname                    varchar(50),
-	studentNumber               int UNIQUE,
-	theme                       ENUM ('light', 'dark') DEFAULT NULL,
+    major 	                    varchar(8),
+    nickname                    varchar(50),
+    studentNumber               int UNIQUE,
+    theme                       ENUM ('light', 'dark') DEFAULT NULL,
     isAdmin                     boolean NOT NULL DEFAULT FALSE,
-	isActive                    boolean NOT NULL DEFAULT TRUE
+    isActive                    boolean NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE auth(
-	user                        int unsigned NOT NULL,
-	username                    varchar(50) NOT NULL,
-	auth_service                ENUM ('fenix', 'google', 'facebook', 'linkedin'),
+    user                        int unsigned NOT NULL,
+    username                    varchar(50) NOT NULL,
+    auth_service                ENUM ('fenix', 'google', 'facebook', 'linkedin'),
     lastLogin                   TIMESTAMP NULL,
 
     PRIMARY key(username, auth_service),
-	FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
+    FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -192,12 +192,12 @@ CREATE TABLE adaptation_questionnaire_answers(
 );
 
 CREATE TABLE adaptation_user_notification(
-     element     int unsigned NOT NULL,
-     user        int unsigned NOT NULL,
+    element     int unsigned NOT NULL,
+    user        int unsigned NOT NULL,
 
-     PRIMARY key(element, user),
-     FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE,
-     FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
+    PRIMARY key(element, user),
+    FOREIGN KEY (element) REFERENCES adaptation_game_element(id) ON DELETE CASCADE,
+    FOREIGN KEY (user) REFERENCES course_user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE adaptation_element_descriptions(
@@ -339,17 +339,17 @@ CREATE TABLE component_custom_shared(
 );
 
 CREATE TABLE template_core(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    viewRoot                    bigint unsigned NOT NULL,
-    name                        varchar(50) NOT NULL,
-    category                    int unsigned NOT NULL,
-    position                    int unsigned,
-    module                      varchar(50) DEFAULT NULL,
+  id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+  viewRoot                    bigint unsigned NOT NULL,
+  name                        varchar(50) NOT NULL,
+  category                    int unsigned NOT NULL,
+  position                    int unsigned,
+  module                      varchar(50) DEFAULT NULL,
 
-    UNIQUE key(category, position),
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
-    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
-    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+  UNIQUE key(category, position),
+  FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+  FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+  FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template_custom(
@@ -366,33 +366,34 @@ CREATE TABLE template_custom(
 );
 
 CREATE TABLE template_custom_shared(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    description                 varchar(70) DEFAULT NULL,
-    category                    int unsigned NOT NULL,
-    sharedBy                    int unsigned NOT NULL,
-    sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+   description                 varchar(70) DEFAULT NULL,
+   category                    int unsigned NOT NULL,
+   sharedBy                    int unsigned NOT NULL,
+   sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
-    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
-    FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
+   FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
+   FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+   FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE page(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course                      int unsigned NOT NULL,
-    name                        varchar(100) NOT NULL,
-    isVisible                   boolean DEFAULT FALSE,
-    viewRoot                    bigint unsigned NOT NULL,
-    creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
-    visibleUntil                TIMESTAMP NULL DEFAULT NULL,
-    position                    int unsigned DEFAULT NULL,
+     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+     course                      int unsigned NOT NULL,
+     name                        varchar(100) NOT NULL,
+     isVisible                   boolean DEFAULT FALSE,
+     viewRoot                    bigint unsigned NOT NULL,
+     creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
+     visibleUntil                TIMESTAMP NULL DEFAULT NULL,
+     position                    int unsigned DEFAULT NULL,
+     isPublic                    boolean DEFAULT FALSE,
 
-    UNIQUE key(course, name),
-    UNIQUE key(course, position),
-    FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+     UNIQUE key(course, name),
+     UNIQUE key(course, position),
+     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 /*** ------------------------------------------------------------ ***/
@@ -408,8 +409,8 @@ CREATE TABLE notification(
      dateCreated    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      dateSeen       TIMESTAMP NULL DEFAULT NULL,
 
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+     FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/
@@ -417,15 +418,15 @@ CREATE TABLE notification(
 /*** ---------------------------------------------------- ***/
 
 CREATE TABLE autogame(
-    course 	                    int unsigned NOT NULL PRIMARY KEY,
-    isEnabled                   boolean DEFAULT FALSE,
-    startedRunning              TIMESTAMP NULL DEFAULT NULL,
-    finishedRunning             TIMESTAMP NULL DEFAULT NULL,
-    isRunning                   boolean DEFAULT FALSE,
-    runNext                     boolean DEFAULT FALSE,
-    frequency                   varchar(50) DEFAULT '*/10 * * * *',
+     course 	                    int unsigned NOT NULL PRIMARY KEY,
+     isEnabled                   boolean DEFAULT FALSE,
+     startedRunning              TIMESTAMP NULL DEFAULT NULL,
+     finishedRunning             TIMESTAMP NULL DEFAULT NULL,
+     isRunning                   boolean DEFAULT FALSE,
+     runNext                     boolean DEFAULT FALSE,
+     frequency                   varchar(50) DEFAULT '*/10 * * * *',
 
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE autogame_target(
@@ -442,53 +443,53 @@ INSERT INTO autogame (course, frequency) values (0, NULL);
 SET FOREIGN_KEY_CHECKS=1;
 
 CREATE TABLE rule_section(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course                      int unsigned NOT NULL,
-    name                        varchar(50) NOT NULL,
-    position                    int unsigned,
-    module                      varchar(50) DEFAULT NULL,
-    isActive                    boolean NOT NULL DEFAULT TRUE,
+     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+     course                      int unsigned NOT NULL,
+     name                        varchar(50) NOT NULL,
+     position                    int unsigned,
+     module                      varchar(50) DEFAULT NULL,
+     isActive                    boolean NOT NULL DEFAULT TRUE,
 
-    UNIQUE key(name, course),
-    UNIQUE key(position, course),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+     UNIQUE key(name, course),
+     UNIQUE key(position, course),
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rule_tag(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course                      int unsigned NOT NULL,
-    name                        varchar(50) NOT NULL,
-    color                       varchar(7) NOT NULL,
+     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+     course                      int unsigned NOT NULL,
+     name                        varchar(50) NOT NULL,
+     color                       varchar(7) NOT NULL,
 
-    UNIQUE key(name, course),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+     UNIQUE key(name, course),
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rule(
-    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
-    course                      int unsigned NOT NULL,
-    section                     int unsigned NOT NULL,
-    name                        varchar(50) NOT NULL,
-    description                 TEXT,
-    whenClause                  TEXT NOT NULL,
-    thenClause                  TEXT NOT NULL,
-    isActive                    boolean NOT NULL DEFAULT TRUE,
-    position                    int unsigned,
+     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
+     course                      int unsigned NOT NULL,
+     section                     int unsigned NOT NULL,
+     name                        varchar(50) NOT NULL,
+     description                 TEXT,
+     whenClause                  TEXT NOT NULL,
+     thenClause                  TEXT NOT NULL,
+     isActive                    boolean NOT NULL DEFAULT TRUE,
+     position                    int unsigned,
 
-    UNIQUE key(name, course),
-    UNIQUE key(name, section),
-    UNIQUE key(position, section),
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
-    FOREIGN key(section) REFERENCES rule_section(id) ON DELETE CASCADE
+     UNIQUE key(name, course),
+     UNIQUE key(name, section),
+     UNIQUE key(position, section),
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+     FOREIGN key(section) REFERENCES rule_section(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rule_tags(
-    rule                        int unsigned NOT NULL,
-    tag                         int unsigned NOT NULL,
+  rule                        int unsigned NOT NULL,
+  tag                         int unsigned NOT NULL,
 
-    FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE,
-    FOREIGN key(tag) REFERENCES rule_tag(id) ON DELETE CASCADE
+  FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE,
+  FOREIGN key(tag) REFERENCES rule_tag(id) ON DELETE CASCADE
 );
 
 CREATE TABLE participation(
@@ -506,4 +507,3 @@ CREATE TABLE participation(
     FOREIGN key(evaluator, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
     FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE
 );
-
