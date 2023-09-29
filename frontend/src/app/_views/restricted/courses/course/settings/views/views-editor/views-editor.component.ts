@@ -280,23 +280,19 @@ export class ViewsEditorComponent implements OnInit {
   /*** ------------------------------------------------ ***/
 
   selectOption(option: Option) {
-    console.log("ANTES: ", this.options);
-    // if there's another option already selected
-    let flag = false;
     for (let i = 0; i < this.options.length; i++) {
-      if (this.options[i] === option){
-        flag = true;
-        continue;
+      // if there's another option already selected
+      if (this.options[i] !== option && this.options[i].isSelected) {
+        this.options[i].isSelected = false;
+        this.resetMenus();
       }
-      this.options[i].isSelected = false;
     }
 
-    if (flag) this.resetMenus();
+    // toggle selected option
     option.isSelected = !option.isSelected;
 
-    // No menus active
+    // No menus active -> reset all
     if (!option.isSelected) this.resetMenus();
-    console.log("DPS: ", this.options);
   }
 
   triggerSubMenu(subMenu: SubMenu, index: number) {
@@ -315,8 +311,6 @@ export class ViewsEditorComponent implements OnInit {
   async closeEditor(){
     await this.router.navigate(['pages'], {relativeTo: this.route.parent});
   }
-
-
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
