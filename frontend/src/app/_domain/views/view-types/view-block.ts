@@ -105,13 +105,7 @@ export class ViewBlock extends View {
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
-    // for (const child of this.children) {
-    //   if ((child as any as View[])[0].viewId === view.viewId) { // Found aspect it belongs
-    //     (child as any as View[]).push(view);
-    //     return;
-    //   }
-    // }
-    // (this.children as any as View[][]).push([view]);  // No aspect found
+    this.children.push(view);
   }
 
   removeChildView(childViewId: number) { // TODO: refactor view editor

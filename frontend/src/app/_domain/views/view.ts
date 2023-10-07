@@ -238,7 +238,7 @@ export abstract class View {
       aspect: Aspect.fromDatabase(obj.aspect),
 
       cssId: obj.cssId || null,
-      classList: obj.class || null,
+      classList: obj.classList || null,
       styles: obj.style || null,
 
       visibilityType,
@@ -271,7 +271,7 @@ export interface ViewDatabase {
   aspect: {viewerRole: string, userRole: string},
   type: string;
   cssId?: string,
-  class?: string,
+  classList?: string,
   style?: string,
   visibilityType?: string,
   visibilityCondition?: string | boolean,

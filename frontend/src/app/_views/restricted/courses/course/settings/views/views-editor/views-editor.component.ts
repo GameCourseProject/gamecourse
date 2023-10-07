@@ -5,11 +5,34 @@ import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
 
 import {initPageToManage, PageManageData} from "../views/views.component";
-import {ViewType} from "src/app/_domain/views/view-types/view-type";
+import { ViewType } from "src/app/_domain/views/view-types/view-type";
+import { trigger, style, animate, transition, group } from '@angular/animations';
+import { View, ViewMode } from "src/app/_domain/views/view";
+import { buildView } from "src/app/_domain/views/build-view/build-view";
+import * as _ from "lodash"
+import { ViewSelectionService } from "src/app/_services/view-selection.service";
 
 @Component({
   selector: 'app-views-editor',
-  templateUrl: './views-editor.component.html'
+  templateUrl: './views-editor.component.html',
+  animations: [
+    trigger('dropdownAnimation', [
+      transition(':enter', [
+        style({
+          transformOrigin: 'top',
+          transform: 'scaleY(0.95)',
+          opacity: 0,
+        }),
+        animate('70ms ease-out', style({ transform: 'scaleY(1)', opacity: 1 })),
+      ]),
+      transition(':leave', [
+        group([
+          animate('100ms ease-in', style({ opacity: 0 })),
+          animate('100ms ease-in', style({ transform: 'scaleY(0.95)' })),
+        ]),
+      ]),
+    ])
+  ], // FIXME
 })
 export class ViewsEditorComponent implements OnInit {
 
@@ -27,10 +50,33 @@ export class ViewsEditorComponent implements OnInit {
   options: Option[];
   activeSubMenu: SubMenu;
 
+  view: View;
+
+  layout = {
+    id: 1,
+    viewRoot: 1,
+    aspect: {viewerRole: "a", userRole: "b"},
+    type: "block",
+    classList: "card bg-base-100 shadow-xl",
+    edit: true,
+    children: [
+      {
+        id: 2,
+        viewRoot: 1,
+        aspect: {viewerRole: "a", userRole: "b"},
+        type: "button",
+        classList: "btn btn-primary m-1",
+        text: "Button",
+        edit: true,
+      }
+    ]
+  } // FIXME this is just a test
+  
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
     private router: Router,
+    public selection: ViewSelectionService,
   ) { }
 
   ngOnInit(): void {
@@ -52,7 +98,7 @@ export class ViewsEditorComponent implements OnInit {
       });
 
       this.loading.page = false;
-
+      this.view = buildView(this.layout);
     })
   }
 
@@ -107,7 +153,16 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: [
+                    buildView({
+                      id: 2,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "button",
+                      classList: "btn btn-primary m-1",
+                      text: "Button",
+                    })
+                  ] // FIXME: should get them from backend
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -239,7 +294,32 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: [
+                    buildView({
+                      id: 4,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "text",
+                      classList: "font-bold text-xl",
+                      text: "Title",
+                    }),
+                    buildView({
+                      id: 5,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "text",
+                      classList: "font-semibold text-lg",
+                      text: "Subtitle"
+                    }),
+                    buildView({
+                      id: 6,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "text",
+                      classList: "",
+                      text: "Body Text"
+                    }),
+                  ] // FIXME: should get them from backend
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -312,6 +392,13 @@ export class ViewsEditorComponent implements OnInit {
     await this.router.navigate(['pages'], {relativeTo: this.route.parent});
   }
 
+  addToPage(item: View) {
+    let itemToAdd = _.cloneDeep(item);
+    itemToAdd.mode = ViewMode.EDIT;
+    this.view.addChildViewToViewTree(itemToAdd);
+    this.resetMenus();
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -334,7 +421,7 @@ export class ViewsEditorComponent implements OnInit {
     for (let i = 0; i < this.options.length; i++){
       this.options[i].isSelected = false;
 
-      for (let j = 0; j < this.options[i].subMenu?.items.length; i++){
+      for (let j = 0; j < this.options[i].subMenu?.items.length; j++){
         this.options[i].subMenu.items[j].isSelected = false;
       }
     }
@@ -352,6 +439,14 @@ export class ViewsEditorComponent implements OnInit {
     this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
   }
 
+  getSelectedCategories() {
+    return (this.activeSubMenu.items as CategoryList[]).filter((item) => item.isSelected);
+  }
+  
+  getSelectedCategoriesItems() {
+    return this.getSelectedCategories().flatMap((category) => category.list);
+  }
+  
 }
 
 export interface Option {

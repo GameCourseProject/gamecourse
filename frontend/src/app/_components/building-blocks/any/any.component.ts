@@ -17,6 +17,8 @@ import {EventAction} from "../../../_domain/views/events/event-action";
 import {GoToPageEvent} from "../../../_domain/views/events/actions/go-to-page-event";
 import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-tooltip-event';
 import {ActivatedRoute} from "@angular/router";
+import { ViewSelectionService } from 'src/app/_services/view-selection.service';
+import { ModalService } from 'src/app/_services/modal.service';
 
 @Component({
   selector: 'bb-any',
@@ -32,7 +34,12 @@ export class BBAnyComponent implements OnInit {
   classes: string;
   visible: boolean;
 
-  constructor(private route: ActivatedRoute) { }
+  componentTypes: { value: string, text: string }[] = Object.entries(ViewType).map((entry) => { return ({ value: entry[0], text: entry[1].capitalize() }) })
+
+  constructor(
+    private route: ActivatedRoute,
+    public selection: ViewSelectionService
+  ) { }
 
   ngOnInit(): void {
     this.route.parent.params.subscribe(async params => {
@@ -106,4 +113,18 @@ export class BBAnyComponent implements OnInit {
   getEvent(action: EventAction): Event {
     return this.view.events.find(ev => ev.action === action) || null;
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  isSelected() {
+    return this.selection.get() == this.view;
+  }
+
+  editAction() {
+    ModalService.openModal('component-editor');
+  }
+
 }

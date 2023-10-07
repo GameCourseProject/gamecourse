@@ -5,7 +5,7 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="edit">
-  <!-- TODO -->
+  <ng-container [ngTemplateOutlet]="link ? DISPLAY_LINK : DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
 

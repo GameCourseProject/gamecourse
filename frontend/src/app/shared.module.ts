@@ -148,6 +148,7 @@ import {
   jamLinkedin,
   jamPadlockOpenF,
   jamPadlockF,
+  jamPencil,
   jamPencilF,
   jamPlus,
   jamPlusCircle,
@@ -216,7 +217,8 @@ import {
   tablerTimeline,
   tablerTrophy,
   tablerUserCircle,
-  tablerUsers
+  tablerUsers,
+  tablerDotsVertical
 } from "@ng-icons/tabler-icons";
 
 
@@ -432,6 +434,7 @@ import {
       jamLinkedin,
       jamPadlockOpenF,
       jamPadlockF,
+      jamPencil,
       jamPencilF,
       jamPlus,
       jamPlusCircle,
@@ -498,7 +501,8 @@ import {
       tablerTimeline,
       tablerTrophy,
       tablerUserCircle,
-      tablerUsers
+      tablerUsers,
+      tablerDotsVertical
     }),
     DataTablesModule,
     NgApexchartsModule,

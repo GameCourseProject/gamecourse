@@ -21,7 +21,8 @@ import {ViewText, ViewTextDatabase} from "../view-types/view-text";
  *
  * @param obj
  */
-export function buildView(obj: ViewDatabase): View {
+export function buildView(obj: ViewBlockDatabase | ViewButtonDatabase | ViewChartDatabase | ViewCollapseDatabase |
+    ViewIconDatabase | ViewImageDatabase | ViewRowDatabase | ViewTableDatabase | ViewTextDatabase): View {
   const type = obj.type;
 
   if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);

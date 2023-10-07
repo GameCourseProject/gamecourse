@@ -29,7 +29,13 @@
 <!------------------------------------------------>
 
 <ng-template #EDIT_DEFAULT>
-  <!-- TODO -->
+  <div [attr.id]="view.cssId"
+       [classList]="classes">
+
+    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
+      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
+    </div>
+  </div>
 </ng-template>
 
 <ng-template #EDIT_EMPTY>
