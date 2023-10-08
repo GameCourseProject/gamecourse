@@ -5,7 +5,7 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="edit">
-  <div class="w-fit relative outline-2 m-4 rounded-xl p-2 transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
+  <div [viewSelection]="view" class="relative outline-2 m-4 rounded-xl p-2 transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs">
       {{view.type.capitalize()}}
     </div>
@@ -19,7 +19,7 @@
         <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
         <li><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
         <li><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
-        <li><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
+        <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
       </ul>
     </div>
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
@@ -34,14 +34,14 @@
       [goToPage]="{event: getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent, view}"
       [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}">
 
-    <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    [viewSelection]="view"></bb-block>
-    <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   [viewSelection]="view"></bb-button>
-    <bb-chart    *ngIf="view.type === ViewType.CHART"    [view]="view | as : ViewChart"    [viewSelection]="view"></bb-chart>
-    <bb-collapse *ngIf="view.type === ViewType.COLLAPSE" [view]="view | as : ViewCollapse" [viewSelection]="view"></bb-collapse>
-    <bb-icon     *ngIf="view.type === ViewType.ICON"     [view]="view | as : ViewIcon"     [viewSelection]="view"></bb-icon>
-    <bb-image    *ngIf="view.type === ViewType.IMAGE"    [view]="view | as : ViewImage"    [viewSelection]="view"></bb-image>
-    <bb-table    *ngIf="view.type === ViewType.TABLE"    [view]="view | as : ViewTable"    [viewSelection]="view"></bb-table>
-    <bb-text     *ngIf="view.type === ViewType.TEXT"     [view]="view | as : ViewText"     [viewSelection]="view"></bb-text>
+    <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    ></bb-block>
+    <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   ></bb-button>
+    <bb-chart    *ngIf="view.type === ViewType.CHART"    [view]="view | as : ViewChart"    ></bb-chart>
+    <bb-collapse *ngIf="view.type === ViewType.COLLAPSE" [view]="view | as : ViewCollapse" ></bb-collapse>
+    <bb-icon     *ngIf="view.type === ViewType.ICON"     [view]="view | as : ViewIcon"     ></bb-icon>
+    <bb-image    *ngIf="view.type === ViewType.IMAGE"    [view]="view | as : ViewImage"    ></bb-image>
+    <bb-table    *ngIf="view.type === ViewType.TABLE"    [view]="view | as : ViewTable"    ></bb-table>
+    <bb-text     *ngIf="view.type === ViewType.TEXT"     [view]="view | as : ViewText"     ></bb-text>
   </div>
 </ng-template>
 
@@ -53,6 +53,7 @@
   [header]="'Edit component'"
   [closeBtnText]="'Close'"
   [submitBtnText]="'Save'"
+  [size]="'lg'"
 />
 
 <ng-template #componentEditor>

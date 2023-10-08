@@ -109,7 +109,7 @@
 
     <!-- Editor -->
     <div class="rounded-xl border-4 border-neutral border-opacity-10 h-full w-full p-2">
-      <bb-any [view]="view"></bb-any>
+      <bb-any *ngIf="view" [view]="view"></bb-any>
     </div>
   </div>
 

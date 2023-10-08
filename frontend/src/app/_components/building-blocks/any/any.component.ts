@@ -123,8 +123,17 @@ export class BBAnyComponent implements OnInit {
     return this.selection.get() == this.view;
   }
 
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   editAction() {
     ModalService.openModal('component-editor');
+  }
+
+  deleteAction() {
+    if (this.view.parent)
+      this.view.parent.removeChildView(this.view.id);
   }
 
 }

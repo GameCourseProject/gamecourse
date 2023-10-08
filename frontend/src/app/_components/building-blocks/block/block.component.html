@@ -16,10 +16,7 @@
 <ng-template #DISPLAY_DEFAULT>
   <div [attr.id]="view.cssId"
        [classList]="classes">
-
-    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
-      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
-    </div>
+    {{view.direction}}
   </div>
 </ng-template>
 

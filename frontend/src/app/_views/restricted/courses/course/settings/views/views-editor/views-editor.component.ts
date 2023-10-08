@@ -131,7 +131,24 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: [
+                    buildView({
+                      id: 1,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "block",
+                      direction: "vertical",
+                      classList: "card bg-base-100 shadow-xl",
+                    }),
+                    buildView({
+                      id: 1,
+                      viewRoot: 1,
+                      aspect: {viewerRole: "a", userRole: "b"},
+                      type: "block",
+                      direction: "horizontal",
+                      classList: "card bg-base-100 shadow-xl",
+                    })
+                  ] // FIXME: should get them from backend
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -395,7 +412,34 @@ export class ViewsEditorComponent implements OnInit {
   addToPage(item: View) {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
-    this.view.addChildViewToViewTree(itemToAdd);
+
+    // Add child to the selected block
+    if (this.selection.get()?.type == ViewType.BLOCK) { // FIXME: will be possible to add to collapse, etc.
+      this.selection.get().addChildViewToViewTree(itemToAdd);
+    }
+    // No valid selection, view is empty, and not adding block
+    else if (!this.view && itemToAdd.type != ViewType.BLOCK) {
+      this.view = buildView(
+        {
+          id: 1,
+          viewRoot: 1,
+          aspect: {viewerRole: "a", userRole: "b"},
+          type: "block",
+          classList: "card bg-base-100 shadow-xl",
+          edit: true,
+        }
+      )
+      this.view.addChildViewToViewTree(itemToAdd);
+    }
+    // Adding first block
+    else if (!this.view && itemToAdd.type == ViewType.BLOCK) {
+      this.view = itemToAdd;
+    }
+    // By default without valid selection add to existing root
+    else {
+      this.view.addChildViewToViewTree(itemToAdd);
+    }
+
     this.resetMenus();
   }
 

@@ -105,12 +105,13 @@ export class ViewBlock extends View {
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
+    view.parent = this;
     this.children.push(view);
   }
 
   removeChildView(childViewId: number) { // TODO: refactor view editor
-    // const index = this.children.findIndex(child => child.viewId === childViewId);
-    // this.children.splice(index, 1);
+    const index = this.children.findIndex(child => child.id === childViewId);
+    this.children.splice(index, 1);
   }
 
   replaceWithFakeIds(base?: number) { // TODO: refactor view editor
