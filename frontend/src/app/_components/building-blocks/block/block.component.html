@@ -1,11 +1,16 @@
 <!-- Display version -->
-<ng-container *ngIf="!edit">
+<ng-container *ngIf="view.mode === ViewMode.DISPLAY">
   <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
-<ng-container *ngIf="edit">
+<ng-container *ngIf="view.mode === ViewMode.EDIT">
   <ng-container [ngTemplateOutlet]="view.children.length === 0 ? EDIT_EMPTY : EDIT_DEFAULT"></ng-container>
+</ng-container>
+
+<!-- Rearrange version -->
+<ng-container *ngIf="view.mode === ViewMode.REARRANGE">
+  <ng-container [ngTemplateOutlet]="REARRANGE_DEFAULT"></ng-container>
 </ng-container>
 
 
@@ -53,4 +58,26 @@
 <!--    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"-->
 <!--         (click)="actionManager.triggerAction({action: EditorAction.BLOCK_ADD_CHILD})"></div>-->
 <!--  </div>-->
+</ng-template>
+
+
+<!------------------------------------------------>
+<!------------- REARRANGE VARIATIONS ------------->
+<!------------------------------------------------>
+
+<ng-template #REARRANGE_DEFAULT>
+  <div [attr.id]="view.cssId" [classList]="classes">
+       
+    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
+      <div *ngFor="let child of view.children" class="flex flex-row items-center" #dropList>
+        <div class="flex flex-row items-center" #dragItem>
+          <div class="flex justify-center items-center bg-primary rounded-full p-2"> 
+            <ng-icon name="feather-move" size="1.5rem" color="white"/>
+          </div>
+          <bb-any [view]="child"></bb-any>
+        </div>
+      </div>
+      
+    </div>
+  </div>
 </ng-template>

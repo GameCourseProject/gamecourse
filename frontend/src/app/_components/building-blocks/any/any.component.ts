@@ -30,7 +30,6 @@ export class BBAnyComponent implements OnInit {
 
   courseID: number;
 
-  edit: boolean;
   classes: string;
   visible: boolean;
 
@@ -45,9 +44,8 @@ export class BBAnyComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
 
-      this.edit = this.view.mode === ViewMode.EDIT;
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
-      this.visible = this.edit ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
+      this.visible = (this.view.mode == ViewMode.EDIT || this.view.mode == ViewMode.REARRANGE) ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean)));
     });
   }
@@ -59,6 +57,10 @@ export class BBAnyComponent implements OnInit {
 
   get ViewType(): typeof ViewType {
     return ViewType;
+  }
+
+  get ViewMode(): typeof ViewMode {
+    return ViewMode;
   }
 
   get ViewBlock(): typeof ViewBlock {

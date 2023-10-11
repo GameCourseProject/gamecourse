@@ -283,6 +283,7 @@ export interface ViewDatabase {
 
 export enum ViewMode {
   DISPLAY = 'display',
-  EDIT = 'edit'
+  EDIT = 'edit',
+  REARRANGE = 'rearrange'
 }
 

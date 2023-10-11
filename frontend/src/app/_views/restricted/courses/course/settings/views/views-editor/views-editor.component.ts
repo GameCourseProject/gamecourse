@@ -390,6 +390,12 @@ export class ViewsEditorComponent implements OnInit {
 
     // No menus active -> reset all
     if (!option.isSelected) this.resetMenus();
+
+    // Switch Rearrange
+    if (option.description == 'Rearrange' && option.isSelected)
+      this.selection.setRearrange(true);
+    else if (option.description == 'Rearrange')
+      this.selection.setRearrange(false);
   }
 
   triggerSubMenu(subMenu: SubMenu, index: number) {
