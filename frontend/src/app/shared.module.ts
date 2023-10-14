@@ -86,6 +86,7 @@ import { BBIconComponent } from './_components/building-blocks/icon/icon.compone
 import { BBImageComponent } from './_components/building-blocks/image/image.component';
 import { BBTableComponent } from './_components/building-blocks/table/table.component';
 import { BBTextComponent } from './_components/building-blocks/text/text.component';
+import { ComponentEditorComponent } from './_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -218,7 +219,8 @@ import {
   tablerTrophy,
   tablerUserCircle,
   tablerUsers,
-  tablerDotsVertical
+  tablerDotsVertical,
+  tablerBrush
 } from "@ng-icons/tabler-icons";
 
 
@@ -295,6 +297,7 @@ import {
     BBImageComponent,
     BBTableComponent,
     BBTextComponent,
+    ComponentEditorComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -502,7 +505,8 @@ import {
       tablerTrophy,
       tablerUserCircle,
       tablerUsers,
-      tablerDotsVertical
+      tablerDotsVertical,
+      tablerBrush
     }),
     DataTablesModule,
     NgApexchartsModule,

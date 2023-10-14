@@ -5,13 +5,13 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="view.mode === ViewMode.EDIT">
-  <div [viewSelection]="view" class="relative outline-2 m-4 rounded-xl p-2 transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
-    <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs">
+  <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
+    <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
     </div>
     <!-- Actions -->
     <div class="dropdown dropdown-bottom {{isSelected() ? 'flex' : 'hidden'}}
-                absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center
+                absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-40
                 hover:cursor-pointer hover:bg-secondary-focus transition-all"
          (click)="$event.stopPropagation()">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
@@ -28,8 +28,8 @@
 
 <!-- Rearrange version -->
 <ng-container *ngIf="view.mode === ViewMode.REARRANGE">
-  <div class="relative outline-2 m-4 rounded-xl p-2 transition outline outline-primary hover:cursor-pointer">
-    <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs">
+  <div class="relative outline-2 rounded-xl transition outline outline-primary hover:cursor-pointer">
+    <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
     </div>
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
@@ -55,25 +55,7 @@
   </div>
 </ng-template>
 
-
-<!-- Edit Modal -->
-<app-modal
-  [id]="'component-editor'"
-  [templateRef]="componentEditor"
-  [header]="'Edit component'"
-  [closeBtnText]="'Close'"
-  [submitBtnText]="'Save'"
-  [size]="'lg'"
-/>
-
-<ng-template #componentEditor>
-  <app-input-select
-    [id]="'tag-color'"
-    [(value)] = "view.type"
-    [options] = "componentTypes"
-    [multiple] = "false"
-    [search]="false"
-    [topLabel]="'Component Type'"
-    [required]="true">
-  </app-input-select>
-</ng-template>
+<app-component-editor
+  *ngIf="view == selection.get()"
+  [view]="view">
+</app-component-editor>

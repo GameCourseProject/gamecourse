@@ -7,7 +7,6 @@ import {exists} from "../_utils/misc/misc";
 })
 export class ViewSelectionService {
 
-  static readonly SELECTION_CLASS = 'gc-view-highlight';
   static readonly IGNORE_SELECTION_CLASS = 'ignore-selection';
 
   private selected: View;
@@ -32,39 +31,23 @@ export class ViewSelectionService {
 
     if (this.isSelected(view)) { // Same view
       if (this.rearrange) this.switchMode();
-      ViewSelectionService.unselect(view);
       this.selected = null;
     }
     else { // Different view
       if (this.selected) {
         if (this.rearrange) this.switchMode();
-        ViewSelectionService.unselect(this.selected);
       }
-      ViewSelectionService.select(view);
       this.selected = view;
       if (this.rearrange) this.switchMode();
     }
   }
 
   public clear() {
-    if (this.selected) ViewSelectionService.unselect(this.selected);
     this.selected = null;
   }
 
   private isSelected(view: View): boolean {
-    return this.selected && view.id === this.selected.id &&
-      view.classList.containsWord(ViewSelectionService.SELECTION_CLASS);
-  }
-
-  private static select(view: View): void {
-    view.classList += ' ' + ViewSelectionService.SELECTION_CLASS;
-  }
-
-  public static unselect(view: View): void {
-    const split = view.classList.split(' ');
-    const index = split.findIndex(cl => cl === ViewSelectionService.SELECTION_CLASS);
-    split.splice(index, 1);
-    view.classList = split.join(' ');
+    return this.selected && view.id === this.selected.id;
   }
 
   public toggleState(): void {

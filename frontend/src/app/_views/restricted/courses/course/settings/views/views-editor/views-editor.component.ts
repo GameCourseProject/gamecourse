@@ -57,7 +57,7 @@ export class ViewsEditorComponent implements OnInit {
     viewRoot: 1,
     aspect: {viewerRole: "a", userRole: "b"},
     type: "block",
-    classList: "card bg-base-100 shadow-xl",
+    classList: "card bg-base-100 shadow-xl p-4",
     edit: true,
     children: [
       {
@@ -138,7 +138,7 @@ export class ViewsEditorComponent implements OnInit {
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "block",
                       direction: "vertical",
-                      classList: "card bg-base-100 shadow-xl",
+                      classList: "card bg-base-100 shadow-xl p-4",
                     }),
                     buildView({
                       id: 1,
@@ -146,7 +146,7 @@ export class ViewsEditorComponent implements OnInit {
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "block",
                       direction: "horizontal",
-                      classList: "card bg-base-100 shadow-xl",
+                      classList: "card bg-base-100 shadow-xl p-4",
                     })
                   ] // FIXME: should get them from backend
                 },
@@ -382,6 +382,9 @@ export class ViewsEditorComponent implements OnInit {
       if (this.options[i] !== option && this.options[i].isSelected) {
         this.options[i].isSelected = false;
         this.resetMenus();
+        if (this.options[i].description == 'Rearrange') {
+          this.selection.setRearrange(false);
+        }
       }
     }
 
@@ -389,13 +392,15 @@ export class ViewsEditorComponent implements OnInit {
     option.isSelected = !option.isSelected;
 
     // No menus active -> reset all
-    if (!option.isSelected) this.resetMenus();
-
-    // Switch Rearrange
-    if (option.description == 'Rearrange' && option.isSelected)
+    if (!option.isSelected) {
+      this.resetMenus();
+      if (option.description == 'Rearrange') {
+        this.selection.setRearrange(false);
+      }
+    }
+    else if (option.description == 'Rearrange') {
       this.selection.setRearrange(true);
-    else if (option.description == 'Rearrange')
-      this.selection.setRearrange(false);
+    }
   }
 
   triggerSubMenu(subMenu: SubMenu, index: number) {

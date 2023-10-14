@@ -51,7 +51,7 @@
             </button>
           </div>
 
-          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-[1] border border-1 border-primary
+          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-50 border border-1 border-primary
             absolute left-12 -mt-12 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
             <div class="p-4">
               <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
@@ -65,7 +65,7 @@
               </div>
             </div>
 
-            <div [@dropdownAnimation] *ngIf="activeSubMenu" class="z-[1] border border-1 border-primary absolute left-[12.5rem] w-[20rem]
+            <div [@dropdownAnimation] *ngIf="activeSubMenu" class="z-50 border border-1 border-primary absolute left-[12.5rem] w-[20rem]
               rounded rounded-xl shadow-lg bg-primary card card-compact">
               <div class="p-4">
                 <div class="flex flex-row items-center justify-center mb-2">

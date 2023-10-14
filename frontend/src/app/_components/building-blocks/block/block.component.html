@@ -41,23 +41,9 @@
 </ng-template>
 
 <ng-template #EDIT_EMPTY>
-<!--  <div [attr.id]="view.cssId"-->
-<!--       [classList]="view.class + ' ' + ViewBlock.BLOCK_EMPTY_CLASS"-->
-<!--       [attr.style]="view.style"-->
-<!--       [attr.data-id]="view.id"-->
-<!--       [attr.data-viewId]="view.viewId"-->
-<!--       [attr.data-label]="view.label"-->
-<!--       [attr.data-role]="edit ? view.role : null"-->
-<!--       [goToPage]="getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent"-->
-<!--       [hideView]="getEvent(EventAction.HIDE_VIEW) | as : EventHideView"-->
-<!--       [showView]="getEvent(EventAction.SHOW_VIEW) | as : EventShowView"-->
-<!--       [toggleView]="getEvent(EventAction.TOGGLE_VIEW) | as : EventToggleView"-->
-<!--       [mode]="view.mode">-->
-
-<!--    {{DEFAULT}}-->
-<!--    <div *ngIf="edit && view.isEditingLayout" [classList]="'add-child ' + ViewSelectionService.IGNORE_SELECTION_CLASS"-->
-<!--         (click)="actionManager.triggerAction({action: EditorAction.BLOCK_ADD_CHILD})"></div>-->
-<!--  </div>-->
+  <div [attr.id]="view.cssId"
+       [classList]="view.classList + ' p-20'">
+  </div>
 </ng-template>
 
 
@@ -71,7 +57,7 @@
     <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
       <div *ngFor="let child of view.children" class="flex flex-row items-center" #dropList>
         <div class="flex flex-row items-center" #dragItem>
-          <div class="flex justify-center items-center bg-primary rounded-full p-2"> 
+          <div class="flex justify-center items-center bg-primary rounded-full p-1 mr-1"> 
             <ng-icon name="feather-move" size="1.5rem" color="white"/>
           </div>
           <bb-any [view]="child"></bb-any>

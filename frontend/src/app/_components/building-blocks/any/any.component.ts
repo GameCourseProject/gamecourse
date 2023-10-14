@@ -33,8 +33,6 @@ export class BBAnyComponent implements OnInit {
   classes: string;
   visible: boolean;
 
-  componentTypes: { value: string, text: string }[] = Object.entries(ViewType).map((entry) => { return ({ value: entry[0], text: entry[1].capitalize() }) })
-
   constructor(
     private route: ActivatedRoute,
     public selection: ViewSelectionService

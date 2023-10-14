@@ -1,0 +1,158 @@
+<app-modal
+  [id]="'component-editor'"
+  [templateRef]="COMPONENT_EDITOR"
+  [header]="'Edit component'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  [size]="'lg'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="q.onSubmit(null); saveView()"
+/>
+
+<ng-template #COMPONENT_EDITOR>
+  <form #q="ngForm">
+    <app-input-select
+      [id]="'type'"
+      [form]="q"
+      [(value)]="viewToEdit.type"
+      [options]="getComponentTypes()"
+      [placeholder]="'Select component type'"
+      [topLabel]="'Component Type'"
+      [required]="true">
+    </app-input-select>
+
+    <!-- Text -->
+    <ng-container 
+      *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.BUTTON"
+      [ngTemplateOutlet]="CONTENT">
+    </ng-container>
+
+    <!--------------------- GENERAL --------------------->
+    <div class="divider"></div>
+    <div class="prose">
+      <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
+    </div>
+
+    <!--------------------- STYLING --------------------->
+    <div class="divider"></div>
+    <div class="prose">
+      <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
+    </div>
+    <!-- Visibility -->
+    <div class="flex flex-row mt-2">
+      <app-simple-helper [text]="'Make this component visible/invisible/visible under condition'"></app-simple-helper>
+      <span class="block font-semibold pl-1 text-lg">Visibility</span>
+    </div>
+    <div class="flex flex-wrap">
+      <app-input-radio
+        [id]="'visibility-yes'"
+        [group]="'visibility'"
+        [form]="q"
+        [optionValue]="'visible'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Visible'">
+      </app-input-radio>
+  
+      <app-input-radio
+        [id]="'visibility-no'"
+        [group]="'visibility'"
+        [form]="q"
+        [optionValue]="'invisible'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Not visible'">
+      </app-input-radio>
+  
+      <app-input-radio
+        [id]="'visibility-condition'"
+        [group]="'visibility'"
+        [form]="q"
+        [optionValue]="'conditional'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Visible under condition'">
+      </app-input-radio>
+    </div>
+    <div *ngIf="viewToEdit.visibilityType == 'conditional'" class="mb-5">
+      <span class="text-xs pl-1">
+        Write an expression that makes this component visible.
+        Don't forget that exoressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
+      </span>
+      <app-input-text
+        [id]="'visibility-condition-expression'"
+        [form]="q"
+        [(value)]="viewToEdit.visibilityCondition"
+        [placeholder]="'e.g. { %userLevel.number < %nrLevels-1 }'"
+        [required]="false">
+      </app-input-text>
+    </div>
+    
+    <!-- Interface Design -->
+    <div class="flex flex-row mt-2">
+      <app-simple-helper [text]="'Use this section to style how the component should look like'"></app-simple-helper>
+      <span class="block font-semibold pl-1 text-lg">Interface Design</span>
+    </div>
+    <div class="w-full flex flex-row gap-10">
+      <div class="w-1/2">
+        <app-input-text
+          [id]="'design-id'"
+          [form]="q"
+          [(value)]="viewToEdit.cssId"
+          [topLabel]="'ID'"
+          [helperText]="'Html\'s ID tag'"
+        ></app-input-text>
+        <app-input-text
+          [id]="'design-class'"
+          [form]="q"
+          [(value)]="viewToEdit.classList"
+          [topLabel]="'Class'"
+          [helperText]="'Html\'s Class tag'"
+        ></app-input-text>
+        <app-input-text
+          [id]="'design-style'"
+          [form]="q"
+          [(value)]="viewToEdit.style"
+          [topLabel]="'Style'"
+          [helperText]="'Html\'s Style tag'"
+        ></app-input-text>
+      </div>
+      <div class="grow flex flex-col">
+        <span class="block font-semibold pl-1 py-1">Preview</span>
+        <div class="flex grow border-2 border-base-content overflow-y-auto rounded-xl items-center justify-center">
+          <div [attr.id]="viewToEdit.cssId"
+               [classList]="viewToEdit.classList"
+               [style]="viewToEdit.style">
+            <ng-icon [name]="viewToEdit.icon || 'tabler-question-mark'" [size]="'1.3rem'"></ng-icon>
+            {{viewToEdit.text}}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+</ng-template>
+
+
+<ng-template #CONTENT>
+  <div class="flex flex-row mt-2">
+    <app-simple-helper [text]="'Text that will be displayed'"></app-simple-helper>
+    <span class="block font-semibold pl-1 text-lg">Text</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    You can either write ordinary text or write expressions to define the following field.<br>
+    To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+    For more information check the 'Additional Tools' box.
+  </div>
+  <app-input-text
+    [id]="'visibility-condition-expression'"
+    [form]="q"
+    [(value)]="viewToEdit.text"
+    [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
+    [required]="false">
+  </app-input-text>
+</ng-template>
