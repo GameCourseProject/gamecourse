@@ -22,15 +22,105 @@
     </app-input-select>
 
     <!-- Text -->
-    <ng-container 
-      *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.BUTTON"
-      [ngTemplateOutlet]="CONTENT">
+    <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.BUTTON">
+      <div class="flex flex-row mt-2 justify-start items-center gap-2">
+        <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
+        <span class="block font-semibold text-lg">Text</span>
+      </div>
+      <div class="text-xs pl-1 pb-2">
+        You can either write ordinary text or write expressions to define the following field.<br>
+        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+        For more information check the 'Additional Tools' box.
+      </div>
+      <app-input-text
+        [id]="'visibility-condition-expression'"
+        [form]="q"
+        [(value)]="viewToEdit.text"
+        [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
+        [required]="false">
+      </app-input-text>
     </ng-container>
 
     <!--------------------- GENERAL --------------------->
     <div class="divider"></div>
     <div class="prose">
       <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
+    </div>
+    <div class="flex flex-row gap-10">
+      <div class="mt-2">
+        <div class="flex flex-row justify-start items-center gap-2">
+          <app-simple-helper 
+          [position]="'right'" 
+          [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'"></app-simple-helper>
+          <span class="block font-semibold text-md">Auxiliary Variables</span>
+        </div>
+        
+        <!-- Variables -->
+        <div class="flex flex-col gap-2 mb-2">
+          <!-- Existing -->
+          <div *ngFor="let variable of viewToEdit.variables" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
+            <div class="w-28">
+              <span class="block font-semibold text-md">Name:</span>{{variable.name}}
+            </div>
+            <div class="w-80">
+              <span class="block font-semibold text-md">Expression:</span>{{variable.value}}
+            </div>
+          </div>
+          <!-- New -->
+          <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
+            <div class="w-28">
+              <app-input-text
+              [id]="'aux-var-name'"
+              [form]="q"
+              [(value)]="variableToAdd.name"
+              [topLabel]="'Name:'"
+              [placeholder]="'courseColor'"
+              [size]="'sm'"
+              ></app-input-text>
+            </div>
+            <div class="w-80">
+              <app-input-text
+              [id]="'aux-var-expression'"
+              [form]="q"
+              [(value)]="variableToAdd.value"
+              [topLabel]="'Expression:'"
+              [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
+              See the \'Additional Tools\' box for more information.'"
+              [placeholder]="'{ courses.getCourseById{%course}.color }'"
+              [size]="'sm'"
+              ></app-input-text>
+            </div>
+            <button class="btn btn-secondary" (click)="addAuxVar()">Add</button>
+          </div>
+        </div>
+
+        <!-- Data Iteration -->
+        <app-input-text
+          [id]="'design-id'"
+          [form]="q"
+          [(value)]="viewToEdit.loopData"
+          [topLabel]="'Data Iteration'"
+          [helperText]="'Determines how many times this component will be repeated.
+            \n E.g. {skillTrees.trees} Means that this component will be repeated the number skill trees available in this 
+            course. If there are 3 kill strees in the course, the text will be repeated 3 times.'"
+          [helperPosition]="'right'"
+          [placeholder]="'e.g. { skillTrees.trees }'"
+        ></app-input-text>
+      </div>
+      <!-- Additional Tools 
+      <app-input-code
+        [id]="'component-tools'"
+        [title]="'Additional Tools'"
+        [tabs]="additionalToolsTabs"
+      ></app-input-code> -->
+    </div>
+
+    <!-- Events -->
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper 
+        [position]="'right'" 
+        [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
+      <span class="block font-semibold text-md">Events</span>
     </div>
 
     <!--------------------- STYLING --------------------->
@@ -39,9 +129,9 @@
       <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
     </div>
     <!-- Visibility -->
-    <div class="flex flex-row mt-2">
-      <app-simple-helper [text]="'Make this component visible/invisible/visible under condition'"></app-simple-helper>
-      <span class="block font-semibold pl-1 text-lg">Visibility</span>
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper [position]="'right'" [text]="'Make this component visible/invisible/visible under condition'"></app-simple-helper>
+      <span class="block font-semibold text-lg">Visibility</span>
     </div>
     <div class="flex flex-wrap">
       <app-input-radio
@@ -92,9 +182,9 @@
     </div>
     
     <!-- Interface Design -->
-    <div class="flex flex-row mt-2">
-      <app-simple-helper [text]="'Use this section to style how the component should look like'"></app-simple-helper>
-      <span class="block font-semibold pl-1 text-lg">Interface Design</span>
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
+      <span class="block font-semibold text-lg">Interface Design</span>
     </div>
     <div class="w-full flex flex-row gap-10">
       <div class="w-1/2">
@@ -104,6 +194,7 @@
           [(value)]="viewToEdit.cssId"
           [topLabel]="'ID'"
           [helperText]="'Html\'s ID tag'"
+          [helperPosition]="'right'"
         ></app-input-text>
         <app-input-text
           [id]="'design-class'"
@@ -111,6 +202,7 @@
           [(value)]="viewToEdit.classList"
           [topLabel]="'Class'"
           [helperText]="'Html\'s Class tag'"
+          [helperPosition]="'right'"
         ></app-input-text>
         <app-input-text
           [id]="'design-style'"
@@ -118,6 +210,7 @@
           [(value)]="viewToEdit.style"
           [topLabel]="'Style'"
           [helperText]="'Html\'s Style tag'"
+          [helperPosition]="'right'"
         ></app-input-text>
       </div>
       <div class="grow flex flex-col">
@@ -134,25 +227,4 @@
     </div>
 
   </form>
-
-</ng-template>
-
-
-<ng-template #CONTENT>
-  <div class="flex flex-row mt-2">
-    <app-simple-helper [text]="'Text that will be displayed'"></app-simple-helper>
-    <span class="block font-semibold pl-1 text-lg">Text</span>
-  </div>
-  <div class="text-xs pl-1 pb-2">
-    You can either write ordinary text or write expressions to define the following field.<br>
-    To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
-    For more information check the 'Additional Tools' box.
-  </div>
-  <app-input-text
-    [id]="'visibility-condition-expression'"
-    [form]="q"
-    [(value)]="viewToEdit.text"
-    [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
-    [required]="false">
-  </app-input-text>
 </ng-template>

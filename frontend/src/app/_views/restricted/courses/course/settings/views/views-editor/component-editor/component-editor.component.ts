@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
+import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View } from "src/app/_domain/views/view";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
 import { ViewType } from "src/app/_domain/views/view-types/view-type";
@@ -14,7 +15,10 @@ import { ModalService } from "src/app/_services/modal.service";
 export class ComponentEditorComponent implements OnInit {
 
   @Input() view: View;
+  
   viewToEdit: ViewManageData;
+  variableToAdd: { name: string, value: string, position: number };
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab )[];
 
   @ViewChild('q', { static: false }) q: NgForm;
 
@@ -23,6 +27,11 @@ export class ComponentEditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.viewToEdit = this.initViewToEdit();
+    this.variableToAdd = { name: "", value: "", position: 0 };
+
+    this.additionalToolsTabs = [
+      { name: 'Manual', type: "manual", active: false },
+    ]
   }
 
   initViewToEdit(): ViewManageData {
@@ -60,9 +69,19 @@ export class ComponentEditorComponent implements OnInit {
   getVisibilityTypes() {
     return Object.values(VisibilityType);
   }
+
+  addAuxVar() {
+    if (this.viewToEdit.variables) {
+      this.viewToEdit.variables.push(this.variableToAdd);
+    }
+    else {
+      this.viewToEdit.variables = [this.variableToAdd];
+    }
+    this.variableToAdd = { name: "", value: "", position: 0 };
+  }
 }
 
-export interface ViewManageData{
+export interface ViewManageData {
   type: ViewType,
   cssId?: string,
   classList?: string,
