@@ -4,6 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
+import { copyObject, exists } from "src/app/_utils/misc/misc";
+import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewButton extends View {
   private _text: string;
@@ -59,17 +61,17 @@ export class ViewButton extends View {
   }
 
   buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
+    if (exists(baseFakeId)) this.replaceWithFakeIds();
+
+    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
+      const copy = copyObject(this);
+      if (this.parent) { // Has parent
+        const parent = viewsAdded.get(this.parent.id);
+        parent.addChildViewToViewTree(copy);
+      }
+      else viewTree.push(copy); // Is root
+        viewsAdded.set(copy.id, copy);
+     }
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor

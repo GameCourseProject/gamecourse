@@ -304,7 +304,25 @@ class PageController
         API::response($page->renderPage($viewerId, $userId));
     }
 
-    // TODO: renderPageInEditor (mocked or not)
+    /**
+     * Renders a given page for editing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function renderPageInEditor()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($page->renderPageForEditor());
+    }
 
     // TODO: preview page
 

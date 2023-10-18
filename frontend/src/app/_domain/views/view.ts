@@ -230,7 +230,7 @@ export abstract class View {
     const visibilityCondition = visibilityType === VisibilityType.CONDITIONAL ? obj.visibilityCondition : null;
 
     return {
-      mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
+      mode: ViewMode.EDIT, // obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
       type: obj.type as ViewType,
 
       id: obj.id,
@@ -238,7 +238,7 @@ export abstract class View {
       aspect: Aspect.fromDatabase(obj.aspect),
 
       cssId: obj.cssId || null,
-      classList: obj.classList || null,
+      classList: obj.class || null,
       styles: obj.style || null,
 
       visibilityType,
@@ -271,14 +271,14 @@ export interface ViewDatabase {
   aspect: {viewerRole: string, userRole: string},
   type: string;
   cssId?: string,
-  classList?: string,
+  class?: string,
   style?: string,
   visibilityType?: string,
   visibilityCondition?: string | boolean,
   loopData?: string,
   variables?: {name: string, value: string, position: number}[];
   events?: {type: string, action: string}[];
-  edit?: boolean,
+  //edit?: boolean,
 }
 
 export enum ViewMode {

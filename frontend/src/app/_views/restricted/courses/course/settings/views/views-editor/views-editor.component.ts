@@ -93,12 +93,12 @@ export class ViewsEditorComponent implements OnInit {
           this.pageToManage = initPageToManage(courseID);
         } else {
           await this.getPage(parseInt(segment));
+          await this.getView();
         }
 
       });
 
       this.loading.page = false;
-      this.view = buildView(this.layout);
     })
   }
 
@@ -112,6 +112,11 @@ export class ViewsEditorComponent implements OnInit {
 
   async getPage(pageID: number): Promise<void> {
     this.page = await this.api.getPageById(pageID).toPromise();
+  }
+
+  async getView(): Promise<void> {
+    this.view = await this.api.getViewByPageId(this.page.id).toPromise();
+    console.log(this.view)
   }
 
   setOptions(){
@@ -138,7 +143,7 @@ export class ViewsEditorComponent implements OnInit {
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "block",
                       direction: "vertical",
-                      classList: "card bg-base-100 shadow-xl p-4",
+                      class: "card bg-base-100 shadow-xl p-4",
                     }),
                     buildView({
                       id: 1,
@@ -146,7 +151,7 @@ export class ViewsEditorComponent implements OnInit {
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "block",
                       direction: "horizontal",
-                      classList: "card bg-base-100 shadow-xl p-4",
+                      class: "card bg-base-100 shadow-xl p-4",
                     })
                   ] // FIXME: should get them from backend
                 },
@@ -176,7 +181,7 @@ export class ViewsEditorComponent implements OnInit {
                       viewRoot: 1,
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "button",
-                      classList: "btn btn-primary m-1",
+                      class: "btn btn-primary m-1",
                       text: "Button",
                     })
                   ] // FIXME: should get them from backend
@@ -317,7 +322,7 @@ export class ViewsEditorComponent implements OnInit {
                       viewRoot: 1,
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "text",
-                      classList: "font-bold text-xl",
+                      class: "font-bold text-xl",
                       text: "Title",
                     }),
                     buildView({
@@ -325,7 +330,7 @@ export class ViewsEditorComponent implements OnInit {
                       viewRoot: 1,
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "text",
-                      classList: "font-semibold text-lg",
+                      class: "font-semibold text-lg",
                       text: "Subtitle"
                     }),
                     buildView({
@@ -333,7 +338,7 @@ export class ViewsEditorComponent implements OnInit {
                       viewRoot: 1,
                       aspect: {viewerRole: "a", userRole: "b"},
                       type: "text",
-                      classList: "",
+                      class: "",
                       text: "Body Text"
                     }),
                   ] // FIXME: should get them from backend
@@ -436,8 +441,7 @@ export class ViewsEditorComponent implements OnInit {
           viewRoot: 1,
           aspect: {viewerRole: "a", userRole: "b"},
           type: "block",
-          classList: "card bg-base-100 shadow-xl",
-          edit: true,
+          class: "card bg-base-100 shadow-xl",
         }
       )
       this.view.addChildViewToViewTree(itemToAdd);

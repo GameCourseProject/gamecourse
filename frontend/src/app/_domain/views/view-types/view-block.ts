@@ -6,6 +6,8 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 
 import {buildView} from "../build-view/build-view";
+import { copyObject, exists } from "src/app/_utils/misc/misc";
+import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -84,24 +86,24 @@ export class ViewBlock extends View {
   }
 
   buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   copy.children = []; // Strip children
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
+    if (exists(baseFakeId)) this.replaceWithFakeIds();
+
+    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
+      const copy = copyObject(this);
+      copy.children = []; // Strip children
+  
+      if (this.parent) { // Has parent
+        const parent = viewsAdded.get(this.parent.id);
+        parent.addChildViewToViewTree(copy);
+      }
+      else viewTree.push(copy); // Is root
+        viewsAdded.set(copy.id, copy);
+     }
+    
     // // Build children into view tree
-    // for (const child of this.children) {
-    //   child.buildViewTree();
-    // }
+    for (const child of this.children) {
+      child.buildViewTree();
+    }
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor

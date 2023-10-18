@@ -2775,6 +2775,19 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Template.fromDatabase(obj))));
   }
 
+  public getViewByPageId(pageID: number): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderPageInEditor');
+      qs.push('pageId', pageID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => buildView(res['data'][0]) ) );
+  }
+
 
   // Pages
 

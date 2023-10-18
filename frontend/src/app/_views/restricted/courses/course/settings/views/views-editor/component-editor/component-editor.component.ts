@@ -38,7 +38,7 @@ export class ComponentEditorComponent implements OnInit {
     const viewToEdit: ViewManageData = {
       type: this.view.type,
       visibilityType: this.view.visibilityType,
-      visibilityCondition: "",
+      visibilityCondition: this.view.visibilityCondition?.toString(),
       cssId: this.view.cssId,
       classList: this.view.classList,
       style: this.view.styles,
@@ -53,6 +53,18 @@ export class ComponentEditorComponent implements OnInit {
 
   async saveView(){
     this.view.classList = this.viewToEdit.classList;
+    this.view.type = this.viewToEdit.type;
+    this.view.visibilityType = this.viewToEdit.visibilityType;
+    this.view.visibilityCondition = this.viewToEdit.visibilityCondition;
+    this.view.cssId = this.viewToEdit.cssId;
+    this.view.classList = this.viewToEdit.classList;
+    this.view.styles = this.viewToEdit.style;
+    
+    if (this.view instanceof ViewButton) {
+      this.view.text = this.viewToEdit.text;
+      this.view.color = this.viewToEdit.color;
+      this.view.icon = this.viewToEdit.icon;
+    }
 
     ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
