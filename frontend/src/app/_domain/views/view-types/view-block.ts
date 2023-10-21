@@ -8,6 +8,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import { copyObject, exists } from "src/app/_utils/misc/misc";
 import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -151,6 +152,12 @@ export class ViewBlock extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+    for (let child of this.children) {
+      child.switchMode(mode);
+    }
+  }
 
   /**
    * Gets a default block view.
@@ -190,7 +197,7 @@ export class ViewBlock extends View {
       (obj.direction || BlockDirection.VERTICAL) as BlockDirection,
       obj.columns || null,
       obj.responsive,
-      obj.children ? obj.children.map(child => buildView(child)) : [],
+      obj.children ? obj.children.map(child => buildView(child[0])) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -207,13 +214,34 @@ export class ViewBlock extends View {
 
     return block;
   }
+
+  static toDatabase(obj: ViewBlock): ViewBlockDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables,
+      events: obj.events,
+      direction: obj.direction,
+      columns: obj.columns,
+      responsive: obj.responsive,
+      children: obj.children.map(child => buildViewTree(child))
+    }
+  }
 }
 
 export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
   columns?: number,
   responsive?: boolean,
-  children?: ViewDatabase[];
+  children?: ViewDatabase[][];
 }
 
 export enum BlockDirection {

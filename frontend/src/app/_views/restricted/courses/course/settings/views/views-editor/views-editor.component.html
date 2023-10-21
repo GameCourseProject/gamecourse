@@ -1,4 +1,4 @@
-<div class="w-full h-full relative flex flex-col">
+<div class="w-full min-h-full relative flex flex-col">
   <!-- Header -->
   <app-header
     [classList]="'text-md'"
@@ -36,9 +36,9 @@
                       ]}]">
   </app-top-actions>
 
-  <div *ngIf="!loading.page" class="flex h-full space-x-4 mt-4">
+  <div *ngIf="!loading.page" class="flex grow space-x-4 mt-4">
     <!-- Menu of icons (for actions) -->
-    <div class="w-24">
+    <div class="w-24 shrink-0">
       <div class="card card-compact bg-base-100 shadow-xl flex flex-col items-center py-3">
 
         <div *ngFor="let option of options; let j = index" class="py-1 relative inline-block text-left">
@@ -108,18 +108,41 @@
     </div>
 
     <!-- Editor -->
-    <div class="rounded-xl border-4 border-neutral border-opacity-10 h-full w-full p-2">
+    <div class="grow rounded-xl border-4 border-neutral border-opacity-10 p-2">
       <bb-any *ngIf="view" [view]="view"></bb-any>
     </div>
   </div>
 
   <div class="card-actions justify-end py-6">
     <button class="btn btn-primary">Discard</button>
-    <button class="btn btn-primary">Save as Template</button>
-    <button class="btn btn-primary">Save as Page</button>
+    <button *ngIf="pageToManage" class="btn btn-primary">Save as Template</button>
+    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
+    <button *ngIf="!pageToManage" class="btn btn-primary">Save Changes</button>
   </div>
 
   <!-- Loader -->
   <app-loader [loading]="loading.page"></app-loader>
 
 </div>
+
+<!-- Modals -->
+<app-modal
+  *ngIf="pageToManage"
+  [id]="'save-page'"
+  [templateRef]="SAVE_PAGE"
+  [header]="'Save as Page'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="savePage()"
+/>
+
+<ng-template #SAVE_PAGE>
+  This page will be added to the course's page library.
+  <app-input-text
+    [id]="'new-page-name'"
+    [(value)]="pageToManage.name"
+    [topLabel]="'Page Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>

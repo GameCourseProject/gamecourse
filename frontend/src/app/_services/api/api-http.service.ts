@@ -2788,6 +2788,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => buildView(res['data'][0]) ) );
   }
 
+  public savePage(courseID: number, name: string, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      name: name,
+      viewTree: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'createPage');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
 
   // Pages
 

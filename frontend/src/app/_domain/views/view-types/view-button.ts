@@ -99,6 +99,10 @@ export class ViewButton extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+  }
+
   /**
    * Gets a default button view.
    */
@@ -147,6 +151,27 @@ export class ViewButton extends View {
       parsedObj.events
     );
   }
+
+  static toDatabase(obj: ViewButton): ViewButtonDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables,
+      events: obj.events,
+      text: obj.text,
+      color: obj.color,
+      icon: obj.icon
+    }
+  }
+
 }
 
 export interface ViewButtonDatabase extends ViewDatabase {

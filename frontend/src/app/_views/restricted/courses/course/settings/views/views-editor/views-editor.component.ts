@@ -11,6 +11,18 @@ import { View, ViewMode } from "src/app/_domain/views/view";
 import { buildView } from "src/app/_domain/views/build-view/build-view";
 import * as _ from "lodash"
 import { ViewSelectionService } from "src/app/_services/view-selection.service";
+import { ModalService } from 'src/app/_services/modal.service';
+import { AlertService, AlertType } from "src/app/_services/alert.service";
+import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
+import { ViewButton, ViewButtonDatabase } from "src/app/_domain/views/view-types/view-button";
+import { ViewChart, ViewChartDatabase } from "src/app/_domain/views/view-types/view-chart";
+import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
+import { ViewIcon, ViewIconDatabase } from "src/app/_domain/views/view-types/view-icon";
+import { ViewImage, ViewImageDatabase } from "src/app/_domain/views/view-types/view-image";
+import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-row";
+import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
+import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
+import { buildViewTree as bvt} from "src/app/_domain/views/build-view-tree/build-view-tree";
 
 @Component({
   selector: 'app-views-editor',
@@ -52,26 +64,6 @@ export class ViewsEditorComponent implements OnInit {
 
   view: View;
 
-  layout = {
-    id: 1,
-    viewRoot: 1,
-    aspect: {viewerRole: "a", userRole: "b"},
-    type: "block",
-    classList: "card bg-base-100 shadow-xl p-4",
-    edit: true,
-    children: [
-      {
-        id: 2,
-        viewRoot: 1,
-        aspect: {viewerRole: "a", userRole: "b"},
-        type: "button",
-        classList: "btn btn-primary m-1",
-        text: "Button",
-        edit: true,
-      }
-    ]
-  } // FIXME this is just a test
-  
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -94,10 +86,10 @@ export class ViewsEditorComponent implements OnInit {
         } else {
           await this.getPage(parseInt(segment));
           await this.getView();
+          this.view.switchMode(ViewMode.EDIT);
         }
 
       });
-
       this.loading.page = false;
     })
   }
@@ -116,7 +108,6 @@ export class ViewsEditorComponent implements OnInit {
 
   async getView(): Promise<void> {
     this.view = await this.api.getViewByPageId(this.page.id).toPromise();
-    console.log(this.view)
   }
 
   setOptions(){
@@ -125,7 +116,7 @@ export class ViewsEditorComponent implements OnInit {
       { icon: 'jam-plus-circle',
         iconSelected: 'jam-plus-circle-f',
         isSelected: false,
-        description: 'Add component',
+        description: 'Add Component',
         subMenu: {
           title: 'Components',
           items: [
@@ -139,16 +130,16 @@ export class ViewsEditorComponent implements OnInit {
                   list: [
                     buildView({
                       id: 1,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "block",
                       direction: "vertical",
                       class: "card bg-base-100 shadow-xl p-4",
                     }),
                     buildView({
                       id: 1,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "block",
                       direction: "horizontal",
                       class: "card bg-base-100 shadow-xl p-4",
@@ -178,8 +169,8 @@ export class ViewsEditorComponent implements OnInit {
                   list: [
                     buildView({
                       id: 2,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "button",
                       class: "btn btn-primary m-1",
                       text: "Button",
@@ -250,7 +241,18 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: [
+                    buildView({
+                      id: 10,
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
+                      type: "icon",
+                      class: "mt-1",
+                      style: "color: {%courseColor}",
+                      icon: "tabler-award",
+                      size: "1.8rem"
+                    })
+                  ] // FIXME: should get them from backend
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -319,24 +321,24 @@ export class ViewsEditorComponent implements OnInit {
                   list: [
                     buildView({
                       id: 4,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "text",
                       class: "font-bold text-xl",
                       text: "Title",
                     }),
                     buildView({
                       id: 5,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "text",
                       class: "font-semibold text-lg",
                       text: "Subtitle"
                     }),
                     buildView({
                       id: 6,
-                      viewRoot: 1,
-                      aspect: {viewerRole: "a", userRole: "b"},
+                      viewRoot: null,
+                      aspect: {viewerRole: null, userRole: null},
                       type: "text",
                       class: "",
                       text: "Body Text"
@@ -361,7 +363,7 @@ export class ViewsEditorComponent implements OnInit {
       { icon: 'jam-layout',
         iconSelected: 'jam-layout-f',
         isSelected: false,
-        description: 'Choose Layout',
+        description: 'Choose Template',
         subMenu: {
           title: 'Templates',
           helper: 'Templates are final drafts of pages that have not been published yet. Its a layout of what a future page will look like.',
@@ -438,13 +440,14 @@ export class ViewsEditorComponent implements OnInit {
       this.view = buildView(
         {
           id: 1,
-          viewRoot: 1,
-          aspect: {viewerRole: "a", userRole: "b"},
+          viewRoot: null,
+          aspect: {viewerRole: null, userRole: null},
           type: "block",
           class: "card bg-base-100 shadow-xl",
         }
       )
       this.view.addChildViewToViewTree(itemToAdd);
+      this.view.mode = ViewMode.EDIT;
     }
     // Adding first block
     else if (!this.view && itemToAdd.type == ViewType.BLOCK) {
@@ -456,6 +459,12 @@ export class ViewsEditorComponent implements OnInit {
     }
 
     this.resetMenus();
+  }
+
+  async savePage() {
+    await this.api.savePage(this.course.id, this.pageToManage.name, buildViewTree(this.view)).toPromise();
+    await this.router.navigate(['pages'], { relativeTo: this.route.parent });
+    AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
 
   /*** --------------------------------------------- ***/
@@ -505,6 +514,11 @@ export class ViewsEditorComponent implements OnInit {
   getSelectedCategoriesItems() {
     return this.getSelectedCategories().flatMap((category) => category.list);
   }
+
+  openSaveAsPageModal() {
+    console.log(buildViewTree(this.view))
+    ModalService.openModal('save-page');
+  }
   
 }
 
@@ -534,4 +548,22 @@ export enum TypeHelper {
   SYSTEM = 'System components are provided by GameCourse and already configured and ready for use.',
   CUSTOM = 'Custom components are created by users in this course.',
   SHARED = 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses.'
+}
+
+export function buildViewTree(view: View): ViewBlockDatabase[] | ViewButtonDatabase[] | ViewChartDatabase[]
+    | ViewCollapseDatabase[] | ViewIconDatabase[] | ViewImageDatabase[] | ViewRowDatabase[] | ViewTableDatabase[] | ViewTextDatabase[] {
+  const type = view.type;
+
+  if (type === ViewType.BLOCK) return [ViewBlock.toDatabase(view as ViewBlock)];
+  else if (type === ViewType.BUTTON) return [ViewButton.toDatabase(view as ViewButton)];
+  else if (type === ViewType.CHART) return [ViewChart.toDatabase(view as ViewChart)];
+  else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse)];
+  else if (type === ViewType.ICON) return [ViewIcon.toDatabase(view as ViewIcon)];
+  else if (type === ViewType.IMAGE) return [ViewImage.toDatabase(view as ViewImage)];
+  else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow)];
+  else if (type === ViewType.TABLE) return [ViewTable.toDatabase(view as ViewTable)];
+  else if (type === ViewType.TEXT) return [ViewText.toDatabase(view as ViewText)];
+  // NOTE: insert here other types of building-blocks
+
+  return null;
 }

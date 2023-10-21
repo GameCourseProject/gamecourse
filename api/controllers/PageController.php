@@ -8,6 +8,7 @@ use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
+use GameCourse\Views\CreationMode;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -155,6 +156,25 @@ class PageController
         }
 
         API::response($userPages);
+    }
+
+    /**
+     * Creates page in the DB
+     * @throws Exception
+     */
+    public function createPage()
+    {
+        API::requireValues("courseId", "name", "viewTree");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+        
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
     }
 
     /**

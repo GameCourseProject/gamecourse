@@ -87,6 +87,10 @@ export class ViewText extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+  }
+
   /**
    * Gets a default text view.
    */
@@ -132,6 +136,25 @@ export class ViewText extends View {
       parsedObj.variables,
       parsedObj.events
     );
+  }
+  
+  static toDatabase(obj: ViewText): ViewTextDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables,
+      events: obj.events,
+      text: obj.text,
+      link: obj._link
+    }
   }
 }
 
