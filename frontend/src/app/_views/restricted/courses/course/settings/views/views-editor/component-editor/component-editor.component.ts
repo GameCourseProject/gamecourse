@@ -3,6 +3,9 @@ import { NgForm } from "@angular/forms";
 import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View } from "src/app/_domain/views/view";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
+import { CollapseIcon, ViewCollapse } from "src/app/_domain/views/view-types/view-collapse";
+import { ViewIcon } from "src/app/_domain/views/view-types/view-icon";
+import { ViewText } from "src/app/_domain/views/view-types/view-text";
 import { ViewType } from "src/app/_domain/views/view-types/view-type";
 import { VisibilityType } from "src/app/_domain/views/visibility/visibility-type";
 import { AlertService, AlertType } from "src/app/_services/alert.service";
@@ -48,6 +51,19 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.color = this.view.color;
       viewToEdit.icon = this.view.icon;
     }
+    else if (this.view instanceof ViewText) {
+      viewToEdit.text = this.view.text;
+      viewToEdit.link = this.view.link;
+    }
+    else if (this.view instanceof ViewIcon) {
+      viewToEdit.icon = this.view.icon;
+      viewToEdit.size = this.view.size;
+    }
+    else if (this.view instanceof ViewCollapse) {
+      viewToEdit.collapseIcon = this.view.icon;
+      viewToEdit.header = this.view.header;
+      viewToEdit.content = this.view.content;
+    }
     return viewToEdit;
   }
 
@@ -65,6 +81,19 @@ export class ComponentEditorComponent implements OnInit {
       this.view.color = this.viewToEdit.color;
       this.view.icon = this.viewToEdit.icon;
     }
+    else if (this.view instanceof ViewText) {
+      this.view.text = this.viewToEdit.text;
+      this.view.link = this.viewToEdit.link;
+    }
+    else if (this.view instanceof ViewIcon) {
+      this.view.icon = this.viewToEdit.icon;
+      this.view.size = this.viewToEdit.size;
+    }
+    else if (this.view instanceof ViewCollapse) {
+      this.view.icon = this.viewToEdit.collapseIcon;
+      this.view.header = this.viewToEdit.header;
+      this.view.content = this.viewToEdit.content;
+    }
 
     ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
@@ -78,8 +107,8 @@ export class ComponentEditorComponent implements OnInit {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
-  getVisibilityTypes() {
-    return Object.values(VisibilityType);
+  getCollapseIconOptions() {
+    return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
 
   addAuxVar() {
@@ -101,9 +130,14 @@ export interface ViewManageData {
   visibilityType?: VisibilityType,
   visibilityCondition?: string,
   loopData?: string,
-  variables?: {name: string, value: string, position: number}[];
+  variables?: {name: string, value: string, position: number}[],
   events?: { type: string, action: string }[],
   text?: string,
   color?: string,
-  icon?: string;
+  icon?: string,
+  link?: string,
+  size?: string,
+  header?: View,
+  content?: View,
+  collapseIcon?: CollapseIcon;
 }

@@ -21,8 +21,8 @@
       [required]="true">
     </app-input-select>
 
-    <!-- Text -->
-    <ng-container *ngIf="viewToEdit.type === ViewType.TEXT || viewToEdit.type === ViewType.BUTTON">
+    <!--------------------- Button options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
       <div class="flex flex-row mt-2 justify-start items-center gap-2">
         <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
         <span class="block font-semibold text-lg">Text</span>
@@ -39,9 +39,117 @@
         [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
         [required]="false">
       </app-input-text>
+      <!-- TODO: icon picker -->
+      <app-input-color
+        [id]="'button-color'"
+        [form]="q"
+        [(value)]="viewToEdit.color"
+        [placeholder]="'Color'"
+        [topLabel]="'Color'"
+        [helperText]="'Choose color for the button'"
+        [helperPosition]="'right'">
+      </app-input-color>
     </ng-container>
 
+    <!--------------------- Text options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.TEXT">
+      <div class="text-xs pl-1 pb-2">
+        You can either write ordinary text or write expressions to define the following fields.<br>
+        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+        For more information check the 'Additional Tools' box.
+      </div>
+      <div class="flex flex-row gap-10">
+        <div class="flex flex-col grow">
+          <div class="flex flex-row mt-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
+            <span class="block font-semibold text-lg">Text</span>
+          </div>
+          <app-input-text
+            [id]="'component-text'"
+            [form]="q"
+            [(value)]="viewToEdit.text"
+            [required]="false">
+          </app-input-text>
+        </div>
+        <div class="flex flex-col grow">
+          <div class="flex flex-row mt-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
+            <span class="block font-semibold text-lg">Link</span>
+          </div>
+          <app-input-text
+            [id]="'component-link'"
+            [form]="q"
+            [(value)]="viewToEdit.link"
+            [required]="false">
+          </app-input-text>
+        </div>
+      </div>
+    </ng-container>
+
+    <!--------------------- Icon options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.ICON">
+      <!-- TODO: icon picker -->
+      <!-- FIXME: size options -->
+      <app-input-select
+        [id]="'component-icon'"
+        [form]="q"
+        [(value)]="viewToEdit.size"
+        [options]="getComponentTypes()"
+        [placeholder]="'Select component type'"
+        [topLabel]="'Select size for your icon'"
+        [helperText]="'Will display the icon bigger or smaller. Default is medium size.'"
+        [helperPosition]="'right'"
+        [required]="true">
+      </app-input-select>
+    </ng-container>
+
+    <!--------------------- Collapse options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.COLLAPSE">
+      <app-input-select
+        [id]="'collapse-icon'"
+        [form]="q"
+        [(value)]="viewToEdit.collapseIcon"
+        [options]="getCollapseIconOptions()"
+        [topLabel]="'Icon'"
+        [helperText]="'Icon that will be displayed in collapse when opened/closed.'"
+        [helperPosition]="'right'"
+        [required]="true"
+        [search]="false">
+      </app-input-select>
+      <div class="flex flex-row gap-10">
+        <div class="grow">
+          <app-input-select
+            [id]="'collapse-header-type'"
+            [form]="q"
+            [(value)]="viewToEdit.header.type"
+            [options]="getComponentTypes()"
+            [placeholder]="'Select component type'"
+            [topLabel]="'Header Component Type'"
+            [helperText]="'Select the type of component you want to be showing.'"
+            [helperPosition]="'right'"
+            [required]="true">
+          </app-input-select>
+        </div>
+        <div class="grow">
+          <app-input-select
+            [id]="'collapse-content-type'"
+            [form]="q"
+            [(value)]="viewToEdit.content.type"
+            [options]="getComponentTypes()"
+            [placeholder]="'Select component type'"
+            [topLabel]="'Content Component Type'"
+            [helperText]="'Select the type of component you want as content.'"
+            [helperPosition]="'right'"
+            [required]="true">
+          </app-input-select>
+        </div>
+      </div>
+    </ng-container>
+
+
+    <!--------------------------------------------------->
     <!--------------------- GENERAL --------------------->
+    <!--------------------------------------------------->
     <div class="divider"></div>
     <div class="prose">
       <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
@@ -123,7 +231,10 @@
       <span class="block font-semibold text-md">Events</span>
     </div>
 
+
+    <!--------------------------------------------------->
     <!--------------------- STYLING --------------------->
+    <!--------------------------------------------------->
     <div class="divider"></div>
     <div class="prose">
       <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
