@@ -19,6 +19,9 @@ import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-toolti
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
+import { AlertService, AlertType } from 'src/app/_services/alert.service';
+import { ApiHttpService } from 'src/app/_services/api/api-http.service';
+import { buildViewTree } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 
 @Component({
   selector: 'bb-any',
@@ -32,8 +35,11 @@ export class BBAnyComponent implements OnInit {
 
   classes: string;
   visible: boolean;
+  
+  newComponentName: string;
 
   constructor(
+    private api: ApiHttpService,
     private route: ActivatedRoute,
     public selection: ViewSelectionService
   ) { }
@@ -123,12 +129,22 @@ export class BBAnyComponent implements OnInit {
     return this.selection.get() == this.view;
   }
 
+  openSaveComponentModal() {
+    ModalService.openModal('save-as-component');
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
   editAction() {
     ModalService.openModal('component-editor');
+  }
+  
+  async saveAction() {
+    await this.api.saveCustomComponent(this.courseID, this.newComponentName, buildViewTree(this.view)).toPromise();
+    ModalService.closeModal('save-as-component');
+    AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
   }
 
   deleteAction() {

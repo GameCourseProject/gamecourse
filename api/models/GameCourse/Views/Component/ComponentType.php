@@ -13,5 +13,6 @@ class ComponentType
 
     const CORE = "core";
     const CUSTOM = "custom";
+    const SHARED = "shared";
     // NOTE: insert here new component types
 }

@@ -2788,7 +2788,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => buildView(res['data'][0]) ) );
   }
 
-  public savePage(courseID: number, name: string, viewTree): Observable<void> {
+  public saveViewAsPage(courseID: number, name: string, viewTree): Observable<void> {
     const data = {
       courseId: courseID,
       name: name,
@@ -2803,6 +2803,46 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+  public saveCustomComponent(courseID: number, name: string, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      name: name,
+      viewTree: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'createCustomComponent');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public getCoreComponents(): Observable<View[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCoreComponents');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => buildView(obj))));
+  }
+
+  public getCustomComponents(courseID: number): Observable<View[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCustomComponents');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
   }
 
   // Pages
@@ -2893,25 +2933,6 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => buildView(res['data'])));
-  }
-
-  // TODO: refactor
-  public createPage(courseID: number, page: Partial<Page>): Observable<void> {
-    const data = {
-      courseId: courseID,
-      pageName: page.name,
-      viewId: page.viewId,
-      isEnabled: page.isVisible ? 1 : 0
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'createPage');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
   }
 
   public editPage(courseID: number, page: PageManageData): Observable<Page> {

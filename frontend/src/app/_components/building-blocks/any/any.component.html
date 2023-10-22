@@ -18,7 +18,7 @@
       <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box">
         <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
         <li><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
-        <li><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
+        <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
         <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
       </ul>
     </div>
@@ -55,7 +55,29 @@
   </div>
 </ng-template>
 
+
+<!-- Modals -->
+
 <app-component-editor
   *ngIf="isSelected()"
   [view]="view">
 </app-component-editor>
+
+<app-modal
+  [id]="'save-as-component'"
+  [templateRef]="SAVE_COMPONENT"
+  [header]="'Save Custom Component'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="saveAction()"
+/>
+<ng-template #SAVE_COMPONENT>
+  Saved components can be reused later. They show up under the <i>Custom</i> tab of the component type.
+  <app-input-text
+    [id]="'new-component-name'"
+    [(value)]="newComponentName"
+    [topLabel]="'Component Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>

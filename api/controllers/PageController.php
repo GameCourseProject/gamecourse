@@ -9,6 +9,8 @@ use GameCourse\Role\Role;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;
+use GameCourse\Views\Component\CustomComponent;
+use GameCourse\Views\Component\CoreComponent;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -285,6 +287,60 @@ class PageController
         API::requireCoursePermission($course);
         $views = ViewHandler::getViews();
         API::response($views);
+    }
+
+    /**
+     * Gets all Core Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCoreComponents(){
+        $coreComponents = CoreComponent::getComponents();
+        API::response($coreComponents);
+    }
+
+    /**
+     * Gets all Custom Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCustomComponents(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        
+        $fun = function($component) {
+            return ViewHandler::getViewById($component["viewRoot"]);
+        };
+        
+        $customComponents = array_map($fun, CustomComponent::getComponents($courseId));
+        API::response($customComponents);
+    }
+
+    /**
+     * Saves a View as a Custom Component
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function createCustomComponent(){
+        API::requireValues("courseId", "name", "viewTree");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        $componentInfo = CustomComponent::addComponent($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
+        API::response($componentInfo);
     }
 
     /*** --------------------------------------------- ***/

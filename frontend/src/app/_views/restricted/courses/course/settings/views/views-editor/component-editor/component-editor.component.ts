@@ -2,6 +2,7 @@ import { Component, Input, OnInit, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View } from "src/app/_domain/views/view";
+import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
 import { CollapseIcon, ViewCollapse } from "src/app/_domain/views/view-types/view-collapse";
 import { ViewIcon } from "src/app/_domain/views/view-types/view-icon";
@@ -59,6 +60,11 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
     }
+    else if (this.view instanceof ViewBlock) {
+      viewToEdit.direction = this.view.direction;
+      viewToEdit.responsive = this.view.responsive;
+      viewToEdit.columns = this.view.columns;
+    }
     else if (this.view instanceof ViewCollapse) {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
@@ -88,6 +94,11 @@ export class ComponentEditorComponent implements OnInit {
     else if (this.view instanceof ViewIcon) {
       this.view.icon = this.viewToEdit.icon;
       this.view.size = this.viewToEdit.size;
+    }
+    else if (this.view instanceof ViewBlock) {
+      this.view.direction = this.viewToEdit.direction;
+      this.view.responsive = this.viewToEdit.responsive;
+      this.view.columns = this.viewToEdit.columns;
     }
     else if (this.view instanceof ViewCollapse) {
       this.view.icon = this.viewToEdit.collapseIcon;
@@ -139,5 +150,8 @@ export interface ViewManageData {
   size?: string,
   header?: View,
   content?: View,
-  collapseIcon?: CollapseIcon;
+  collapseIcon?: CollapseIcon,
+  direction?: BlockDirection,
+  responsive?: boolean,
+  columns?: number;
 }

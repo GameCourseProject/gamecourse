@@ -18,7 +18,8 @@
       [options]="getComponentTypes()"
       [placeholder]="'Select component type'"
       [topLabel]="'Component Type'"
-      [required]="true">
+      [required]="true"
+      [classList]="'mb-4'">
     </app-input-select>
 
     <!--------------------- Button options --------------------->
@@ -101,6 +102,63 @@
         [helperPosition]="'right'"
         [required]="true">
       </app-input-select>
+    </ng-container>
+
+    <!--------------------- Block options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK">
+      <div class="flex flex-row">
+        <div>
+          <div class="flex flex-row mt-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Choose whether the components inside will be displayed horizontal or vertically.'"></app-simple-helper>
+            <span class="block font-semibold text-md">Direction</span>
+          </div>
+          <div class="flex flex-wrap">
+            <app-input-radio
+              [id]="'block-direction-horizontal'"
+              [group]="'direction'"
+              [form]="q"
+              [optionValue]="'horizontal'"
+              [(value)]="viewToEdit.direction"
+              [color]="'primary'"
+              [classList]="'mr-8'"
+              [label]="'Horizontal'">
+            </app-input-radio>
+            <app-input-radio
+              [id]="'block-direction-horizontal'"
+              [group]="'direction'"
+              [form]="q"
+              [optionValue]="'vertical'"
+              [(value)]="viewToEdit.direction"
+              [color]="'primary'"
+              [classList]="'mr-8'"
+              [label]="'Vertical'">
+            </app-input-radio>
+          </div>
+        </div>
+        <app-input-number
+          *ngIf="viewToEdit.direction == 'horizontal'"
+          [id]="'block-columns'"
+          [form]="q"
+          [(value)]="viewToEdit.columns"
+          [placeholder]="'Select number of columns'"
+          [topLabel]="'Columns'"
+          [minValue]="1"
+          [helperText]="'Chose in how many columns you want to divide the block.'"
+          [helperPosition]="'right'">
+        </app-input-number>
+        <div class="ml-8">
+          <div class="flex flex-row my-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Make it adjust automatically to the width and height of the rendering device.'"></app-simple-helper>
+            <span class="block font-semibold text-md">Responsiveness</span>
+          </div>
+          <app-input-toggle
+            [id]="'block-responsive'"
+            [(value)]="viewToEdit.responsive"
+            [color]="'primary'"
+            (valueChange)="viewToEdit.responsive = !viewToEdit.responsive">
+          </app-input-toggle>
+        </div>
+      </div>
     </ng-container>
 
     <!--------------------- Collapse options --------------------->
@@ -209,7 +267,7 @@
           [(value)]="viewToEdit.loopData"
           [topLabel]="'Data Iteration'"
           [helperText]="'Determines how many times this component will be repeated.
-            \n E.g. {skillTrees.trees} Means that this component will be repeated the number skill trees available in this 
+            \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this 
             course. If there are 3 kill strees in the course, the text will be repeated 3 times.'"
           [helperPosition]="'right'"
           [placeholder]="'e.g. { skillTrees.trees }'"

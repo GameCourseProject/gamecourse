@@ -22,7 +22,6 @@ import { ViewImage, ViewImageDatabase } from "src/app/_domain/views/view-types/v
 import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-row";
 import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
-import { buildViewTree as bvt} from "src/app/_domain/views/build-view-tree/build-view-tree";
 
 @Component({
   selector: 'app-views-editor',
@@ -91,6 +90,7 @@ export class ViewsEditorComponent implements OnInit {
 
       });
       this.loading.page = false;
+      this.getComponents();
     })
   }
 
@@ -110,7 +110,12 @@ export class ViewsEditorComponent implements OnInit {
     this.view = await this.api.getViewByPageId(this.page.id).toPromise();
   }
 
-  setOptions(){
+  async getComponents(): Promise<void> {
+    const a = await this.api.getCustomComponents(this.course.id).toPromise();
+    console.log(a);
+  }
+
+  setOptions() {
     // FIXME: move to backend maybe ?
     this.options =  [
       { icon: 'jam-plus-circle',
@@ -462,7 +467,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async savePage() {
-    await this.api.savePage(this.course.id, this.pageToManage.name, buildViewTree(this.view)).toPromise();
+    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildViewTree(this.view)).toPromise();
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
