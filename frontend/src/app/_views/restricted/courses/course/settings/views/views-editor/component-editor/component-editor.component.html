@@ -151,12 +151,14 @@
             <app-simple-helper [position]="'right'" [text]="'Make it adjust automatically to the width and height of the rendering device.'"></app-simple-helper>
             <span class="block font-semibold text-md">Responsiveness</span>
           </div>
-          <app-input-toggle
+          <app-input-checkbox
             [id]="'block-responsive'"
             [(value)]="viewToEdit.responsive"
             [color]="'primary'"
-            (valueChange)="viewToEdit.responsive = !viewToEdit.responsive">
-          </app-input-toggle>
+            (valueChange)="viewToEdit.responsive = !viewToEdit.responsive"
+            [label]="'Make it responsive'"
+            [labelPosition]="'right'">
+          </app-input-checkbox>
         </div>
       </div>
     </ng-container>
@@ -273,12 +275,16 @@
           [placeholder]="'e.g. { skillTrees.trees }'"
         ></app-input-text>
       </div>
-      <!-- Additional Tools 
-      <app-input-code
-        [id]="'component-tools'"
-        [title]="'Additional Tools'"
-        [tabs]="additionalToolsTabs"
-      ></app-input-code> -->
+
+      <!-- Additional Tools -->
+      <div class="h-full w-full">
+        <app-input-code
+          [id]="'component-tools'"
+          [title]="'Additional Tools'"
+          [tabs]="additionalToolsTabs"
+          [classList]="'grow'"
+        ></app-input-code>
+      </div>
     </div>
 
     <!-- Events -->
@@ -287,6 +293,42 @@
         [position]="'right'" 
         [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
       <span class="block font-semibold text-md">Events</span>
+    </div>
+    <div class="flex flex-col gap-2 mb-2">
+      <!-- Existing -->
+      <div *ngFor="let event of viewToEdit.events" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
+        <div class="w-36">
+          <span class="block font-semibold text-md">When:</span>{{event.type}}
+        </div>
+        <div class="grow">
+          <span class="block font-semibold text-md">Do:</span>{{event.action}}
+        </div>
+      </div>
+      <!-- New -->
+      <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
+        <div class="w-36">
+          <app-input-select
+            [id]="'event-when'"
+            [form]="q"
+            [(value)]="eventToAdd.type"
+            [options]="getEventTypes()"
+            [placeholder]="'Select event'"
+            [topLabel]="'When:'"
+            [search]="false"
+            [required]="true">
+          </app-input-select>
+        </div>
+        <div class="grow">
+          <app-input-text
+            [id]="'event-do'"
+            [form]="q"
+            [(value)]="eventToAdd.action"
+            [topLabel]="'Do:'"
+            [placeholder]="'{ actions.goToPage(pages.getPageByName(\'Awards\').id, %user) }'"
+          ></app-input-text>
+        </div>
+        <button class="btn btn-secondary" (click)="addEvent()">Add</button>
+      </div>
     </div>
 
 

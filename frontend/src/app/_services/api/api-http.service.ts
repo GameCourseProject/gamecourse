@@ -19,7 +19,7 @@ import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/views/pages/page";
 import {Template} from "../../_domain/views/templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
-import {View} from "../../_domain/views/view";
+import {View, ViewDatabase} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
@@ -74,6 +74,7 @@ import {
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
+import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 
 @Injectable({
   providedIn: 'root'
@@ -2775,19 +2776,6 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Template.fromDatabase(obj))));
   }
 
-  public getViewByPageId(pageID: number): Observable<View> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'renderPageInEditor');
-      qs.push('pageId', pageID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => buildView(res['data'][0]) ) );
-  }
-
   public saveViewAsPage(courseID: number, name: string, viewTree): Observable<void> {
     const data = {
       courseId: courseID,
@@ -2842,7 +2830,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']) );
+      .pipe( map((res: any) => res['data'].map(obj => buildView(obj))));
   }
 
   // Pages
@@ -2927,6 +2915,48 @@ export class ApiHttpService {
       qs.push('request', 'renderPage');
       qs.push('pageId', pageID);
       if (exists(userID)) qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => buildView(res['data'])));
+  }
+
+  public renderPageInEditor(pageID: number): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderPageInEditor');
+      qs.push('pageId', pageID);
+    };
+    
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    
+    return this.get(url, ApiHttpService.httpOptions)
+    .pipe(map((res: any) => buildView(res['data'][0], true)));
+  }
+
+  public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderPageWithMockData');
+      qs.push('pageId', pageID);
+      if (exists(userID)) qs.push('renderPageWithMockData', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => buildView(res['data'])));
+  }
+
+  public previewPage(pageID: number, aspect: Aspect): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'previewPage');
+      qs.push('pageId', pageID);
+      qs.push('userRole', aspect.userRole);
+      qs.push('viewerRole', aspect.viewerRole);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

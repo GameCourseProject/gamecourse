@@ -37,11 +37,12 @@ export class Variable {
 
 
   static fromDatabase(obj: VariableDatabase): Variable {
-    // TODO
-    return null;
+    return new Variable(obj.name, obj.value, obj.position);
   }
 }
 
 export interface VariableDatabase {
-  // TODO
+  name: string,
+  value: string,
+  position: number;
 }

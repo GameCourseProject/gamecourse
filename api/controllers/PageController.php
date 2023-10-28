@@ -6,6 +6,7 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;
@@ -296,7 +297,11 @@ class PageController
      * @throws Exception
      */
     public function getCoreComponents(){
-        $coreComponents = CoreComponent::getComponents();
+        $fun = function($component) {
+            return ViewHandler::renderView($component["viewRoot"])[0];
+        };
+        
+        $coreComponents = array_map($fun, CoreComponent::getComponents());
         API::response($coreComponents);
     }
 
@@ -315,7 +320,7 @@ class PageController
         API::requireCoursePermission($course);
         
         $fun = function($component) {
-            return ViewHandler::getViewById($component["viewRoot"]);
+            return ViewHandler::renderView($component["viewRoot"])[0];
         };
         
         $customComponents = array_map($fun, CustomComponent::getComponents($courseId));
@@ -326,6 +331,7 @@ class PageController
      * Saves a View as a Custom Component
      *
      * @return void
+     * 
      * @throws Exception
      */
     public function createCustomComponent(){
@@ -400,7 +406,51 @@ class PageController
         API::response($page->renderPageForEditor());
     }
 
-    // TODO: preview page
+    /**
+     * Renders a given page with mock data.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function renderPageWithMockData()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        $viewerId = Core::getLoggedUser()->getId();
+        $userId = API::getValue("userId", "int");
+
+        API::response($page->renderPage($viewerId, $userId, true));
+    }
+
+    /**
+     * Renders a given page for previewing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function previewPage()
+    {
+        API::requireValues("pageId", "userRole", "viewerRole");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+        
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        $userRole = API::getValue("userRole", "string");
+        $viewerRole = API::getValue("viewerRole", "string");
+
+        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
+    }
 
 
     /*** --------------------------------------------- ***/

@@ -183,7 +183,7 @@ export class ViewCollapse extends View {
     });
   }
 
-  static fromDatabase(obj: ViewCollapseDatabase): ViewCollapse {
+  static fromDatabase(obj: ViewCollapseDatabase, edit: boolean): ViewCollapse {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -195,7 +195,7 @@ export class ViewCollapse extends View {
       null,
       parsedObj.aspect,
       (obj.icon as CollapseIcon) || null,
-      obj.children ? obj.children.map(child => buildView(child[0])) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -235,7 +235,7 @@ export class ViewCollapse extends View {
 
 export interface ViewCollapseDatabase extends ViewDatabase {
   icon?: string,
-  children?: ViewDatabase[][];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }
 
 export enum CollapseIcon {

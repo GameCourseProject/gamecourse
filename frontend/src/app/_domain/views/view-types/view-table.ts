@@ -394,7 +394,7 @@ export class ViewTable extends View {
     });
   }
 
-  static fromDatabase(obj: ViewTableDatabase): ViewTable {
+  static fromDatabase(obj: ViewTableDatabase, edit: boolean): ViewTable {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -413,7 +413,7 @@ export class ViewTable extends View {
       obj.info,
       obj.ordering,
       obj.orderingBy,
-      obj.children ? obj.children.map(child => buildView(child[0])) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -470,5 +470,5 @@ export interface ViewTableDatabase extends ViewDatabase {
   info: boolean;
   ordering: boolean;
   orderingBy: string;
-  children?: ViewDatabase[][];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }

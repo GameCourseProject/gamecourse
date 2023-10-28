@@ -161,7 +161,7 @@ export class ViewRow extends View {
     });
   }
 
-  static fromDatabase(obj: ViewRowDatabase): ViewRow {
+  static fromDatabase(obj: ViewRowDatabase, edit: boolean): ViewRow {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -173,7 +173,7 @@ export class ViewRow extends View {
       null,
       parsedObj.aspect,
       (obj.rowType || RowType.BODY) as RowType,
-      obj.children ? obj.children.map(child => buildView(child[0])) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -213,7 +213,7 @@ export class ViewRow extends View {
 
 export interface ViewRowDatabase extends ViewDatabase {
   rowType: RowType;
-  children?: ViewDatabase[][];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }
 
 export enum RowType {

@@ -5,7 +5,7 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="edit">
-  <ng-container [ngTemplateOutlet]="link ? DISPLAY_LINK : DISPLAY_DEFAULT"></ng-container>
+  <ng-container [ngTemplateOutlet]="EDIT_DEFAULT"></ng-container>
 </ng-container>
 
 
@@ -34,4 +34,12 @@
 <!---------------- EDIT VARIATIONS --------------->
 <!------------------------------------------------>
 
-<!-- TODO -->
+<ng-template #EDIT_DEFAULT>
+  <button [attr.id]="view.cssId"
+          [classList]="classes + ' ' + view.classList"
+          [attr.style]="view.styles ?? '' + (view.color ? ' background-color: ' + view.color : '')">
+
+    <ng-icon [name]="view.icon || DEFAULT" [size]="'1.3rem'"></ng-icon>
+    {{view.text}}
+  </button>
+</ng-template>

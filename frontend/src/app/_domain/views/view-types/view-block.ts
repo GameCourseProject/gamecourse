@@ -183,7 +183,7 @@ export class ViewBlock extends View {
     });
   }
 
-  static fromDatabase(obj: ViewBlockDatabase): ViewBlock {
+  static fromDatabase(obj: ViewBlockDatabase, edit: boolean): ViewBlock {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -197,7 +197,7 @@ export class ViewBlock extends View {
       (obj.direction || BlockDirection.VERTICAL) as BlockDirection,
       obj.columns || null,
       obj.responsive,
-      obj.children ? obj.children.map(child => buildView(child[0])) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -241,7 +241,7 @@ export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
   columns?: number,
   responsive?: boolean,
-  children?: ViewDatabase[][];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }
 
 export enum BlockDirection {

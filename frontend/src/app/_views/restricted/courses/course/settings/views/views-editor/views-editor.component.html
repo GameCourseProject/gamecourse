@@ -33,7 +33,8 @@
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
                         {action: 'Final preview (real data)', icon: getIcon('real')}
-                      ]}]">
+                      ]}]"
+    (btnClicked)="doActionPreview($event)">
   </app-top-actions>
 
   <div *ngIf="!loading.page" class="flex grow space-x-4 mt-4">

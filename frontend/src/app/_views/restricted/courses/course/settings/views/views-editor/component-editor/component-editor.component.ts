@@ -11,6 +11,11 @@ import { ViewType } from "src/app/_domain/views/view-types/view-type";
 import { VisibilityType } from "src/app/_domain/views/visibility/visibility-type";
 import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ModalService } from "src/app/_services/modal.service";
+import { Event } from "src/app/_domain/views/events/event";
+import { Variable } from "src/app/_domain/views/variables/variable";
+import { EventType } from "src/app/_domain/views/events/event-type";
+import { EventAction } from "src/app/_domain/views/events/event-action";
+import { buildEvent } from "src/app/_domain/views/events/build-event";
 
 @Component({
   selector: 'app-component-editor',
@@ -22,7 +27,8 @@ export class ComponentEditorComponent implements OnInit {
   
   viewToEdit: ViewManageData;
   variableToAdd: { name: string, value: string, position: number };
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab )[];
+  eventToAdd: { type: EventType, action: string };
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
 
   @ViewChild('q', { static: false }) q: NgForm;
 
@@ -32,9 +38,17 @@ export class ComponentEditorComponent implements OnInit {
   ngOnInit(): void {
     this.viewToEdit = this.initViewToEdit();
     this.variableToAdd = { name: "", value: "", position: 0 };
+    this.eventToAdd = { type: null, action: "" };
+    
+    let helpVariables =
+        "# These are the variables available in this component, from the component's parents.\n\n";
+
+    for (const variable of this.viewToEdit.variables){
+      helpVariables += "%" + variable.name + " = " + variable.value + "\n";
+    }
 
     this.additionalToolsTabs = [
-      { name: 'Manual', type: "manual", active: false },
+      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true},
     ]
   }
 
@@ -46,6 +60,8 @@ export class ComponentEditorComponent implements OnInit {
       cssId: this.view.cssId,
       classList: this.view.classList,
       style: this.view.styles,
+      events: this.view.events ?? [],
+      variables: this.view.variables ?? [],
     };
     if (this.view instanceof ViewButton) {
       viewToEdit.text = this.view.text;
@@ -81,6 +97,7 @@ export class ComponentEditorComponent implements OnInit {
     this.view.cssId = this.viewToEdit.cssId;
     this.view.classList = this.viewToEdit.classList;
     this.view.styles = this.viewToEdit.style;
+    this.view.events = this.viewToEdit.events;
     
     if (this.view instanceof ViewButton) {
       this.view.text = this.viewToEdit.text;
@@ -118,18 +135,24 @@ export class ComponentEditorComponent implements OnInit {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
+  getEventTypes() {
+    return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  }
+
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
 
   addAuxVar() {
-    if (this.viewToEdit.variables) {
-      this.viewToEdit.variables.push(this.variableToAdd);
-    }
-    else {
-      this.viewToEdit.variables = [this.variableToAdd];
-    }
+    const new_var = new Variable(this.variableToAdd.name, this.variableToAdd.value, this.variableToAdd.position);
+    this.viewToEdit.variables.push(new_var);
     this.variableToAdd = { name: "", value: "", position: 0 };
+  }
+
+  addEvent() {
+    const new_event = buildEvent(this.eventToAdd.type, this.eventToAdd.action);
+    this.viewToEdit.events.push(new_event);
+    this.eventToAdd = { type: null, action: "" };
   }
 }
 
@@ -141,8 +164,8 @@ export interface ViewManageData {
   visibilityType?: VisibilityType,
   visibilityCondition?: string,
   loopData?: string,
-  variables?: {name: string, value: string, position: number}[],
-  events?: { type: string, action: string }[],
+  variables?: Variable[],
+  events?: Event[],
   text?: string,
   color?: string,
   icon?: string,

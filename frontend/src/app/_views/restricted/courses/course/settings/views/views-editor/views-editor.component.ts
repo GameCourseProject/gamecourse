@@ -90,7 +90,6 @@ export class ViewsEditorComponent implements OnInit {
 
       });
       this.loading.page = false;
-      this.getComponents();
     })
   }
 
@@ -107,15 +106,13 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async getView(): Promise<void> {
-    this.view = await this.api.getViewByPageId(this.page.id).toPromise();
+    this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
   }
 
-  async getComponents(): Promise<void> {
-    const a = await this.api.getCustomComponents(this.course.id).toPromise();
-    console.log(a);
-  }
+  async setOptions() {
+    const custom = await this.api.getCustomComponents(this.course.id).toPromise();
+    const core = await this.api.getCoreComponents().toPromise();
 
-  setOptions() {
     // FIXME: move to backend maybe ?
     this.options =  [
       { icon: 'jam-plus-circle',
@@ -132,29 +129,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [
-                    buildView({
-                      id: 1,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "block",
-                      direction: "vertical",
-                      class: "card bg-base-100 shadow-xl p-4",
-                    }),
-                    buildView({
-                      id: 1,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "block",
-                      direction: "horizontal",
-                      class: "card bg-base-100 shadow-xl p-4",
-                    })
-                  ] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.BUTTON)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.BUTTON)
                 },
                 {
                   type: 'Shared',
@@ -171,21 +151,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [
-                    buildView({
-                      id: 2,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "button",
-                      class: "btn btn-primary m-1",
-                      text: "Button",
-                    })
-                  ] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.BUTTON)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.BUTTON)
                 },
                 {
                   type: 'Shared',
@@ -202,12 +173,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.CHART)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.CHART)
                 },
                 {
                   type: 'Shared',
@@ -224,12 +195,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.COLLAPSE)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.COLLAPSE)
                 },
                 {
                   type: 'Shared',
@@ -246,23 +217,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [
-                    buildView({
-                      id: 10,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "icon",
-                      class: "mt-1",
-                      style: "color: {%courseColor}",
-                      icon: "tabler-award",
-                      size: "1.8rem"
-                    })
-                  ] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.ICON)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.ICON)
                 },
                 {
                   type: 'Shared',
@@ -279,12 +239,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.IMAGE)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.IMAGE)
                 },
                 {
                   type: 'Shared',
@@ -301,12 +261,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.TABLE)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.TABLE)
                 },
                 {
                   type: 'Shared',
@@ -323,37 +283,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: [
-                    buildView({
-                      id: 4,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "text",
-                      class: "font-bold text-xl",
-                      text: "Title",
-                    }),
-                    buildView({
-                      id: 5,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "text",
-                      class: "font-semibold text-lg",
-                      text: "Subtitle"
-                    }),
-                    buildView({
-                      id: 6,
-                      viewRoot: null,
-                      aspect: {viewerRole: null, userRole: null},
-                      type: "text",
-                      class: "",
-                      text: "Body Text"
-                    }),
-                  ] // FIXME: should get them from backend
+                  list: core.filter((view) => view.type == ViewType.TEXT)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: [] // FIXME: should get them from backend
+                  list: custom.filter((view) => view.type == ViewType.TEXT)
                 },
                 {
                   type: 'Shared',
@@ -472,6 +407,22 @@ export class ViewsEditorComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
 
+  async doActionPreview(action: string): Promise<void>{
+    if (action === 'Raw (default)') {
+      this.previewMode = 'raw';
+      this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
+      this.view.switchMode(ViewMode.EDIT);
+    }
+    else if (action === 'Final preview (real data)') {
+      this.previewMode = 'real';
+      this.view = await this.api.previewPage(this.page.id, this.view.aspect).toPromise();
+    }
+    else if (action === 'Layout preview (mock data)') {
+      this.previewMode = 'mock';
+      this.view = await this.api.renderPageWithMockData(this.page.id).toPromise();
+    }
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -521,7 +472,6 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   openSaveAsPageModal() {
-    console.log(buildViewTree(this.view))
     ModalService.openModal('save-page');
   }
   

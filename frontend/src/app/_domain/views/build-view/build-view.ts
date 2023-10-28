@@ -22,17 +22,17 @@ import {ViewText, ViewTextDatabase} from "../view-types/view-text";
  * @param obj
  */
 export function buildView(obj: ViewBlockDatabase | ViewButtonDatabase | ViewChartDatabase | ViewCollapseDatabase |
-    ViewIconDatabase | ViewImageDatabase | ViewRowDatabase | ViewTableDatabase | ViewTextDatabase): View {
+    ViewIconDatabase | ViewImageDatabase | ViewRowDatabase | ViewTableDatabase | ViewTextDatabase, edit: boolean = false): View {
   const type = obj.type;
 
-  if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase);
+  if (type === ViewType.BLOCK) return ViewBlock.fromDatabase(obj as ViewBlockDatabase, edit);
   else if (type === ViewType.BUTTON) return ViewButton.fromDatabase(obj as ViewButtonDatabase);
   else if (type === ViewType.CHART) return ViewChart.fromDatabase(obj as ViewChartDatabase);
-  else if (type === ViewType.COLLAPSE) return ViewCollapse.fromDatabase(obj as ViewCollapseDatabase);
+  else if (type === ViewType.COLLAPSE) return ViewCollapse.fromDatabase(obj as ViewCollapseDatabase, edit);
   else if (type === ViewType.ICON) return ViewIcon.fromDatabase(obj as ViewIconDatabase);
   else if (type === ViewType.IMAGE) return ViewImage.fromDatabase(obj as ViewImageDatabase);
-  else if (type === ViewType.ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase);
-  else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase);
+  else if (type === ViewType.ROW) return ViewRow.fromDatabase(obj as ViewRowDatabase, edit);
+  else if (type === ViewType.TABLE) return ViewTable.fromDatabase(obj as ViewTableDatabase, edit);
   else if (type === ViewType.TEXT) return ViewText.fromDatabase(obj as ViewTextDatabase);
   // NOTE: insert here other types of building-blocks
 

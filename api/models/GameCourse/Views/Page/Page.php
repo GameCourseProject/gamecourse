@@ -579,6 +579,13 @@ class Page
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
     }
 
+    /**
+     * Renders a page for editing.
+     * Option to render page with mocked data instead.
+     *
+     * @return array
+     * @throws Exception
+     */
     public function renderPageForEditor()
     {
         $pageInfo = $this->getData("course, viewRoot");
