@@ -129,12 +129,12 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.BUTTON)
+                  list: core.filter((view) => view.type == ViewType.BLOCK)
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.BUTTON)
+                  list: custom.filter((view) => view.type == ViewType.BLOCK)
                 },
                 {
                   type: 'Shared',

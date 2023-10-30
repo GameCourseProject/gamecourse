@@ -161,7 +161,7 @@ export class ViewChart extends View {
       visibilityType: obj.visibilityType,
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
-      variables: obj.variables,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
       events: obj.events,
       chartType: obj.chartType,
       data: obj.data,
