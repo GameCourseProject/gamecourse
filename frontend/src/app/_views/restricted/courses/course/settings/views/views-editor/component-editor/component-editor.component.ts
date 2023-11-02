@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
-import { View } from "src/app/_domain/views/view";
+import { View, ViewMode } from "src/app/_domain/views/view";
 import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
 import { CollapseIcon, ViewCollapse } from "src/app/_domain/views/view-types/view-collapse";
@@ -14,8 +14,11 @@ import { ModalService } from "src/app/_services/modal.service";
 import { Event } from "src/app/_domain/views/events/event";
 import { Variable } from "src/app/_domain/views/variables/variable";
 import { EventType } from "src/app/_domain/views/events/event-type";
-import { EventAction } from "src/app/_domain/views/events/event-action";
 import { buildEvent } from "src/app/_domain/views/events/build-event";
+import * as _ from "lodash"
+import { ViewTable } from "src/app/_domain/views/view-types/view-table";
+import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
+import { ViewImage } from "src/app/_domain/views/view-types/view-image";
 
 @Component({
   selector: 'app-component-editor',
@@ -24,8 +27,13 @@ import { buildEvent } from "src/app/_domain/views/events/build-event";
 export class ComponentEditorComponent implements OnInit {
 
   @Input() view: View;
+
+  show: boolean = true;
+
+  @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
   
   viewToEdit: ViewManageData;
+  viewToPreview: View;
   variableToAdd: { name: string, value: string, position: number };
   eventToAdd: { type: EventType, action: string };
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
@@ -39,7 +47,18 @@ export class ComponentEditorComponent implements OnInit {
     this.viewToEdit = this.initViewToEdit();
     this.variableToAdd = { name: "", value: "", position: 0 };
     this.eventToAdd = { type: null, action: "" };
-    
+
+    if (this.view instanceof ViewTable) {
+      this.viewToPreview = new ViewTable(ViewMode.PREVIEW, this.view.id, this.view.viewRoot, null, this.view.aspect, this.view.footers, this.view.searching,
+              this.view.columnFiltering, this.view.paging, this.view.lengthChange, this.view.info, this.view.ordering, this.view.orderingBy,
+              this.view.headerRows, this.view.cssId, this.view.classList, this.view.styles, this.view.visibilityType,
+              this.view.visibilityCondition, this.view.loopData, this.view.variables, this.view.events);
+    }
+    else {
+      this.viewToPreview = _.cloneDeep(this.view);
+      this.viewToPreview.switchMode(ViewMode.PREVIEW);
+    }
+
     let helpVariables =
         "# These are the variables available in this component, from the component's parents.\n\n";
 
@@ -51,6 +70,10 @@ export class ComponentEditorComponent implements OnInit {
       { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true},
     ]
   }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------- Init -------------------- ***/
+  /*** --------------------------------------------- ***/
 
   initViewToEdit(): ViewManageData {
     const viewToEdit: ViewManageData = {
@@ -72,6 +95,10 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.text = this.view.text;
       viewToEdit.link = this.view.link;
     }
+    else if (this.view instanceof ViewImage) {
+      viewToEdit.src = this.view.src;
+      viewToEdit.link = this.view.link;
+    }
     else if (this.view instanceof ViewIcon) {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
@@ -86,45 +113,70 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
     }
+    else if (this.view instanceof ViewTable) {
+      viewToEdit.footers = this.view.footers;
+      viewToEdit.searching = this.view.searching;
+      viewToEdit.columnFiltering = this.view.columnFiltering;
+      viewToEdit.paging = this.view.paging;
+      viewToEdit.lengthChange = this.view.lengthChange;
+      viewToEdit.info = this.view.info;
+      viewToEdit.ordering = this.view.ordering;
+      viewToEdit.orderingBy = this.view.orderingBy;
+    }
     return viewToEdit;
   }
 
-  async saveView(){
-    this.view.classList = this.viewToEdit.classList;
-    this.view.type = this.viewToEdit.type;
-    this.view.visibilityType = this.viewToEdit.visibilityType;
-    this.view.visibilityCondition = this.viewToEdit.visibilityCondition;
-    this.view.cssId = this.viewToEdit.cssId;
-    this.view.classList = this.viewToEdit.classList;
-    this.view.styles = this.viewToEdit.style;
-    this.view.events = this.viewToEdit.events;
-    
-    if (this.view instanceof ViewButton) {
-      this.view.text = this.viewToEdit.text;
-      this.view.color = this.viewToEdit.color;
-      this.view.icon = this.viewToEdit.icon;
-    }
-    else if (this.view instanceof ViewText) {
-      this.view.text = this.viewToEdit.text;
-      this.view.link = this.viewToEdit.link;
-    }
-    else if (this.view instanceof ViewIcon) {
-      this.view.icon = this.viewToEdit.icon;
-      this.view.size = this.viewToEdit.size;
-    }
-    else if (this.view instanceof ViewBlock) {
-      this.view.direction = this.viewToEdit.direction;
-      this.view.responsive = this.viewToEdit.responsive;
-      this.view.columns = this.viewToEdit.columns;
-    }
-    else if (this.view instanceof ViewCollapse) {
-      this.view.icon = this.viewToEdit.collapseIcon;
-      this.view.header = this.viewToEdit.header;
-      this.view.content = this.viewToEdit.content;
-    }
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
-    ModalService.closeModal('component-editor');
-    AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
+  updateView(to: View, from: ViewManageData) {
+    to.classList = from.classList;
+    to.type = from.type;
+    to.visibilityType = from.visibilityType;
+    to.visibilityCondition = from.visibilityCondition;
+    to.cssId = from.cssId;
+    to.classList = from.classList;
+    to.styles = from.style;
+    to.events = from.events;
+    
+    if (to instanceof ViewButton) {
+      to.text = from.text;
+      to.color = from.color;
+      to.icon = from.icon;
+    }
+    else if (to instanceof ViewText) {
+      to.text = from.text;
+      to.link = from.link;
+    }
+    else if (to instanceof ViewImage) {
+      to.src = from.src;
+      to.link = from.link;
+    }
+    else if (to instanceof ViewIcon) {
+      to.icon = from.icon;
+      to.size = from.size;
+    }
+    else if (to instanceof ViewBlock) {
+      to.direction = from.direction;
+      to.responsive = from.responsive;
+      to.columns = from.columns;
+    }
+    else if (to instanceof ViewCollapse) {
+      to.icon = from.collapseIcon;
+      to.header = from.header;
+      to.content = from.content;
+    }
+    else if (to instanceof ViewTable) {
+      to.footers = from.footers;
+      to.searching = from.searching;
+      to.columnFiltering = from.columnFiltering;
+      to.paging = from.paging;
+      to.lengthChange = from.lengthChange;
+      to.info = from.info;
+      to.ordering = from.ordering;
+      to.orderingBy = from.orderingBy;
+    }
   }
 
   get ViewType(): typeof ViewType {
@@ -141,6 +193,25 @@ export class ComponentEditorComponent implements OnInit {
 
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  async saveView(){
+    this.updateView(this.view, this.viewToEdit);
+    ModalService.closeModal('component-editor');
+    AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
+  }
+
+  reloadPreview() {
+    this.updateView(this.viewToPreview, this.viewToEdit);
+    this.show = false;
+
+    setTimeout(() => {
+      this.show = true
+    }, 100);
   }
 
   addAuxVar() {
@@ -177,4 +248,13 @@ export interface ViewManageData {
   direction?: BlockDirection,
   responsive?: boolean,
   columns?: number;
+  footers?: boolean;
+  searching?: boolean;
+  columnFiltering?: boolean;
+  paging?: boolean;
+  lengthChange?: boolean;
+  info?: boolean;
+  ordering?: boolean;
+  orderingBy?: string;
+  src?: string;
 }

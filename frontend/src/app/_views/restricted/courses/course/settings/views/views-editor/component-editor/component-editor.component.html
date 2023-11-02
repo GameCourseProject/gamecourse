@@ -87,6 +87,41 @@
       </div>
     </ng-container>
 
+    <!--------------------- Image options --------------------->
+    <ng-container *ngIf="viewToEdit.type === ViewType.IMAGE">
+      <div class="text-xs pl-1 pb-2">
+        You can either write ordinary text or write expressions to define the following fields.<br>
+        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+        For more information check the 'Additional Tools' box.
+      </div>
+      <div class="flex flex-row gap-10">
+        <div class="flex flex-col grow">
+          <div class="flex flex-row mt-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Source of the image that will be displayed'"></app-simple-helper>
+            <span class="block font-semibold text-lg">Source</span>
+          </div>
+          <app-input-text
+            [id]="'component-source'"
+            [form]="q"
+            [(value)]="viewToEdit.src"
+            [required]="true">
+          </app-input-text>
+        </div>
+        <div class="flex flex-col grow">
+          <div class="flex flex-row mt-2 justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
+            <span class="block font-semibold text-lg">Link</span>
+          </div>
+          <app-input-text
+            [id]="'component-link'"
+            [form]="q"
+            [(value)]="viewToEdit.link"
+            [required]="false">
+          </app-input-text>
+        </div>
+      </div>
+    </ng-container>
+
     <!--------------------- Icon options --------------------->
     <ng-container *ngIf="viewToEdit.type === ViewType.ICON">
       <!-- TODO: icon picker -->
@@ -314,8 +349,7 @@
             [options]="getEventTypes()"
             [placeholder]="'Select event'"
             [topLabel]="'When:'"
-            [search]="false"
-            [required]="true">
+            [search]="false">
           </app-input-select>
         </div>
         <div class="grow">
@@ -397,8 +431,8 @@
       <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
       <span class="block font-semibold text-lg">Interface Design</span>
     </div>
-    <div class="w-full flex flex-row gap-10">
-      <div class="w-1/2">
+    <div class="w-full flex flex-col md:flex-row gap-10">
+      <div class="md:w-1/2">
         <app-input-text
           [id]="'design-id'"
           [form]="q"
@@ -425,16 +459,42 @@
         ></app-input-text>
       </div>
       <div class="grow flex flex-col">
-        <span class="block font-semibold pl-1 py-1">Preview</span>
-        <div class="flex grow border-2 border-base-content overflow-y-auto rounded-xl items-center justify-center">
-          <div [attr.id]="viewToEdit.cssId"
-               [classList]="viewToEdit.classList"
-               [style]="viewToEdit.style">
-            <ng-icon [name]="viewToEdit.icon || 'tabler-question-mark'" [size]="'1.3rem'"></ng-icon>
-            {{viewToEdit.text}}
-          </div>
+        <div class="flex flex-row items-center mb-2">
+          <span class="block font-semibold pl-1 py-1">Preview</span>
+          <button class="ml-auto btn btn-sm btn-secondary" (click)="reloadPreview()">
+            Reload
+            <ng-icon name="feather-refresh-ccw" size="1rem" color="white" class="ml-2" />
+          </button>
+        </div>
+        <div class="flex grow p-5 border-2 border-base-content overflow-y-auto rounded-xl items-center justify-center">
+          <bb-any *ngIf="show" [view]="viewToPreview"></bb-any>
+          <app-spinner *ngIf="!show" [size]="'lg'"></app-spinner>
         </div>
       </div>
+    </div>
+
+    <!-- Table Layout Settings -->
+    <div *ngIf="viewToEdit.type === ViewType.TABLE">
+      <div class="flex flex-row mt-2 justify-start items-center gap-2">
+        <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
+        <span class="block font-semibold text-lg">Table Layout Settings</span>
+      </div>
+      <app-input-checkbox
+        [id]="'table-footers'"
+        [(value)]="viewToEdit.footers"
+        [color]="'primary'"
+        (valueChange)="viewToEdit.footers = !viewToEdit.footers"
+        [label]="'Add footers'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-searching'"
+        [(value)]="viewToEdit.searching"
+        [color]="'primary'"
+        (valueChange)="this.viewToEdit.searching = !this.viewToEdit.searching"
+        [label]="'Allow overall searching'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
     </div>
 
   </form>

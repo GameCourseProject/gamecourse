@@ -3,6 +3,11 @@
   <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
 </ng-container>
 
+<!-- Preview version -->
+<ng-container *ngIf="view.mode === ViewMode.PREVIEW">
+  <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
+</ng-container>
+
 <!-- Edit version -->
 <ng-container *ngIf="view.mode === ViewMode.EDIT">
   <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">

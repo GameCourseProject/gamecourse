@@ -1,10 +1,15 @@
 <!-- Display version -->
-<ng-container *ngIf="!edit">
+<ng-container *ngIf="view.mode === ViewMode.DISPLAY">
   <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
+<!-- Preview version -->
+<ng-container *ngIf="view.mode === ViewMode.PREVIEW">
+  <ng-container [ngTemplateOutlet]="PREVIEW_DEFAULT"></ng-container>
+</ng-container>
+
 <!-- Edit version -->
-<ng-container *ngIf="edit">
+<ng-container *ngIf="view.mode === ViewMode.EDIT">
   <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
@@ -53,3 +58,23 @@
 </ng-template>
 
 
+<!------------------------------------------------>
+<!-------------- PREVIEW VARIATIONS -------------->
+<!------------------------------------------------>
+
+<ng-template #PREVIEW_DEFAULT>
+  <div [attr.id]="view.cssId"
+       [attr.style]="view.styles">
+
+    <app-table
+      [id]="'v' + view.uniqueId.toString()"
+      [classList]="classes + ' ' + view.classList"
+      [headers]="headers"
+      [hasColumnFiltering]="view.columnFiltering"
+      [hasFooters]="view.footers"
+      [data]="[]"
+      [options]="tableOptions"
+      [loading]="loading">
+    </app-table>
+  </div>
+</ng-template>

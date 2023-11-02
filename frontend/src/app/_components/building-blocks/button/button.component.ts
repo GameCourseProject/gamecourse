@@ -27,7 +27,7 @@ export class BBButtonComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.edit = this.view.mode === ViewMode.EDIT;
+    this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
     this.classes = 'bb-button btn btn-ghost';
     if (this.view.color) this.classes += ' bb-button-colored';
     if (this.view.icon) this.classes += ' bb-button-icon';

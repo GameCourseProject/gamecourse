@@ -3,6 +3,11 @@
   <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
 </ng-container>
 
+<!-- Preview version -->
+<ng-container *ngIf="view.mode === ViewMode.PREVIEW">
+  <ng-container [ngTemplateOutlet]="EDIT_EMPTY"></ng-container>
+</ng-container>
+
 <!-- Edit version -->
 <ng-container *ngIf="view.mode === ViewMode.EDIT">
   <ng-container [ngTemplateOutlet]="view.children.length === 0 ? EDIT_EMPTY : EDIT_DEFAULT"></ng-container>

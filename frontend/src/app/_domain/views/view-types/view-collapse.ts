@@ -158,7 +158,8 @@ export class ViewCollapse extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
-    // TODO
+    this.header.switchMode(mode);
+    this.content.switchMode(mode);
   }
 
   /**

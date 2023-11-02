@@ -11,7 +11,6 @@ export class BBCollapseComponent implements OnInit {
 
   @Input() view: ViewCollapse;
 
-  edit: boolean;
   classes: string;
 
   readonly DEFAULT_TITLE = 'Click me to show/hide content';
@@ -20,9 +19,12 @@ export class BBCollapseComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.edit = this.view.mode === ViewMode.EDIT;
     this.classes = 'bb-collapse';
     if (this.view.icon) this.classes += ' bb-collapse-' + this.view.icon;
+  }
+
+  get ViewMode(): typeof ViewMode {
+    return ViewMode;
   }
 
 }
