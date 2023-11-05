@@ -12,6 +12,7 @@ use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Component\CustomComponent;
 use GameCourse\Views\Component\CoreComponent;
+use GameCourse\Views\Category\Category;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -297,11 +298,20 @@ class PageController
      * @throws Exception
      */
     public function getCoreComponents(){
-        $fun = function($component) {
-            return ViewHandler::renderView($component["viewRoot"])[0];
-        };
+        $coreComponents = [];
+
+        foreach (CoreComponent::getComponents() as $component) {
+            $category = Category::getCategoryById($component["category"])->getName();
+            $view = ViewHandler::renderView($component["viewRoot"])[0];
+            $type = $view['type'];
+
+            if (!isset($coreComponents[$type][$category])) {
+                $coreComponents[$type][$category] = [];
+            }
+
+            $coreComponents[$type][$category][] = $view;
+        }
         
-        $coreComponents = array_map($fun, CoreComponent::getComponents());
         API::response($coreComponents);
     }
 

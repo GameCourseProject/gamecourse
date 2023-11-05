@@ -22,7 +22,7 @@ import { ViewImage, ViewImageDatabase } from "src/app/_domain/views/view-types/v
 import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-row";
 import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
-
+  
 @Component({
   selector: 'app-views-editor',
   templateUrl: './views-editor.component.html',
@@ -113,6 +113,19 @@ export class ViewsEditorComponent implements OnInit {
     const custom = await this.api.getCustomComponents(this.course.id).toPromise();
     const core = await this.api.getCoreComponents().toPromise();
 
+    // Build views
+    const types = Object.keys(core);
+    for (let type of types) {
+      const categories = Object.keys(core[type]);
+      for (let category of categories) {
+        core[type][category] = core[type][category].map((e) => {
+          const view = buildView(e);
+          view.switchMode(ViewMode.PREVIEW);
+          return view;
+        })
+      }
+    }
+  
     // FIXME: move to backend maybe ?
     this.options =  [
       { icon: 'jam-plus-circle',
@@ -129,7 +142,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.BLOCK)
+                  list: core[ViewType.BLOCK]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -151,7 +164,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.BUTTON)
+                  list: core[ViewType.BUTTON]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -173,7 +186,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.CHART)
+                  list: core[ViewType.CHART]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -195,7 +208,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.COLLAPSE)
+                  list: core[ViewType.COLLAPSE]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -217,7 +230,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.ICON)
+                  list: core[ViewType.ICON]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -239,7 +252,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.IMAGE)
+                  list: core[ViewType.IMAGE]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -261,7 +274,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: custom.filter((view) => view.type == ViewType.TABLE)
+                  list: core[ViewType.TABLE]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -283,7 +296,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core.filter((view) => view.type == ViewType.TEXT)
+                  list: core[ViewType.TEXT]
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -471,6 +484,16 @@ export class ViewsEditorComponent implements OnInit {
     return this.getSelectedCategories().flatMap((category) => category.list);
   }
 
+  getSubcategories() {
+    if (this.getSelectedCategories()[0]['list'])
+      return Object.keys(this.getSelectedCategories()[0]['list']);
+    else return [];
+  }
+
+  getComponentsOfSubcategory(subcategory: string) {
+    return this.getSelectedCategories()[0]['list'][subcategory];
+  }
+
   openSaveAsPageModal() {
     ModalService.openModal('save-page');
   }
@@ -493,7 +516,7 @@ export interface SubMenu {
 }
 
 export interface CategoryList {
-  type?: 'System' | 'Custom' | 'Shared',
+  type: 'System' | 'Custom' | 'Shared',
   isSelected: boolean,
   helper?: TypeHelper,
   list: any | { category: string, items: any[] }

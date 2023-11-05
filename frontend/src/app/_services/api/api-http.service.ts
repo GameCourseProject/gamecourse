@@ -75,6 +75,7 @@ import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-pa
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
+import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
 @Injectable({
   providedIn: 'root'
@@ -2810,7 +2811,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public getCoreComponents(): Observable<View[]> {
+  public getCoreComponents(): Observable<any> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getCoreComponents');
@@ -2818,7 +2819,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => buildView(obj))));
+      .pipe(map((res: any) => res['data']));
   }
 
   public getCustomComponents(courseID: number): Observable<View[]> {

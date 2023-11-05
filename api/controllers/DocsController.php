@@ -26,6 +26,7 @@ use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
 use GameCourse\User\User;
 use GameCourse\Views\Aspect\Aspect;
+use GameCourse\Views\Component\CoreComponent;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Dictionary\CollectionLibrary;
 use GameCourse\Views\Page\Page;
@@ -204,6 +205,15 @@ class DocsController
         Page::addPage(9, CreationMode::BY_VALUE, "Streaks", [["aspect" => ["viewerRole" => null, "userRole" => "Student"], "type" => "block"]]);
     }
 
+    public function setupCoreComponents()
+    {
+        $components = json_decode(file_get_contents(ROOT_PATH . "/temp/components.txt"), true);
+        foreach ($components as $pair) {
+            foreach ($pair[1] as $component) {
+                CoreComponent::addComponent($component, null, $pair[0], 0);
+            }
+        };
+    }
 
 
     public function validate()

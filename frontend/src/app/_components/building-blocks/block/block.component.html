@@ -51,6 +51,7 @@
 <ng-template #EDIT_EMPTY>
   <div [attr.id]="view.cssId"
        [classList]="view.classList + ' p-20'">
+      Empty Block: {{view.direction}}
   </div>
 </ng-template>
 
@@ -62,14 +63,12 @@
 <ng-template #REARRANGE_DEFAULT>
   <div [attr.id]="view.cssId" [classList]="classes">
        
-    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
-      <div *ngFor="let child of view.children" class="flex flex-row items-center" #dropList>
-        <div class="flex flex-row items-center" #dragItem>
-          <div class="flex justify-center items-center bg-primary rounded-full p-1 mr-1"> 
-            <ng-icon name="feather-move" size="1.5rem" color="white"/>
-          </div>
-          <bb-any [view]="child"></bb-any>
+    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles" #dropList>
+      <div *ngFor="let child of view.children" class="flex flex-row items-center dd-item" #dragItem>
+        <div class="flex justify-center items-center bg-primary rounded-full p-1 mr-1"> 
+          <ng-icon name="feather-move" size="1.5rem" color="white"/>
         </div>
+        <bb-any [view]="child"></bb-any>
       </div>
       
     </div>

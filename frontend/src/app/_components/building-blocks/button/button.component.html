@@ -18,7 +18,7 @@
           [classList]="classes + ' ' + view.classList"
           [attr.style]="view.styles ?? '' + (view.color ? ' background-color: ' + view.color : '')">
 
-    <ng-icon [name]="view.icon || DEFAULT" [size]="'1.3rem'"></ng-icon>
+    <ng-icon *ngIf="view.icon" [name]="view.icon" [size]="'1.3rem'"></ng-icon>
     {{view.text}}
   </button>
 </ng-template>
@@ -39,7 +39,7 @@
           [classList]="classes + ' ' + view.classList"
           [attr.style]="view.styles ?? '' + (view.color ? ' background-color: ' + view.color : '')">
 
-    <ng-icon [name]="view.icon || DEFAULT" [size]="'1.3rem'"></ng-icon>
+    <ng-icon *ngIf="view.icon" [name]="view.icon" [size]="'1.3rem'"></ng-icon>
     {{view.text}}
   </button>
 </ng-template>

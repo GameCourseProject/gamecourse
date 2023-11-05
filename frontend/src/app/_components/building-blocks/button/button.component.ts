@@ -28,10 +28,10 @@ export class BBButtonComponent implements OnInit {
 
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
-    this.classes = 'bb-button btn btn-ghost';
+    this.classes = 'bb-button btn';
     if (this.view.color) this.classes += ' bb-button-colored';
     if (this.view.icon) this.classes += ' bb-button-icon';
-
+    if (!this.view.classList.containsWord('btn-')) this.classes = 'btn-ghost';
     // Transform goToPage event into a link
     const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
     if (goToPageEventIndex !== -1) {

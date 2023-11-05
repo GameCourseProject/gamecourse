@@ -75,7 +75,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       theme: 'monolith',
       appClass: 'relative !top-0 !left-0 !shadow-none',
       useAsButton: true,
-      default: this.value ?? '#ffffff',
+      default: this.value ? this.value : this.required ? "#ffffff" : null,
       autoReposition: false,
       lockOpacity: true,
       comparison: false,
@@ -104,7 +104,8 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       ],
 
     }).on('init', pickr => {
-      this.valueChange.emit(pickr.getSelectedColor().toHEXA().toString(0));
+      if (pickr.getSelectedColor())
+        this.valueChange.emit(pickr.getSelectedColor().toHEXA().toString(0));
 
     }).on('change', color => {
       this.valueChange.emit(color.toHEXA().toString(0));

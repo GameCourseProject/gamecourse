@@ -88,7 +88,7 @@ export class ComponentEditorComponent implements OnInit {
     };
     if (this.view instanceof ViewButton) {
       viewToEdit.text = this.view.text;
-      viewToEdit.color = this.view.color;
+      viewToEdit.color = this.view.color ?? null;
       viewToEdit.icon = this.view.icon;
     }
     else if (this.view instanceof ViewText) {
@@ -195,6 +195,14 @@ export class ComponentEditorComponent implements OnInit {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
 
+  getIcons() {
+    return [
+      "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",
+      "tabler-coin", "jam-layout", "tabler-bulb", "tabler-checks", "feather-repeat",
+      "tabler-users", "tabler-trophy"
+    ]
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -224,6 +232,15 @@ export class ComponentEditorComponent implements OnInit {
     const new_event = buildEvent(this.eventToAdd.type, this.eventToAdd.action);
     this.viewToEdit.events.push(new_event);
     this.eventToAdd = { type: null, action: "" };
+  }
+  
+  selectIcon(icon: string, required: boolean) {
+    if (required) {
+      this.viewToEdit.icon = icon;
+    }
+    else {
+      this.viewToEdit.icon = this.viewToEdit.icon == icon ? null : icon;
+    }
   }
 }
 

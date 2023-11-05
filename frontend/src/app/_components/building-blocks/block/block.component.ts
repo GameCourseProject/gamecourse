@@ -6,7 +6,8 @@ import { DragDrop, DragRef, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'bb-block',
-  templateUrl: './block.component.html'
+  templateUrl: './block.component.html',
+  styleUrls: ['./block.component.scss']
 })
 export class BBBlockComponent implements OnInit {
 
@@ -43,6 +44,8 @@ export class BBBlockComponent implements OnInit {
   public ngAfterViewInit() {
     const dropListRef = this.dragDropService.createDropList(this.dropListRef);
 
+    dropListRef.withOrientation(this.view.direction);
+
     this.dragItems.toArray().forEach(element => {
       let dragRef = this.dragDropService.createDrag(element);
       this.dragRefs.push(dragRef);
@@ -52,11 +55,13 @@ export class BBBlockComponent implements OnInit {
 
     dropListRef.beforeStarted.subscribe(event => {
       this.dropListRef.nativeElement.classList.add('cdk-drop-list-dragging');
+      this.dropListRef.nativeElement.classList.add('cdk-drag-animating');
     });
-
+    
     dropListRef.dropped.subscribe(event => {
       this.drop(event);
       this.dropListRef.nativeElement.classList.remove('cdk-drop-list-dragging');
+      this.dropListRef.nativeElement.classList.remove('cdk-drag-animating');
     });
   }
 
