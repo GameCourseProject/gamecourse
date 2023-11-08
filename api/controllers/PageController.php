@@ -330,7 +330,10 @@ class PageController
         API::requireCoursePermission($course);
         
         $fun = function($component) {
-            return ViewHandler::renderView($component["viewRoot"])[0];
+            $pair = (object)[];
+            $pair->id = $component["id"];
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            return $pair;
         };
         
         $customComponents = array_map($fun, CustomComponent::getComponents($courseId));
@@ -358,6 +361,87 @@ class PageController
         $componentInfo = CustomComponent::addComponent($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
         API::response($componentInfo);
     }
+
+    /**
+     * Deletes a Custom Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function deleteCustomComponent(){
+        API::requireValues("courseId", "componentId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $componentId = API::getValue("componentId", "int");
+        
+        CustomComponent::deleteComponent($componentId);
+    }
+
+    /**
+     * Turns a Custom Component into a Shared Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeComponentShared(){
+        API::requireValues("componentId", "courseId", "userId", "categoryId", "description");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $componentId = API::getValue("componentId", "int");
+        $categoryId = API::getValue("categoryId", "int");
+        $description = API::getValue("description", "string");
+
+        CustomComponent::shareComponent($componentId, $userId, $categoryId, $description);
+    }
+
+    /**
+     * Stops sharing a Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeComponentPrivate(){
+        API::requireValues("componentId", "userId");
+
+        $userId = API::getValue("userId", "int");
+        $componentId = API::getValue("componentId", "int");
+
+        CustomComponent::stopShareComponent($componentId, $userId);
+    }
+
+    /**
+     * Gets all Shared Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getSharedComponents(){
+        
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->id = $component["id"];
+            $pair->user = $component["sharedBy"];
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            $pair->timestamp = $component["sharedTimestamp"];
+            return $pair;
+        };
+        
+        $customComponents = array_map($fun, CustomComponent::getSharedComponents());
+        API::response($customComponents);
+    }
+
 
     /*** --------------------------------------------- ***/
     /*** ----------------- Rendering ----------------- ***/

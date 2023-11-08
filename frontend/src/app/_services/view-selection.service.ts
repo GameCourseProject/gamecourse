@@ -60,10 +60,10 @@ export class ViewSelectionService {
   }
 
   private switchMode(): void {
-    if (this.selected.mode === ViewMode.REARRANGE) {
+    if (this.selected?.mode === ViewMode.REARRANGE) {
       this.selected.mode = ViewMode.EDIT;
     }
-    else if (this.selected.mode === ViewMode.EDIT) {
+    else if (this.selected?.mode === ViewMode.EDIT) {
       this.selected.mode = ViewMode.REARRANGE;
     }
   }

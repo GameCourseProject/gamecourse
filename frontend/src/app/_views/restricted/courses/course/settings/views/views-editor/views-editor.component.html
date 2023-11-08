@@ -87,17 +87,29 @@
                     </ul>
                   </div>
 
-                  <div class="overflow-y-auto overflow-x-auto my-2 mx-2 gap-5 max-h-72">
+                  <div class="overflow-y-auto overflow-x-auto my-2 mx-2 gap-5 max-h-72 w-full">
                     <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
 
-                    <!-- Custom and Shared components list -->
-                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] != 'System'">
-                      <div
-                        *ngFor="let item of getSelectedCategoriesItems()" 
-                        class="hover:cursor-pointer"
-                        (click)="addToPage(item)"
-                      >
-                        <bb-any [view]="item"></bb-any>
+                    <!-- Custom components list -->
+                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
+                        <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                        <div class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                          <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Shared components list -->
+                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
+                        <div class="flex flex-row justify-between items-center">
+                          <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                          <div *ngIf="item.user == user.id" class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                            <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
+                          </div>
+                        </div>
+                        <div class="text-xs mt-1">Shared: {{item.timestamp}}</div>
                       </div>
                     </div>
 
@@ -122,6 +134,15 @@
 
                 </div>
               </div>
+            </div>
+            
+            <!-- Custom and Shared Component Settings -->
+            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[33rem]" [ngStyle]="{'top.px': componentSettings.top}">
+              <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
+              </ul>
             </div>
 
           </div>
@@ -148,7 +169,12 @@
 
 </div>
 
-<!-- Modals -->
+
+<!--------------------------------------------------->
+<!--------------------- MODALS ---------------------->
+<!--------------------------------------------------->
+
+<!-- Save Page Modal -->
 <app-modal
   *ngIf="pageToManage"
   [id]="'save-page'"
@@ -166,6 +192,27 @@
     [id]="'new-page-name'"
     [(value)]="pageToManage.name"
     [topLabel]="'Page Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>
+
+
+<!-- Save Component Modal -->
+<app-modal
+  [id]="'save-as-component'"
+  [templateRef]="SAVE_COMPONENT"
+  [header]="'Save Custom Component'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="saveComponent()"
+/>
+<ng-template #SAVE_COMPONENT>
+  Saved components can be reused later. They show up under the <i>Custom</i> tab of the component type.
+  <app-input-text
+    [id]="'new-component-name'"
+    [(value)]="newComponentName"
+    [topLabel]="'Component Name:'"
     [required]="true">
   </app-input-text>
 </ng-template>

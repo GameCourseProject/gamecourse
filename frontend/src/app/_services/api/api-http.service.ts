@@ -2794,6 +2794,8 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  // Components
+
   public saveCustomComponent(courseID: number, name: string, viewTree): Observable<void> {
     const data = {
       courseId: courseID,
@@ -2822,7 +2824,7 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data']));
   }
 
-  public getCustomComponents(courseID: number): Observable<View[]> {
+  public getCustomComponents(courseID: number): Observable<{id: number, view: View}[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getCustomComponents');
@@ -2831,7 +2833,69 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => buildView(obj))));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view)}})));
+  }
+
+  public getSharedComponents(): Observable<{id: number, timestamp: string, user: number, view: View}[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getSharedComponents');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view), timestamp: dateFromDatabase(e.timestamp).format('DD/MM/YYYY')}})));
+  }
+
+  public shareComponent(componentID: number, courseID: number, userID: number, categoryID: number, description: string): Observable<void> {
+    const data = {
+      componentId: componentID,
+      courseId: courseID,
+      userId: userID,
+      categoryId: categoryID,
+      description: description
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'makeComponentShared');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public makePrivateComponent(componentID: number, userID: number): Observable<void> {
+    const data = {
+      componentId: componentID,
+      userId: userID,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'makeComponentPrivate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteCustomComponent(componentID: number, courseID: number): Observable<void> {
+    const data = {
+      componentId: componentID,
+      courseId: courseID,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'deleteCustomComponent');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
   }
 
   // Pages

@@ -35,8 +35,6 @@ export class BBAnyComponent implements OnInit {
 
   classes: string;
   visible: boolean;
-  
-  newComponentName: string;
 
   constructor(
     private api: ApiHttpService,
@@ -141,10 +139,8 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('component-editor');
   }
   
-  async saveAction() {
-    await this.api.saveCustomComponent(this.courseID, this.newComponentName, buildViewTree(this.view)).toPromise();
-    ModalService.closeModal('save-as-component');
-    AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
+  saveAction() {
+    ModalService.openModal('save-as-component');
   }
 
   deleteAction() {

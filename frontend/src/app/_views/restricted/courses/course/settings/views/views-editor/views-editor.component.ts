@@ -22,6 +22,7 @@ import { ViewImage, ViewImageDatabase } from "src/app/_domain/views/view-types/v
 import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-row";
 import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
+import { User } from "src/app/_domain/users/user";
   
 @Component({
   selector: 'app-views-editor',
@@ -56,6 +57,11 @@ export class ViewsEditorComponent implements OnInit {
   page: Page;                     // page where information will be saved
   pageToManage: PageManageData;   // Manage data
 
+  newComponentName: string;       // Name for custom component to be saved
+  componentSettings: { id: number, top: number };
+
+  user: User;
+
   previewMode: 'raw' | 'mock' | 'real' = 'raw';   // Preview mode selected to render
 
   options: Option[];
@@ -74,7 +80,9 @@ export class ViewsEditorComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
+      await this.getLoggedUser();
       this.setOptions();
+      this.componentSettings = {id: null, top: null };
 
       this.route.params.subscribe(async childParams => {
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
@@ -96,6 +104,9 @@ export class ViewsEditorComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
+  }
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
@@ -110,10 +121,12 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async setOptions() {
-    const custom = await this.api.getCustomComponents(this.course.id).toPromise();
     const core = await this.api.getCoreComponents().toPromise();
+    const custom = await this.api.getCustomComponents(this.course.id).toPromise();
+    const shared = await this.api.getSharedComponents().toPromise();
 
-    // Build views
+    // Build views for core components
+    // FIXME do this in api?
     const types = Object.keys(core);
     for (let type of types) {
       const categories = Object.keys(core[type]);
@@ -147,13 +160,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.BLOCK)
+                  list: custom.filter((e) => e.view.type == ViewType.BLOCK)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.BLOCK)
                 }
               ]
             },
@@ -169,13 +182,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.BUTTON)
+                  list: custom.filter((e) => e.view.type == ViewType.BUTTON)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.BUTTON)
                 }
               ]
             },
@@ -191,13 +204,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.CHART)
+                  list: custom.filter((e) => e.view.type == ViewType.CHART)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.CHART)
                 }
               ]
             },
@@ -213,13 +226,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.COLLAPSE)
+                  list: custom.filter((e) => e.view.type == ViewType.COLLAPSE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.COLLAPSE)
                 }
               ]
             },
@@ -235,13 +248,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.ICON)
+                  list: custom.filter((e) => e.view.type == ViewType.ICON)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.ICON)
                 }
               ]
             },
@@ -257,13 +270,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.IMAGE)
+                  list: custom.filter((e) => e.view.type == ViewType.IMAGE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.IMAGE)
                 }
               ]
             },
@@ -279,13 +292,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.TABLE)
+                  list: custom.filter((e) => e.view.type == ViewType.TABLE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.TABLE)
                 }
               ]
             },
@@ -301,13 +314,13 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((view) => view.type == ViewType.TEXT)
+                  list: custom.filter((e) => e.view.type == ViewType.TEXT)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: [] // FIXME: should get them from backend
+                  list: shared.filter((e) => e.view.type == ViewType.TEXT)
                 }
               ]
             },
@@ -420,6 +433,39 @@ export class ViewsEditorComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
 
+  
+  // Components -----------------------------------------------------
+
+  async saveComponent() {
+    const component = this.selection.get();
+    await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildViewTree(component)).toPromise();
+    ModalService.closeModal('save-as-component');
+    AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
+  }
+  
+  async shareComponent() {
+    if (this.componentSettings.id) {
+      await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, 1, "").toPromise(); // FIXME category and description
+      AlertService.showAlert(AlertType.SUCCESS, 'Component is now public!');
+    }
+  }
+
+  async makePrivateComponent() {
+    if (this.componentSettings.id) {
+      await this.api.makePrivateComponent(this.componentSettings.id, this.user.id).toPromise();
+      AlertService.showAlert(AlertType.SUCCESS, 'Component is now private!');
+    }
+  }
+
+  async deleteComponent() {
+    if (this.componentSettings.id) {
+      await this.api.deleteCustomComponent(this.componentSettings.id, this.course.id).toPromise();
+      AlertService.showAlert(AlertType.SUCCESS, 'Component deleted');
+    }
+  }
+
+  // Previews -------------------------------------------------------
+
   async doActionPreview(action: string): Promise<void>{
     if (action === 'Raw (default)') {
       this.previewMode = 'raw';
@@ -455,6 +501,7 @@ export class ViewsEditorComponent implements OnInit {
 
   resetMenus(){
     this.activeSubMenu = null;
+    this.componentSettings = { id: null, top: null };
     for (let i = 0; i < this.options.length; i++){
       this.options[i].isSelected = false;
 
@@ -471,6 +518,9 @@ export class ViewsEditorComponent implements OnInit {
       if (i === index) continue;
       this.activeSubMenu.items[i].isSelected = false;
     }
+
+    // reset component pop up
+    this.componentSettings = { id: null, top: null };
 
     // toggle selected category
     this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
@@ -496,6 +546,11 @@ export class ViewsEditorComponent implements OnInit {
 
   openSaveAsPageModal() {
     ModalService.openModal('save-page');
+  }
+
+  triggerComponentSettings(event: MouseEvent, componentId: number) {
+    this.componentSettings.id = this.componentSettings.id == componentId ? null : componentId;
+    this.componentSettings.top = event.pageY - 365;
   }
   
 }
