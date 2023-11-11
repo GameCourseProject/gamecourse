@@ -3015,6 +3015,19 @@ export class ApiHttpService {
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
+  public getPageAspects(pageID: number): Observable<Aspect[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getPageAspects');
+      qs.push('pageId', pageID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
   public previewPage(pageID: number, aspect: Aspect): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);

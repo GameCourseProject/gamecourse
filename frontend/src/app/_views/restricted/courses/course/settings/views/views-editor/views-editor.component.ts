@@ -23,6 +23,7 @@ import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-
 import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
 import { User } from "src/app/_domain/users/user";
+import { Aspect } from "src/app/_domain/views/aspects/aspect";
   
 @Component({
   selector: 'app-views-editor',
@@ -56,9 +57,9 @@ export class ViewsEditorComponent implements OnInit {
   course: Course;                 // Specific course in which page exists
   page: Page;                     // page where information will be saved
   pageToManage: PageManageData;   // Manage data
-
   newComponentName: string;       // Name for custom component to be saved
-  componentSettings: { id: number, top: number };
+  aspects: Aspect[]               // Aspects in viewTree of the page
+  selectedAspect: Aspect          // Selected aspect for previewing and editing
 
   user: User;
 
@@ -66,6 +67,7 @@ export class ViewsEditorComponent implements OnInit {
 
   options: Option[];
   activeSubMenu: SubMenu;
+  componentSettings: { id: number, top: number };
 
   view: View;
 
@@ -81,19 +83,19 @@ export class ViewsEditorComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getLoggedUser();
-      this.setOptions();
-      this.componentSettings = {id: null, top: null };
-
+      await this.setOptions();
+      this.componentSettings = { id: null, top: null };
+      
       this.route.params.subscribe(async childParams => {
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
-
+        
         if (segment === 'new-page') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
         } else {
           await this.getPage(parseInt(segment));
+          await this.getAspects();
           await this.getView();
-          this.view.switchMode(ViewMode.EDIT);
         }
 
       });
@@ -116,8 +118,14 @@ export class ViewsEditorComponent implements OnInit {
     this.page = await this.api.getPageById(pageID).toPromise();
   }
 
+  async getAspects(): Promise<void> {
+    this.aspects = await this.api.getPageAspects(this.page.id).toPromise();
+    this.selectedAspect = new Aspect(null, null);
+  }
+
   async getView(): Promise<void> {
     this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
+    this.view.switchMode(ViewMode.EDIT);
   }
 
   async setOptions() {
@@ -398,7 +406,7 @@ export class ViewsEditorComponent implements OnInit {
     itemToAdd.mode = ViewMode.EDIT;
 
     // Add child to the selected block
-    if (this.selection.get()?.type == ViewType.BLOCK) { // FIXME: will be possible to add to collapse, etc.
+    if (this.selection.get()?.type == ViewType.BLOCK) {
       this.selection.get().addChildViewToViewTree(itemToAdd);
     }
     // No valid selection, view is empty, and not adding block
@@ -467,7 +475,11 @@ export class ViewsEditorComponent implements OnInit {
   // Previews -------------------------------------------------------
 
   async doActionPreview(action: string): Promise<void>{
-    if (action === 'Raw (default)') {
+    if (action === 'Manage versions') {
+      ModalService.openModal('manage-versions');
+    }
+    /*
+    else if (action === 'Raw (default)') {
       this.previewMode = 'raw';
       this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
       this.view.switchMode(ViewMode.EDIT);
@@ -480,6 +492,7 @@ export class ViewsEditorComponent implements OnInit {
       this.previewMode = 'mock';
       this.view = await this.api.renderPageWithMockData(this.page.id).toPromise();
     }
+    */
   }
 
   /*** --------------------------------------------- ***/

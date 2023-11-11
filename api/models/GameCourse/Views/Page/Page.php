@@ -581,7 +581,6 @@ class Page
 
     /**
      * Renders a page for editing.
-     * Option to render page with mocked data instead.
      *
      * @return array
      * @throws Exception

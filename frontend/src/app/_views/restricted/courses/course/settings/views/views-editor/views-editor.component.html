@@ -185,7 +185,6 @@
   (click)="$event.stopPropagation()"
   (submitBtnClicked)="savePage()"
 />
-
 <ng-template #SAVE_PAGE>
   This page will be added to the course's page library.
   <app-input-text
@@ -195,7 +194,6 @@
     [required]="true">
   </app-input-text>
 </ng-template>
-
 
 <!-- Save Component Modal -->
 <app-modal
@@ -215,4 +213,46 @@
     [topLabel]="'Component Name:'"
     [required]="true">
   </app-input-text>
+</ng-template>
+
+<!-- Manage Versions Modal -->
+<app-modal
+  *ngIf="view"
+  [id]="'manage-versions'"
+  [templateRef]="MANAGE_VERSIONS"
+  [header]="'Manage Versions'"
+  [closeBtnText]="'Discard'"
+  [submitBtnText]="'Save Versions'"
+  [size]="'md'"
+  (click)="$event.stopPropagation()"
+/>
+<ng-template #MANAGE_VERSIONS>
+  If there are non-existing versions, a default version will be displayed with no restrictions whatsoever on who's accessing the page and from whom the information is about.
+  <p class="text-md font-semibold my-4">Existing Versions</p>
+
+  <div class="flex flex-row gap-4">
+    <div>
+      <p class="mb-2">Current Version:</p>
+      <div class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
+        <p class="font-semibold">Viewer's Role:</p>
+        <i>{{view.aspect.viewerRole ?? "none"}}</i>
+        <div class="divider my-0"></div>
+        <p class="font-semibold">Users's Role:</p>
+        <i>{{view.aspect.userRole ?? "none"}}</i>
+      </div>
+    </div>
+    <div class="bg-base-200 w-0.5"></div>
+    <div>
+      <p class="mb-2">Others:</p>
+      <div class="w-full overflow-x-auto">
+        <div *ngFor="let aspect of aspects" class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
+          <p class="font-semibold">Viewer's Role:</p>
+          <i>{{aspect.viewerRole ?? "none"}}</i>
+          <div class="divider my-0"></div>
+          <p class="font-semibold">Users's Role:</p>
+          <i>{{aspect.userRole ?? "none"}}</i>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>

@@ -504,7 +504,6 @@ class PageController
      * Renders a given page with mock data.
      *
      * @param int $pageId
-     * @param int $userId (optional)
      * @throws Exception
      */
     public function renderPageWithMockData()
@@ -544,6 +543,23 @@ class PageController
         $viewerRole = API::getValue("viewerRole", "string");
 
         API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
+    }
+
+    /**
+     * Returns existing aspects in a page
+     *
+     * @param int $pageId
+     * @throws Exception
+     */
+    public function getPageAspects()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
+        API::response($aspects);
     }
 
 

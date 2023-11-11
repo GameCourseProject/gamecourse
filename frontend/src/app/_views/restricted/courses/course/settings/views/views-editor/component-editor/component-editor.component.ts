@@ -195,6 +195,10 @@ export class ComponentEditorComponent implements OnInit {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
 
+  getIconSizeOptions() {
+    return [{ value: "1.3rem", text: "Small"}, { value: "1.8rem", text: "Medium"}, { value: "2.5rem", text: "Large"}, { value: "4rem", text: "Extra-Large"}]
+  }
+
   getIcons() {
     return [
       "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",

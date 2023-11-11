@@ -147,17 +147,17 @@
           <ng-icon [name]="icon" [size]="'1.8rem'"></ng-icon>
         </div>
       </div>
-      <!-- FIXME: size options -->
       <app-input-select
         [id]="'component-icon'"
         [form]="q"
         [(value)]="viewToEdit.size"
-        [options]="getComponentTypes()"
+        [options]="getIconSizeOptions()"
         [placeholder]="'Select component type'"
         [topLabel]="'Select size for your icon'"
         [helperText]="'Will display the icon bigger or smaller. Default is medium size.'"
         [helperPosition]="'right'"
-        [required]="true">
+        [required]="true"
+        [search]="false">
       </app-input-select>
     </ng-container>
 
