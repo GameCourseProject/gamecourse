@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {View} from "../_domain/views/view";
+import {View, ViewMode} from "../_domain/views/view";
 import {exists} from "../_utils/misc/misc";
 
 @Injectable({
@@ -7,11 +7,11 @@ import {exists} from "../_utils/misc/misc";
 })
 export class ViewSelectionService {
 
-  static readonly SELECTION_CLASS = 'gc-view-highlight';
   static readonly IGNORE_SELECTION_CLASS = 'ignore-selection';
 
   private selected: View;
   private disabled: boolean;
+  private rearrange: boolean;
 
   constructor() {
   }
@@ -30,38 +30,41 @@ export class ViewSelectionService {
       return;
 
     if (this.isSelected(view)) { // Same view
-      ViewSelectionService.unselect(view);
+      if (this.rearrange) this.switchMode();
       this.selected = null;
-
-    } else { // Different view
-      if (this.selected) ViewSelectionService.unselect(this.selected);
-      ViewSelectionService.select(view);
+    }
+    else { // Different view
+      if (this.selected) {
+        if (this.rearrange) this.switchMode();
+      }
       this.selected = view;
+      if (this.rearrange) this.switchMode();
     }
   }
 
   public clear() {
-    if (this.selected) ViewSelectionService.unselect(this.selected);
     this.selected = null;
   }
 
   private isSelected(view: View): boolean {
-    return this.selected && view.id === this.selected.id &&
-      view.classList.containsWord(ViewSelectionService.SELECTION_CLASS);
-  }
-
-  private static select(view: View): void {
-    view.classList += ' ' + ViewSelectionService.SELECTION_CLASS;
-  }
-
-  public static unselect(view: View): void {
-    const split = view.classList.split(' ');
-    const index = split.findIndex(cl => cl === ViewSelectionService.SELECTION_CLASS);
-    split.splice(index, 1);
-    view.classList = split.join(' ');
+    return this.selected && view.id === this.selected.id;
   }
 
   public toggleState(): void {
     this.disabled = !this.disabled;
+  }
+
+  public setRearrange(state: boolean): void {
+    this.rearrange = state;
+    this.switchMode();
+  }
+
+  private switchMode(): void {
+    if (this.selected?.mode === ViewMode.REARRANGE) {
+      this.selected.mode = ViewMode.EDIT;
+    }
+    else if (this.selected?.mode === ViewMode.EDIT) {
+      this.selected.mode = ViewMode.REARRANGE;
+    }
   }
 }

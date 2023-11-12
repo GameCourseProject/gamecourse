@@ -86,6 +86,10 @@ export class ViewImage extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+  }
+
 
   /**
    * Gets a default image view.
@@ -131,6 +135,25 @@ export class ViewImage extends View {
       parsedObj.variables,
       parsedObj.events
     );
+  }
+
+  static toDatabase(obj: ViewImage): ViewImageDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
+      events: obj.events,
+      src: obj.src,
+      link: obj.link
+    }
   }
 }
 

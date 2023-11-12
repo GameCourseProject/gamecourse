@@ -6,8 +6,13 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
+use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
+use GameCourse\Views\CreationMode;
+use GameCourse\Views\Component\CustomComponent;
+use GameCourse\Views\Component\CoreComponent;
+use GameCourse\Views\Category\Category;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -158,6 +163,25 @@ class PageController
     }
 
     /**
+     * Creates page in the DB
+     * @throws Exception
+     */
+    public function createPage()
+    {
+        API::requireValues("courseId", "name", "viewTree");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+        
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -267,6 +291,158 @@ class PageController
         API::response($views);
     }
 
+    /**
+     * Gets all Core Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCoreComponents(){
+        $coreComponents = [];
+
+        foreach (CoreComponent::getComponents() as $component) {
+            $category = Category::getCategoryById($component["category"])->getName();
+            $view = ViewHandler::renderView($component["viewRoot"])[0];
+            $type = $view['type'];
+
+            if (!isset($coreComponents[$type][$category])) {
+                $coreComponents[$type][$category] = [];
+            }
+
+            $coreComponents[$type][$category][] = $view;
+        }
+        
+        API::response($coreComponents);
+    }
+
+    /**
+     * Gets all Custom Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCustomComponents(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->id = $component["id"];
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            return $pair;
+        };
+        
+        $customComponents = array_map($fun, CustomComponent::getComponents($courseId));
+        API::response($customComponents);
+    }
+
+    /**
+     * Saves a View as a Custom Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function createCustomComponent(){
+        API::requireValues("courseId", "name", "viewTree");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        $componentInfo = CustomComponent::addComponent($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
+        API::response($componentInfo);
+    }
+
+    /**
+     * Deletes a Custom Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function deleteCustomComponent(){
+        API::requireValues("courseId", "componentId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $componentId = API::getValue("componentId", "int");
+        
+        CustomComponent::deleteComponent($componentId);
+    }
+
+    /**
+     * Turns a Custom Component into a Shared Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeComponentShared(){
+        API::requireValues("componentId", "courseId", "userId", "categoryId", "description");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $componentId = API::getValue("componentId", "int");
+        $categoryId = API::getValue("categoryId", "int");
+        $description = API::getValue("description", "string");
+
+        CustomComponent::shareComponent($componentId, $userId, $categoryId, $description);
+    }
+
+    /**
+     * Stops sharing a Component
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeComponentPrivate(){
+        API::requireValues("componentId", "userId");
+
+        $userId = API::getValue("userId", "int");
+        $componentId = API::getValue("componentId", "int");
+
+        CustomComponent::stopShareComponent($componentId, $userId);
+    }
+
+    /**
+     * Gets all Shared Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getSharedComponents(){
+        
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->id = $component["id"];
+            $pair->user = $component["sharedBy"];
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            $pair->timestamp = $component["sharedTimestamp"];
+            return $pair;
+        };
+        
+        $customComponents = array_map($fun, CustomComponent::getSharedComponents());
+        API::response($customComponents);
+    }
+
+
     /*** --------------------------------------------- ***/
     /*** ----------------- Rendering ----------------- ***/
     /*** --------------------------------------------- ***/
@@ -304,9 +480,87 @@ class PageController
         API::response($page->renderPage($viewerId, $userId));
     }
 
-    // TODO: renderPageInEditor (mocked or not)
+    /**
+     * Renders a given page for editing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function renderPageInEditor()
+    {
+        API::requireValues("pageId");
 
-    // TODO: preview page
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($page->renderPageForEditor());
+    }
+
+    /**
+     * Renders a given page with mock data.
+     *
+     * @param int $pageId
+     * @throws Exception
+     */
+    public function renderPageWithMockData()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        $viewerId = Core::getLoggedUser()->getId();
+        $userId = API::getValue("userId", "int");
+
+        API::response($page->renderPage($viewerId, $userId, true));
+    }
+
+    /**
+     * Renders a given page for previewing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function previewPage()
+    {
+        API::requireValues("pageId", "userRole", "viewerRole");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+        
+        $course = $page->getCourse();
+        API::requireCoursePermission($course);
+
+        $userRole = API::getValue("userRole", "string");
+        $viewerRole = API::getValue("viewerRole", "string");
+
+        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
+    }
+
+    /**
+     * Returns existing aspects in a page
+     *
+     * @param int $pageId
+     * @throws Exception
+     */
+    public function getPageAspects()
+    {
+        API::requireValues("pageId");
+
+        $pageId = API::getValue("pageId", "int");
+        $page = API::verifyPageExists($pageId);
+
+        $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
+        API::response($aspects);
+    }
 
 
     /*** --------------------------------------------- ***/

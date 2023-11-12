@@ -4,8 +4,9 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
+import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { buildView } from "../build-view/build-view";
 
-import {buildView} from "../build-view/build-view";
 
 export class ViewRow extends View {
   private _rowType: RowType;
@@ -132,6 +133,10 @@ export class ViewRow extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+  }
+
 
   /**
    * Gets a default row view.
@@ -156,7 +161,7 @@ export class ViewRow extends View {
     });
   }
 
-  static fromDatabase(obj: ViewRowDatabase): ViewRow {
+  static fromDatabase(obj: ViewRowDatabase, edit: boolean): ViewRow {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -168,7 +173,7 @@ export class ViewRow extends View {
       null,
       parsedObj.aspect,
       (obj.rowType || RowType.BODY) as RowType,
-      obj.children ? obj.children.map(child => buildView(child)) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -185,11 +190,30 @@ export class ViewRow extends View {
 
     return row;
   }
+
+  static toDatabase(obj: ViewRow): ViewRowDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
+      events: obj.events,
+      rowType: obj.rowType,
+      children: obj.children.map(child => buildViewTree(child))
+    }
+  }
 }
 
 export interface ViewRowDatabase extends ViewDatabase {
   rowType: RowType;
-  children?: ViewDatabase[];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }
 
 export enum RowType {

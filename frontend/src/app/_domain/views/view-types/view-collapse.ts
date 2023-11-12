@@ -8,6 +8,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
+import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -155,6 +156,11 @@ export class ViewCollapse extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+    this.header.switchMode(mode);
+    this.content.switchMode(mode);
+  }
 
   /**
    * Gets a default collapse view.
@@ -178,7 +184,7 @@ export class ViewCollapse extends View {
     });
   }
 
-  static fromDatabase(obj: ViewCollapseDatabase): ViewCollapse {
+  static fromDatabase(obj: ViewCollapseDatabase, edit: boolean): ViewCollapse {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -190,7 +196,7 @@ export class ViewCollapse extends View {
       null,
       parsedObj.aspect,
       (obj.icon as CollapseIcon) || null,
-      obj.children ? obj.children.map(child => buildView(child)) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -207,11 +213,30 @@ export class ViewCollapse extends View {
 
     return collapse;
   }
+
+  static toDatabase(obj: ViewCollapse): ViewCollapseDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
+      events: obj.events,
+      icon: obj.icon,
+      children: [buildViewTree(obj.header), buildViewTree(obj.content)]
+    }
+  }
 }
 
 export interface ViewCollapseDatabase extends ViewDatabase {
   icon?: string,
-  children?: ViewDatabase[];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }
 
 export enum CollapseIcon {

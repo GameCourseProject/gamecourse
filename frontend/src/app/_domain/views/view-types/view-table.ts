@@ -9,6 +9,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
+import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -274,6 +275,10 @@ export class ViewTable extends View {
     return null;
   }
 
+  switchMode(mode: ViewMode) {
+    this.mode = mode;
+  }
+
   insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
     return null;
     // // Insert in headers
@@ -389,7 +394,7 @@ export class ViewTable extends View {
     });
   }
 
-  static fromDatabase(obj: ViewTableDatabase): ViewTable {
+  static fromDatabase(obj: ViewTableDatabase, edit: boolean): ViewTable {
     // Parse common view params
     const parsedObj = View.parse(obj);
 
@@ -408,7 +413,7 @@ export class ViewTable extends View {
       obj.info,
       obj.ordering,
       obj.orderingBy,
-      obj.children ? obj.children.map(child => buildView(child)) : [],
+      obj.children ? edit ? obj.children.map(child => buildView(child[0], true)) : obj.children.map(child => buildView(child)) : [],
       parsedObj.cssId,
       parsedObj.classList,
       parsedObj.styles,
@@ -428,6 +433,32 @@ export class ViewTable extends View {
 
     return table;
   }
+
+  static toDatabase(obj: ViewTable): ViewTableDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: obj.aspect,
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
+      events: obj.events,
+      footers: obj.footers,
+      searching: obj.searching,
+      columnFiltering: obj.columnFiltering,
+      paging: obj.paging,
+      lengthChange: obj.lengthChange,
+      info: obj.info,
+      ordering: obj.ordering,
+      orderingBy: obj.orderingBy,
+      children: obj.headerRows.map(child => buildViewTree(child))
+    }
+  }
 }
 
 export interface ViewTableDatabase extends ViewDatabase {
@@ -439,5 +470,5 @@ export interface ViewTableDatabase extends ViewDatabase {
   info: boolean;
   ordering: boolean;
   orderingBy: string;
-  children?: ViewDatabase[];
+  children?: ViewDatabase[] | ViewDatabase[][];
 }

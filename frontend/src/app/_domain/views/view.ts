@@ -193,6 +193,8 @@ export abstract class View {
 
   abstract findView(viewId: number): View;
 
+  abstract switchMode(mode: ViewMode);
+
 
   /**
    * Custom way to stringify this class.
@@ -230,7 +232,7 @@ export abstract class View {
     const visibilityCondition = visibilityType === VisibilityType.CONDITIONAL ? obj.visibilityCondition : null;
 
     return {
-      mode: obj.edit ? ViewMode.EDIT : ViewMode.DISPLAY,
+      mode: ViewMode.DISPLAY,
       type: obj.type as ViewType,
 
       id: obj.id,
@@ -278,11 +280,12 @@ export interface ViewDatabase {
   loopData?: string,
   variables?: {name: string, value: string, position: number}[];
   events?: {type: string, action: string}[];
-  edit?: boolean,
 }
 
 export enum ViewMode {
-  DISPLAY = 'display',
-  EDIT = 'edit'
+  DISPLAY = 'display', // final appearence and behaviour
+  PREVIEW = 'preview', // used in the edit component modal
+  EDIT = 'edit', // default in views editor
+  REARRANGE = 'rearrange' // rearrange in views editor
 }
 

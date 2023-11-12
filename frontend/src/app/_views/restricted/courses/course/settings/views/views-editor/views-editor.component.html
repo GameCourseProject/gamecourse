@@ -1,4 +1,4 @@
-<div class="w-full relative">
+<div class="w-full min-h-full relative flex flex-col">
   <!-- Header -->
   <app-header
     [classList]="'text-md'"
@@ -19,7 +19,7 @@
   <div class="divider -mt-2">
     <div class="flex justify-center mx-2">
       <ng-icon name="jam-pencil-f" size="1.5rem" class="text-primary mr-2"></ng-icon>
-      <span class="text-base-content text-xl font-semibold">{{page ? 'Rule \'' + page.name + '\'' : 'Create new page'}}</span>
+      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : 'Create new page'}}</span>
     </div>
   </div>
 
@@ -33,24 +33,27 @@
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
                         {action: 'Final preview (real data)', icon: getIcon('real')}
-                      ]}]">
+                      ]}]"
+    (btnClicked)="doActionPreview($event)">
   </app-top-actions>
 
-  <div *ngIf="!loading.page" class="flex space-x-4 mt-4">
+  <div *ngIf="!loading.page" class="flex grow space-x-4 mt-4">
     <!-- Menu of icons (for actions) -->
-    <div class="w-[8%]">
-      <div class="card card-compact bg-base-100 h-96 shadow-xl flex flex-col items-center">
+    <div class="w-24 shrink-0">
+      <div class="card card-compact bg-base-100 shadow-xl flex flex-col items-center py-3">
 
-        <div *ngFor="let option of options; let j = index" class="relative inline-block text-left">
-          <button class="btn btn-xs btn-ghost btn-circle mt-3 mb-3">
-            <ng-icon name="{{option.isSelected ? option.iconSelected : option.icon }}" size="1.7rem"
-                     class="tooltip tooltip-right hover:cursor-pointer
-                   {{option.isSelected ? 'text-primary' : 'text-dark'}}"
-                     (click)="selectOption(option)">
-            </ng-icon>
-          </button>
-          <div *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-[1] border border-1 border-primary
-            absolute left-8 -mt-10 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
+        <div *ngFor="let option of options; let j = index" class="py-1 relative inline-block text-left">
+          <div class="tooltip" [attr.data-tip]="option.description">
+            <button class="btn btn-ghost btn-circle" (click)="selectOption(option)">
+              <ng-icon name="{{option.isSelected ? option.iconSelected : option.icon }}" size="1.7rem"
+                      class="tooltip tooltip-right hover:cursor-pointer
+                    {{option.isSelected ? 'text-primary' : 'text-dark'}}">
+              </ng-icon>
+            </button>
+          </div>
+
+          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-50 border border-1 border-primary
+            absolute left-12 -mt-12 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
             <div class="p-4">
               <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
               <div class="bg-primary bg-opacity-60 rounded-xl flex">
@@ -63,10 +66,15 @@
               </div>
             </div>
 
-            <div *ngIf="activeSubMenu" class="z-[1] border border-1 border-primary absolute left-[12.5rem] w-[20rem]
-              rounded rounded-xl shadow-lg bg-primary bg-opacity-60 card card-compact">
+            <div [@dropdownAnimation] *ngIf="activeSubMenu" class="z-50 border border-1 border-primary absolute left-[12.5rem] w-[20rem]
+              rounded rounded-xl shadow-lg bg-primary card card-compact">
               <div class="p-4">
-                <h2 class="text-xl font-semibold text-center text-white mb-2">{{activeSubMenu.title.capitalize()}}</h2>
+                <div class="flex flex-row items-center justify-center mb-2">
+                  <ng-icon name="feather-info" size="1.2rem" color="white" class="tooltip" [attr.data-tip]="activeSubMenu.helper"/>
+                  <h2 class="ml-2 text-xl font-semibold text-center text-white">
+                    {{activeSubMenu.title.capitalize()}}
+                  </h2>
+                </div>
                 <div class="w-full bg-base-300 rounded-xl flex">
                   <div class="border-r border-1.5 border-gray-500 w-[calc(34% + 0.25rem)]">
                     <ul>
@@ -79,95 +87,172 @@
                     </ul>
                   </div>
 
-                  <div class="overflow-y-auto overflow-x-auto mt-2">
-                    <span class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
+                  <div class="overflow-y-auto overflow-x-auto my-2 mx-2 gap-5 max-h-72 w-full">
+                    <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
+
+                    <!-- Custom components list -->
+                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
+                        <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                        <div class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                          <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Shared components list -->
+                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
+                        <div class="flex flex-row justify-between items-center">
+                          <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                          <div *ngIf="item.user == user.id" class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                            <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
+                          </div>
+                        </div>
+                        <div class="text-xs mt-1">Shared: {{item.timestamp}}</div>
+                      </div>
+                    </div>
+
+                    <!-- System components are divided into subcategories -->
+                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
+                      <div *ngFor="let subcategory of getSubcategories()">
+                        <span class="ml-1">{{subcategory}}</span>
+                        <div class="divider -mt-1 -mb-[0rem]"></div>
+                        <div class="flex flex-wrap">
+                          <div 
+                            *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
+                            class="hover:cursor-pointer p-1"
+                            (click)="addToPage(item)"
+                          >
+                            <bb-any [view]="item"></bb-any>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
 
                 </div>
               </div>
             </div>
-
-          </div>
-
-        </div>
-
-        <!--<div *ngFor="let option of options; let i = index">
-          <button class="btn btn-xs btn-ghost btn-circle mt-4 mb-4">
-            <ng-icon name="{{option.isSelected ? option.iconSelected : option.icon }}" size="1.7rem"
-                     class="tooltip tooltip-right hover:cursor-pointer
-                   {{option.isSelected ? 'text-primary' : 'text-dark'}}"
-                     (click)="selectOption(option)">
-            </ng-icon>
-          </button>
-
-          <div tabindex="0" class="dropdown-content z-[1] card card-compact w-52 p-3 shadow-xl bg-base-300 ml-5 border border-2 border-primary">
-            <h2 class="text-xl font-semibold text-center text-base-content mb-2">
-              Components
-            </h2>
-            <div class="bg-primary bg-opacity-40 rounded-lg flex">
-              <ul>
-                <li class="my-1.5 ml-5">
-                  <span class="font-semibold">Block</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Button</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Chart</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Collapse</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Icon</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Image</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Table</span>
-                </li>
-                <li>
-                  <span class="font-semibold">Text</span>
-                </li>
+            
+            <!-- Custom and Shared Component Settings -->
+            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[33rem]" [ngStyle]="{'top.px': componentSettings.top}">
+              <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
               </ul>
             </div>
+
           </div>
         </div>
 
-          <ng-icon name="{{optionSelected === 'add-component' ? 'jam-plus-circle-f' : 'jam-plus-circle'}}" size="1.7rem"
-                   data-tip="Add component" class="mt-4 mb-4 tooltip tooltip-right hover:cursor-pointer
-                   {{optionSelected === 'add-component' ? 'text-primary' : 'text-dark'}}"
-                   (click)="selectOption('add-component')">
-          </ng-icon>
-          <ng-icon name="{{optionSelected === 'add-section' ? 'jam-grid-f' : 'jam-grid'}}" size="1.7rem"
-                   data-tip="Add section" class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
-                   {{optionSelected === 'add-section' ? 'text-primary' : 'text-dark'}}"
-                   (click)="selectOption('add-section')">
-          </ng-icon>
-          <ng-icon name="{{optionSelected === 'choose-layout' ? 'jam-layout-f' : 'jam-layout'}}" size="1.7rem"
-                   data-tip="Choose layout" class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
-                   {{optionSelected === 'choose-layout' ? 'text-primary' : 'text-dark'}}"
-                   (click)="selectOption('choose-layout')">
-          </ng-icon>
-          <ng-icon name="feather-move" size="1.7rem" data-tip="Rerrange components"
-                   class="text-dark mb-4 tooltip tooltip-right hover:cursor-pointer
-                   {{optionSelected === 'rearrange' ? 'text-primary' : 'text-dark'}}"
-                   (click)="selectOption('rearrange')">
-          </ng-icon>-->
       </div>
     </div>
 
     <!-- Editor -->
-    <div class="flex-grow">
-      <div class="card card-compact bg-base-100 shadow-xl h-96">
-        <!-- TODO -->
-      </div>
+    <div class="grow rounded-xl border-4 border-neutral border-opacity-10 p-2">
+      <bb-any *ngIf="view" [view]="view"></bb-any>
     </div>
   </div>
 
+  <div class="card-actions justify-end py-6">
+    <button class="btn btn-primary" (click)="closeEditor()">Discard</button>
+    <button *ngIf="pageToManage" class="btn btn-primary">Save as Template</button>
+    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
+    <button *ngIf="!pageToManage" class="btn btn-primary">Save Changes</button>
+  </div>
 
   <!-- Loader -->
   <app-loader [loading]="loading.page"></app-loader>
 
 </div>
+
+
+<!--------------------------------------------------->
+<!--------------------- MODALS ---------------------->
+<!--------------------------------------------------->
+
+<!-- Save Page Modal -->
+<app-modal
+  *ngIf="pageToManage"
+  [id]="'save-page'"
+  [templateRef]="SAVE_PAGE"
+  [header]="'Save as Page'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="savePage()"
+/>
+<ng-template #SAVE_PAGE>
+  This page will be added to the course's page library.
+  <app-input-text
+    [id]="'new-page-name'"
+    [(value)]="pageToManage.name"
+    [topLabel]="'Page Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>
+
+<!-- Save Component Modal -->
+<app-modal
+  [id]="'save-as-component'"
+  [templateRef]="SAVE_COMPONENT"
+  [header]="'Save Custom Component'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="saveComponent()"
+/>
+<ng-template #SAVE_COMPONENT>
+  Saved components can be reused later. They show up under the <i>Custom</i> tab of the component type.
+  <app-input-text
+    [id]="'new-component-name'"
+    [(value)]="newComponentName"
+    [topLabel]="'Component Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>
+
+<!-- Manage Versions Modal -->
+<app-modal
+  *ngIf="view"
+  [id]="'manage-versions'"
+  [templateRef]="MANAGE_VERSIONS"
+  [header]="'Manage Versions'"
+  [closeBtnText]="'Discard'"
+  [submitBtnText]="'Save Versions'"
+  [size]="'md'"
+  (click)="$event.stopPropagation()"
+/>
+<ng-template #MANAGE_VERSIONS>
+  If there are non-existing versions, a default version will be displayed with no restrictions whatsoever on who's accessing the page and from whom the information is about.
+  <p class="text-md font-semibold my-4">Existing Versions</p>
+
+  <div class="flex flex-row gap-4">
+    <div>
+      <p class="mb-2">Current Version:</p>
+      <div class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
+        <p class="font-semibold">Viewer's Role:</p>
+        <i>{{view.aspect.viewerRole ?? "none"}}</i>
+        <div class="divider my-0"></div>
+        <p class="font-semibold">Users's Role:</p>
+        <i>{{view.aspect.userRole ?? "none"}}</i>
+      </div>
+    </div>
+    <div class="bg-base-200 w-0.5"></div>
+    <div>
+      <p class="mb-2">Others:</p>
+      <div class="w-full overflow-x-auto">
+        <div *ngFor="let aspect of aspects" class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
+          <p class="font-semibold">Viewer's Role:</p>
+          <i>{{aspect.viewerRole ?? "none"}}</i>
+          <div class="divider my-0"></div>
+          <p class="font-semibold">Users's Role:</p>
+          <i>{{aspect.userRole ?? "none"}}</i>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>

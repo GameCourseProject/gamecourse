@@ -19,7 +19,7 @@ export class BBChartComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.edit = this.view.mode === ViewMode.EDIT;
+    this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
     this.classes = 'bb-chart bb-' + this.view.chartType + '-chart';
   }
 

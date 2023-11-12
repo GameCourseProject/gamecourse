@@ -26,7 +26,7 @@ export class BBTextComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.edit = this.view.mode === ViewMode.EDIT;
+    this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
 
     // Transform goToPage event into a link
     const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);

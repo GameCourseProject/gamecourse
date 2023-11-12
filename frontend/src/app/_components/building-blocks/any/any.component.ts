@@ -17,6 +17,11 @@ import {EventAction} from "../../../_domain/views/events/event-action";
 import {GoToPageEvent} from "../../../_domain/views/events/actions/go-to-page-event";
 import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-tooltip-event';
 import {ActivatedRoute} from "@angular/router";
+import { ViewSelectionService } from 'src/app/_services/view-selection.service';
+import { ModalService } from 'src/app/_services/modal.service';
+import { AlertService, AlertType } from 'src/app/_services/alert.service';
+import { ApiHttpService } from 'src/app/_services/api/api-http.service';
+import { buildViewTree } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 
 @Component({
   selector: 'bb-any',
@@ -28,19 +33,21 @@ export class BBAnyComponent implements OnInit {
 
   courseID: number;
 
-  edit: boolean;
   classes: string;
   visible: boolean;
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(
+    private api: ApiHttpService,
+    private route: ActivatedRoute,
+    public selection: ViewSelectionService
+  ) { }
 
   ngOnInit(): void {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
 
-      this.edit = this.view.mode === ViewMode.EDIT;
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
-      this.visible = this.edit ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
+      this.visible = (this.view.mode == ViewMode.EDIT || this.view.mode == ViewMode.REARRANGE) ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean)));
     });
   }
@@ -52,6 +59,10 @@ export class BBAnyComponent implements OnInit {
 
   get ViewType(): typeof ViewType {
     return ViewType;
+  }
+
+  get ViewMode(): typeof ViewMode {
+    return ViewMode;
   }
 
   get ViewBlock(): typeof ViewBlock {
@@ -106,4 +117,35 @@ export class BBAnyComponent implements OnInit {
   getEvent(action: EventAction): Event {
     return this.view.events.find(ev => ev.action === action) || null;
   }
+
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  isSelected() {
+    return this.selection.get() == this.view;
+  }
+
+  openSaveComponentModal() {
+    ModalService.openModal('save-as-component');
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  editAction() {
+    ModalService.openModal('component-editor');
+  }
+  
+  saveAction() {
+    ModalService.openModal('save-as-component');
+  }
+
+  deleteAction() {
+    if (this.view.parent)
+      this.view.parent.removeChildView(this.view.id);
+  }
+
 }

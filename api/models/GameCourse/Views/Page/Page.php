@@ -579,9 +579,16 @@ class Page
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
     }
 
+    /**
+     * Renders a page for editing.
+     *
+     * @return array
+     * @throws Exception
+     */
     public function renderPageForEditor()
     {
-        // TODO
+        $pageInfo = $this->getData("course, viewRoot");
+        return ViewHandler::renderView($pageInfo["viewRoot"]);
     }
 
     /**

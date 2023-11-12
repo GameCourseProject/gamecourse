@@ -19,7 +19,7 @@ import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/views/pages/page";
 import {Template} from "../../_domain/views/templates/template";
 import {RoleType} from "../../_domain/roles/role-type";
-import {View} from "../../_domain/views/view";
+import {View, ViewDatabase} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
@@ -74,6 +74,8 @@ import {
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
+import { Aspect } from 'src/app/_domain/views/aspects/aspect';
+import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
 @Injectable({
   providedIn: 'root'
@@ -2775,6 +2777,126 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => Template.fromDatabase(obj))));
   }
 
+  public saveViewAsPage(courseID: number, name: string, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      name: name,
+      viewTree: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'createPage');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  // Components
+
+  public saveCustomComponent(courseID: number, name: string, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      name: name,
+      viewTree: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'createCustomComponent');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public getCoreComponents(): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCoreComponents');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+  public getCustomComponents(courseID: number): Observable<{id: number, view: View}[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCustomComponents');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view)}})));
+  }
+
+  public getSharedComponents(): Observable<{id: number, timestamp: string, user: number, view: View}[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getSharedComponents');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view), timestamp: dateFromDatabase(e.timestamp).format('DD/MM/YYYY')}})));
+  }
+
+  public shareComponent(componentID: number, courseID: number, userID: number, categoryID: number, description: string): Observable<void> {
+    const data = {
+      componentId: componentID,
+      courseId: courseID,
+      userId: userID,
+      categoryId: categoryID,
+      description: description
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'makeComponentShared');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public makePrivateComponent(componentID: number, userID: number): Observable<void> {
+    const data = {
+      componentId: componentID,
+      userId: userID,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'makeComponentPrivate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteCustomComponent(componentID: number, courseID: number): Observable<void> {
+    const data = {
+      componentId: componentID,
+      courseId: courseID,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'deleteCustomComponent');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
 
   // Pages
 
@@ -2866,23 +2988,59 @@ export class ApiHttpService {
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
-  // TODO: refactor
-  public createPage(courseID: number, page: Partial<Page>): Observable<void> {
-    const data = {
-      courseId: courseID,
-      pageName: page.name,
-      viewId: page.viewId,
-      isEnabled: page.isVisible ? 1 : 0
-    };
-
+  public renderPageInEditor(pageID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
-      qs.push('request', 'createPage');
+      qs.push('request', 'renderPageInEditor');
+      qs.push('pageId', pageID);
+    };
+    
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    
+    return this.get(url, ApiHttpService.httpOptions)
+    .pipe(map((res: any) => buildView(res['data'][0], true)));
+  }
+
+  public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderPageWithMockData');
+      qs.push('pageId', pageID);
+      if (exists(userID)) qs.push('renderPageWithMockData', userID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => buildView(res['data'])));
+  }
+
+  public getPageAspects(pageID: number): Observable<Aspect[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getPageAspects');
+      qs.push('pageId', pageID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
+  }
+
+  public previewPage(pageID: number, aspect: Aspect): Observable<View> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'previewPage');
+      qs.push('pageId', pageID);
+      qs.push('userRole', aspect.userRole);
+      qs.push('viewerRole', aspect.viewerRole);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => buildView(res['data'])));
   }
 
   public editPage(courseID: number, page: PageManageData): Observable<Page> {

@@ -123,6 +123,20 @@ class CustomComponent extends Component
     }
 
     /**
+     * Gets shared components.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function getSharedComponents(): array
+    {
+        $table = self::TABLE_COMPONENT_SHARED . " s JOIN " . self::TABLE_COMPONENT . " c on s.id = c.id";
+        $components = Core::database()->selectMultiple($table, [], "*", "s.sharedTimestamp");
+        foreach ($components as &$component) { $component = self::parse($component); }
+        return $components;
+    }
+
+    /**
      * Updates custom component's updateTimestamp to current time.
      *
      * @return void
@@ -264,7 +278,24 @@ class CustomComponent extends Component
         return Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "sharedTimestamp");
     }
 
-    // TODO: share component
+    public static function shareComponent(int $componentId, int $userId, int $categoryId, string $description)
+    {
+        Core::database()->insert(self::TABLE_COMPONENT_SHARED, [
+            "id" => $componentId,
+            "description" => $description,
+            "category" => $categoryId,
+            "sharedBy" => $userId,
+            "sharedTimestamp" => date("Y-m-d H:i:s", time())
+        ]);
+    }
+
+    public static function stopShareComponent(int $componentId, int $userId)
+    {
+        Core::database()->delete(self::TABLE_COMPONENT_SHARED, [
+            "id" => $componentId,
+            "sharedBy" => $userId
+        ]);
+    }
 
 
     /*** ---------------------------------------------------- ***/
@@ -307,7 +338,7 @@ class CustomComponent extends Component
      */
     public static function parse(array $component = null, $field = null, string $fieldName = null)
     {
-        $intValues = ["id", "viewRoot", "course"];
+        $intValues = ["id", "viewRoot", "course", "sharedBy"];
         return Utils::parse(["int" => $intValues], $component, $field, $fieldName);
     }
 

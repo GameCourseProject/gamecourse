@@ -256,7 +256,7 @@ export class SidebarComponent implements OnInit {
               {
                 link: path + 'settings/pages',
                 name: 'Pages',
-                icon: 'feather-layout'
+                icon: 'feather-file'
               },
               {
                 link: path + 'settings/themes',

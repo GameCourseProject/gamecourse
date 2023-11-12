@@ -8,11 +8,14 @@ import { AppComponent } from './app.component';
 import { CacheInterceptor } from "./_interceptors/cache.interceptor";
 import { SharedModule } from "./shared.module";
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
+    BrowserAnimationsModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
