@@ -445,30 +445,45 @@ export class ViewsEditorComponent implements OnInit {
   // Components -----------------------------------------------------
 
   async saveComponent() {
-    const component = this.selection.get();
+    let component = _.cloneDeep(this.selection.get());
+
+    // Don't save child components
+    if (component instanceof ViewBlock) {
+      component.children = [];
+    } // FIXME probably need something similar for Collapse
+
     await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildViewTree(component)).toPromise();
     ModalService.closeModal('save-as-component');
     AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
+    this.resetMenus();
+    this.newComponentName = "";
+    await this.setOptions();
   }
   
   async shareComponent() {
     if (this.componentSettings.id) {
-      await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, 1, "").toPromise(); // FIXME category and description
+      await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
       AlertService.showAlert(AlertType.SUCCESS, 'Component is now public!');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
-
+  
   async makePrivateComponent() {
     if (this.componentSettings.id) {
       await this.api.makePrivateComponent(this.componentSettings.id, this.user.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Component is now private!');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
-
+  
   async deleteComponent() {
     if (this.componentSettings.id) {
       await this.api.deleteCustomComponent(this.componentSettings.id, this.course.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Component deleted');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
 

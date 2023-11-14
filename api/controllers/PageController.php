@@ -316,7 +316,7 @@ class PageController
     }
 
     /**
-     * Gets all Custom Components
+     * Gets all Custom Components of a course
      *
      * @return void
      * @throws Exception
@@ -390,7 +390,7 @@ class PageController
      * @throws Exception
      */
     public function makeComponentShared(){
-        API::requireValues("componentId", "courseId", "userId", "categoryId", "description");
+        API::requireValues("componentId", "courseId", "userId", "description");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -399,10 +399,9 @@ class PageController
 
         $userId = API::getValue("userId", "int");
         $componentId = API::getValue("componentId", "int");
-        $categoryId = API::getValue("categoryId", "int");
         $description = API::getValue("description", "string");
 
-        CustomComponent::shareComponent($componentId, $userId, $categoryId, $description);
+        CustomComponent::shareComponent($componentId, $userId, $description);
     }
 
     /**

@@ -2847,12 +2847,11 @@ export class ApiHttpService {
       .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view), timestamp: dateFromDatabase(e.timestamp).format('DD/MM/YYYY')}})));
   }
 
-  public shareComponent(componentID: number, courseID: number, userID: number, categoryID: number, description: string): Observable<void> {
+  public shareComponent(componentID: number, courseID: number, userID: number, description: string): Observable<void> {
     const data = {
       componentId: componentID,
       courseId: courseID,
       userId: userID,
-      categoryId: categoryID,
       description: description
     }
 

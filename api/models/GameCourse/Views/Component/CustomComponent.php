@@ -278,12 +278,11 @@ class CustomComponent extends Component
         return Core::database()->select(self::TABLE_COMPONENT_SHARED, ["id" => $this->id], "sharedTimestamp");
     }
 
-    public static function shareComponent(int $componentId, int $userId, int $categoryId, string $description)
+    public static function shareComponent(int $componentId, int $userId, string $description)
     {
         Core::database()->insert(self::TABLE_COMPONENT_SHARED, [
             "id" => $componentId,
             "description" => $description,
-            "category" => $categoryId,
             "sharedBy" => $userId,
             "sharedTimestamp" => date("Y-m-d H:i:s", time())
         ]);
