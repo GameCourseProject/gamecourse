@@ -75,7 +75,6 @@ import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-pa
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
-import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
 @Injectable({
   providedIn: 'root'
@@ -3024,7 +3023,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data']));
+      .pipe(map((res: any) => res['data'].map((aspect) => new Aspect(aspect["viewerRole"], aspect["userRole"]))));
   }
 
   public previewPage(pageID: number, aspect: Aspect): Observable<View> {

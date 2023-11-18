@@ -24,7 +24,9 @@ import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/v
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
-  
+
+export let selectedAspect: Aspect          // Selected aspect for previewing and editing
+
 @Component({
   selector: 'app-views-editor',
   templateUrl: './views-editor.component.html',
@@ -58,8 +60,10 @@ export class ViewsEditorComponent implements OnInit {
   page: Page;                     // page where information will be saved
   pageToManage: PageManageData;   // Manage data
   newComponentName: string;       // Name for custom component to be saved
-  aspects: Aspect[]               // Aspects in viewTree of the page
-  selectedAspect: Aspect          // Selected aspect for previewing and editing
+  aspects: Aspect[]               // Aspects saved
+  aspectsToEdit: Aspect[]         // Aspects currently being edited in modal
+  aspectToSelect: Aspect          // Aspect selected in modal to switch to
+  aspectToAdd: Aspect = new Aspect(null, null)               // New aspect
 
   user: User;
 
@@ -69,7 +73,8 @@ export class ViewsEditorComponent implements OnInit {
   activeSubMenu: SubMenu;
   componentSettings: { id: number, top: number };
 
-  view: View;
+  view: View;                     // Full view tree of the page
+  fakeId: number = -1;            // Fake ids for new views
 
   constructor(
     private api: ApiHttpService,
@@ -92,6 +97,10 @@ export class ViewsEditorComponent implements OnInit {
         if (segment === 'new-page') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
+          selectedAspect = new Aspect(null, null);
+          this.aspectsToEdit = [new Aspect(null, null)];
+          this.aspects = [selectedAspect];
+          this.aspectToSelect = selectedAspect;
         } else {
           await this.getPage(parseInt(segment));
           await this.getAspects();
@@ -120,9 +129,11 @@ export class ViewsEditorComponent implements OnInit {
 
   async getAspects(): Promise<void> {
     this.aspects = await this.api.getPageAspects(this.page.id).toPromise();
-    this.selectedAspect = new Aspect(null, null);
+    selectedAspect = this.aspects[0];
+    this.aspectToSelect = selectedAspect;
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
   }
-
+  
   async getView(): Promise<void> {
     this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
     this.view.switchMode(ViewMode.EDIT);
@@ -404,6 +415,9 @@ export class ViewsEditorComponent implements OnInit {
   addToPage(item: View) {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
+    itemToAdd.id = this.fakeId;
+    this.fakeId -= 1;
+    itemToAdd.aspect = selectedAspect;
 
     // Add child to the selected block
     if (this.selection.get()?.type == ViewType.BLOCK) {
@@ -441,6 +455,41 @@ export class ViewsEditorComponent implements OnInit {
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
 
+  // Aspects -------------------------------------------------------
+
+  selectAspect(aspect: Aspect) {
+    this.aspectToSelect = aspect;
+  }
+  
+  switchToAspect() {
+    selectedAspect = this.aspectToSelect;
+    ModalService.closeModal('manage-versions');
+  }
+
+  createNewAspect() {
+    const aspect = new Aspect(null, null);
+    this.aspectsToEdit.push(aspect);
+    this.aspectToSelect = aspect;
+  }
+
+  submitAspects() {
+    ModalService.closeModal('manage-versions');
+    this.aspects = this.aspectsToEdit;
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
+  }
+
+  discardAspects() {
+    ModalService.closeModal('manage-versions');
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
+  }
+
+  removeAspect(aspectIdx: number) {
+    console.log(this.aspectsToEdit);
+    this.aspectsToEdit.splice(aspectIdx, 1);
+    console.log(this.aspectsToEdit);
+    // TODO: should traverse view tree to remove all views of this aspect
+    // TODO: when editing roles of a existing aspect should also traverse view tree to edit there
+  }
   
   // Components -----------------------------------------------------
 
@@ -492,6 +541,9 @@ export class ViewsEditorComponent implements OnInit {
   async doActionPreview(action: string): Promise<void>{
     if (action === 'Manage versions') {
       ModalService.openModal('manage-versions');
+    }
+    else if (action === 'Undo') {
+      console.log(this.view);
     }
     /*
     else if (action === 'Raw (default)') {
@@ -579,6 +631,14 @@ export class ViewsEditorComponent implements OnInit {
   triggerComponentSettings(event: MouseEvent, componentId: number) {
     this.componentSettings.id = this.componentSettings.id == componentId ? null : componentId;
     this.componentSettings.top = event.pageY - 365;
+  }
+
+  getSelectedAspect() {
+    return selectedAspect;
+  }
+
+  isAspectSelected(aspect: Aspect) {
+    return aspect === this.aspectToSelect;
   }
   
 }

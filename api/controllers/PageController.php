@@ -292,7 +292,7 @@ class PageController
     }
 
     /**
-     * Gets all Core Components
+     * Gets all Core Components grouped by category
      *
      * @return void
      * @throws Exception
@@ -558,7 +558,24 @@ class PageController
         $page = API::verifyPageExists($pageId);
 
         $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
-        API::response($aspects);
+
+        // Convert role ids to role names
+        $res = [];
+        foreach($aspects as $aspect) {
+            $aspectWithNames = [];
+            if ($aspect["userRole"]) {
+                $aspectWithNames["userRole"] = Role::getRoleName($aspect["userRole"]);
+            } else {
+                $aspectWithNames["userRole"] = null;
+            }
+            if ($aspect["viewerRole"]) {
+                $aspectWithNames["viewerRole"] = Role::getRoleName($aspect["viewerRole"]);
+            } else {
+                $aspectWithNames["viewerRole"] = null;
+            }
+            $res[] = $aspectWithNames;
+        }
+        API::response($res);
     }
 
 

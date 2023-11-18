@@ -9,7 +9,7 @@
 </ng-container>
 
 <!-- Edit version -->
-<ng-container *ngIf="view.mode === ViewMode.EDIT">
+<ng-container *ngIf="view.mode === ViewMode.EDIT && filterForAspect()">
   <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
@@ -22,7 +22,7 @@
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
       <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box">
         <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
-        <li><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
+        <li (click)="duplicateAction()"><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
         <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
         <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
       </ul>

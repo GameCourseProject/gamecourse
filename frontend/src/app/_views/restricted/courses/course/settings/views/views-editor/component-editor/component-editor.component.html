@@ -5,6 +5,7 @@
   [closeBtnText]="'Close'"
   [submitBtnText]="'Save'"
   [size]="'lg'"
+  [static]="true"
   (click)="$event.stopPropagation()"
   (submitBtnClicked)="q.onSubmit(null); saveView()"
 />

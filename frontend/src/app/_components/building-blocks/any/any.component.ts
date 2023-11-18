@@ -19,9 +19,10 @@ import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-toolti
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from 'src/app/_services/alert.service';
 import { ApiHttpService } from 'src/app/_services/api/api-http.service';
-import { buildViewTree } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import * as _ from "lodash"
+import { Aspect } from 'src/app/_domain/views/aspects/aspect';
+import { selectedAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 
 @Component({
   selector: 'bb-any',
@@ -131,6 +132,10 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('save-as-component');
   }
 
+  filterForAspect() {
+    return _.isEqual(this.view.aspect, selectedAspect) || _.isEqual(this.view.aspect, new Aspect(null, null));
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -146,6 +151,15 @@ export class BBAnyComponent implements OnInit {
   deleteAction() {
     if (this.view.parent)
       this.view.parent.removeChildView(this.view.id);
+  }
+
+  duplicateAction() {
+    let duplicated = _.cloneDeep(this.view);
+    duplicated.mode = ViewMode.EDIT;
+    duplicated.id = null;
+
+    if (this.view.parent)
+      this.view.parent.addChildViewToViewTree(duplicated);
   }
 
 }
