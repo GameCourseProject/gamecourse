@@ -221,7 +221,9 @@ import {
   tablerUserCircle,
   tablerUsers,
   tablerDotsVertical,
-  tablerBrush
+  tablerBrush,
+  tablerRowInsertBottom,
+  tablerRowInsertTop,
 } from "@ng-icons/tabler-icons";
 
 
@@ -509,7 +511,9 @@ import {
       tablerUserCircle,
       tablerUsers,
       tablerDotsVertical,
-      tablerBrush
+      tablerBrush,
+      tablerRowInsertBottom,
+      tablerRowInsertTop,
     }),
     DataTablesModule,
     NgApexchartsModule,

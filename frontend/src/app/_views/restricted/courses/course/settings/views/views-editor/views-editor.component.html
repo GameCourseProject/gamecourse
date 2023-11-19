@@ -25,10 +25,7 @@
 
   <app-top-actions
     [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
-    [rightActions]="[{action: 'Versions', icon: 'tabler-caret-down', color: 'primary', outline: true,  dropdown: [
-                        {action: 'Create version'},
-                        {action: 'Manage versions'}
-                      ]},
+    [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
                        {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
@@ -161,7 +158,7 @@
     <button class="btn btn-primary" (click)="closeEditor()">Discard</button>
     <button *ngIf="pageToManage" class="btn btn-primary">Save as Template</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
-    <button *ngIf="!pageToManage" class="btn btn-primary">Save Changes</button>
+    <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">Save Changes</button>
   </div>
 
   <!-- Loader -->
@@ -217,7 +214,6 @@
 
 <!-- Manage Versions Modal -->
 <app-modal
-  *ngIf="view"
   [id]="'manage-versions'"
   [templateRef]="MANAGE_VERSIONS"
   [header]="'Manage Versions'"
@@ -231,8 +227,18 @@
 />
 <ng-template #MANAGE_VERSIONS>
   <div class="w-full overflow-hidden">
-    If there are non-existing versions, a default version will be displayed with no restrictions whatsoever on who's accessing the page and from whom the information is about.
-    <p class="text-md font-semibold my-4">Existing Versions</p>
+    <p>
+      The <span class="font-bold text-orange-400">viewer's role</span> is the role from the user accessing the page.<br>
+      The <span class="font-bold text-sky-400">user's role</span> is the role from which the user's information is being displayed.
+    </p>
+    <p class="mt-4">
+      <b>E.g.</b> A page with viewer's role = Teacher, and user's role = Student.<br>
+      This means the version being displayed accepts users of type Teacher to access the page, and displays information about a Student.
+    </p>
+    <p class="mt-4">
+      Roles can also be <span class="font-bold text-violet-400">'none'</span> if you don't want any restrictions on who's accessing or from whom is the information being displayed
+    </p>
+    <p class="text-lg font-semibold mt-6 mb-2">Existing Versions</p>
 
     <div class="flex flex-row gap-4 w-full">
       <div>

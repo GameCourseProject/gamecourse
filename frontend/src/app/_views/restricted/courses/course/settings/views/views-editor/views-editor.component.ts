@@ -213,7 +213,7 @@ export class ViewsEditorComponent implements OnInit {
             },
             { title: ViewType.CHART,
               isSelected: false,
-              helper: 'Component composed by other components.',
+              helper: 'Component that displays different types of charts',
               items: [
                 { type: 'System',
                   isSelected: false,
@@ -323,7 +323,7 @@ export class ViewsEditorComponent implements OnInit {
             },
             { title: ViewType.TEXT,
               isSelected: false,
-              helper: 'Displays either simle static written components or more complex ones built using expressions.',
+              helper: 'Displays either simple static written components or more complex ones built using expressions.',
               items: [
                 { type: 'System',
                   isSelected: false,
@@ -454,6 +454,11 @@ export class ViewsEditorComponent implements OnInit {
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
+  
+  async saveChanges() {
+/*     await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view)).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved'); */
+  }
 
   // Aspects -------------------------------------------------------
 
@@ -484,9 +489,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   removeAspect(aspectIdx: number) {
-    console.log(this.aspectsToEdit);
     this.aspectsToEdit.splice(aspectIdx, 1);
-    console.log(this.aspectsToEdit);
     // TODO: should traverse view tree to remove all views of this aspect
     // TODO: when editing roles of a existing aspect should also traverse view tree to edit there
   }

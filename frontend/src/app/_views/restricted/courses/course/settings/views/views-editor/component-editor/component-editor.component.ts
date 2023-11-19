@@ -19,6 +19,7 @@ import * as _ from "lodash"
 import { ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
+import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
 
 @Component({
   selector: 'app-component-editor',
@@ -37,6 +38,7 @@ export class ComponentEditorComponent implements OnInit {
   variableToAdd: { name: string, value: string, position: number };
   eventToAdd: { type: EventType, action: string };
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
+  tableSelectedTab: string = "Overall";
 
   @ViewChild('q', { static: false }) q: NgForm;
 
@@ -114,6 +116,8 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.content = this.view.content;
     }
     else if (this.view instanceof ViewTable) {
+      viewToEdit.headerRows = this.view.headerRows;
+      viewToEdit.bodyRows = this.view.bodyRows;
       viewToEdit.footers = this.view.footers;
       viewToEdit.searching = this.view.searching;
       viewToEdit.columnFiltering = this.view.columnFiltering;
@@ -168,6 +172,8 @@ export class ComponentEditorComponent implements OnInit {
       to.content = from.content;
     }
     else if (to instanceof ViewTable) {
+      to.headerRows = from.headerRows;
+      to.bodyRows = from.bodyRows;
       to.footers = from.footers;
       to.searching = from.searching;
       to.columnFiltering = from.columnFiltering;
@@ -246,6 +252,30 @@ export class ComponentEditorComponent implements OnInit {
       this.viewToEdit.icon = this.viewToEdit.icon == icon ? null : icon;
     }
   }
+
+  // Exclusives for tables ---------------------
+  addBodyRow(index: number) {
+    this.viewToEdit.bodyRows.splice(index, 0, ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.BODY));
+  }
+  addHeaderRow(index: number) {
+    this.viewToEdit.headerRows.splice(index, 0, ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.HEADER));
+  }
+  removeBodyRow(index: number) {
+    this.viewToEdit.bodyRows.splice(index, 1);
+  }
+  removeHeaderRow(index: number) {
+    this.viewToEdit.headerRows.splice(index, 1);
+  }
+  moveBodyRow(index: number, to: number) {
+    if (0 <= to && to < this.viewToEdit.bodyRows.length) {
+      this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(index, 1, this.viewToEdit.bodyRows[to])[0];
+    }
+  }
+  moveHeaderRow(index: number, to: number) {
+    if (0 <= to && to < this.viewToEdit.headerRows.length) {
+      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(index, 1, this.viewToEdit.headerRows[to])[0];
+    }
+  }
 }
 
 export interface ViewManageData {
@@ -269,6 +299,8 @@ export interface ViewManageData {
   direction?: BlockDirection,
   responsive?: boolean,
   columns?: number;
+  headerRows?: ViewRow[];
+  bodyRows?: ViewRow[];
   footers?: boolean;
   searching?: boolean;
   columnFiltering?: boolean;

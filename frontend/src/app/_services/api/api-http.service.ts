@@ -2996,7 +2996,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     
     return this.get(url, ApiHttpService.httpOptions)
-    .pipe(map((res: any) => buildView(res['data'][0], true)));
+      .pipe(map((res: any) => buildView(res['data'][0], true)));
   }
 
   public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {
