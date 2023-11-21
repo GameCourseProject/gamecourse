@@ -214,6 +214,7 @@
 
 <!-- Manage Versions Modal -->
 <app-modal
+  *ngIf="!loading.aspects"
   [id]="'manage-versions'"
   [templateRef]="MANAGE_VERSIONS"
   [header]="'Manage Versions'"

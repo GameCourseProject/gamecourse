@@ -53,6 +53,7 @@ export class ViewsEditorComponent implements OnInit {
 
   loading = {
     page: true,
+    aspects: true,
     action: false
   };
 
@@ -101,6 +102,7 @@ export class ViewsEditorComponent implements OnInit {
           this.aspectsToEdit = [new Aspect(null, null)];
           this.aspects = [selectedAspect];
           this.aspectToSelect = selectedAspect;
+          this.loading.aspects = false;
         } else {
           await this.getPage(parseInt(segment));
           await this.getAspects();
@@ -132,6 +134,7 @@ export class ViewsEditorComponent implements OnInit {
     selectedAspect = this.aspects[0];
     this.aspectToSelect = selectedAspect;
     this.aspectsToEdit = _.cloneDeep(this.aspects);
+    this.loading.aspects = false;
   }
   
   async getView(): Promise<void> {

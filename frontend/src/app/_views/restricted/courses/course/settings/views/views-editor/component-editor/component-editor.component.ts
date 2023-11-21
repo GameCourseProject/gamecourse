@@ -1,5 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from "@angular/core";
-import { NgForm } from "@angular/forms";
+import { Component, Input, OnChanges, ViewChild } from "@angular/core";
 import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View, ViewMode } from "src/app/_domain/views/view";
 import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
@@ -20,14 +19,16 @@ import { ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
 import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
+import { selectedAspect } from "../views-editor.component";
 
 @Component({
   selector: 'app-component-editor',
   templateUrl: './component-editor.component.html'
 })
-export class ComponentEditorComponent implements OnInit {
+export class ComponentEditorComponent implements OnChanges {
 
   @Input() view: View;
+  @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
 
   show: boolean = true;
 
@@ -35,17 +36,20 @@ export class ComponentEditorComponent implements OnInit {
   
   viewToEdit: ViewManageData;
   viewToPreview: View;
+
   variableToAdd: { name: string, value: string, position: number };
   eventToAdd: { type: EventType, action: string };
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
-  tableSelectedTab: string = "Overall";
 
-  @ViewChild('q', { static: false }) q: NgForm;
+  tableSelectedTab: string = "Overall";
+  cellToEdit?: View = null;
+  rowToEdit?: ViewRow = null;
+
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
 
   constructor(
   ) { }
 
-  ngOnInit(): void {
+  ngOnChanges(): void {
     this.viewToEdit = this.initViewToEdit();
     this.variableToAdd = { name: "", value: "", position: 0 };
     this.eventToAdd = { type: null, action: "" };
@@ -219,7 +223,7 @@ export class ComponentEditorComponent implements OnInit {
 
   async saveView(){
     this.updateView(this.view, this.viewToEdit);
-    ModalService.closeModal('component-editor');
+    if (!this.saveButton) ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
   }
 
@@ -254,11 +258,18 @@ export class ComponentEditorComponent implements OnInit {
   }
 
   // Exclusives for tables ---------------------
+
   addBodyRow(index: number) {
-    this.viewToEdit.bodyRows.splice(index, 0, ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.BODY));
+    const newRow = ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.BODY);
+    newRow.children = Array(this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 1)
+      .fill(ViewText.getDefault(null, newRow, selectedAspect, "Cell"));
+    this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
   addHeaderRow(index: number) {
-    this.viewToEdit.headerRows.splice(index, 0, ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.HEADER));
+    const newRow = ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.HEADER);
+    newRow.children = Array(this.viewToEdit.bodyRows[0]?.children.length ?? 1)
+      .fill(ViewText.getDefault(null, newRow, selectedAspect, "Cell"));
+    this.viewToEdit.headerRows.splice(index, 0, newRow);
   }
   removeBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
@@ -275,6 +286,22 @@ export class ComponentEditorComponent implements OnInit {
     if (0 <= to && to < this.viewToEdit.headerRows.length) {
       this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(index, 1, this.viewToEdit.headerRows[to])[0];
     }
+  }
+  selectCell(cell: View) {
+    if (this.cellToEdit === cell) {
+      this.cellToEdit = null;
+    }
+    else {
+      this.cellToEdit = cell;
+    } 
+  }
+  selectRow(row: ViewRow) {
+    if (this.rowToEdit === row) {
+      this.rowToEdit = null;
+    }
+    else {
+      this.rowToEdit = row;
+    } 
   }
 }
 

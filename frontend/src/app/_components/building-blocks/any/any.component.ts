@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -23,6 +23,7 @@ import { ApiHttpService } from 'src/app/_services/api/api-http.service';
 import * as _ from "lodash"
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { selectedAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 
 @Component({
   selector: 'bb-any',
@@ -32,13 +33,14 @@ export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
 
+  @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
+
   courseID: number;
 
   classes: string;
   visible: boolean;
 
   constructor(
-    private api: ApiHttpService,
     private route: ActivatedRoute,
     public selection: ViewSelectionService
   ) { }
@@ -142,6 +144,16 @@ export class BBAnyComponent implements OnInit {
 
   editAction() {
     ModalService.openModal('component-editor');
+  }
+
+  submitEditAction() {
+    this.componentEditor.saveView();
+
+    // Force rerender to show changes
+    this.visible = !this.visible;
+    setTimeout(() => {
+      this.visible = !this.visible
+    }, 100);
   }
   
   saveAction() {

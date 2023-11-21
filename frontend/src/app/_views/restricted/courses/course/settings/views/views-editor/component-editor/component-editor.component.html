@@ -1,31 +1,5 @@
-<app-modal
-  [id]="'component-editor'"
-  [templateRef]="COMPONENT_EDITOR"
-  [header]="'Edit component'"
-  [closeBtnText]="'Close'"
-  [submitBtnText]="'Save'"
-  [size]="'lg'"
-  [static]="true"
-  (click)="$event.stopPropagation()"
-  (submitBtnClicked)="q.onSubmit(null); saveView()"
-/>
-
-<ng-template #COMPONENT_EDITOR>
-  <form #q="ngForm">
-    <app-input-select
-      [id]="'type'"
-      [form]="q"
-      [(value)]="viewToEdit.type"
-      [options]="getComponentTypes()"
-      [placeholder]="'Select component type'"
-      [topLabel]="'Component Type'"
-      [required]="true"
-      [classList]="'mb-4'">
-    </app-input-select>
-    <ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
-    <ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
-  </form>
-</ng-template>
+<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+<ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
 
 
 <!--------------------------------------------------->
@@ -33,6 +7,16 @@
 <!--------------------------------------------------->
 
 <ng-template #GENERIC_EDITOR>
+  <app-input-select
+    *ngIf="viewToEdit.type !== ViewType.ROW"
+    [id]="'type'"
+    [(value)]="viewToEdit.type"
+    [options]="getComponentTypes()"
+    [placeholder]="'Select component type'"
+    [topLabel]="'Component Type'"
+    [required]="true"
+    [classList]="'mb-4'">
+  </app-input-select>
   <!--------------------- Button options --------------------->
   <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
@@ -46,7 +30,6 @@
     </div>
     <app-input-text
       [id]="'visibility-condition-expression'"
-      [form]="q"
       [(value)]="viewToEdit.text"
       [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
       [required]="false">
@@ -67,7 +50,6 @@
       <div class="grow">
         <app-input-color
           [id]="'button-color'"
-          [form]="q"
           [(value)]="viewToEdit.color"
           [placeholder]="'Button Color'"
           [topLabel]="'Color'"
@@ -93,7 +75,6 @@
         </div>
         <app-input-text
           [id]="'component-text'"
-          [form]="q"
           [(value)]="viewToEdit.text"
           [required]="false">
         </app-input-text>
@@ -105,7 +86,6 @@
         </div>
         <app-input-text
           [id]="'component-link'"
-          [form]="q"
           [(value)]="viewToEdit.link"
           [required]="false">
         </app-input-text>
@@ -128,7 +108,6 @@
         </div>
         <app-input-text
           [id]="'component-source'"
-          [form]="q"
           [(value)]="viewToEdit.src"
           [required]="true">
         </app-input-text>
@@ -140,7 +119,6 @@
         </div>
         <app-input-text
           [id]="'component-link'"
-          [form]="q"
           [(value)]="viewToEdit.link"
           [required]="false">
         </app-input-text>
@@ -160,7 +138,6 @@
     </div>
     <app-input-select
       [id]="'component-icon'"
-      [form]="q"
       [(value)]="viewToEdit.size"
       [options]="getIconSizeOptions()"
       [placeholder]="'Select component type'"
@@ -184,7 +161,6 @@
           <app-input-radio
             [id]="'block-direction-horizontal'"
             [group]="'direction'"
-            [form]="q"
             [optionValue]="'horizontal'"
             [(value)]="viewToEdit.direction"
             [color]="'primary'"
@@ -194,7 +170,6 @@
           <app-input-radio
             [id]="'block-direction-horizontal'"
             [group]="'direction'"
-            [form]="q"
             [optionValue]="'vertical'"
             [(value)]="viewToEdit.direction"
             [color]="'primary'"
@@ -206,7 +181,6 @@
       <app-input-number
         *ngIf="viewToEdit.direction == 'horizontal'"
         [id]="'block-columns'"
-        [form]="q"
         [(value)]="viewToEdit.columns"
         [placeholder]="'Select number of columns'"
         [topLabel]="'Columns'"
@@ -235,7 +209,6 @@
   <ng-container *ngIf="viewToEdit.type === ViewType.COLLAPSE">
     <app-input-select
       [id]="'collapse-icon'"
-      [form]="q"
       [(value)]="viewToEdit.collapseIcon"
       [options]="getCollapseIconOptions()"
       [topLabel]="'Icon'"
@@ -248,7 +221,6 @@
       <div class="grow">
         <app-input-select
           [id]="'collapse-header-type'"
-          [form]="q"
           [(value)]="viewToEdit.header.type"
           [options]="getComponentTypes()"
           [placeholder]="'Select component type'"
@@ -261,7 +233,6 @@
       <div class="grow">
         <app-input-select
           [id]="'collapse-content-type'"
-          [form]="q"
           [(value)]="viewToEdit.content.type"
           [options]="getComponentTypes()"
           [placeholder]="'Select component type'"
@@ -277,7 +248,7 @@
   <!--------------------------------------------------->
   <!--------------------- GENERAL --------------------->
   <!--------------------------------------------------->
-  <div class="divider"></div>
+  <div *ngIf="viewToEdit.type !== ViewType.ROW" class="divider"></div>
   <div class="prose">
     <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
   </div>
@@ -306,7 +277,6 @@
           <div class="w-28">
             <app-input-text
             [id]="'aux-var-name'"
-            [form]="q"
             [(value)]="variableToAdd.name"
             [topLabel]="'Name:'"
             [placeholder]="'courseColor'"
@@ -316,7 +286,6 @@
           <div class="w-80">
             <app-input-text
             [id]="'aux-var-expression'"
-            [form]="q"
             [(value)]="variableToAdd.value"
             [topLabel]="'Expression:'"
             [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
@@ -332,7 +301,6 @@
       <!-- Data Iteration -->
       <app-input-text
         [id]="'design-id'"
-        [form]="q"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Data Iteration'"
         [helperText]="'Determines how many times this component will be repeated.
@@ -355,179 +323,219 @@
   </div>
 
   <!-- Events -->
-  <div class="flex flex-row mt-2 justify-start items-center gap-2">
-    <app-simple-helper 
-      [position]="'right'" 
-      [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
-    <span class="block font-semibold text-md">Events</span>
-  </div>
-  <div class="flex flex-col gap-2 mb-2">
-    <!-- Existing -->
-    <div *ngFor="let event of viewToEdit.events" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
-      <div class="w-36">
-        <span class="block font-semibold text-md">When:</span>{{event.type}}
+  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
+
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper 
+        [position]="'right'" 
+        [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
+      <span class="block font-semibold text-md">Events</span>
+    </div>
+    <div class="flex flex-col gap-2 mb-2">
+      <!-- Existing -->
+      <div *ngFor="let event of viewToEdit.events" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
+        <div class="w-36">
+          <span class="block font-semibold text-md">When:</span>{{event.type}}
+        </div>
+        <div class="grow">
+          <span class="block font-semibold text-md">Do:</span>{{event.action}}
+        </div>
       </div>
-      <div class="grow">
-        <span class="block font-semibold text-md">Do:</span>{{event.action}}
+      <!-- New -->
+      <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
+        <div class="w-36">
+          <app-input-select
+            [id]="'event-when'"
+            [(value)]="eventToAdd.type"
+            [options]="getEventTypes()"
+            [placeholder]="'Select event'"
+            [topLabel]="'When:'"
+            [search]="false">
+          </app-input-select>
+        </div>
+        <div class="grow">
+          <app-input-text
+            [id]="'event-do'"
+            [(value)]="eventToAdd.action"
+            [topLabel]="'Do:'"
+            [placeholder]="'{ actions.goToPage(pages.getPageByName(\'Awards\').id, %user) }'"
+          ></app-input-text>
+        </div>
+        <button class="btn btn-secondary" (click)="addEvent()">Add</button>
       </div>
     </div>
-    <!-- New -->
-    <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
-      <div class="w-36">
-        <app-input-select
-          [id]="'event-when'"
-          [form]="q"
-          [(value)]="eventToAdd.type"
-          [options]="getEventTypes()"
-          [placeholder]="'Select event'"
-          [topLabel]="'When:'"
-          [search]="false">
-        </app-input-select>
-      </div>
-      <div class="grow">
-        <app-input-text
-          [id]="'event-do'"
-          [form]="q"
-          [(value)]="eventToAdd.action"
-          [topLabel]="'Do:'"
-          [placeholder]="'{ actions.goToPage(pages.getPageByName(\'Awards\').id, %user) }'"
-        ></app-input-text>
-      </div>
-      <button class="btn btn-secondary" (click)="addEvent()">Add</button>
-    </div>
-  </div>
+
+  </ng-container> <!----------------------------->
 
 
   <!--------------------------------------------------->
   <!--------------------- STYLING --------------------->
   <!--------------------------------------------------->
-  <div class="divider"></div>
-  <div class="prose">
-    <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
-  </div>
-  <!-- Visibility -->
-  <div class="flex flex-row mt-2 justify-start items-center gap-2">
-    <app-simple-helper [position]="'right'" [text]="'Make this component visible/invisible/visible under condition'"></app-simple-helper>
-    <span class="block font-semibold text-lg">Visibility</span>
-  </div>
-  <div class="flex flex-wrap">
-    <app-input-radio
-      [id]="'visibility-yes'"
-      [group]="'visibility'"
-      [form]="q"
-      [optionValue]="'visible'"
-      [(value)]="viewToEdit.visibilityType"
-      [color]="'primary'"
-      [classList]="'mr-8'"
-      [label]="'Visible'">
-    </app-input-radio>
+  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
 
-    <app-input-radio
-      [id]="'visibility-no'"
-      [group]="'visibility'"
-      [form]="q"
-      [optionValue]="'invisible'"
-      [(value)]="viewToEdit.visibilityType"
-      [color]="'primary'"
-      [classList]="'mr-8'"
-      [label]="'Not visible'">
-    </app-input-radio>
-
-    <app-input-radio
-      [id]="'visibility-condition'"
-      [group]="'visibility'"
-      [form]="q"
-      [optionValue]="'conditional'"
-      [(value)]="viewToEdit.visibilityType"
-      [color]="'primary'"
-      [classList]="'mr-8'"
-      [label]="'Visible under condition'">
-    </app-input-radio>
-  </div>
-  <div *ngIf="viewToEdit.visibilityType == 'conditional'" class="mb-5">
-    <span class="text-xs pl-1">
-      Write an expression that makes this component visible.
-      Don't forget that expressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
-    </span>
-    <app-input-text
-      [id]="'visibility-condition-expression'"
-      [form]="q"
-      [(value)]="viewToEdit.visibilityCondition"
-      [placeholder]="'e.g. { %userLevel.number < %nrLevels-1 }'"
-      [required]="false">
-    </app-input-text>
-  </div>
-  
-  <!-- Interface Design -->
-  <div class="flex flex-row mt-2 justify-start items-center gap-2">
-    <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
-    <span class="block font-semibold text-lg">Interface Design</span>
-  </div>
-  <div class="w-full flex flex-col md:flex-row gap-10">
-    <div class="md:w-1/2">
-      <app-input-text
-        [id]="'design-id'"
-        [form]="q"
-        [(value)]="viewToEdit.cssId"
-        [topLabel]="'ID'"
-        [helperText]="'Html\'s ID tag'"
-        [helperPosition]="'right'"
-      ></app-input-text>
-      <app-input-text
-        [id]="'design-class'"
-        [form]="q"
-        [(value)]="viewToEdit.classList"
-        [topLabel]="'Class'"
-        [helperText]="'Html\'s Class tag'"
-        [helperPosition]="'right'"
-      ></app-input-text>
-      <app-input-text
-        [id]="'design-style'"
-        [form]="q"
-        [(value)]="viewToEdit.style"
-        [topLabel]="'Style'"
-        [helperText]="'Html\'s Style tag'"
-        [helperPosition]="'right'"
-      ></app-input-text>
+    <div class="divider"></div>
+    <div class="prose">
+      <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
     </div>
-    <div class="grow flex flex-col">
-      <div class="flex flex-row items-center mb-2">
-        <span class="block font-semibold pl-1 py-1">Preview</span>
-        <button class="ml-auto btn btn-sm btn-secondary" (click)="reloadPreview()">
-          Reload
-          <ng-icon name="feather-refresh-ccw" size="1rem" color="white" class="ml-2" />
-        </button>
-      </div>
-      <div class="flex grow p-5 border-2 border-base-content overflow-y-auto rounded-xl items-center justify-center">
-        <bb-any *ngIf="show" [view]="viewToPreview"></bb-any>
-        <app-spinner *ngIf="!show" [size]="'lg'"></app-spinner>
-      </div>
-    </div>
-  </div>
-
-  <!-- Table Layout Settings -->
-  <div *ngIf="viewToEdit.type === ViewType.TABLE">
+    <!-- Visibility -->
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
-      <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
-      <span class="block font-semibold text-lg">Table Layout Settings</span>
+      <app-simple-helper [position]="'right'" [text]="'Make this component visible/invisible/visible under condition'"></app-simple-helper>
+      <span class="block font-semibold text-lg">Visibility</span>
     </div>
-    <app-input-checkbox
-      [id]="'table-footers'"
-      [(value)]="viewToEdit.footers"
-      [color]="'primary'"
-      (valueChange)="viewToEdit.footers = !viewToEdit.footers"
-      [label]="'Add footers'"
-      [labelPosition]="'right'">
-    </app-input-checkbox>
-    <app-input-checkbox
-      [id]="'table-searching'"
-      [(value)]="viewToEdit.searching"
-      [color]="'primary'"
-      (valueChange)="this.viewToEdit.searching = !this.viewToEdit.searching"
-      [label]="'Allow overall searching'"
-      [labelPosition]="'right'">
-    </app-input-checkbox>
+    <div class="flex flex-wrap">
+      <app-input-radio
+        [id]="'visibility-yes'"
+        [group]="'visibility'"
+        [optionValue]="'visible'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Visible'">
+      </app-input-radio>
+
+      <app-input-radio
+        [id]="'visibility-no'"
+        [group]="'visibility'"
+        [optionValue]="'invisible'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Not visible'">
+      </app-input-radio>
+
+      <app-input-radio
+        [id]="'visibility-condition'"
+        [group]="'visibility'"
+        [optionValue]="'conditional'"
+        [(value)]="viewToEdit.visibilityType"
+        [color]="'primary'"
+        [classList]="'mr-8'"
+        [label]="'Visible under condition'">
+      </app-input-radio>
+    </div>
+    <div *ngIf="viewToEdit.visibilityType == 'conditional'" class="mb-5">
+      <span class="text-xs pl-1">
+        Write an expression that makes this component visible.
+        Don't forget that expressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
+      </span>
+      <app-input-text
+        [id]="'visibility-condition-expression'"
+        [(value)]="viewToEdit.visibilityCondition"
+        [placeholder]="'e.g. { %userLevel.number < %nrLevels-1 }'"
+        [required]="false">
+      </app-input-text>
+    </div>
+    
+    <!-- Interface Design -->
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
+      <span class="block font-semibold text-lg">Interface Design</span>
+    </div>
+    <div class="w-full flex flex-col md:flex-row gap-10">
+      <div class="md:w-1/2">
+        <app-input-text
+          [id]="'design-id'"
+          [(value)]="viewToEdit.cssId"
+          [topLabel]="'ID'"
+          [helperText]="'Html\'s ID tag'"
+          [helperPosition]="'right'"
+        ></app-input-text>
+        <app-input-text
+          [id]="'design-class'"
+          [(value)]="viewToEdit.classList"
+          [topLabel]="'Class'"
+          [helperText]="'Html\'s Class tag'"
+          [helperPosition]="'right'"
+        ></app-input-text>
+        <app-input-text
+          [id]="'design-style'"
+          [(value)]="viewToEdit.style"
+          [topLabel]="'Style'"
+          [helperText]="'Html\'s Style tag'"
+          [helperPosition]="'right'"
+        ></app-input-text>
+      </div>
+      <div class="grow flex flex-col">
+        <div class="flex flex-row items-center mb-2">
+          <span class="block font-semibold pl-1 py-1">Preview</span>
+          <button class="ml-auto btn btn-sm btn-secondary" (click)="reloadPreview()">
+            Reload
+            <ng-icon name="feather-refresh-ccw" size="1rem" color="white" class="ml-2" />
+          </button>
+        </div>
+        <div class="flex grow p-5 border-2 border-base-content overflow-y-auto rounded-xl items-center justify-center">
+          <bb-any *ngIf="show" [view]="viewToPreview"></bb-any>
+          <app-spinner *ngIf="!show" [size]="'lg'"></app-spinner>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Layout Settings -->
+    <div *ngIf="viewToEdit.type === ViewType.TABLE">
+      <div class="flex flex-row mt-2 justify-start items-center gap-2">
+        <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
+        <span class="block font-semibold text-lg">Table Layout Settings</span>
+      </div>
+      <div class="flex flex-wrap gap-x-5">
+        <app-input-checkbox
+          [id]="'table-footers'"
+          [(value)]="viewToEdit.footers"
+          [color]="'primary'"
+          [label]="'Add footers'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-searching'"
+          [(value)]="viewToEdit.searching"
+          [color]="'primary'"
+          [label]="'Allow overall searching'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-filtering'"
+          [(value)]="viewToEdit.columnFiltering"
+          [color]="'primary'"
+          [label]="'Allow column filtering'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-paging'"
+          [(value)]="viewToEdit.paging"
+          [color]="'primary'"
+          [label]="'Show number of pages'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-info'"
+          [(value)]="viewToEdit.info"
+          [color]="'primary'"
+          [label]="'Show number of entries/page'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-lengthChange'"
+          [(value)]="viewToEdit.lengthChange"
+          [color]="'primary'"
+          [label]="'Allow customization of nº entries/page'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-ordering'"
+          [(value)]="viewToEdit.ordering"
+          [color]="'primary'"
+          [label]="'Allow ordering customization'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+      </div>
+    </div>
+    
+  </ng-container> <!----------------------------->
+
+  <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
+    <button class="ml-auto btn btn-ghost" (click)="initViewToEdit()">Discard</button>
+    <button class="btn btn-primary" (click)="saveView()">Save</button>
   </div>
+
 </ng-template>
 
 
@@ -543,36 +551,74 @@
     <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Cells' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
             (click)="tableSelectedTab = 'Cells'">Cells</button>
   </div>
-  <div class="bg-base-300 rounded-md p-4 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
-    <ng-container *ngIf="tableSelectedTab == 'Overall'">
-        Table Structure
-    </ng-container>
+  <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
+    <ng-container *ngIf="tableSelectedTab == 'Overall'" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 
     <!--------------------- Rows Tab --------------------->
     <ng-container *ngIf="tableSelectedTab == 'Rows'">
       <span class="block font-semibold text-lg mb-2">Current Rows:</span>
-      <span>Header Rows</span>
       <div class="flex flex-col gap-2">
+        <span>Header</span>
         <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center">
-          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-4">Row {{row.uniqueId}}</div>
-          <button class="btn btn-ghost rounded-full px-2" (click)="moveHeaderRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="moveHeaderRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="addHeaderRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="addHeaderRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="removeHeaderRow(i)"><ng-icon name="feather-X" size="1.8rem" color="red"/></button>
+          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+          <button class="btn btn-ghost rounded-full p-1" (click)="removeHeaderRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
         </div>
         <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
         <div class="divider"></div>
-        <span>Body Rows</span>
+        <span>Body</span>
         <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center">
-          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-4">Row {{row.uniqueId}}</div>
-          <button class="btn btn-ghost rounded-full px-2" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.8rem'"/></button>
-          <button class="btn btn-ghost rounded-full px-2" (click)="removeBodyRow(i)"><ng-icon name="feather-X" size="1.8rem" color="red"/></button>
+          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+          <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="removeBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
         </div>
-        <button *ngIf="this.viewToEdit.bodyRows.length <= 0" class="btn btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
+        <button *ngIf="this.viewToEdit.bodyRows?.length <= 0" class="btn btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
+      </div>
+
+      <!-- Row editor -->
+      <div *ngIf="rowToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
+        <app-component-editor [view]="rowToEdit" [saveButton]="true"/>
+      </div>
+    </ng-container>
+
+    <!--------------------- Cells Tab --------------------->
+    <ng-container *ngIf="tableSelectedTab == 'Cells'">
+      <span class="block font-semibold text-lg mb-2">Current Cells:</span>
+      <div class="flex flex-col gap-2">
+        <span>Header</span>
+        <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center gap-3">
+          <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;" 
+                class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
+                (click)="selectCell(cell)">
+              {{$any(cell).text ?? "Cell"}}
+          </div>
+          <!-- Invisible button just to keep cells and rows perfectly aligned -->
+          <button class="btn btn-ghost hover:bg-base-300 hover:cursor-default rounded-full py-1 px-0 w-0"></button>
+        </div>
+        <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-sm btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
+        <div class="divider"></div>
+        <span>Body</span>
+        <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center gap-3">
+          <div *ngFor="let cell of this.viewToEdit.bodyRows[i].children;" 
+                class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
+                (click)="selectCell(cell)">
+            Cell
+          </div>
+          <!-- Invisible button just to keep cells and rows perfectly aligned -->
+          <button class="btn btn-ghost hover:bg-base-300 hover:cursor-default rounded-full py-1 px-0 w-0"></button>
+        </div>
+        <button *ngIf="this.viewToEdit.bodyRows.length <= 0" class="btn btn-sm btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
+      
+        <!-- Cell editor -->
+        <div *ngIf="cellToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
+          <div class="prose">
+            <h3>Edit cell</h3>
+          </div>
+          <app-component-editor [view]="cellToEdit" [saveButton]="true"/>
+        </div>
       </div>
     </ng-container>
 

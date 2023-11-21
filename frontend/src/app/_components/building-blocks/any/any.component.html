@@ -62,8 +62,23 @@
 
 
 <!-- Edit Modal -->
-<app-component-editor
+
+<app-modal
   *ngIf="isSelected()"
-  [view]="view">
-</app-component-editor>
+  [id]="'component-editor'"
+  [templateRef]="COMPONENT_EDITOR"
+  [header]="'Edit component'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  [size]="'lg'"
+  [static]="true"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="submitEditAction()"
+/>
+
+<ng-template #COMPONENT_EDITOR>
+  <app-component-editor
+    [view]="view">
+  </app-component-editor>
+</ng-template>
 
