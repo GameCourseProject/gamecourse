@@ -19,7 +19,7 @@ import { ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
 import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { selectedAspect } from "../views-editor.component";
+import { fakeId, selectedAspect, updateFakeId } from "../views-editor.component";
 
 @Component({
   selector: 'app-component-editor',
@@ -37,7 +37,6 @@ export class ComponentEditorComponent implements OnChanges {
   viewToEdit: ViewManageData;
   viewToPreview: View;
 
-  variableToAdd: { name: string, value: string, position: number };
   eventToAdd: { type: EventType, action: string };
 
   tableSelectedTab: string = "Overall";
@@ -51,13 +50,12 @@ export class ComponentEditorComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.viewToEdit = this.initViewToEdit();
-    this.variableToAdd = { name: "", value: "", position: 0 };
     this.eventToAdd = { type: null, action: "" };
 
     if (this.view instanceof ViewTable) {
       this.viewToPreview = new ViewTable(ViewMode.PREVIEW, this.view.id, this.view.viewRoot, null, this.view.aspect, this.view.footers, this.view.searching,
               this.view.columnFiltering, this.view.paging, this.view.lengthChange, this.view.info, this.view.ordering, this.view.orderingBy,
-              this.view.headerRows, this.view.cssId, this.view.classList, this.view.styles, this.view.visibilityType,
+              this.view.headerRows.concat(this.view.bodyRows), this.view.cssId, this.view.classList, this.view.styles, this.view.visibilityType,
               this.view.visibilityCondition, this.view.loopData, this.view.variables, this.view.events);
     }
     else {
@@ -236,10 +234,18 @@ export class ComponentEditorComponent implements OnChanges {
     }, 100);
   }
 
-  addAuxVar() {
-    const new_var = new Variable(this.variableToAdd.name, this.variableToAdd.value, this.variableToAdd.position);
+  addAuxVar(event: { name: string; value: string }) {
+    const new_var = new Variable(event.name, event.value, 0);
     this.viewToEdit.variables.push(new_var);
-    this.variableToAdd = { name: "", value: "", position: 0 };
+  }
+
+  updateAuxVar(event: { name: string; value: string }, index: number) {
+    this.viewToEdit.variables[index].name = event.name;
+    this.viewToEdit.variables[index].value = event.value;
+  }
+
+  deleteAuxVar(index: number) {
+    this.viewToEdit.variables.splice(index, 1);
   }
 
   addEvent() {
@@ -259,32 +265,47 @@ export class ComponentEditorComponent implements OnChanges {
 
   // Exclusives for tables ---------------------
 
+  getNumberOfCols() {
+    return this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 0
+  }
   addBodyRow(index: number) {
-    const newRow = ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.BODY);
-    newRow.children = Array(this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 1)
-      .fill(ViewText.getDefault(null, newRow, selectedAspect, "Cell"));
+    const rowId = fakeId;
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.BODY);
+    updateFakeId();
+    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
+    for (let i = 0; i < iterations; i++) {
+      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Cell");
+      updateFakeId();
+      newRow.children.push(newCell);
+    }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
   addHeaderRow(index: number) {
-    const newRow = ViewRow.getDefault(this.view, this.view.id, this.view.aspect, RowType.HEADER);
-    newRow.children = Array(this.viewToEdit.bodyRows[0]?.children.length ?? 1)
-      .fill(ViewText.getDefault(null, newRow, selectedAspect, "Cell"));
+    const rowId = fakeId;
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.HEADER);
+    updateFakeId();
+    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
+    for (let i = 0; i < iterations; i++) {
+      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Header");
+      updateFakeId();
+      newRow.children.push(newCell);
+    }
     this.viewToEdit.headerRows.splice(index, 0, newRow);
   }
-  removeBodyRow(index: number) {
+  deleteBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
   }
-  removeHeaderRow(index: number) {
+  deleteHeaderRow(index: number) {
     this.viewToEdit.headerRows.splice(index, 1);
   }
-  moveBodyRow(index: number, to: number) {
+  moveBodyRow(from: number, to: number) {
     if (0 <= to && to < this.viewToEdit.bodyRows.length) {
-      this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(index, 1, this.viewToEdit.bodyRows[to])[0];
+      this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(from, 1, this.viewToEdit.bodyRows[to])[0];
     }
   }
-  moveHeaderRow(index: number, to: number) {
+  moveHeaderRow(from: number, to: number) {
     if (0 <= to && to < this.viewToEdit.headerRows.length) {
-      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(index, 1, this.viewToEdit.headerRows[to])[0];
+      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(from, 1, this.viewToEdit.headerRows[to])[0];
     }
   }
   selectCell(cell: View) {
@@ -302,6 +323,36 @@ export class ComponentEditorComponent implements OnChanges {
     else {
       this.rowToEdit = row;
     } 
+  }
+  addColumn(index: number) {
+    if (this.viewToEdit.headerRows[0]) {
+      const newHeaderCell = ViewText.getDefault(fakeId, this.viewToEdit.headerRows[0].id, this.viewToEdit.headerRows[0], selectedAspect, "Header");
+      this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
+      updateFakeId();
+    }
+    for (let row of this.viewToEdit.bodyRows) {
+      const newCell = ViewText.getDefault(fakeId, row.id, row, selectedAspect, "Cell");
+      row.children.splice(index, 0, newCell);
+      updateFakeId();
+    }
+  }
+  moveColumn(from: number, to: number) {
+    if (0 <= to && to < this.getNumberOfCols()) {
+      if (this.viewToEdit.headerRows[0]) {
+        this.viewToEdit.headerRows[0].children[to] = this.viewToEdit.headerRows[0].children.splice(from, 1, this.viewToEdit.headerRows[0].children[to])[0];
+      }
+      for (let row of this.viewToEdit.bodyRows) {
+        row.children[to] = row.children.splice(from, 1, row.children[to])[0];
+      }
+    }
+  }
+  deleteColumn(index: number) {
+    if (this.viewToEdit.headerRows[0]) {
+      this.viewToEdit.headerRows[0].children.splice(index, 1);
+    }
+    for (let row of this.viewToEdit.bodyRows) {
+      row.children.splice(index, 1);
+    }
   }
 }
 

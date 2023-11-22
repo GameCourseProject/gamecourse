@@ -94,8 +94,8 @@ export class ViewText extends View {
   /**
    * Gets a default text view.
    */
-  static getDefault(parentId: number = null, parent: View, aspect: Aspect, text: string = ""): ViewText { // TODO: refactor view editor
-    return new ViewText(ViewMode.DISPLAY, null, parentId, parent, aspect, text, null, null, null, null, null, null, null, null);
+  static getDefault(id: number, parentId: number = null, parent: View, aspect: Aspect, text: string = ""): ViewText { // TODO: refactor view editor
+    return new ViewText(ViewMode.EDIT, id, parentId, parent, aspect, text, null, null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
 

@@ -5,7 +5,7 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="edit">
-  <ng-container [ngTemplateOutlet]="DISPLAY_DEFAULT"></ng-container>
+  <ng-container [ngTemplateOutlet]="EDIT_DEFAULT"></ng-container>
 </ng-container>
 
 
@@ -41,4 +41,13 @@
 <!---------------- EDIT VARIATIONS --------------->
 <!------------------------------------------------>
 
-<!-- TODO -->
+<ng-template #EDIT_DEFAULT>
+  <div [attr.id]="view.cssId"
+       [classList]="classes + ' avatar'"
+       [attr.style]="view.styles">
+
+    <div [classList]="view.classList">
+      <img [src]="imageURL" [alt]="''" (error)="imageURL='assets/imgs/img-dark.png'"/>
+    </div>
+  </div>
+</ng-template>

@@ -63,6 +63,7 @@ import { TableData } from "./_components/tables/table-data/table-data.component"
 import { CourseCardComponent } from './_components/cards/course-card/course-card.component';
 import { ModuleCardComponent } from './_components/cards/module-card/module-card.component';
 import { AspectCardComponent } from './_components/cards/aspect-card/aspect-card.component';
+import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-card.component';
 
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
@@ -224,6 +225,8 @@ import {
   tablerBrush,
   tablerRowInsertBottom,
   tablerRowInsertTop,
+  tablerColumnInsertLeft,
+  tablerColumnInsertRight,
 } from "@ng-icons/tabler-icons";
 
 
@@ -282,6 +285,7 @@ import {
     CourseCardComponent,
     ModuleCardComponent,
     AspectCardComponent,
+    AuxVarCardComponent,
 
     AlertComponent,
 
@@ -365,6 +369,7 @@ import {
     CourseCardComponent,
     ModuleCardComponent,
     AspectCardComponent,
+    AuxVarCardComponent,
 
     AlertComponent,
 
@@ -514,6 +519,8 @@ import {
       tablerBrush,
       tablerRowInsertBottom,
       tablerRowInsertTop,
+      tablerColumnInsertLeft,
+      tablerColumnInsertRight,
     }),
     DataTablesModule,
     NgApexchartsModule,

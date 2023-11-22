@@ -20,8 +20,6 @@ export class BBBlockComponent implements OnInit {
   @ViewChildren('dragItem') dragItems: QueryList<ElementRef>;
   private dragRefs: DragRef[] = new Array<DragRef>();
 
-  readonly DEFAULT = '(Empty block)';
-
   constructor(
     private dragDropService: DragDrop,
   ) { }

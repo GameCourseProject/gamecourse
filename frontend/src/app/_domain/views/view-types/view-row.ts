@@ -135,15 +135,16 @@ export class ViewRow extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
+    for (let child of this.children) child.switchMode(mode);
   }
 
 
   /**
    * Gets a default row view.
    */
-  static getDefault(table: View, parentId: number = null, aspect: Aspect, type: RowType): ViewRow { // TODO: refactor view editor
-    return new ViewRow(ViewMode.DISPLAY, null, parentId, table, aspect, type, [],
-      null, null, null, null, null, null, null);
+  static getDefault(id: number, table: View, parentId: number = null, aspect: Aspect, type: RowType): ViewRow { // TODO: refactor view editor
+    return new ViewRow(ViewMode.EDIT, id, parentId, table, aspect, type, [],
+      null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
   /**

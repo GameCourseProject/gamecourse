@@ -7,6 +7,8 @@
 <!--------------------------------------------------->
 
 <ng-template #GENERIC_EDITOR>
+<div class="overflow-x-hidden">
+  
   <app-input-select
     *ngIf="viewToEdit.type !== ViewType.ROW"
     [id]="'type'"
@@ -262,40 +264,13 @@
       </div>
       
       <!-- Variables -->
-      <div class="flex flex-col gap-2 mb-2">
+      <div class="flex flex-col gap-2 mb-2 grow-0">
         <!-- Existing -->
-        <div *ngFor="let variable of viewToEdit.variables" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
-          <div class="w-28">
-            <span class="block font-semibold text-md">Name:</span>{{variable.name}}
-          </div>
-          <div class="w-80">
-            <span class="block font-semibold text-md">Expression:</span>{{variable.value}}
-          </div>
+        <div *ngFor="let variable of viewToEdit.variables; index as i">
+          <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
         </div>
         <!-- New -->
-        <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
-          <div class="w-28">
-            <app-input-text
-            [id]="'aux-var-name'"
-            [(value)]="variableToAdd.name"
-            [topLabel]="'Name:'"
-            [placeholder]="'courseColor'"
-            [size]="'sm'"
-            ></app-input-text>
-          </div>
-          <div class="w-80">
-            <app-input-text
-            [id]="'aux-var-expression'"
-            [(value)]="variableToAdd.value"
-            [topLabel]="'Expression:'"
-            [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
-            See the \'Additional Tools\' box for more information.'"
-            [placeholder]="'{ courses.getCourseById{%course}.color }'"
-            [size]="'sm'"
-            ></app-input-text>
-          </div>
-          <button class="btn btn-secondary" (click)="addAuxVar()">Add</button>
-        </div>
+        <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
       </div>
 
       <!-- Data Iteration -->
@@ -305,7 +280,7 @@
         [topLabel]="'Data Iteration'"
         [helperText]="'Determines how many times this component will be repeated.
           \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this 
-          course. If there are 3 kill strees in the course, the text will be repeated 3 times.'"
+          course. If there are 3 skill trees in the course, the text will be repeated 3 times.'"
         [helperPosition]="'right'"
         [placeholder]="'e.g. { skillTrees.trees }'"
       ></app-input-text>
@@ -536,6 +511,7 @@
     <button class="btn btn-primary" (click)="saveView()">Save</button>
   </div>
 
+</div>
 </ng-template>
 
 
@@ -561,33 +537,44 @@
         <span>Header</span>
         <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center">
           <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
-          <button class="btn btn-ghost rounded-full p-1" (click)="removeHeaderRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+          <button class="btn btn-ghost rounded-full p-1" (click)="deleteHeaderRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
         </div>
         <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
         <div class="divider"></div>
         <span>Body</span>
-        <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center">
-          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
-          <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
-          <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
-          <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
-          <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
-          <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
-          <button class="btn btn-ghost rounded-full p-1" (click)="removeBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+        <div *ngFor="let row of this.viewToEdit.bodyRows; index as i">
+          <div class="flex flex-row items-center">
+            <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="deleteBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+          </div>
+          <!-- Row editor -->
+          <div *ngIf="row === rowToEdit" class="bg-base-100 my-4 rounded-xl p-6">
+            <app-component-editor [view]="rowToEdit" [saveButton]="true"/>
+          </div>
         </div>
         <button *ngIf="this.viewToEdit.bodyRows?.length <= 0" class="btn btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
       </div>
 
-      <!-- Row editor -->
-      <div *ngIf="rowToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
-        <app-component-editor [view]="rowToEdit" [saveButton]="true"/>
-      </div>
     </ng-container>
 
     <!--------------------- Cells Tab --------------------->
     <ng-container *ngIf="tableSelectedTab == 'Cells'">
       <span class="block font-semibold text-lg mb-2">Current Cells:</span>
       <div class="flex flex-col gap-2">
+        <div class="flex flex-row items-center gap-3 divide-x-2 divide-base-100">
+          <div *ngFor="let col of [].constructor(getNumberOfCols()); index as i" class="w-full flex justify-center">
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-left'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-right'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i)"><ng-icon [name]="'tabler-column-insert-left'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i+1)"><ng-icon [name]="'tabler-column-insert-right'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="deleteColumn(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+          </div>
+        </div>
         <span>Header</span>
         <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center gap-3">
           <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;" 
@@ -595,10 +582,8 @@
                 (click)="selectCell(cell)">
               {{$any(cell).text ?? "Cell"}}
           </div>
-          <!-- Invisible button just to keep cells and rows perfectly aligned -->
-          <button class="btn btn-ghost hover:bg-base-300 hover:cursor-default rounded-full py-1 px-0 w-0"></button>
         </div>
-        <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-sm btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
+        <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.headerRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
         <div class="divider"></div>
         <span>Body</span>
         <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center gap-3">
@@ -607,10 +592,8 @@
                 (click)="selectCell(cell)">
             Cell
           </div>
-          <!-- Invisible button just to keep cells and rows perfectly aligned -->
-          <button class="btn btn-ghost hover:bg-base-300 hover:cursor-default rounded-full py-1 px-0 w-0"></button>
         </div>
-        <button *ngIf="this.viewToEdit.bodyRows.length <= 0" class="btn btn-sm btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
+        <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.bodyRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
       
         <!-- Cell editor -->
         <div *ngIf="cellToEdit" class="mt-10 bg-base-100 rounded-xl p-6">

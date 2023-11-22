@@ -26,6 +26,11 @@ import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
 
 export let selectedAspect: Aspect          // Selected aspect for previewing and editing
+export let fakeId: number
+
+export function updateFakeId() {
+  fakeId -= 1;
+}
 
 @Component({
   selector: 'app-views-editor',
@@ -75,7 +80,6 @@ export class ViewsEditorComponent implements OnInit {
   componentSettings: { id: number, top: number };
 
   view: View;                     // Full view tree of the page
-  fakeId: number = -1;            // Fake ids for new views
 
   constructor(
     private api: ApiHttpService,
@@ -112,6 +116,7 @@ export class ViewsEditorComponent implements OnInit {
       });
       this.loading.page = false;
     })
+    fakeId = -1;
   }
 
   /*** --------------------------------------------- ***/
@@ -418,8 +423,8 @@ export class ViewsEditorComponent implements OnInit {
   addToPage(item: View) {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
-    itemToAdd.id = this.fakeId;
-    this.fakeId -= 1;
+    itemToAdd.id = fakeId;
+    fakeId -= 1;
     itemToAdd.aspect = selectedAspect;
 
     // Add child to the selected block

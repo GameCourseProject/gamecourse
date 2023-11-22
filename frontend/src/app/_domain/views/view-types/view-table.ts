@@ -277,6 +277,8 @@ export class ViewTable extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
+    for (let header of this.headerRows) header.switchMode(mode);
+    for (let row of this.bodyRows) row.switchMode(mode);
   }
 
   insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
