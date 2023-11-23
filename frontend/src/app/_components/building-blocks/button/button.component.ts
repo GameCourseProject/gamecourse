@@ -33,12 +33,15 @@ export class BBButtonComponent implements OnInit {
     if (this.view.icon) this.classes += ' bb-button-icon';
     if (!this.view.classList.containsWord('btn-')) this.classes = 'btn-ghost';
     // Transform goToPage event into a link
-    const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
-    if (goToPageEventIndex !== -1) {
-      const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
-      this.link = environment.url + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
-        goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
-      this.view.events.splice(goToPageEventIndex, 1);
+
+    if (!this.edit) {
+      const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
+      if (goToPageEventIndex !== -1) {
+        const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
+        this.link = environment.url + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
+          goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
+        this.view.events.splice(goToPageEventIndex, 1);
+      }
     }
   }
 

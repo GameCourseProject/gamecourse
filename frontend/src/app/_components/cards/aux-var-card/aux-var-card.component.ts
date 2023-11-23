@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
-import { NgForm } from '@angular/forms';
 import { Output, EventEmitter } from '@angular/core';
 import * as _ from "lodash";
 import { Variable } from 'src/app/_domain/views/variables/variable';
+import { AlertService, AlertType } from 'src/app/_services/alert.service';
 
 @Component({
   selector: 'app-aux-var-card',
@@ -34,10 +34,15 @@ export class AuxVarCardComponent implements OnChanges {
   }
   
   addNewAction() {
-    this.createEvent.emit({
-      name: this.newName,
-      value: this.newValue,
-    });
+    if (this.newName != "" && this.newValue != "") {
+      this.createEvent.emit({
+        name: this.newName,
+        value: this.newValue,
+      });
+      this.newName = this.variable?.name ?? "";
+      this.newValue = this.variable?.value ?? "";
+    }
+    else AlertService.showAlert(AlertType.ERROR, "Auxiliary Variable must have Name and Expression");
   }
 
   editAction() {
@@ -45,11 +50,14 @@ export class AuxVarCardComponent implements OnChanges {
   }
   
   saveAction() {
-    this.edit = false;
-    this.updateEvent.emit({
-      name: this.newName,
-      value: this.newValue,
-    })
+    if (this.newName != "" && this.newValue != "") {
+      this.edit = false;
+      this.updateEvent.emit({
+        name: this.newName,
+        value: this.newValue,
+      })
+    }
+    else AlertService.showAlert(AlertType.ERROR, "Auxiliary Variable must have Name and Expression");
   }
   
   cancelAction() {

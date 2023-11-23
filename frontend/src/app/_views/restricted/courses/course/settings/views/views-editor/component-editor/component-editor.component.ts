@@ -37,8 +37,6 @@ export class ComponentEditorComponent implements OnChanges {
   viewToEdit: ViewManageData;
   viewToPreview: View;
 
-  eventToAdd: { type: EventType, action: string };
-
   tableSelectedTab: string = "Overall";
   cellToEdit?: View = null;
   rowToEdit?: ViewRow = null;
@@ -50,7 +48,6 @@ export class ComponentEditorComponent implements OnChanges {
 
   ngOnChanges(): void {
     this.viewToEdit = this.initViewToEdit();
-    this.eventToAdd = { type: null, action: "" };
 
     if (this.view instanceof ViewTable) {
       this.viewToPreview = new ViewTable(ViewMode.PREVIEW, this.view.id, this.view.viewRoot, null, this.view.aspect, this.view.footers, this.view.searching,
@@ -195,10 +192,6 @@ export class ComponentEditorComponent implements OnChanges {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
-  getEventTypes() {
-    return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
-  }
-
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
@@ -247,13 +240,20 @@ export class ComponentEditorComponent implements OnChanges {
   deleteAuxVar(index: number) {
     this.viewToEdit.variables.splice(index, 1);
   }
-
-  addEvent() {
-    const new_event = buildEvent(this.eventToAdd.type, this.eventToAdd.action);
-    this.viewToEdit.events.push(new_event);
-    this.eventToAdd = { type: null, action: "" };
+  
+  addEvent(event: { type: EventType; expression: string }) {
+    this.viewToEdit.events.push(buildEvent(event.type, event.expression));
   }
   
+  updateEvent(event: { type: EventType; expression: string }, index: number) {
+    this.viewToEdit.events.splice(index, 1, buildEvent(event.type, event.expression));
+    console.log(this.viewToEdit.events);
+  }
+  
+  deleteEvent(index: number) {
+    this.viewToEdit.events.splice(index, 1);
+  }
+
   selectIcon(icon: string, required: boolean) {
     if (required) {
       this.viewToEdit.icon = icon;

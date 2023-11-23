@@ -308,36 +308,11 @@
     </div>
     <div class="flex flex-col gap-2 mb-2">
       <!-- Existing -->
-      <div *ngFor="let event of viewToEdit.events" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
-        <div class="w-36">
-          <span class="block font-semibold text-md">When:</span>{{event.type}}
-        </div>
-        <div class="grow">
-          <span class="block font-semibold text-md">Do:</span>{{event.action}}
-        </div>
+      <div *ngFor="let event of viewToEdit.events; index as i">
+        <app-event-card [event]="event" (deleteEvent)="deleteEvent(i)" (updateEvent)="updateEvent($event, i)"/>
       </div>
       <!-- New -->
-      <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
-        <div class="w-36">
-          <app-input-select
-            [id]="'event-when'"
-            [(value)]="eventToAdd.type"
-            [options]="getEventTypes()"
-            [placeholder]="'Select event'"
-            [topLabel]="'When:'"
-            [search]="false">
-          </app-input-select>
-        </div>
-        <div class="grow">
-          <app-input-text
-            [id]="'event-do'"
-            [(value)]="eventToAdd.action"
-            [topLabel]="'Do:'"
-            [placeholder]="'{ actions.goToPage(pages.getPageByName(\'Awards\').id, %user) }'"
-          ></app-input-text>
-        </div>
-        <button class="btn btn-secondary" (click)="addEvent()">Add</button>
-      </div>
+      <app-event-card [new]="true" (createEvent)="addEvent($event)"/>
     </div>
 
   </ng-container> <!----------------------------->

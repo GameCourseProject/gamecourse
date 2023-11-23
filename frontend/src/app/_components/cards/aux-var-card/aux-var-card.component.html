@@ -1,4 +1,4 @@
-<div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 {{new || edit ? 'pb-5 pt-1 px-5' : 'p-5'}}">
+<div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 {{new || edit ? 'pb-2.5 px-5' : 'p-5'}}">
   <div class="w-28">
     <app-input-text
       *ngIf="edit || new"
@@ -20,7 +20,7 @@
       [topLabel]="'Expression:'"
       [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
         See the \'Additional Tools\' box for more information.'"
-      [placeholder]="'{ courses.getCourseById{%course}.color }'"
+      [placeholder]="'{courses.getCourseById{%course}.color}'"
       [size]="'sm'"
     ></app-input-text>
     <div *ngIf="!edit && !new">
@@ -29,8 +29,8 @@
   </div>
   <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()">Add</button>
   <div *ngIf="edit" class="flex flex-col">
-    <button class="btn btn-sm btn-ghost" (click)="cancelAction()">Cancel</button>
-    <button class="btn btn-sm btn-secondary" (click)="saveAction()">Save</button>
+    <button class="btn btn-sm btn-ghost px-0.5" (click)="cancelAction()">Cancel</button>
+    <button class="btn btn-sm btn-secondary px-0.5" (click)="saveAction()">Save</button>
   </div>
   <div *ngIf="!edit && !new" class="ml-auto flex flex-row gap-2">
     <button class="btn btn-ghost p-0 m-0"><ng-icon name="jam-pencil" size="1.5rem" (click)="editAction()"/></button>
