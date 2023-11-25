@@ -189,7 +189,7 @@ class PageController
      */
     public function savePage()
     {
-        API::requireValues("courseId", "pageId", "viewTree");
+        API::requireValues("courseId", "pageId", "viewTree", "viewsDeleted");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -200,9 +200,10 @@ class PageController
         $page = Page::getPageById($pageId);
         
         $viewTree = API::getValue("viewTree", "array");
+        $viewIdsDeleted = API::getValue("viewsDeleted", "array");
         
         // Translate tree into logs
-        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()));
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
 
         $page->editPage($page->getName(), $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
                 $page->getPosition(), $translatedTree);

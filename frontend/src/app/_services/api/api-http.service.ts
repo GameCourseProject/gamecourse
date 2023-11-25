@@ -3000,11 +3000,12 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public saveViewChanges(courseID: number, pageID: number, viewTree): Observable<void> {
+  public saveViewChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[]): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
-      viewTree: viewTree
+      viewTree: viewTree,
+      viewsDeleted: viewsDeleted
     }
 
     const params = (qs: QueryStringParameters) => {

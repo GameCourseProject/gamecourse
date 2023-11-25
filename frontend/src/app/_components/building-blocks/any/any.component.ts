@@ -19,10 +19,9 @@ import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-toolti
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
-import { ApiHttpService } from 'src/app/_services/api/api-http.service';
 import * as _ from "lodash"
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
-import { selectedAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import { selectedAspect, viewsDeleted } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 
 @Component({
@@ -163,6 +162,7 @@ export class BBAnyComponent implements OnInit {
   deleteAction() {
     if (this.view.parent)
       this.view.parent.removeChildView(this.view.id);
+    viewsDeleted.push(this.view.id);
   }
 
   duplicateAction() {

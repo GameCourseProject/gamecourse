@@ -27,6 +27,7 @@ import { Aspect } from "src/app/_domain/views/aspects/aspect";
 
 export let selectedAspect: Aspect          // Selected aspect for previewing and editing
 export let fakeId: number                  // Fake, negative ids, for new views, to be generated in backend
+export let viewsDeleted: number[] = [];    // viewIds of views that were deleted; check if need to be deleted from database
 
 export function updateFakeId() {
   fakeId -= 1;
@@ -62,14 +63,14 @@ export class ViewsEditorComponent implements OnInit {
     action: false
   };
 
-  course: Course;                 // Specific course in which page exists
-  page: Page;                     // page where information will be saved
-  pageToManage: PageManageData;   // Manage data
+  course: Course;                                 // Specific course in which page exists
+  page: Page;                                     // page where information will be saved
+  pageToManage: PageManageData;                   // Manage data
 
-  aspects: Aspect[]               // Aspects saved
-  aspectsToEdit: Aspect[]         // Aspects currently being edited in modal
-  aspectToSelect: Aspect          // Aspect selected in modal to switch to
-  aspectToAdd: Aspect = new Aspect(null, null)               // New aspect
+  aspects: Aspect[]                               // Aspects saved
+  aspectsToEdit: Aspect[]                         // Aspects currently being edited in modal
+  aspectToSelect: Aspect                          // Aspect selected in modal to switch to
+  aspectToAdd: Aspect = new Aspect(null, null)    // New aspect
 
   user: User;
 
@@ -83,7 +84,7 @@ export class ViewsEditorComponent implements OnInit {
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
   templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
-  view: View;                     // Full view tree of the page
+  view: View;                                     // Full view tree of the page
 
   constructor(
     private api: ApiHttpService,
@@ -127,6 +128,7 @@ export class ViewsEditorComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
+
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
   }
@@ -521,7 +523,7 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async saveChanges() {
-    await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view)).toPromise();
+    await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view), viewsDeleted).toPromise();
     AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
   }
 

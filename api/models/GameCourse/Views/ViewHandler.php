@@ -15,6 +15,7 @@ use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
 use GameCourse\Views\ExpressionLanguage\Node;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\Logging\AddLog;
+use GameCourse\Views\Logging\DeleteLog;
 use GameCourse\Views\Logging\EditLog;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\Logging\MoveLog;
@@ -695,17 +696,24 @@ class ViewHandler
     }
 
     /**
-     * Translates a view tree
-     * into logs: add & move logs.
+     * Translates a view tree into logs.
      *
      * @param array $viewTree
      * @param array|null $parent
+     * @param array|null $viewsDeleted
      * @return array
      */
-    public static function translateViewTree(array $viewTree, array $parent = null): array
+    public static function translateViewTree(array $viewTree, array $parent = null, array $viewsDeleted = null): array
     {
         $logs = [];
         $views = [];
+
+        // Delete views
+        if (isset($viewsDeleted)) {
+            foreach ($viewsDeleted as $viewId) {
+                $logs[] = new DeleteLog($viewId);
+            }
+        }
 
         $viewRoot = null;   // used to set the same viewRoot for all aspects
         foreach ($viewTree as $view) {
