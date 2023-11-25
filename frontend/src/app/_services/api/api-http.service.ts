@@ -2905,7 +2905,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data']));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
   }
 
   public getCustomTemplates(courseID: number): Observable<{id: number, name: string, view: View}[]> {
@@ -2917,7 +2917,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view)}})));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
   }
 
   public getSharedTemplates(): Observable<{id: number, timestamp: string, user: number, view: View}[]> {
@@ -2928,7 +2928,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view), timestamp: dateFromDatabase(e.timestamp).format('DD/MM/YYYY')}})));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true), timestamp: dateFromDatabase(e.timestamp).format('DD/MM/YYYY')}})));
   }
 
   public shareTemplate(templateID: number, courseID: number, userID: number, description: string): Observable<void> {
@@ -2993,6 +2993,23 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'createPage');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public saveViewChanges(courseID: number, pageID: number, viewTree): Observable<void> {
+    const data = {
+      courseId: courseID,
+      pageId: pageID,
+      viewTree: viewTree
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'savePage');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

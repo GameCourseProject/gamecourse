@@ -15,6 +15,7 @@ use GameCourse\Views\ExpressionLanguage\ExpressionEvaluatorBase;
 use GameCourse\Views\ExpressionLanguage\Node;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\Logging\AddLog;
+use GameCourse\Views\Logging\EditLog;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\Logging\MoveLog;
 use GameCourse\Views\Page\Page;
@@ -694,7 +695,7 @@ class ViewHandler
     }
 
     /**
-     * Translates a view tree (which is not yet in the database)
+     * Translates a view tree
      * into logs: add & move logs.
      *
      * @param array $viewTree
@@ -708,13 +709,20 @@ class ViewHandler
 
         $viewRoot = null;   // used to set the same viewRoot for all aspects
         foreach ($viewTree as $view) {
-            // Create a unique ID and viewRoot
-            $view["id"] = hexdec(uniqid());
-            $view["viewRoot"] = $viewRoot ?? $view["id"];
-
-            // Add view
-            $views[$view["id"]] = $view;
-            $logs[] = new AddLog($view["id"], CreationMode::BY_VALUE);
+            if ($view["id"] < 0) {
+                // Create a unique ID and viewRoot
+                $view["id"] = hexdec(uniqid());
+                $view["viewRoot"] = $viewRoot ?? $view["id"];
+    
+                // Add view
+                $views[$view["id"]] = $view;
+                $logs[] = new AddLog($view["id"], CreationMode::BY_VALUE);
+            }
+            else {
+                // Update view
+                $views[$view["id"]] = $view;
+                $logs[] = new EditLog($view["id"]);
+            }
 
             // Translate view of a specific type
             $viewType = ViewType::getViewTypeById($view["type"]);
@@ -725,7 +733,12 @@ class ViewHandler
         }
 
         // Move view
-        $logs[] = new MoveLog($viewRoot, null, $parent);
+        if (isset($parent["parent"])) {
+            $where = ["parent" => $parent["parent"], "child" => $viewRoot];
+            if (empty(Core::database()->select(self::TABLE_VIEW_PARENT, $where))) {
+                $logs[] = new MoveLog($viewRoot, null, $parent);
+            }
+        }
 
         return ["logs" => $logs, "views" => $views];
     }

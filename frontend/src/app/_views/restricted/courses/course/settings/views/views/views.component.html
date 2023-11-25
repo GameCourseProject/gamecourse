@@ -69,7 +69,7 @@
         </figure>
 
         <div class="card-body -mt-4">
-          <div class="flex justify-between items-center border-b-gray-200 border-b-2">
+          <div class="flex justify-between items-center border-b-base-200 border-b-2">
             <span class="text-lg font-semibold -mb-2">{{page.name}}</span>
             <div class="dropdown dropdown-right">
               <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4">
@@ -78,7 +78,7 @@
 
               <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
                 <li *ngFor="let action of actions; let i = index" (click)="chooseAction(action.description, page)">
-                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>
                   </div>

@@ -184,6 +184,31 @@ class PageController
     }
 
     /**
+     * Edits the view of a page in the DB
+     * @throws Exception
+     */
+    public function savePage()
+    {
+        API::requireValues("courseId", "pageId", "viewTree");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $pageId = API::getValue("pageId", "int");
+        $page = Page::getPageById($pageId);
+        
+        $viewTree = API::getValue("viewTree", "array");
+        
+        // Translate tree into logs
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()));
+
+        $page->editPage($page->getName(), $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
+                $page->getPosition(), $translatedTree);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -454,7 +479,7 @@ class PageController
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"]);
+            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
             return $pair;
         };
         
@@ -480,7 +505,7 @@ class PageController
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"]);
+            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
             return $pair;
         };
         

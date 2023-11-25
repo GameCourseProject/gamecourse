@@ -26,7 +26,7 @@ import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
 
 export let selectedAspect: Aspect          // Selected aspect for previewing and editing
-export let fakeId: number
+export let fakeId: number                  // Fake, negative ids, for new views, to be generated in backend
 
 export function updateFakeId() {
   fakeId -= 1;
@@ -81,7 +81,7 @@ export class ViewsEditorComponent implements OnInit {
   newComponentName: string;                       // Name for custom component to be saved
   newTemplateName: string;                        // Name for custom template to be saved
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
-  templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting components
+  templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
   view: View;                     // Full view tree of the page
 
@@ -99,6 +99,7 @@ export class ViewsEditorComponent implements OnInit {
       await this.getLoggedUser();
       await this.setOptions();
       this.componentSettings = { id: null, top: null };
+      this.templateSettings = { id: null, top: null };
       
       this.route.params.subscribe(async childParams => {
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
@@ -159,8 +160,6 @@ export class ViewsEditorComponent implements OnInit {
     const coreTemplates = await this.api.getCoreTemplates().toPromise();
     const customTemplates = await this.api.getCustomTemplates(this.course.id).toPromise();
     const sharedTemplates = await this.api.getSharedTemplates().toPromise();
-
-    console.log(customTemplates);
 
     // Build views for core components
     // FIXME do this in api?
@@ -460,7 +459,7 @@ export class ViewsEditorComponent implements OnInit {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
     itemToAdd.id = fakeId;
-    fakeId -= 1;
+    updateFakeId();
     itemToAdd.aspect = selectedAspect;
 
     // Add child to the selected block
@@ -468,22 +467,44 @@ export class ViewsEditorComponent implements OnInit {
       this.selection.get().addChildViewToViewTree(itemToAdd);
     }
     // No valid selection, view is empty, and not adding block
+    // Create a base block
     else if (!this.view && itemToAdd.type != ViewType.BLOCK) {
       this.view = buildView(
         {
-          id: 1,
+          id: fakeId,
           viewRoot: null,
           aspect: {viewerRole: null, userRole: null},
           type: "block",
-          class: "card bg-base-100 shadow-xl",
+          class: "p-2",
         }
       )
+      updateFakeId();
       this.view.addChildViewToViewTree(itemToAdd);
       this.view.mode = ViewMode.EDIT;
     }
     // Adding first block
     else if (!this.view && itemToAdd.type == ViewType.BLOCK) {
       this.view = itemToAdd;
+    }
+    // By default without valid selection add to existing root
+    else {
+      this.view.addChildViewToViewTree(itemToAdd);
+    }
+
+    this.resetMenus();
+  }
+
+  addTemplateToPage(item: View) {
+    let itemToAdd = _.cloneDeep(item);
+    itemToAdd.switchMode(ViewMode.EDIT);
+
+    // Page becomes the template
+    if (!this.view) {
+      this.view = itemToAdd;
+    }
+    // Add to the selected block
+    else if (this.selection.get()?.type == ViewType.BLOCK) {
+      this.selection.get().addChildViewToViewTree(itemToAdd);
     }
     // By default without valid selection add to existing root
     else {
@@ -500,8 +521,8 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async saveChanges() {
-/*     await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view)).toPromise();
-    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved'); */
+    await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view)).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
   }
 
   // Aspects -------------------------------------------------------
@@ -593,8 +614,8 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async shareTemplate() {
-    if (this.componentSettings.id) {
-      await this.api.shareTemplate(this.componentSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
+    if (this.templateSettings.id) {
+      await this.api.shareTemplate(this.templateSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
       AlertService.showAlert(AlertType.SUCCESS, 'Template is now public!');
       this.resetMenus();
       await this.setOptions();
@@ -602,8 +623,8 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async makePrivateTemplate() {
-    if (this.componentSettings.id) {
-      await this.api.makePrivateTemplate(this.componentSettings.id, this.user.id).toPromise();
+    if (this.templateSettings.id) {
+      await this.api.makePrivateTemplate(this.templateSettings.id, this.user.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Template is now private!');
       this.resetMenus();
       await this.setOptions();
@@ -611,8 +632,8 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async deleteTemplate() {
-    if (this.componentSettings.id) {
-      await this.api.deleteCustomTemplate(this.componentSettings.id, this.course.id).toPromise();
+    if (this.templateSettings.id) {
+      await this.api.deleteCustomTemplate(this.templateSettings.id, this.course.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Template deleted');
       this.resetMenus();
       await this.setOptions();
@@ -665,6 +686,7 @@ export class ViewsEditorComponent implements OnInit {
   resetMenus(){
     this.activeSubMenu = null;
     this.componentSettings = { id: null, top: null };
+    this.templateSettings = { id: null, top: null };
     for (let i = 0; i < this.options.length; i++){
       this.options[i].isSelected = false;
       if (this.options[i].subMenu) this.options[i].subMenu.isSelected = false;
@@ -683,8 +705,9 @@ export class ViewsEditorComponent implements OnInit {
       this.activeSubMenu.items[i].isSelected = false;
     }
 
-    // reset component pop up
+    // reset component and template pop ups
     this.componentSettings = { id: null, top: null };
+    this.templateSettings = { id: null, top: null };
 
     // toggle selected category
     this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
@@ -723,7 +746,7 @@ export class ViewsEditorComponent implements OnInit {
 
   triggerTemplateSettings(event: MouseEvent, templateId: number) {
     this.templateSettings.id = this.templateSettings.id == templateId ? null : templateId;
-    this.templateSettings.top = event.pageY - 365;
+    this.templateSettings.top = event.pageY - 415;
   }
 
   getSelectedAspect() {

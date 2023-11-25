@@ -15,7 +15,7 @@
       {{view.type.capitalize()}}
     </div>
     <!-- Actions -->
-    <div class="dropdown dropdown-bottom {{isSelected() ? 'flex' : 'hidden'}}
+    <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}}
                 absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-40
                 hover:cursor-pointer hover:bg-secondary-focus transition-all"
          (click)="$event.stopPropagation()">
@@ -24,7 +24,7 @@
         <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
         <li (click)="duplicateAction()"><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
         <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
-        <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
+        <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
       </ul>
     </div>
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>

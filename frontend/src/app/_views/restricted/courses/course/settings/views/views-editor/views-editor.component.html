@@ -91,9 +91,13 @@
 
                     <!-- Templates -->
                     <div *ngIf="getSelectedCategories().length > 0 && option.description === 'Choose Template'" class="flex flex-col gap-2">
-                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
-                        {{item.name}}
-                        <div class="btn btn-ghost btn-circle" (click)="triggerTemplateSettings($event, item.id)">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center hover:cursor-pointer">
+                        <div class="w-full h-full flex flex-col" (click)="addTemplateToPage(item.view)">
+                          <div>{{item.name}}</div>
+                          <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.timestamp}}</div>
+                        </div>
+                        <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition shrink-0" 
+                            (click)="triggerTemplateSettings($event, item.id)">
                           <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                         </div>
                       </div>
@@ -105,7 +109,8 @@
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
                           <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
-                          <div class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                          <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                              (click)="triggerComponentSettings($event, item.id)">
                             <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                           </div>
                         </div>
@@ -116,7 +121,8 @@
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
                           <div class="flex flex-row justify-between items-center">
                             <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
-                            <div *ngIf="item.user == user.id" class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                            <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                                  (click)="triggerComponentSettings($event, item.id)">
                               <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                             </div>
                           </div>
@@ -148,12 +154,21 @@
               </div>
             </div>
             
-            <!-- Custom and Shared Component Settings -->
-            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[33rem]" [ngStyle]="{'top.px': componentSettings.top}">
+            <!-- Custom and Shared Template Settings Pop-up -->
+            <div [@dropdownAnimation] *ngIf="templateSettings?.id" class="absolute z-50 left-[22.5rem]" [ngStyle]="{'top.px': templateSettings.top}">
+              <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateTemplate()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareTemplate()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteTemplate()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
+              </ul>
+            </div>
+
+            <!-- Custom and Shared Component Settings Pop-up -->
+            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[35rem]" [ngStyle]="{'top.px': componentSettings.top}">
               <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
                 <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
                 <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
-                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
               </ul>
             </div>
 
