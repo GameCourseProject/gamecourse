@@ -1,5 +1,6 @@
-<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE && viewToEdit.type !== ViewType.CHART" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 <ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
+<ng-container *ngIf="viewToEdit.type === ViewType.CHART" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
 
 
 <!--------------------------------------------------->
@@ -287,12 +288,12 @@
     </div>
 
     <!-- Additional Tools -->
-    <div class="h-full w-full">
+    <div class="w-full overflow-x-auto">
       <app-input-code
+        *ngIf="additionalToolsTabs"
         [id]="'component-tools'"
         [title]="'Additional Tools'"
         [tabs]="additionalToolsTabs"
-        [classList]="'grow'"
       ></app-input-code>
     </div>
   </div>
@@ -490,6 +491,7 @@
 </ng-template>
 
 
+
 <!--------------------------------------------------->
 <!---------------- EDITOR FOR TABLES ---------------->
 <!--------------------------------------------------->
@@ -581,4 +583,21 @@
     </ng-container>
 
   </div>
+</ng-template>
+
+
+
+<!--------------------------------------------------->
+<!---------------- EDITOR FOR CHARTS ---------------->
+<!--------------------------------------------------->
+<ng-template #CHART_EDITOR>
+  <app-input-select
+    [id]="'chart-type'"
+    [(value)]="viewToEdit.chartType"
+    [options]="getChartTypes()"
+    [placeholder]="'Select chart type'"
+    [topLabel]="'Chart Type'"
+    [required]="true"
+    [classList]="'mb-4'">
+  </app-input-select>
 </ng-template>

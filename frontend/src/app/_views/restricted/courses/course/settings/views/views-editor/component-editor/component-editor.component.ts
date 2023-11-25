@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges, ViewChild } from "@angular/core";
-import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
+import { Component, Input, OnChanges, OnInit, ViewChild } from "@angular/core";
+import { CodeTab, CustomFunction, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View, ViewMode } from "src/app/_domain/views/view";
 import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
@@ -20,12 +20,16 @@ import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.comp
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
 import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
 import { fakeId, selectedAspect, updateFakeId } from "../views-editor.component";
+import { ApiHttpService } from "src/app/_services/api/api-http.service";
+import { moveItemInArray } from "@angular/cdk/drag-drop";
+import { ActivatedRoute } from "@angular/router";
+import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
 
 @Component({
   selector: 'app-component-editor',
   templateUrl: './component-editor.component.html'
 })
-export class ComponentEditorComponent implements OnChanges {
+export class ComponentEditorComponent implements OnInit, OnChanges {
 
   @Input() view: View;
   @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
@@ -42,11 +46,24 @@ export class ComponentEditorComponent implements OnChanges {
   rowToEdit?: ViewRow = null;
 
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
+  functions: CustomFunction[];
+  ELfunctions: CustomFunction[];
+  namespaces: string[];
 
   constructor(
+    private api: ApiHttpService,
+    private route: ActivatedRoute,
   ) { }
 
-  ngOnChanges(): void {
+  async ngOnInit() {
+    this.route.parent.params.subscribe(async params => { 
+      const courseID = parseInt(params.id);
+      await this.getCustomFunctions(courseID);
+      this.prepareAdditionalTools();
+    })
+  }
+
+  ngOnChanges() {
     this.viewToEdit = this.initViewToEdit();
 
     if (this.view instanceof ViewTable) {
@@ -59,17 +76,60 @@ export class ComponentEditorComponent implements OnChanges {
       this.viewToPreview = _.cloneDeep(this.view);
       this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
+  }
 
+  // Additional Tools --------------------------------------
+  // code from the rules editor
+
+  prepareAdditionalTools() {
     let helpVariables =
-        "# These are the variables available in this component, from the component's parents.\n\n";
+    "# These are the variables available in this component, from the component's parents.\n\n";
 
     for (const variable of this.viewToEdit.variables){
       helpVariables += "%" + variable.name + " = " + variable.value + "\n";
     }
 
     this.additionalToolsTabs = [
-      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true},
+      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
+      { name: 'Preview expression', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview expression', value: null },
+      { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
+        namespaces: this.namespaces
+      },
     ]
+  }
+
+  async getCustomFunctions(courseID: number){
+    this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+
+    // Remove 'gc' and 'transform' functions (not needed for rule editor)
+    let index = this.functions.findIndex(fn => fn.keyword === 'gc');
+    this.functions.splice(index, 1);
+    index = this.functions.findIndex(fn => fn.keyword === 'transform');
+    this.functions.splice(index, 1);
+
+    for (let i = 0; i < this.functions.length; i++) {
+      let description = this.functions[i].description;
+      const startMarker = ":example:";
+      const startIndex = description.indexOf(startMarker);
+
+      if (startIndex !== -1) {
+        this.functions[i].example = description.substring(startIndex + startMarker.length).trim();
+        description = description.substring(0, startIndex).trim();
+      }
+
+      // Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
+      this.functions[i].description = description;
+      this.functions[i].returnType = "-> " + this.functions[i].returnType;
+    }
+
+    this.ELfunctions = await this.api.getELFunctions().toPromise();
+    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
+
+    // set namespaces of functions
+    let names = this.functions.concat(this.ELfunctions)
+      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
+    this.namespaces = Array.from(new Set(names).values())
+    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
   }
 
   /*** --------------------------------------------- ***/
@@ -125,6 +185,11 @@ export class ComponentEditorComponent implements OnChanges {
       viewToEdit.info = this.view.info;
       viewToEdit.ordering = this.view.ordering;
       viewToEdit.orderingBy = this.view.orderingBy;
+    }
+    else if (this.view instanceof ViewChart) {
+      viewToEdit.chartType = this.view.chartType;
+      viewToEdit.data = this.view.data;
+      viewToEdit.options = this.view.options;
     }
     return viewToEdit;
   }
@@ -182,6 +247,11 @@ export class ComponentEditorComponent implements OnChanges {
       to.ordering = from.ordering;
       to.orderingBy = from.orderingBy;
     }
+    else if (to instanceof ViewChart) {
+      to.chartType = from.chartType;
+      to.data = from.data;
+      to.options = from.options;
+    }
   }
 
   get ViewType(): typeof ViewType {
@@ -191,6 +261,10 @@ export class ComponentEditorComponent implements OnChanges {
   getComponentTypes() {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
+  
+  getChartTypes() {
+    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  }
 
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
@@ -199,6 +273,7 @@ export class ComponentEditorComponent implements OnChanges {
   getIconSizeOptions() {
     return [{ value: "1.3rem", text: "Small"}, { value: "1.8rem", text: "Medium"}, { value: "2.5rem", text: "Large"}, { value: "4rem", text: "Extra-Large"}]
   }
+  
 
   getIcons() {
     return [
@@ -376,16 +451,19 @@ export interface ViewManageData {
   collapseIcon?: CollapseIcon,
   direction?: BlockDirection,
   responsive?: boolean,
-  columns?: number;
-  headerRows?: ViewRow[];
-  bodyRows?: ViewRow[];
-  footers?: boolean;
-  searching?: boolean;
-  columnFiltering?: boolean;
-  paging?: boolean;
-  lengthChange?: boolean;
-  info?: boolean;
-  ordering?: boolean;
-  orderingBy?: string;
-  src?: string;
+  columns?: number,
+  headerRows?: ViewRow[],
+  bodyRows?: ViewRow[],
+  footers?: boolean,
+  searching?: boolean,
+  columnFiltering?: boolean,
+  paging?: boolean,
+  lengthChange?: boolean,
+  info?: boolean,
+  ordering?: boolean,
+  orderingBy?: string,
+  src?: string,
+  chartType?: ChartType,
+  data?: string | any,
+  options?: {[key: string]: any},
 }

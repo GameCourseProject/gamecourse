@@ -13,6 +13,8 @@ use GameCourse\Views\CreationMode;
 use GameCourse\Views\Component\CustomComponent;
 use GameCourse\Views\Component\CoreComponent;
 use GameCourse\Views\Category\Category;
+use GameCourse\Views\Template\CoreTemplate;
+use GameCourse\Views\Template\CustomTemplate;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -439,6 +441,153 @@ class PageController
         
         $customComponents = array_map($fun, CustomComponent::getSharedComponents());
         API::response($customComponents);
+    }
+
+    /**
+     * Gets all Core Templates
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCoreTemplates(){
+        $fun = function($template) {
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->view = ViewHandler::renderView($template["viewRoot"]);
+            return $pair;
+        };
+        
+        $coreTemplates = array_map($fun, CoreTemplate::getTemplates());
+        API::response($coreTemplates);
+    }
+
+    /**
+     * Gets all Custom Templates of a course
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCustomTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        
+        $fun = function($template) {
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->view = ViewHandler::renderView($template["viewRoot"]);
+            return $pair;
+        };
+        
+        $customTemplates = array_map($fun, CustomTemplate::getTemplates($courseId));
+        API::response($customTemplates);
+    }
+
+    /**
+     * Saves a View as a Custom Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function createCustomTemplate(){
+        API::requireValues("courseId", "name", "viewTree");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        $templateInfo = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
+        API::response($templateInfo);
+    }
+
+    /**
+     * Deletes a Custom Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function deleteCustomTemplate(){
+        API::requireValues("courseId", "templateId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        
+        CustomTemplate::deleteTemplate($templateId);
+    }
+
+    /**
+     * Turns a Custom Template into a Shared Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeTemplateShared(){
+        API::requireValues("templateId", "courseId", "userId", "description");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $templateId = API::getValue("templateId", "int");
+        $description = API::getValue("description", "string");
+
+        CustomTemplate::shareTemplate($templateId, $userId, $description);
+    }
+
+    /**
+     * Stops sharing a Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeTemplatePrivate(){
+        API::requireValues("templateId", "userId");
+
+        $userId = API::getValue("userId", "int");
+        $templateId = API::getValue("templateId", "int");
+
+        CustomTemplate::stopShareTemplate($templateId, $userId);
+    }
+
+    /**
+     * Gets all Shared Components
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getSharedTemplates(){
+        
+        $fun = function($template) {
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->user = $template["sharedBy"];
+            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->timestamp = $template["sharedTimestamp"];
+            return $pair;
+        };
+        
+        $customTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
+        API::response($customTemplates);
     }
 
 

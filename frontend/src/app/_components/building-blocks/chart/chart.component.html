@@ -1,16 +1,10 @@
-<!-- Display version -->
-<ng-container *ngIf="!edit">
+<ng-container>
   <ng-container *ngIf="view.chartType === ChartType.BAR" [ngTemplateOutlet]="DISPLAY_BAR"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.COMBO" [ngTemplateOutlet]="DISPLAY_COMBO"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.LINE" [ngTemplateOutlet]="DISPLAY_LINE"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.PROGRESS" [ngTemplateOutlet]="DISPLAY_PROGRESS"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.RADAR" [ngTemplateOutlet]="DISPLAY_RADAR"></ng-container>
   <ng-container *ngIf="view.chartType === ChartType.PIE" [ngTemplateOutlet]="DISPLAY_PIE"></ng-container>
-</ng-container>
-
-<!-- Edit version -->
-<ng-container *ngIf="edit">
-  <!-- TODO -->
 </ng-container>
 
 
@@ -25,7 +19,7 @@
 
     <app-bar-chart
       [id]="'v' + view.uniqueId.toString()"
-      [series]="view.data"
+      [series]="edit ? seriesToPreview : view.data"
       [classList]="view.classList"
       [annotations]="view.options?.annotations || undefined"
       [height]="view.options?.height || 'auto'"
@@ -71,7 +65,7 @@
 
     <app-combo-chart
       [id]="'v' + view.uniqueId.toString()"
-      [series]="view.data"
+      [series]="edit ? seriesToPreview : view.data"
       [classList]="view.classList"
       [annotations]="view.options?.annotations || undefined"
       [height]="view.options?.height || 'auto'"
@@ -122,7 +116,7 @@
 
     <app-line-chart
       [id]="'v' + view.uniqueId.toString()"
-      [series]="view.data"
+      [series]="edit ? seriesToPreview : view.data"
       [classList]="view.classList"
       [annotations]="view.options?.annotations || undefined"
       [height]="view.options?.height || 'auto'"
@@ -167,8 +161,8 @@
 
     <app-progress-chart
       [id]="'v' + view.uniqueId.toString()"
-      [value]="view.data.value"
-      [max]="view.data.max"
+      [value]="edit ? 0 : view.data.value"
+      [max]="edit ? 100 : view.data.max"
       [size]="view.options?.size || 'sm'"
       [classList]="view.classList"
       [tooltip]="view.options?.tooltip || undefined"
@@ -189,7 +183,7 @@
 
     <app-radar-chart
       [id]="'v' + view.uniqueId.toString()"
-      [series]="view.data"
+      [series]="edit ? seriesToPreview : view.data"
       [normalized]="view.options?.normalized"
       [classList]="view.classList"
       [height]="view.options?.height || 'auto'"
@@ -224,7 +218,7 @@
 
     <app-pie-chart
       [id]="'v' + view.uniqueId.toString()"
-      [series]="view.data"
+      [series]="edit ? seriesToPreview : view.data"
       [classList]="view.classList"
       [height]="view.options?.height || 'auto'"
       [width]="view.options?.width || '100%'"
