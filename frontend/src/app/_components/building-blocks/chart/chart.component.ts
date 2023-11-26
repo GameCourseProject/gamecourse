@@ -4,6 +4,7 @@ import {ChartType, ViewChart} from "../../../_domain/views/view-types/view-chart
 import {ViewMode} from "../../../_domain/views/view";
 
 import {exists} from "../../../_utils/misc/misc";
+import { ApexAxisChartSeries, ApexNonAxisChartSeries } from 'ng-apexcharts';
 
 @Component({
   selector: 'bb-chart',
@@ -15,12 +16,14 @@ export class BBChartComponent implements OnInit {
 
   edit: boolean;
   classes: string;
+  seriesToPreview: ApexAxisChartSeries | ApexNonAxisChartSeries
 
   constructor() { }
 
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
     this.classes = 'bb-chart bb-' + this.view.chartType + '-chart';
+    this.seriesToPreview = [{ data: [] }];
   }
 
   get ChartType(): typeof ChartType {

@@ -329,12 +329,10 @@ CREATE TABLE component_custom(
 CREATE TABLE component_custom_shared(
     id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
     description                 varchar(70) DEFAULT NULL,
-    category                    int unsigned NOT NULL,
     sharedBy                    int unsigned NOT NULL,
     sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
-    FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
     FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
 
@@ -368,12 +366,10 @@ CREATE TABLE template_custom(
 CREATE TABLE template_custom_shared(
    id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
    description                 varchar(70) DEFAULT NULL,
-   category                    int unsigned NOT NULL,
    sharedBy                    int unsigned NOT NULL,
    sharedTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-   FOREIGN key(id) REFERENCES component_custom(id) ON DELETE CASCADE,
-   FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
+   FOREIGN key(id) REFERENCES template_custom(id) ON DELETE CASCADE,
    FOREIGN key(sharedBy) REFERENCES user(id) ON DELETE CASCADE
 );
 

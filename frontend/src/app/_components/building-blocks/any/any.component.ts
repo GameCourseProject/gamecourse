@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -19,9 +19,10 @@ import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-toolti
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from 'src/app/_services/alert.service';
-import { ApiHttpService } from 'src/app/_services/api/api-http.service';
-import { buildViewTree } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import * as _ from "lodash"
+import { Aspect } from 'src/app/_domain/views/aspects/aspect';
+import { selectedAspect, viewsDeleted } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 
 @Component({
   selector: 'bb-any',
@@ -31,13 +32,14 @@ export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
 
+  @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
+
   courseID: number;
 
   classes: string;
   visible: boolean;
 
   constructor(
-    private api: ApiHttpService,
     private route: ActivatedRoute,
     public selection: ViewSelectionService
   ) { }
@@ -131,12 +133,26 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('save-as-component');
   }
 
+  filterForAspect() {
+    return _.isEqual(this.view.aspect, selectedAspect) || _.isEqual(this.view.aspect, new Aspect(null, null));
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
   editAction() {
     ModalService.openModal('component-editor');
+  }
+
+  submitEditAction() {
+    this.componentEditor.saveView();
+
+    // Force rerender to show changes
+    this.visible = !this.visible;
+    setTimeout(() => {
+      this.visible = !this.visible
+    }, 100);
   }
   
   saveAction() {
@@ -146,6 +162,16 @@ export class BBAnyComponent implements OnInit {
   deleteAction() {
     if (this.view.parent)
       this.view.parent.removeChildView(this.view.id);
+    viewsDeleted.push(this.view.id);
+  }
+
+  duplicateAction() {
+    let duplicated = _.cloneDeep(this.view);
+    duplicated.mode = ViewMode.EDIT;
+    duplicated.id = null;
+
+    if (this.view.parent)
+      this.view.parent.addChildViewToViewTree(duplicated);
   }
 
 }

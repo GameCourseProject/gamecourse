@@ -25,10 +25,7 @@
 
   <app-top-actions
     [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
-    [rightActions]="[{action: 'Versions', icon: 'tabler-caret-down', color: 'primary', outline: true,  dropdown: [
-                        {action: 'Create version'},
-                        {action: 'Manage versions'}
-                      ]},
+    [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
                        {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
@@ -52,9 +49,10 @@
             </button>
           </div>
 
-          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" class="z-50 border border-1 border-primary
-            absolute left-12 -mt-12 w-48 rounded rounded-xl shadow-lg bg-base-300 card card-compact">
-            <div class="p-4">
+          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" 
+                class="z-50 absolute left-12 -mt-12 w-48 rounded-xl shadow-lg bg-base-300 card card-compact
+                      {{option.description === 'Add Component' && 'border border-1 border-primary'}}">
+            <div *ngIf="option.description === 'Add Component'" class="p-4">
               <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
               <div class="bg-primary bg-opacity-60 rounded-xl flex">
                 <ul>
@@ -66,8 +64,9 @@
               </div>
             </div>
 
-            <div [@dropdownAnimation] *ngIf="activeSubMenu" class="z-50 border border-1 border-primary absolute left-[12.5rem] w-[20rem]
-              rounded rounded-xl shadow-lg bg-primary card card-compact">
+            <div [@dropdownAnimation] *ngIf="activeSubMenu" 
+                  class="z-50 border border-1 border-primary absolute w-96 rounded-xl shadow-lg bg-primary card card-compact
+                        {{option.description === 'Add Component' && 'left-[12.5rem]'}}">
               <div class="p-4">
                 <div class="flex flex-row items-center justify-center mb-2">
                   <ng-icon name="feather-info" size="1.2rem" color="white" class="tooltip" [attr.data-tip]="activeSubMenu.helper"/>
@@ -90,45 +89,64 @@
                   <div class="overflow-y-auto overflow-x-auto my-2 mx-2 gap-5 max-h-72 w-full">
                     <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
 
-                    <!-- Custom components list -->
-                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
-                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
-                        <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
-                        <div class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                    <!-- Templates -->
+                    <div *ngIf="getSelectedCategories().length > 0 && option.description === 'Choose Template'" class="flex flex-col gap-2">
+                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center hover:cursor-pointer">
+                        <div class="w-full h-full flex flex-col" (click)="addTemplateToPage(item.view)">
+                          <div>{{item.name}}</div>
+                          <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.timestamp}}</div>
+                        </div>
+                        <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition shrink-0" 
+                            (click)="triggerTemplateSettings($event, item.id)">
                           <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                         </div>
                       </div>
                     </div>
 
-                    <!-- Shared components list -->
-                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
-                      <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
-                        <div class="flex flex-row justify-between items-center">
+                    <!-- Components -->
+                    <ng-container *ngIf="getSelectedCategories().length > 0 && option.description === 'Add Component'">
+                      <!-- Custom components list -->
+                      <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
+                        <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
                           <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
-                          <div *ngIf="item.user == user.id" class="btn btn-ghost btn-circle" (click)="triggerComponentSettings($event, item.id)">
+                          <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                              (click)="triggerComponentSettings($event, item.id)">
                             <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                           </div>
                         </div>
-                        <div class="text-xs mt-1">Shared: {{item.timestamp}}</div>
                       </div>
-                    </div>
 
-                    <!-- System components are divided into subcategories -->
-                    <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
-                      <div *ngFor="let subcategory of getSubcategories()">
-                        <span class="ml-1">{{subcategory}}</span>
-                        <div class="divider -mt-1 -mb-[0rem]"></div>
-                        <div class="flex flex-wrap">
-                          <div 
-                            *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
-                            class="hover:cursor-pointer p-1"
-                            (click)="addToPage(item)"
-                          >
-                            <bb-any [view]="item"></bb-any>
+                      <!-- Shared components list -->
+                      <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
+                        <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
+                          <div class="flex flex-row justify-between items-center">
+                            <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                            <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                                  (click)="triggerComponentSettings($event, item.id)">
+                              <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
+                            </div>
+                          </div>
+                          <div class="text-xs mt-1">Shared: {{item.timestamp}}</div>
+                        </div>
+                      </div>
+
+                      <!-- System components are divided into subcategories -->
+                      <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
+                        <div *ngFor="let subcategory of getSubcategories()">
+                          <span class="ml-1">{{subcategory}}</span>
+                          <div class="divider -mt-1 -mb-[0rem]"></div>
+                          <div class="flex flex-wrap">
+                            <div 
+                              *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
+                              class="hover:cursor-pointer p-1"
+                              (click)="addToPage(item)"
+                            >
+                              <bb-any [view]="item"></bb-any>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </ng-container>
 
                   </div>
 
@@ -136,12 +154,21 @@
               </div>
             </div>
             
-            <!-- Custom and Shared Component Settings -->
-            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[33rem]" [ngStyle]="{'top.px': componentSettings.top}">
+            <!-- Custom and Shared Template Settings Pop-up -->
+            <div [@dropdownAnimation] *ngIf="templateSettings?.id" class="absolute z-50 left-[22.5rem]" [ngStyle]="{'top.px': templateSettings.top}">
+              <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateTemplate()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareTemplate()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteTemplate()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
+              </ul>
+            </div>
+
+            <!-- Custom and Shared Component Settings Pop-up -->
+            <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[35rem]" [ngStyle]="{'top.px': componentSettings.top}">
               <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
                 <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
                 <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
-                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" color="red"/>Delete</a></li>
+                <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
               </ul>
             </div>
 
@@ -159,9 +186,9 @@
 
   <div class="card-actions justify-end py-6">
     <button class="btn btn-primary" (click)="closeEditor()">Discard</button>
-    <button *ngIf="pageToManage" class="btn btn-primary">Save as Template</button>
+    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
-    <button *ngIf="!pageToManage" class="btn btn-primary">Save Changes</button>
+    <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">Save Changes</button>
   </div>
 
   <!-- Loader -->
@@ -195,6 +222,25 @@
   </app-input-text>
 </ng-template>
 
+<!-- Save Template Modal -->
+<app-modal
+  [id]="'save-template'"
+  [templateRef]="SAVE_TEMPLATE"
+  [header]="'Save Custom Template'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="saveTemplate()"
+/>
+<ng-template #SAVE_TEMPLATE>
+  <app-input-text
+    [id]="'new-template-name'"
+    [(value)]="newTemplateName"
+    [topLabel]="'Choose a name for this template:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>
+
 <!-- Save Component Modal -->
 <app-modal
   [id]="'save-as-component'"
@@ -217,41 +263,50 @@
 
 <!-- Manage Versions Modal -->
 <app-modal
-  *ngIf="view"
+  *ngIf="!loading.aspects"
   [id]="'manage-versions'"
   [templateRef]="MANAGE_VERSIONS"
   [header]="'Manage Versions'"
   [closeBtnText]="'Discard'"
   [submitBtnText]="'Save Versions'"
-  [size]="'md'"
+  [size]="'lg'"
+  [static]="true"
   (click)="$event.stopPropagation()"
+  (onClose)="discardAspects()"
+  (submitBtnClicked)="submitAspects()"
 />
 <ng-template #MANAGE_VERSIONS>
-  If there are non-existing versions, a default version will be displayed with no restrictions whatsoever on who's accessing the page and from whom the information is about.
-  <p class="text-md font-semibold my-4">Existing Versions</p>
+  <div class="w-full overflow-hidden">
+    <p>
+      The <span class="font-bold text-orange-400">viewer's role</span> is the role from the user accessing the page.<br>
+      The <span class="font-bold text-sky-400">user's role</span> is the role from which the user's information is being displayed.
+    </p>
+    <p class="mt-4">
+      <b>E.g.</b> A page with viewer's role = Teacher, and user's role = Student.<br>
+      This means the version being displayed accepts users of type Teacher to access the page, and displays information about a Student.
+    </p>
+    <p class="mt-4">
+      Roles can also be <span class="font-bold text-violet-400">'none'</span> if you don't want any restrictions on who's accessing or from whom is the information being displayed
+    </p>
+    <p class="text-lg font-semibold mt-6 mb-2">Existing Versions</p>
 
-  <div class="flex flex-row gap-4">
-    <div>
-      <p class="mb-2">Current Version:</p>
-      <div class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
-        <p class="font-semibold">Viewer's Role:</p>
-        <i>{{view.aspect.viewerRole ?? "none"}}</i>
-        <div class="divider my-0"></div>
-        <p class="font-semibold">Users's Role:</p>
-        <i>{{view.aspect.userRole ?? "none"}}</i>
+    <div class="flex flex-row gap-4 w-full">
+      <div>
+        <p class="mb-5">Current Version:</p>
+        <app-aspect-card [aspect]="getSelectedAspect()" [course]="course" />
       </div>
-    </div>
-    <div class="bg-base-200 w-0.5"></div>
-    <div>
-      <p class="mb-2">Others:</p>
+      <div class="bg-base-200 w-1"></div>
       <div class="w-full overflow-x-auto">
-        <div *ngFor="let aspect of aspects" class="card card-body bg-base-300 shadow-xl flex flex-col items-center w-48 p-6">
-          <p class="font-semibold">Viewer's Role:</p>
-          <i>{{aspect.viewerRole ?? "none"}}</i>
-          <div class="divider my-0"></div>
-          <p class="font-semibold">Users's Role:</p>
-          <i>{{aspect.userRole ?? "none"}}</i>
+        <p class="mb-2">All Versions:</p>
+        <div class="flex flex-row w-full overflow-x-auto">
+          <div *ngFor="let aspect of aspectsToEdit; index as i" (click)="selectAspect(aspect)">
+            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" (deleteEvent)="removeAspect(i)"/>
+          </div>
         </div>
+      </div>
+      <div class="self-center flex flex-col gap-6">
+        <button class="btn btn-secondary" (click)="createNewAspect()">Create Version</button>
+        <button class="btn btn-primary" (click)="switchToAspect()">Select</button>
       </div>
     </div>
   </div>

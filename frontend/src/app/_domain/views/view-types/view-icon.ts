@@ -144,7 +144,7 @@ export class ViewIcon extends View {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,

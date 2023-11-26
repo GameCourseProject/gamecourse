@@ -24,7 +24,15 @@ import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/v
 import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
-  
+
+export let selectedAspect: Aspect          // Selected aspect for previewing and editing
+export let fakeId: number                  // Fake, negative ids, for new views, to be generated in backend
+export let viewsDeleted: number[] = [];    // viewIds of views that were deleted; check if need to be deleted from database
+
+export function updateFakeId() {
+  fakeId -= 1;
+}
+
 @Component({
   selector: 'app-views-editor',
   templateUrl: './views-editor.component.html',
@@ -51,15 +59,18 @@ export class ViewsEditorComponent implements OnInit {
 
   loading = {
     page: true,
+    aspects: true,
     action: false
   };
 
-  course: Course;                 // Specific course in which page exists
-  page: Page;                     // page where information will be saved
-  pageToManage: PageManageData;   // Manage data
-  newComponentName: string;       // Name for custom component to be saved
-  aspects: Aspect[]               // Aspects in viewTree of the page
-  selectedAspect: Aspect          // Selected aspect for previewing and editing
+  course: Course;                                 // Specific course in which page exists
+  page: Page;                                     // page where information will be saved
+  pageToManage: PageManageData;                   // Manage data
+
+  aspects: Aspect[]                               // Aspects saved
+  aspectsToEdit: Aspect[]                         // Aspects currently being edited in modal
+  aspectToSelect: Aspect                          // Aspect selected in modal to switch to
+  aspectToAdd: Aspect = new Aspect(null, null)    // New aspect
 
   user: User;
 
@@ -67,9 +78,13 @@ export class ViewsEditorComponent implements OnInit {
 
   options: Option[];
   activeSubMenu: SubMenu;
-  componentSettings: { id: number, top: number };
 
-  view: View;
+  newComponentName: string;                       // Name for custom component to be saved
+  newTemplateName: string;                        // Name for custom template to be saved
+  componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
+  templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
+
+  view: View;                                     // Full view tree of the page
 
   constructor(
     private api: ApiHttpService,
@@ -85,6 +100,7 @@ export class ViewsEditorComponent implements OnInit {
       await this.getLoggedUser();
       await this.setOptions();
       this.componentSettings = { id: null, top: null };
+      this.templateSettings = { id: null, top: null };
       
       this.route.params.subscribe(async childParams => {
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
@@ -92,6 +108,11 @@ export class ViewsEditorComponent implements OnInit {
         if (segment === 'new-page') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
+          selectedAspect = new Aspect(null, null);
+          this.aspectsToEdit = [new Aspect(null, null)];
+          this.aspects = [selectedAspect];
+          this.aspectToSelect = selectedAspect;
+          this.loading.aspects = false;
         } else {
           await this.getPage(parseInt(segment));
           await this.getAspects();
@@ -101,11 +122,13 @@ export class ViewsEditorComponent implements OnInit {
       });
       this.loading.page = false;
     })
+    fakeId = -1;
   }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
+
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
   }
@@ -120,26 +143,33 @@ export class ViewsEditorComponent implements OnInit {
 
   async getAspects(): Promise<void> {
     this.aspects = await this.api.getPageAspects(this.page.id).toPromise();
-    this.selectedAspect = new Aspect(null, null);
+    selectedAspect = this.aspects[0];
+    this.aspectToSelect = selectedAspect;
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
+    this.loading.aspects = false;
   }
-
+  
   async getView(): Promise<void> {
     this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
     this.view.switchMode(ViewMode.EDIT);
   }
 
   async setOptions() {
-    const core = await this.api.getCoreComponents().toPromise();
-    const custom = await this.api.getCustomComponents(this.course.id).toPromise();
-    const shared = await this.api.getSharedComponents().toPromise();
+    const coreComponents = await this.api.getCoreComponents().toPromise();
+    const customComponents = await this.api.getCustomComponents(this.course.id).toPromise();
+    const sharedComponents = await this.api.getSharedComponents().toPromise();
+
+    const coreTemplates = await this.api.getCoreTemplates().toPromise();
+    const customTemplates = await this.api.getCustomTemplates(this.course.id).toPromise();
+    const sharedTemplates = await this.api.getSharedTemplates().toPromise();
 
     // Build views for core components
     // FIXME do this in api?
-    const types = Object.keys(core);
+    const types = Object.keys(coreComponents);
     for (let type of types) {
-      const categories = Object.keys(core[type]);
+      const categories = Object.keys(coreComponents[type]);
       for (let category of categories) {
-        core[type][category] = core[type][category].map((e) => {
+        coreComponents[type][category] = coreComponents[type][category].map((e) => {
           const view = buildView(e);
           view.switchMode(ViewMode.PREVIEW);
           return view;
@@ -163,18 +193,18 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.BLOCK]
+                  list: coreComponents[ViewType.BLOCK]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.BLOCK)
+                  list: customComponents.filter((e) => e.view.type === ViewType.BLOCK)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.BLOCK)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.BLOCK)
                 }
               ]
             },
@@ -185,40 +215,40 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.BUTTON]
+                  list: coreComponents[ViewType.BUTTON]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.BUTTON)
+                  list: customComponents.filter((e) => e.view.type === ViewType.BUTTON)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.BUTTON)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.BUTTON)
                 }
               ]
             },
             { title: ViewType.CHART,
               isSelected: false,
-              helper: 'Component composed by other components.',
+              helper: 'Component that displays different types of charts',
               items: [
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.CHART]
+                  list: coreComponents[ViewType.CHART]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.CHART)
+                  list: customComponents.filter((e) => e.view.type === ViewType.CHART)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.CHART)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.CHART)
                 }
               ]
             },
@@ -229,18 +259,18 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.COLLAPSE]
+                  list: coreComponents[ViewType.COLLAPSE]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.COLLAPSE)
+                  list: customComponents.filter((e) => e.view.type === ViewType.COLLAPSE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.COLLAPSE)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.COLLAPSE)
                 }
               ]
             },
@@ -251,18 +281,18 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.ICON]
+                  list: coreComponents[ViewType.ICON]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.ICON)
+                  list: customComponents.filter((e) => e.view.type === ViewType.ICON)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.ICON)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.ICON)
                 }
               ]
             },
@@ -273,18 +303,18 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.IMAGE]
+                  list: coreComponents[ViewType.IMAGE]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.IMAGE)
+                  list: customComponents.filter((e) => e.view.type === ViewType.IMAGE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.IMAGE)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.IMAGE)
                 }
               ]
             },
@@ -295,53 +325,74 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.TABLE]
+                  list: coreComponents[ViewType.TABLE]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.TABLE)
+                  list: customComponents.filter((e) => e.view.type === ViewType.TABLE)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.TABLE)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.TABLE)
                 }
               ]
             },
             { title: ViewType.TEXT,
               isSelected: false,
-              helper: 'Displays either simle static written components or more complex ones built using expressions.',
+              helper: 'Displays either simple static written components or more complex ones built using expressions.',
               items: [
                 { type: 'System',
                   isSelected: false,
                   helper: TypeHelper.SYSTEM,
-                  list: core[ViewType.TEXT]
+                  list: coreComponents[ViewType.TEXT]
                 },
                 { type: 'Custom',
                   isSelected: false,
                   helper: TypeHelper.CUSTOM,
-                  list: custom.filter((e) => e.view.type == ViewType.TEXT)
+                  list: customComponents.filter((e) => e.view.type === ViewType.TEXT)
                 },
                 {
                   type: 'Shared',
                   isSelected: false,
                   helper: TypeHelper.SHARED,
-                  list: shared.filter((e) => e.view.type == ViewType.TEXT)
+                  list: sharedComponents.filter((e) => e.view.type === ViewType.TEXT)
                 }
               ]
             },
           ]
       }},
-      { icon: 'jam-layout',
+      {
+        icon: 'jam-layout',
         iconSelected: 'jam-layout-f',
         isSelected: false,
         description: 'Choose Template',
         subMenu: {
           title: 'Templates',
+          isSelected: false,
           helper: 'Templates are final drafts of pages that have not been published yet. Its a layout of what a future page will look like.',
-          items: []
+          items: [
+            {
+              type: 'System',
+              isSelected: false,
+              helper: TypeHelper.SYSTEM,
+              list: coreTemplates
+            },
+            {
+              type: 'Custom',
+              isSelected: false,
+              helper: TypeHelper.SYSTEM,
+              list: customTemplates
+            },
+            {
+              type: 'Shared',
+              isSelected: false,
+              helper: TypeHelper.SYSTEM,
+              list: sharedTemplates
+            },
+          ]
         }
       },
       {
@@ -382,6 +433,11 @@ export class ViewsEditorComponent implements OnInit {
     else if (option.description == 'Rearrange') {
       this.selection.setRearrange(true);
     }
+
+    // since templates only have a submenu, switch that directly
+    if (option.description === 'Choose Template') {
+      option.subMenu.isSelected ? this.resetMenus : this.triggerSubMenu(option.subMenu, 0);
+    }
   }
 
   triggerSubMenu(subMenu: SubMenu, index: number) {
@@ -404,22 +460,27 @@ export class ViewsEditorComponent implements OnInit {
   addToPage(item: View) {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
+    itemToAdd.id = fakeId;
+    updateFakeId();
+    itemToAdd.aspect = selectedAspect;
 
     // Add child to the selected block
     if (this.selection.get()?.type == ViewType.BLOCK) {
       this.selection.get().addChildViewToViewTree(itemToAdd);
     }
     // No valid selection, view is empty, and not adding block
+    // Create a base block
     else if (!this.view && itemToAdd.type != ViewType.BLOCK) {
       this.view = buildView(
         {
-          id: 1,
+          id: fakeId,
           viewRoot: null,
           aspect: {viewerRole: null, userRole: null},
           type: "block",
-          class: "card bg-base-100 shadow-xl",
+          class: "p-2",
         }
       )
+      updateFakeId();
       this.view.addChildViewToViewTree(itemToAdd);
       this.view.mode = ViewMode.EDIT;
     }
@@ -435,40 +496,149 @@ export class ViewsEditorComponent implements OnInit {
     this.resetMenus();
   }
 
+  addTemplateToPage(item: View) {
+    let itemToAdd = _.cloneDeep(item);
+    itemToAdd.switchMode(ViewMode.EDIT);
+
+    // Page becomes the template
+    if (!this.view) {
+      this.view = itemToAdd;
+    }
+    // Add to the selected block
+    else if (this.selection.get()?.type == ViewType.BLOCK) {
+      this.selection.get().addChildViewToViewTree(itemToAdd);
+    }
+    // By default without valid selection add to existing root
+    else {
+      this.view.addChildViewToViewTree(itemToAdd);
+    }
+
+    this.resetMenus();
+  }
+
   async savePage() {
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildViewTree(this.view)).toPromise();
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
+  
+  async saveChanges() {
+    await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view), viewsDeleted).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+  }
 
+  // Aspects -------------------------------------------------------
+
+  selectAspect(aspect: Aspect) {
+    this.aspectToSelect = aspect;
+  }
+  
+  switchToAspect() {
+    selectedAspect = this.aspectToSelect;
+    ModalService.closeModal('manage-versions');
+  }
+
+  createNewAspect() {
+    const aspect = new Aspect(null, null);
+    this.aspectsToEdit.push(aspect);
+    this.aspectToSelect = aspect;
+  }
+
+  submitAspects() {
+    ModalService.closeModal('manage-versions');
+    this.aspects = this.aspectsToEdit;
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
+  }
+
+  discardAspects() {
+    ModalService.closeModal('manage-versions');
+    this.aspectsToEdit = _.cloneDeep(this.aspects);
+  }
+
+  removeAspect(aspectIdx: number) {
+    this.aspectsToEdit.splice(aspectIdx, 1);
+    // TODO: should traverse view tree to remove all views of this aspect
+    // TODO: when editing roles of a existing aspect should also traverse view tree to edit there
+  }
   
   // Components -----------------------------------------------------
 
   async saveComponent() {
-    const component = this.selection.get();
+    let component = _.cloneDeep(this.selection.get());
+
+    // Don't save child components
+    if (component instanceof ViewBlock) {
+      component.children = [];
+    } // FIXME probably need something similar for Collapse
+
     await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildViewTree(component)).toPromise();
     ModalService.closeModal('save-as-component');
     AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
+    this.resetMenus();
+    this.newComponentName = "";
+    await this.setOptions();
   }
   
   async shareComponent() {
     if (this.componentSettings.id) {
-      await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, 1, "").toPromise(); // FIXME category and description
+      await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
       AlertService.showAlert(AlertType.SUCCESS, 'Component is now public!');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
-
+  
   async makePrivateComponent() {
     if (this.componentSettings.id) {
       await this.api.makePrivateComponent(this.componentSettings.id, this.user.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Component is now private!');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
-
+  
   async deleteComponent() {
     if (this.componentSettings.id) {
       await this.api.deleteCustomComponent(this.componentSettings.id, this.course.id).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Component deleted');
+      this.resetMenus();
+      await this.setOptions();
+    }
+  }
+
+  // Layouts --------------------------------------------------------
+
+  async saveTemplate() {
+    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree(this.view)).toPromise();
+    ModalService.closeModal('save-template');
+    AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+    this.closeEditor();
+  }
+  
+  async shareTemplate() {
+    if (this.templateSettings.id) {
+      await this.api.shareTemplate(this.templateSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
+      AlertService.showAlert(AlertType.SUCCESS, 'Template is now public!');
+      this.resetMenus();
+      await this.setOptions();
+    }
+  }
+  
+  async makePrivateTemplate() {
+    if (this.templateSettings.id) {
+      await this.api.makePrivateTemplate(this.templateSettings.id, this.user.id).toPromise();
+      AlertService.showAlert(AlertType.SUCCESS, 'Template is now private!');
+      this.resetMenus();
+      await this.setOptions();
+    }
+  }
+  
+  async deleteTemplate() {
+    if (this.templateSettings.id) {
+      await this.api.deleteCustomTemplate(this.templateSettings.id, this.course.id).toPromise();
+      AlertService.showAlert(AlertType.SUCCESS, 'Template deleted');
+      this.resetMenus();
+      await this.setOptions();
     }
   }
 
@@ -477,6 +647,9 @@ export class ViewsEditorComponent implements OnInit {
   async doActionPreview(action: string): Promise<void>{
     if (action === 'Manage versions') {
       ModalService.openModal('manage-versions');
+    }
+    else if (action === 'Undo') {
+      console.log(this.view);
     }
     /*
     else if (action === 'Raw (default)') {
@@ -515,8 +688,10 @@ export class ViewsEditorComponent implements OnInit {
   resetMenus(){
     this.activeSubMenu = null;
     this.componentSettings = { id: null, top: null };
+    this.templateSettings = { id: null, top: null };
     for (let i = 0; i < this.options.length; i++){
       this.options[i].isSelected = false;
+      if (this.options[i].subMenu) this.options[i].subMenu.isSelected = false;
 
       for (let j = 0; j < this.options[i].subMenu?.items.length; j++){
         this.options[i].subMenu.items[j].isSelected = false;
@@ -532,8 +707,9 @@ export class ViewsEditorComponent implements OnInit {
       this.activeSubMenu.items[i].isSelected = false;
     }
 
-    // reset component pop up
+    // reset component and template pop ups
     this.componentSettings = { id: null, top: null };
+    this.templateSettings = { id: null, top: null };
 
     // toggle selected category
     this.activeSubMenu.items[index].isSelected = !this.activeSubMenu.items[index].isSelected;
@@ -561,9 +737,26 @@ export class ViewsEditorComponent implements OnInit {
     ModalService.openModal('save-page');
   }
 
+  openSaveAsTemplateModal() {
+    ModalService.openModal('save-template');
+  }
+
   triggerComponentSettings(event: MouseEvent, componentId: number) {
     this.componentSettings.id = this.componentSettings.id == componentId ? null : componentId;
     this.componentSettings.top = event.pageY - 365;
+  }
+
+  triggerTemplateSettings(event: MouseEvent, templateId: number) {
+    this.templateSettings.id = this.templateSettings.id == templateId ? null : templateId;
+    this.templateSettings.top = event.pageY - 415;
+  }
+
+  getSelectedAspect() {
+    return selectedAspect;
+  }
+
+  isAspectSelected(aspect: Aspect) {
+    return aspect === this.aspectToSelect;
   }
   
 }

@@ -1,6 +1,5 @@
-import { Component, Input, OnInit, ViewChild } from "@angular/core";
-import { NgForm } from "@angular/forms";
-import { CodeTab, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
+import { Component, Input, OnChanges, OnInit, ViewChild } from "@angular/core";
+import { CodeTab, CustomFunction, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
 import { View, ViewMode } from "src/app/_domain/views/view";
 import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { ViewButton } from "src/app/_domain/views/view-types/view-button";
@@ -19,14 +18,21 @@ import * as _ from "lodash"
 import { ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
+import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
+import { fakeId, selectedAspect, updateFakeId } from "../views-editor.component";
+import { ApiHttpService } from "src/app/_services/api/api-http.service";
+import { moveItemInArray } from "@angular/cdk/drag-drop";
+import { ActivatedRoute } from "@angular/router";
+import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
 
 @Component({
   selector: 'app-component-editor',
   templateUrl: './component-editor.component.html'
 })
-export class ComponentEditorComponent implements OnInit {
+export class ComponentEditorComponent implements OnInit, OnChanges {
 
   @Input() view: View;
+  @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
 
   show: boolean = true;
 
@@ -34,41 +40,96 @@ export class ComponentEditorComponent implements OnInit {
   
   viewToEdit: ViewManageData;
   viewToPreview: View;
-  variableToAdd: { name: string, value: string, position: number };
-  eventToAdd: { type: EventType, action: string };
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
 
-  @ViewChild('q', { static: false }) q: NgForm;
+  tableSelectedTab: string = "Overall";
+  cellToEdit?: View = null;
+  rowToEdit?: ViewRow = null;
+
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
+  functions: CustomFunction[];
+  ELfunctions: CustomFunction[];
+  namespaces: string[];
 
   constructor(
+    private api: ApiHttpService,
+    private route: ActivatedRoute,
   ) { }
 
-  ngOnInit(): void {
+  async ngOnInit() {
+    this.route.parent.params.subscribe(async params => { 
+      const courseID = parseInt(params.id);
+      await this.getCustomFunctions(courseID);
+      this.prepareAdditionalTools();
+    })
+  }
+
+  ngOnChanges() {
     this.viewToEdit = this.initViewToEdit();
-    this.variableToAdd = { name: "", value: "", position: 0 };
-    this.eventToAdd = { type: null, action: "" };
 
     if (this.view instanceof ViewTable) {
       this.viewToPreview = new ViewTable(ViewMode.PREVIEW, this.view.id, this.view.viewRoot, null, this.view.aspect, this.view.footers, this.view.searching,
               this.view.columnFiltering, this.view.paging, this.view.lengthChange, this.view.info, this.view.ordering, this.view.orderingBy,
-              this.view.headerRows, this.view.cssId, this.view.classList, this.view.styles, this.view.visibilityType,
+              this.view.headerRows.concat(this.view.bodyRows), this.view.cssId, this.view.classList, this.view.styles, this.view.visibilityType,
               this.view.visibilityCondition, this.view.loopData, this.view.variables, this.view.events);
     }
     else {
       this.viewToPreview = _.cloneDeep(this.view);
       this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
+  }
 
+  // Additional Tools --------------------------------------
+  // code from the rules editor
+
+  prepareAdditionalTools() {
     let helpVariables =
-        "# These are the variables available in this component, from the component's parents.\n\n";
+    "# These are the variables available in this component, from the component's parents.\n\n";
 
     for (const variable of this.viewToEdit.variables){
       helpVariables += "%" + variable.name + " = " + variable.value + "\n";
     }
 
     this.additionalToolsTabs = [
-      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true},
+      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
+      { name: 'Preview expression', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview expression', value: null },
+      { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
+        namespaces: this.namespaces
+      },
     ]
+  }
+
+  async getCustomFunctions(courseID: number){
+    this.functions = await this.api.getRuleFunctions(courseID).toPromise();
+
+    // Remove 'gc' and 'transform' functions (not needed for rule editor)
+    let index = this.functions.findIndex(fn => fn.keyword === 'gc');
+    this.functions.splice(index, 1);
+    index = this.functions.findIndex(fn => fn.keyword === 'transform');
+    this.functions.splice(index, 1);
+
+    for (let i = 0; i < this.functions.length; i++) {
+      let description = this.functions[i].description;
+      const startMarker = ":example:";
+      const startIndex = description.indexOf(startMarker);
+
+      if (startIndex !== -1) {
+        this.functions[i].example = description.substring(startIndex + startMarker.length).trim();
+        description = description.substring(0, startIndex).trim();
+      }
+
+      // Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
+      this.functions[i].description = description;
+      this.functions[i].returnType = "-> " + this.functions[i].returnType;
+    }
+
+    this.ELfunctions = await this.api.getELFunctions().toPromise();
+    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
+
+    // set namespaces of functions
+    let names = this.functions.concat(this.ELfunctions)
+      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
+    this.namespaces = Array.from(new Set(names).values())
+    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
   }
 
   /*** --------------------------------------------- ***/
@@ -114,6 +175,8 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.content = this.view.content;
     }
     else if (this.view instanceof ViewTable) {
+      viewToEdit.headerRows = this.view.headerRows;
+      viewToEdit.bodyRows = this.view.bodyRows;
       viewToEdit.footers = this.view.footers;
       viewToEdit.searching = this.view.searching;
       viewToEdit.columnFiltering = this.view.columnFiltering;
@@ -122,6 +185,11 @@ export class ComponentEditorComponent implements OnInit {
       viewToEdit.info = this.view.info;
       viewToEdit.ordering = this.view.ordering;
       viewToEdit.orderingBy = this.view.orderingBy;
+    }
+    else if (this.view instanceof ViewChart) {
+      viewToEdit.chartType = this.view.chartType;
+      viewToEdit.data = this.view.data;
+      viewToEdit.options = this.view.options;
     }
     return viewToEdit;
   }
@@ -168,6 +236,8 @@ export class ComponentEditorComponent implements OnInit {
       to.content = from.content;
     }
     else if (to instanceof ViewTable) {
+      to.headerRows = from.headerRows;
+      to.bodyRows = from.bodyRows;
       to.footers = from.footers;
       to.searching = from.searching;
       to.columnFiltering = from.columnFiltering;
@@ -176,6 +246,11 @@ export class ComponentEditorComponent implements OnInit {
       to.info = from.info;
       to.ordering = from.ordering;
       to.orderingBy = from.orderingBy;
+    }
+    else if (to instanceof ViewChart) {
+      to.chartType = from.chartType;
+      to.data = from.data;
+      to.options = from.options;
     }
   }
 
@@ -186,9 +261,9 @@ export class ComponentEditorComponent implements OnInit {
   getComponentTypes() {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
-
-  getEventTypes() {
-    return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  
+  getChartTypes() {
+    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
   getCollapseIconOptions() {
@@ -198,6 +273,7 @@ export class ComponentEditorComponent implements OnInit {
   getIconSizeOptions() {
     return [{ value: "1.3rem", text: "Small"}, { value: "1.8rem", text: "Medium"}, { value: "2.5rem", text: "Large"}, { value: "4rem", text: "Extra-Large"}]
   }
+  
 
   getIcons() {
     return [
@@ -213,7 +289,7 @@ export class ComponentEditorComponent implements OnInit {
 
   async saveView(){
     this.updateView(this.view, this.viewToEdit);
-    ModalService.closeModal('component-editor');
+    if (!this.saveButton) ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
   }
 
@@ -226,24 +302,131 @@ export class ComponentEditorComponent implements OnInit {
     }, 100);
   }
 
-  addAuxVar() {
-    const new_var = new Variable(this.variableToAdd.name, this.variableToAdd.value, this.variableToAdd.position);
+  addAuxVar(event: { name: string; value: string }) {
+    const new_var = new Variable(event.name, event.value, 0);
     this.viewToEdit.variables.push(new_var);
-    this.variableToAdd = { name: "", value: "", position: 0 };
   }
 
-  addEvent() {
-    const new_event = buildEvent(this.eventToAdd.type, this.eventToAdd.action);
-    this.viewToEdit.events.push(new_event);
-    this.eventToAdd = { type: null, action: "" };
+  updateAuxVar(event: { name: string; value: string }, index: number) {
+    this.viewToEdit.variables[index].name = event.name;
+    this.viewToEdit.variables[index].value = event.value;
+  }
+
+  deleteAuxVar(index: number) {
+    this.viewToEdit.variables.splice(index, 1);
   }
   
+  addEvent(event: { type: EventType; expression: string }) {
+    this.viewToEdit.events.push(buildEvent(event.type, event.expression));
+  }
+  
+  updateEvent(event: { type: EventType; expression: string }, index: number) {
+    this.viewToEdit.events.splice(index, 1, buildEvent(event.type, event.expression));
+    console.log(this.viewToEdit.events);
+  }
+  
+  deleteEvent(index: number) {
+    this.viewToEdit.events.splice(index, 1);
+  }
+
   selectIcon(icon: string, required: boolean) {
     if (required) {
       this.viewToEdit.icon = icon;
     }
     else {
       this.viewToEdit.icon = this.viewToEdit.icon == icon ? null : icon;
+    }
+  }
+
+  // Exclusives for tables ---------------------
+
+  getNumberOfCols() {
+    return this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 0
+  }
+  addBodyRow(index: number) {
+    const rowId = fakeId;
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.BODY);
+    updateFakeId();
+    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
+    for (let i = 0; i < iterations; i++) {
+      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Cell");
+      updateFakeId();
+      newRow.children.push(newCell);
+    }
+    this.viewToEdit.bodyRows.splice(index, 0, newRow);
+  }
+  addHeaderRow(index: number) {
+    const rowId = fakeId;
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.HEADER);
+    updateFakeId();
+    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
+    for (let i = 0; i < iterations; i++) {
+      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Header");
+      updateFakeId();
+      newRow.children.push(newCell);
+    }
+    this.viewToEdit.headerRows.splice(index, 0, newRow);
+  }
+  deleteBodyRow(index: number) {
+    this.viewToEdit.bodyRows.splice(index, 1);
+  }
+  deleteHeaderRow(index: number) {
+    this.viewToEdit.headerRows.splice(index, 1);
+  }
+  moveBodyRow(from: number, to: number) {
+    if (0 <= to && to < this.viewToEdit.bodyRows.length) {
+      this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(from, 1, this.viewToEdit.bodyRows[to])[0];
+    }
+  }
+  moveHeaderRow(from: number, to: number) {
+    if (0 <= to && to < this.viewToEdit.headerRows.length) {
+      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(from, 1, this.viewToEdit.headerRows[to])[0];
+    }
+  }
+  selectCell(cell: View) {
+    if (this.cellToEdit === cell) {
+      this.cellToEdit = null;
+    }
+    else {
+      this.cellToEdit = cell;
+    } 
+  }
+  selectRow(row: ViewRow) {
+    if (this.rowToEdit === row) {
+      this.rowToEdit = null;
+    }
+    else {
+      this.rowToEdit = row;
+    } 
+  }
+  addColumn(index: number) {
+    if (this.viewToEdit.headerRows[0]) {
+      const newHeaderCell = ViewText.getDefault(fakeId, this.viewToEdit.headerRows[0].id, this.viewToEdit.headerRows[0], selectedAspect, "Header");
+      this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
+      updateFakeId();
+    }
+    for (let row of this.viewToEdit.bodyRows) {
+      const newCell = ViewText.getDefault(fakeId, row.id, row, selectedAspect, "Cell");
+      row.children.splice(index, 0, newCell);
+      updateFakeId();
+    }
+  }
+  moveColumn(from: number, to: number) {
+    if (0 <= to && to < this.getNumberOfCols()) {
+      if (this.viewToEdit.headerRows[0]) {
+        this.viewToEdit.headerRows[0].children[to] = this.viewToEdit.headerRows[0].children.splice(from, 1, this.viewToEdit.headerRows[0].children[to])[0];
+      }
+      for (let row of this.viewToEdit.bodyRows) {
+        row.children[to] = row.children.splice(from, 1, row.children[to])[0];
+      }
+    }
+  }
+  deleteColumn(index: number) {
+    if (this.viewToEdit.headerRows[0]) {
+      this.viewToEdit.headerRows[0].children.splice(index, 1);
+    }
+    for (let row of this.viewToEdit.bodyRows) {
+      row.children.splice(index, 1);
     }
   }
 }
@@ -268,14 +451,19 @@ export interface ViewManageData {
   collapseIcon?: CollapseIcon,
   direction?: BlockDirection,
   responsive?: boolean,
-  columns?: number;
-  footers?: boolean;
-  searching?: boolean;
-  columnFiltering?: boolean;
-  paging?: boolean;
-  lengthChange?: boolean;
-  info?: boolean;
-  ordering?: boolean;
-  orderingBy?: string;
-  src?: string;
+  columns?: number,
+  headerRows?: ViewRow[],
+  bodyRows?: ViewRow[],
+  footers?: boolean,
+  searching?: boolean,
+  columnFiltering?: boolean,
+  paging?: boolean,
+  lengthChange?: boolean,
+  info?: boolean,
+  ordering?: boolean,
+  orderingBy?: string,
+  src?: string,
+  chartType?: ChartType,
+  data?: string | any,
+  options?: {[key: string]: any},
 }

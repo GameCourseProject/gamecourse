@@ -123,6 +123,20 @@ class CustomTemplate extends Template
     }
 
     /**
+     * Gets shared templates.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function getSharedTemplates(): array
+    {
+        $table = self::TABLE_TEMPLATE_SHARED . " s JOIN " . self::TABLE_TEMPLATE . " c on s.id = c.id";
+        $templates = Core::database()->selectMultiple($table, [], "*", "s.sharedTimestamp");
+        foreach ($templates as &$template) { $template = self::parse($template); }
+        return $templates;
+    }
+
+    /**
      * Updates custom template's updateTimestamp to current time.
      *
      * @return void
@@ -264,7 +278,24 @@ class CustomTemplate extends Template
         return Core::database()->select(self::TABLE_TEMPLATE_SHARED, ["id" => $this->id], "sharedTimestamp");
     }
 
-    // TODO: share template
+    public static function shareTemplate(int $templateId, int $userId, string $description)
+    {
+        Core::database()->insert(self::TABLE_TEMPLATE_SHARED, [
+            "id" => $templateId,
+            "description" => $description,
+            "sharedBy" => $userId,
+            "sharedTimestamp" => date("Y-m-d H:i:s", time())
+        ]);
+    }
+
+    public static function stopShareTemplate(int $templateId, int $userId)
+    {
+        Core::database()->delete(self::TABLE_TEMPLATE_SHARED, [
+            "id" => $templateId,
+            "sharedBy" => $userId
+        ]);
+    }
+
 
 
     /*** ---------------------------------------------------- ***/

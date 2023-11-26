@@ -94,10 +94,8 @@ export class ViewText extends View {
   /**
    * Gets a default text view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewText { // TODO: refactor view editor
-    return null;
-    // return new ViewText(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.TEXT_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(id: number, parentId: number = null, parent: View, aspect: Aspect, text: string = ""): ViewText { // TODO: refactor view editor
+    return new ViewText(ViewMode.EDIT, id, parentId, parent, aspect, text, null, null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
 
@@ -142,7 +140,7 @@ export class ViewText extends View {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,

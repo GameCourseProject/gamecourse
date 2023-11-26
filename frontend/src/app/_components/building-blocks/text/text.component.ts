@@ -29,14 +29,16 @@ export class BBTextComponent implements OnInit {
     this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
 
     // Transform goToPage event into a link
-    const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
-    if (goToPageEventIndex !== -1) {
-      const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
-      this.view.link = environment.url + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
-        goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
-      this.view.events.splice(goToPageEventIndex, 1);
+    if (!this.edit) {
+      const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);
+      if (goToPageEventIndex !== -1) {
+        const goToPageEvent: GoToPageEvent = this.view.events[goToPageEventIndex] as GoToPageEvent;
+        this.view.link = environment.url + '/#/' + this.router.url.split('/').slice(1, 4).join('/') + '/' +
+          goToPageEvent.pageId + (goToPageEvent.userId ? '/user/' + goToPageEvent.userId : '');
+        this.view.events.splice(goToPageEventIndex, 1);
+      }
+      this.classes = 'bb-text' + (this.view.link ? ' bb-text-link' : '');
     }
-    this.classes = 'bb-text' + (this.view.link ? ' bb-text-link' : '');
   }
 
   externalLink(link: string): boolean {
