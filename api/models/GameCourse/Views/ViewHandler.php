@@ -717,7 +717,7 @@ class ViewHandler
 
         $viewRoot = null;   // used to set the same viewRoot for all aspects
         foreach ($viewTree as $view) {
-            if ($view["id"] < 0) {
+            if (!isset($view["id"]) || $view["id"] < 0) {
                 // Create a unique ID and viewRoot
                 $view["id"] = hexdec(uniqid());
                 $view["viewRoot"] = $viewRoot ?? $view["id"];
