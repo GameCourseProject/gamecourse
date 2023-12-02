@@ -4,6 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
+import { viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewText extends View {
   private _text: string;
@@ -48,18 +49,31 @@ export class ViewText extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewText.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+
+        if (this.oldId) {
+          const arrayToPut = (parent as any).children.find((e) => e.find((view) => view.id === this.oldId));
+          if (arrayToPut) {
+            arrayToPut.push(viewForDatabase);
+          }
+          else {
+            (parent as any).children.push([viewForDatabase]);
+          }
+        }
+        else {
+          (parent as any).children.push([viewForDatabase]);
+        }
+
+      }
+      else viewTree.push(viewForDatabase); // Is root
+      
+      viewsAdded.set(this.id, viewForDatabase);
+    }
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -82,9 +96,9 @@ export class ViewText extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    return null;
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+    else return null;
   }
 
   switchMode(mode: ViewMode) {

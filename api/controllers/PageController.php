@@ -719,40 +719,6 @@ class PageController
         API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
     }
 
-    /**
-     * Returns existing aspects in a page
-     *
-     * @param int $pageId
-     * @throws Exception
-     */
-    public function getPageAspects()
-    {
-        API::requireValues("pageId");
-
-        $pageId = API::getValue("pageId", "int");
-        $page = API::verifyPageExists($pageId);
-
-        $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
-
-        // Convert role ids to role names
-        $res = [];
-        foreach($aspects as $aspect) {
-            $aspectWithNames = [];
-            if ($aspect["userRole"]) {
-                $aspectWithNames["userRole"] = Role::getRoleName($aspect["userRole"]);
-            } else {
-                $aspectWithNames["userRole"] = null;
-            }
-            if ($aspect["viewerRole"]) {
-                $aspectWithNames["viewerRole"] = Role::getRoleName($aspect["viewerRole"]);
-            } else {
-                $aspectWithNames["viewerRole"] = null;
-            }
-            $res[] = $aspectWithNames;
-        }
-        API::response($res);
-    }
-
 
     /*** --------------------------------------------- ***/
     /*** -------------- Import / Export -------------- ***/

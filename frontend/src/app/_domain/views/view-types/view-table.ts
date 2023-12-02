@@ -9,7 +9,6 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -260,18 +259,18 @@ export class ViewTable extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const headerRow of this.headerRows) {
-    //   const found = headerRow.findView(viewId);
-    //   if (found) return headerRow;
-    // }
-    // for (const row of this.rows) {
-    //   const found = row.findView(viewId);
-    //   if (found) return row;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const headerRow of this.headerRows) {
+      const found = headerRow.findView(viewId);
+      if (found) return headerRow;
+    }
+    for (const row of this.bodyRows) {
+      const found = row.findView(viewId);
+      if (found) return row;
+    }
     return null;
   }
 
@@ -436,31 +435,6 @@ export class ViewTable extends View {
     return table;
   }
 
-  static toDatabase(obj: ViewTable): ViewTableDatabase {
-    return {
-      id: obj.id,
-      viewRoot: obj.viewRoot,
-      aspect: Aspect.toDatabase(obj.aspect),
-      type: obj.type,
-      cssId: obj.cssId,
-      class: obj.classList,
-      style: obj.styles,
-      visibilityType: obj.visibilityType,
-      visibilityCondition: obj.visibilityCondition,
-      loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
-      footers: obj.footers,
-      searching: obj.searching,
-      columnFiltering: obj.columnFiltering,
-      paging: obj.paging,
-      lengthChange: obj.lengthChange,
-      info: obj.info,
-      ordering: obj.ordering,
-      orderingBy: obj.orderingBy,
-      children: obj.headerRows.map(child => buildViewTree(child))
-    }
-  }
 }
 
 export interface ViewTableDatabase extends ViewDatabase {

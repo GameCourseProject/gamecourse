@@ -8,7 +8,6 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -145,14 +144,13 @@ export class ViewCollapse extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    if (this.header.findView(viewId)) return this.header;
+    if (this.content.findView(viewId)) return this.content;
+    
     return null;
   }
 
@@ -212,25 +210,6 @@ export class ViewCollapse extends View {
     collapse.content.parent = collapse;
 
     return collapse;
-  }
-
-  static toDatabase(obj: ViewCollapse): ViewCollapseDatabase {
-    return {
-      id: obj.id,
-      viewRoot: obj.viewRoot,
-      aspect: Aspect.toDatabase(obj.aspect),
-      type: obj.type,
-      cssId: obj.cssId,
-      class: obj.classList,
-      style: obj.styles,
-      visibilityType: obj.visibilityType,
-      visibilityCondition: obj.visibilityCondition,
-      loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
-      icon: obj.icon,
-      children: [buildViewTree(obj.header), buildViewTree(obj.content)]
-    }
   }
 }
 

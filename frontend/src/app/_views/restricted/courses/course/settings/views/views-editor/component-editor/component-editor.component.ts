@@ -19,11 +19,12 @@ import { ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
 import { ViewImage } from "src/app/_domain/views/view-types/view-image";
 import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { fakeId, selectedAspect, updateFakeId } from "../views-editor.component";
 import { ApiHttpService } from "src/app/_services/api/api-http.service";
 import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { ActivatedRoute } from "@angular/router";
 import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
+import { getFakeId, selectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { isMoreSpecific, viewsByAspect } from "../views-editor.component";
 
 @Component({
   selector: 'app-component-editor',
@@ -90,7 +91,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
 
     this.additionalToolsTabs = [
-      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
+      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true }, // FIXME
       { name: 'Preview expression', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview expression', value: null },
       { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces
@@ -274,7 +275,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return [{ value: "1.3rem", text: "Small"}, { value: "1.8rem", text: "Medium"}, { value: "2.5rem", text: "Large"}, { value: "4rem", text: "Extra-Large"}]
   }
   
-
   getIcons() {
     return [
       "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",
@@ -289,6 +289,49 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   async saveView(){
     this.updateView(this.view, this.viewToEdit);
+    
+    // For aspects --------------------------------------
+    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view.findView(this.view.id));
+    
+    if (viewsWithThis.length > 0) {
+      const lowerInHierarchy = viewsWithThis.filter((e) =>
+        (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
+        || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+      );
+      
+      if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
+        // this view isn't used in any other version "above"
+        // no need to create a new id, keep it and just
+        // propagate the changes to the views lower in hierarchy
+        for (let el of lowerInHierarchy) {
+          const view = el.view.findView(this.view.id);
+          this.updateView(view, this.viewToEdit);
+        }
+      }
+      
+      else {
+        // this is a new view in the tree with a new id
+        // to know where to place it later save the oldId
+        this.view.oldId = this.view.id;
+        this.view.id = getFakeId();
+        this.view.aspect = selectedAspect;
+
+        // propagate the changes to the views lower in hierarchy that have the oldId
+        for (let el of lowerInHierarchy) {
+          const view = el.view.findView(this.view.oldId);
+          this.updateView(view, this.viewToEdit);
+          view.oldId = this.view.oldId;
+          view.id = this.view.id;
+          view.aspect = this.view.aspect;
+        }
+        // views above in the hierarchy keep the old version
+      }
+    }
+    else {
+      // this view is already unique
+      console.log("this view is only used here - great!");
+    }
+
     if (!this.saveButton) ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
   }
@@ -344,25 +387,21 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 0
   }
   addBodyRow(index: number) {
-    const rowId = fakeId;
+    const rowId = getFakeId();
     const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.BODY);
-    updateFakeId();
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Cell");
-      updateFakeId();
+      const newCell = ViewText.getDefault(getFakeId(), rowId, newRow, selectedAspect, "Cell");
       newRow.children.push(newCell);
     }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
   addHeaderRow(index: number) {
-    const rowId = fakeId;
+    const rowId = getFakeId();;
     const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.HEADER);
-    updateFakeId();
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(fakeId, rowId, newRow, selectedAspect, "Header");
-      updateFakeId();
+      const newCell = ViewText.getDefault(getFakeId(), rowId, newRow, selectedAspect, "Header");
       newRow.children.push(newCell);
     }
     this.viewToEdit.headerRows.splice(index, 0, newRow);
@@ -401,14 +440,12 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
   addColumn(index: number) {
     if (this.viewToEdit.headerRows[0]) {
-      const newHeaderCell = ViewText.getDefault(fakeId, this.viewToEdit.headerRows[0].id, this.viewToEdit.headerRows[0], selectedAspect, "Header");
+      const newHeaderCell = ViewText.getDefault(getFakeId(), this.viewToEdit.headerRows[0].id, this.viewToEdit.headerRows[0], selectedAspect, "Header");
       this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
-      updateFakeId();
     }
     for (let row of this.viewToEdit.bodyRows) {
-      const newCell = ViewText.getDefault(fakeId, row.id, row, selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(getFakeId(), row.id, row, selectedAspect, "Cell");
       row.children.splice(index, 0, newCell);
-      updateFakeId();
     }
   }
   moveColumn(from: number, to: number) {

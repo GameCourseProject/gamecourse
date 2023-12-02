@@ -81,11 +81,11 @@ export class ViewImage extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    return null;
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+    else return null;
   }
-
+  
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
@@ -137,24 +137,6 @@ export class ViewImage extends View {
     );
   }
 
-  static toDatabase(obj: ViewImage): ViewImageDatabase {
-    return {
-      id: obj.id,
-      viewRoot: obj.viewRoot,
-      aspect: Aspect.toDatabase(obj.aspect),
-      type: obj.type,
-      cssId: obj.cssId,
-      class: obj.classList,
-      style: obj.styles,
-      visibilityType: obj.visibilityType,
-      visibilityCondition: obj.visibilityCondition,
-      loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
-      src: obj.src,
-      link: obj.link
-    }
-  }
 }
 
 export interface ViewImageDatabase extends ViewDatabase {

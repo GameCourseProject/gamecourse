@@ -4,7 +4,6 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 import { buildView } from "../build-view/build-view";
 
 
@@ -122,14 +121,14 @@ export class ViewRow extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const child of this.children) {
+      const found = child.findView(viewId);
+      if (found) return child;
+    }
     return null;
   }
 
@@ -189,24 +188,6 @@ export class ViewRow extends View {
     return row;
   }
 
-  static toDatabase(obj: ViewRow): ViewRowDatabase {
-    return {
-      id: obj.id,
-      viewRoot: obj.viewRoot,
-      aspect: Aspect.toDatabase(obj.aspect),
-      type: obj.type,
-      cssId: obj.cssId,
-      class: obj.classList,
-      style: obj.styles,
-      visibilityType: obj.visibilityType,
-      visibilityCondition: obj.visibilityCondition,
-      loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
-      rowType: obj.rowType,
-      children: obj.children.map(child => buildViewTree(child))
-    }
-  }
 }
 
 export interface ViewRowDatabase extends ViewDatabase {

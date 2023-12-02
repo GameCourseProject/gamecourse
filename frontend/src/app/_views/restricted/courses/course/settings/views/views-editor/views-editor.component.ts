@@ -13,24 +13,25 @@ import * as _ from "lodash"
 import { ViewSelectionService } from "src/app/_services/view-selection.service";
 import { ModalService } from 'src/app/_services/modal.service';
 import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
-import { ViewButton, ViewButtonDatabase } from "src/app/_domain/views/view-types/view-button";
-import { ViewChart, ViewChartDatabase } from "src/app/_domain/views/view-types/view-chart";
-import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
-import { ViewIcon, ViewIconDatabase } from "src/app/_domain/views/view-types/view-icon";
-import { ViewImage, ViewImageDatabase } from "src/app/_domain/views/view-types/view-image";
-import { ViewRow, ViewRowDatabase } from "src/app/_domain/views/view-types/view-row";
-import { ViewTable, ViewTableDatabase } from "src/app/_domain/views/view-types/view-table";
-import { ViewText, ViewTextDatabase } from "src/app/_domain/views/view-types/view-text";
+import { ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
+import { buildViewTree, getFakeId, selectedAspect, setSelectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { Role } from "src/app/_domain/roles/role";
 
-export let selectedAspect: Aspect          // Selected aspect for previewing and editing
-export let fakeId: number                  // Fake, negative ids, for new views, to be generated in backend
-export let viewsDeleted: number[] = [];    // viewIds of views that were deleted; check if need to be deleted from database
+export let viewsByAspect: { aspect: Aspect, view: View }[];
+export let rolesHierarchy;
 
-export function updateFakeId() {
-  fakeId -= 1;
+export function isMoreSpecific(role: string | null, antecessor: string | null): boolean {
+  if (role && !antecessor || role === antecessor) {
+    return true;
+  }
+  else if (rolesHierarchy[role]?.parent) {
+    return isMoreSpecific(rolesHierarchy[role].parent._name, antecessor);
+  }
+  else {
+    return false;
+  }
 }
 
 @Component({
@@ -108,21 +109,24 @@ export class ViewsEditorComponent implements OnInit {
         if (segment === 'new-page') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
-          selectedAspect = new Aspect(null, null);
-          this.aspectsToEdit = [new Aspect(null, null)];
+          setSelectedAspect(new Aspect(null, null));
+          this.aspectsToEdit = [selectedAspect];
           this.aspects = [selectedAspect];
           this.aspectToSelect = selectedAspect;
           this.loading.aspects = false;
+          viewsByAspect = [{
+            aspect: selectedAspect,
+            view: null
+          }];
+          this.view = viewsByAspect[0].view;
         } else {
           await this.getPage(parseInt(segment));
-          await this.getAspects();
           await this.getView();
         }
 
       });
       this.loading.page = false;
     })
-    fakeId = -1;
   }
 
   /*** --------------------------------------------- ***/
@@ -135,23 +139,38 @@ export class ViewsEditorComponent implements OnInit {
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
+
+    const rolesHierarchySmart = {};
+    init(this.course.roleHierarchy, null);
+
+    function init(rolesHierarchy: Role[], parent: Role) {
+      for (const role of rolesHierarchy) {
+        rolesHierarchySmart[role.name] = {role, parent, children: []};
+        if (parent) rolesHierarchySmart[parent.name].children.push(role);
+
+        // Traverse children
+        if (role.children?.length > 0)
+          init(role.children, role);
+      }
+    }
+    rolesHierarchy = rolesHierarchySmart;
+    console.log(isMoreSpecific(null, "Student"));
   }
 
   async getPage(pageID: number): Promise<void> {
     this.page = await this.api.getPageById(pageID).toPromise();
   }
 
-  async getAspects(): Promise<void> {
-    this.aspects = await this.api.getPageAspects(this.page.id).toPromise();
-    selectedAspect = this.aspects[0];
+  async getView(): Promise<void> {
+    viewsByAspect = await this.api.renderPageInEditor(this.page.id).toPromise();
+    this.view = viewsByAspect[0].view;
+    this.view.switchMode(ViewMode.EDIT);
+    
+    this.aspects = viewsByAspect.map((e) => e.aspect);
+    setSelectedAspect(this.aspects[0]);
     this.aspectToSelect = selectedAspect;
     this.aspectsToEdit = _.cloneDeep(this.aspects);
     this.loading.aspects = false;
-  }
-  
-  async getView(): Promise<void> {
-    this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
-    this.view.switchMode(ViewMode.EDIT);
   }
 
   async setOptions() {
@@ -460,39 +479,45 @@ export class ViewsEditorComponent implements OnInit {
   addToPage(item: View) {
     let itemToAdd = _.cloneDeep(item);
     itemToAdd.mode = ViewMode.EDIT;
-    itemToAdd.id = fakeId;
-    updateFakeId();
+    itemToAdd.id = getFakeId();
     itemToAdd.aspect = selectedAspect;
 
-    // Add child to the selected block
-    if (this.selection.get()?.type == ViewType.BLOCK) {
-      this.selection.get().addChildViewToViewTree(itemToAdd);
-    }
-    // No valid selection, view is empty, and not adding block
-    // Create a base block
-    else if (!this.view && itemToAdd.type != ViewType.BLOCK) {
-      this.view = buildView(
-        {
-          id: fakeId,
-          viewRoot: null,
-          aspect: {viewerRole: null, userRole: null},
-          type: "block",
-          class: "p-2",
-        }
-      )
-      updateFakeId();
-      this.view.addChildViewToViewTree(itemToAdd);
-      this.view.mode = ViewMode.EDIT;
-    }
-    // Adding first block
-    else if (!this.view && itemToAdd.type == ViewType.BLOCK) {
-      this.view = itemToAdd;
-    }
-    // By default without valid selection add to existing root
-    else {
-      this.view.addChildViewToViewTree(itemToAdd);
-    }
+    // All Aspects that should display the new item (this one and all others beneath in hierarchy)
+    const toAdd = viewsByAspect.filter((e) =>
+      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
+      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+    );
 
+    for (let el of toAdd) {
+      // Add child to the selected block
+      if (this.selection.get()?.type === ViewType.BLOCK) {
+        el.view.findView(this.selection.get().id)?.addChildViewToViewTree(itemToAdd);
+      }
+      // No valid selection, view is empty, and not adding block
+      // Create a base block
+      else if (!el.view && itemToAdd.type != ViewType.BLOCK) {
+        el.view = buildView(
+          {
+            id: getFakeId(),
+            viewRoot: null,
+            aspect: selectedAspect,
+            type: "block",
+            class: "p-2",
+          }
+        )
+        el.view.addChildViewToViewTree(itemToAdd);
+        el.view.mode = ViewMode.EDIT;
+      }
+      // Adding first block
+      else if (!el.view && itemToAdd.type === ViewType.BLOCK) {
+        el.view = itemToAdd;
+      }
+      // By default without valid selection add to existing root
+      else {
+        el.view.addChildViewToViewTree(itemToAdd);
+      }
+    }
+    this.view = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     this.resetMenus();
   }
 
@@ -517,14 +542,16 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async savePage() {
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildViewTree(this.view)).toPromise();
+    console.log(buildViewTree(viewsByAspect.map((e) => e.view)));
+/*     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildViewTree(this.viewsByAspect.map((e) => e.view))).toPromise();
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
-    AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
+    AlertService.showAlert(AlertType.SUCCESS, 'Page Created'); */
   }
   
   async saveChanges() {
-    await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.view), viewsDeleted).toPromise();
-    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+    console.log(buildViewTree(viewsByAspect.map((e) => e.view)));
+/*     await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.viewsByAspect.map((e) => e.view)), viewsDeleted).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved'); */
   }
 
   // Aspects -------------------------------------------------------
@@ -534,7 +561,16 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   switchToAspect() {
-    selectedAspect = this.aspectToSelect;
+    setSelectedAspect(this.aspectToSelect);
+    const correspondentView = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
+    if (correspondentView) {
+      this.view = correspondentView;
+      this.view.switchMode(ViewMode.EDIT);
+    }
+    else {
+      this.view = _.cloneDeep(viewsByAspect[0].view);
+      viewsByAspect.push({ aspect: selectedAspect, view: this.view });
+    }
     ModalService.closeModal('manage-versions');
   }
 
@@ -557,7 +593,7 @@ export class ViewsEditorComponent implements OnInit {
 
   removeAspect(aspectIdx: number) {
     this.aspectsToEdit.splice(aspectIdx, 1);
-    // TODO: should traverse view tree to remove all views of this aspect
+    // TODO: should delete its view tree
     // TODO: when editing roles of a existing aspect should also traverse view tree to edit there
   }
   
@@ -609,7 +645,7 @@ export class ViewsEditorComponent implements OnInit {
   // Layouts --------------------------------------------------------
 
   async saveTemplate() {
-    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree(this.view)).toPromise();
+    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view])).toPromise();
     ModalService.closeModal('save-template');
     AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
     this.closeEditor();
@@ -650,6 +686,8 @@ export class ViewsEditorComponent implements OnInit {
     }
     else if (action === 'Undo') {
       console.log(this.view);
+    }
+    else if (action === 'Redo') {
     }
     /*
     else if (action === 'Raw (default)') {
@@ -787,22 +825,4 @@ export enum TypeHelper {
   SYSTEM = 'System components are provided by GameCourse and already configured and ready for use.',
   CUSTOM = 'Custom components are created by users in this course.',
   SHARED = 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses.'
-}
-
-export function buildViewTree(view: View): ViewBlockDatabase[] | ViewButtonDatabase[] | ViewChartDatabase[]
-    | ViewCollapseDatabase[] | ViewIconDatabase[] | ViewImageDatabase[] | ViewRowDatabase[] | ViewTableDatabase[] | ViewTextDatabase[] {
-  const type = view.type;
-
-  if (type === ViewType.BLOCK) return [ViewBlock.toDatabase(view as ViewBlock)];
-  else if (type === ViewType.BUTTON) return [ViewButton.toDatabase(view as ViewButton)];
-  else if (type === ViewType.CHART) return [ViewChart.toDatabase(view as ViewChart)];
-  else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse)];
-  else if (type === ViewType.ICON) return [ViewIcon.toDatabase(view as ViewIcon)];
-  else if (type === ViewType.IMAGE) return [ViewImage.toDatabase(view as ViewImage)];
-  else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow)];
-  else if (type === ViewType.TABLE) return [ViewTable.toDatabase(view as ViewTable)];
-  else if (type === ViewType.TEXT) return [ViewText.toDatabase(view as ViewText)];
-  // NOTE: insert here other types of building-blocks
-
-  return null;
 }

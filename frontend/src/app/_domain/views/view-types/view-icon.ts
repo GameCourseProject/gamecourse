@@ -4,8 +4,6 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { copyObject, exists } from "src/app/_utils/misc/misc";
-import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewIcon extends View {
   private _icon: string;
@@ -84,9 +82,9 @@ export class ViewIcon extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    return null;
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+    else return null;
   }
 
   switchMode(mode: ViewMode) {
@@ -140,24 +138,6 @@ export class ViewIcon extends View {
     );
   }
 
-  static toDatabase(obj: ViewIcon): ViewIconDatabase {
-    return {
-      id: obj.id,
-      viewRoot: obj.viewRoot,
-      aspect: Aspect.toDatabase(obj.aspect),
-      type: obj.type,
-      cssId: obj.cssId,
-      class: obj.classList,
-      style: obj.styles,
-      visibilityType: obj.visibilityType,
-      visibilityCondition: obj.visibilityCondition,
-      loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
-      icon: obj.icon,
-      size: obj.size
-    }
-  }
 }
 
 export interface ViewIconDatabase extends ViewDatabase {
