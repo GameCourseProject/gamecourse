@@ -477,18 +477,21 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   addToPage(item: View) {
-    let itemToAdd = _.cloneDeep(item);
-    itemToAdd.mode = ViewMode.EDIT;
-    itemToAdd.id = getFakeId();
-    itemToAdd.aspect = selectedAspect;
-
     // All Aspects that should display the new item (this one and all others beneath in hierarchy)
     const toAdd = viewsByAspect.filter((e) =>
       (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
       || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
     );
 
+    const fakeId = getFakeId();
+    
     for (let el of toAdd) {
+      let itemToAdd = _.cloneDeep(item);
+      itemToAdd.mode = ViewMode.EDIT;
+      itemToAdd.id = fakeId;
+      itemToAdd.aspect = selectedAspect;
+      itemToAdd.uniqueId = Math.round(Date.now() * Math.random());
+      
       // Add child to the selected block
       if (this.selection.get()?.type === ViewType.BLOCK) {
         el.view.findView(this.selection.get().id)?.addChildViewToViewTree(itemToAdd);

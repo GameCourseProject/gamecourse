@@ -143,7 +143,7 @@ export class ViewBlock extends View {
     // Look for view in children
     for (const child of this.children) {
       const found = child.findView(viewId);
-      if (found) return child;
+      if (found) return found;
     }
     return null;
   }

@@ -3,7 +3,7 @@ import { View, ViewDatabase } from "../view";
 
 export let viewTree: any[];                           // The view tree being built
 export let viewsAdded: Map<number, ViewDatabase>;     // Holds building-blocks that have already been added to the tree
-export let viewsDeleted: number[] = [];               // viewIds of views that were deleted; check if need to be deleted from database
+export let viewsDeleted: number[] = [];               // viewIds of views that were completely deleted -> delete from database
 export let selectedAspect: Aspect;                    // Selected aspect for previewing and editing
 let fakeId: number = -1;                              // Fake, negative ids, for new views, to be generated in backend
 

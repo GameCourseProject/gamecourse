@@ -287,7 +287,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async saveView(){
+  async saveView() {
     this.updateView(this.view, this.viewToEdit);
     
     // For aspects --------------------------------------
@@ -308,7 +308,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
           this.updateView(view, this.viewToEdit);
         }
       }
-      
       else {
         // this is a new view in the tree with a new id
         // to know where to place it later save the oldId
@@ -326,10 +325,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
         }
         // views above in the hierarchy keep the old version
       }
-    }
-    else {
-      // this view is already unique
-      console.log("this view is only used here - great!");
     }
 
     if (!this.saveButton) ModalService.closeModal('component-editor');

@@ -21,6 +21,8 @@ import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
 import * as _ from "lodash"
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { isMoreSpecific, viewsByAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import { getFakeId, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 
 @Component({
   selector: 'bb-any',
@@ -155,14 +157,31 @@ export class BBAnyComponent implements OnInit {
   }
 
   deleteAction() {
-    if (this.view.parent)
-      this.view.parent.removeChildView(this.view.id);
+    const viewsWithThis = viewsByAspect.filter((e) => e.view.findView(this.view.id));
+    
+    const lowerInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
+      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+    );
+
+    for (let el of lowerInHierarchy) {
+      const view = el.view.findView(this.view.id);
+      if (view.parent) {
+        view.parent.removeChildView(this.view.id);
+      }
+    }
+
+    // View doesn't exist anymore in any tree -> delete from database
+    if (viewsByAspect.filter((e) => e.view.findView(this.view.id)).length <= 0) {
+      viewsDeleted.push(this.view.id);
+    }
   }
 
   duplicateAction() {
     let duplicated = _.cloneDeep(this.view);
     duplicated.mode = ViewMode.EDIT;
-    duplicated.id = null;
+    duplicated.id = getFakeId();
+    duplicated.uniqueId = Math.round(Date.now() * Math.random());
 
     if (this.view.parent)
       this.view.parent.addChildViewToViewTree(duplicated);
