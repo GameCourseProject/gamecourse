@@ -49,19 +49,19 @@ const routes: Routes = [
       },
       {
         path: 'rule-system',
-        component: ComingSoonComponent
+        component: SectionsComponent
       },
       {
         path: 'rule-system/sections/:sectionId',
-        component: ComingSoonComponent
+        component: SectionRulesComponent
       },
       {
         path: 'rule-system/sections/:sectionId/rules/:ruleId',
-        component: ComingSoonComponent
+        component: RulesComponent
       },
       {
         path: 'rule-system/sections/:sectionId/new-rule',
-        component: ComingSoonComponent
+        component: RulesComponent
       },
       {
         path: 'modules',
