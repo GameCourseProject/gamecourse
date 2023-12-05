@@ -23,7 +23,7 @@ import { ApiHttpService } from "src/app/_services/api/api-http.service";
 import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { ActivatedRoute } from "@angular/router";
 import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { getFakeId, selectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, selectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { isMoreSpecific, viewsByAspect } from "../views-editor.component";
 
 @Component({
@@ -310,16 +310,24 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       }
       else {
         // this is a new view in the tree with a new id
-        // to know where to place it later save the oldId
-        this.view.oldId = this.view.id;
+        const oldId = this.view.id;
         this.view.id = getFakeId();
         this.view.aspect = selectedAspect;
 
+        let group = groupedChildren.get(this.view.parent.id);
+        if (group) {
+          group.find((e) => e.includes(oldId)).push(this.view.id);
+          groupedChildren.set(this.view.parent.id, group);
+        }
+        else {
+          // this is the first child inserted
+          groupedChildren.set(this.view.parent.id, [[this.view.id]]);
+        }
+
         // propagate the changes to the views lower in hierarchy that have the oldId
         for (let el of lowerInHierarchy) {
-          const view = el.view.findView(this.view.oldId);
+          const view = el.view.findView(oldId);
           this.updateView(view, this.viewToEdit);
-          view.oldId = this.view.oldId;
           view.id = this.view.id;
           view.aspect = this.view.aspect;
         }
@@ -360,7 +368,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   
   updateEvent(event: { type: EventType; expression: string }, index: number) {
     this.viewToEdit.events.splice(index, 1, buildEvent(event.type, event.expression));
-    console.log(this.viewToEdit.events);
   }
   
   deleteEvent(index: number) {

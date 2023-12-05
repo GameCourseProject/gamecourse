@@ -6,7 +6,7 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 
 import {buildView} from "../build-view/build-view";
-import { viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -90,13 +90,16 @@ export class ViewBlock extends View {
     if (!viewsAdded.has(this.id)) {
       if (this.parent) {
         const parent = viewsAdded.get(this.parent.id);
-        (parent as any).children.push([viewForDatabase]);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
       }
       else viewTree.push(viewForDatabase); // Is root
-      
-      viewsAdded.set(this.id, viewForDatabase);
     }
-    
+    viewsAdded.set(this.id, viewForDatabase);
+
     // Build children into view tree
     for (const child of this.children) {
       child.buildViewTree();
@@ -228,7 +231,7 @@ export class ViewBlock extends View {
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,
-      children: []
+      children: groupedChildren.get(obj.id)
     }
   }
 }
@@ -237,7 +240,7 @@ export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
   columns?: number,
   responsive?: boolean,
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum BlockDirection {

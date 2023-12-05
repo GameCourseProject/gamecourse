@@ -13,6 +13,7 @@
     [classList]="'-mt-6'"
     [leftActions]="[{action: 'Arrange Pages', icon: 'feather-move'}]"
     [rightActions]="[{action: 'Create new Page', icon: 'feather-file', color: 'primary', outline: true},
+                     {action: 'Create new Template', icon: 'jam-layout', color: 'primary', outline: true},
                      {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                       {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
                       {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
@@ -99,8 +100,23 @@
 
   </div>
 
-  <!-- Loader -->
   <app-loader [loading]="loading.page"></app-loader>
+
+  <!-- Header for Layouts -->
+  <app-header
+    [classList]="'text-md mt-16'"
+    [title]="'Templates'"
+    [icon]="'jam-layout'"
+    [loading]="loading.action">
+  </app-header>
+
+  <!-- Template cards -->
+  <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
+  </div>
+
+  <!-- Loader -->
+  <app-loader [loading]="loading.template"></app-loader>
+
 </div>
 
 

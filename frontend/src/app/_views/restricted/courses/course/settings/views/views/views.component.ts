@@ -28,6 +28,7 @@ export class ViewsComponent implements OnInit {
 
   loading = {
     page: true,
+    template: true,
     action: false
   };
 
@@ -141,7 +142,10 @@ export class ViewsComponent implements OnInit {
       ModalService.openModal('arrange-pages');
 
     } else if (event === 'create new page') {
-      await this.router.navigate(['pages/editor/new-page'], {relativeTo: this.route.parent});
+      await this.router.navigate(['pages/editor/new'], {relativeTo: this.route.parent});
+
+    } else if (event === 'create new template') {
+      await this.router.navigate(['pages/editor/new'], {relativeTo: this.route.parent});
 
     } else if (event === 'import page(s) from pc'){
       this.mode = 'import-pc';

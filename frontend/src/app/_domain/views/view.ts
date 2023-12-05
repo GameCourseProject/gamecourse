@@ -29,8 +29,6 @@ export abstract class View {
   private _variables?: Variable[];
   private _events?: Event[];
 
-  private _oldId?: number;        // In case this view is a replacement of another, less specific one, in terms of Aspects
-
 
   protected constructor(mode: ViewMode, type: ViewType, id: number, viewRoot: number, parent: View, aspect: Aspect,
                         cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
@@ -178,14 +176,6 @@ export abstract class View {
 
   set events(value: Event[]) {
     this._events = value;
-  }
-
-  get oldId(): number {
-    return this._oldId;
-  }
-
-  set oldId(value: number) {
-    this._oldId = value;
   }
 
 

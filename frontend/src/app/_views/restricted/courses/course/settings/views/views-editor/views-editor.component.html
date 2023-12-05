@@ -19,7 +19,7 @@
   <div class="divider -mt-2">
     <div class="flex justify-center mx-2">
       <ng-icon name="jam-pencil-f" size="1.5rem" class="text-primary mr-2"></ng-icon>
-      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : 'Create new page'}}</span>
+      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : 'Create new'}}</span>
     </div>
   </div>
 
@@ -185,7 +185,7 @@
   </div>
 
   <div class="card-actions justify-end py-6">
-    <button class="btn btn-primary" (click)="closeEditor()">Discard</button>
+    <button class="btn btn-ghost" (click)="closeEditor()">Cancel</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
     <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">Save Changes</button>

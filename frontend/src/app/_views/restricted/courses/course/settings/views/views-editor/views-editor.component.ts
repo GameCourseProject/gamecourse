@@ -16,7 +16,7 @@ import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ViewBlock } from "src/app/_domain/views/view-types/view-block";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, selectedAspect, setSelectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { Role } from "src/app/_domain/roles/role";
 
 export let viewsByAspect: { aspect: Aspect, view: View }[];
@@ -106,7 +106,7 @@ export class ViewsEditorComponent implements OnInit {
       this.route.params.subscribe(async childParams => {
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
         
-        if (segment === 'new-page') {
+        if (segment === 'new') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
           setSelectedAspect(new Aspect(null, null));
@@ -116,9 +116,17 @@ export class ViewsEditorComponent implements OnInit {
           this.loading.aspects = false;
           viewsByAspect = [{
             aspect: selectedAspect,
-            view: null
+            view: buildView({
+              id: getFakeId(),
+              viewRoot: null,
+              aspect: selectedAspect,
+              type: "block",
+              class: "p-2",
+            })
           }];
           this.view = viewsByAspect[0].view;
+          this.view.switchMode(ViewMode.EDIT);
+          initGroupedChildren([]);
         } else {
           await this.getPage(parseInt(segment));
           await this.getView();
@@ -154,7 +162,6 @@ export class ViewsEditorComponent implements OnInit {
       }
     }
     rolesHierarchy = rolesHierarchySmart;
-    console.log(isMoreSpecific(null, "Student"));
   }
 
   async getPage(pageID: number): Promise<void> {
@@ -162,7 +169,10 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async getView(): Promise<void> {
-    viewsByAspect = await this.api.renderPageInEditor(this.page.id).toPromise();
+    const data = await this.api.renderPageInEditor(this.page.id).toPromise();
+    viewsByAspect = data["viewTreeByAspect"];
+
+    initGroupedChildren(data["viewTree"]); // sets viewsByAspect
     this.view = viewsByAspect[0].view;
     this.view.switchMode(ViewMode.EDIT);
     
@@ -210,7 +220,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Component composed by other components.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.BLOCK]
                 },
@@ -232,7 +242,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Component that displays different types of buttons.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.BUTTON]
                 },
@@ -254,7 +264,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Component that displays different types of charts',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.CHART]
                 },
@@ -276,7 +286,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Component that can hide or show other components.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.COLLAPSE]
                 },
@@ -298,7 +308,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Displays an icon.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.ICON]
                 },
@@ -320,7 +330,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Displays either simple static visual components or more complex ones built using expressions',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.IMAGE]
                 },
@@ -342,7 +352,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Displays a table with columns and rows. Can display a variable number of headers as well.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.TABLE]
                 },
@@ -364,7 +374,7 @@ export class ViewsEditorComponent implements OnInit {
               helper: 'Displays either simple static written components or more complex ones built using expressions.',
               items: [
                 { type: 'System',
-                  isSelected: false,
+                  isSelected: true,
                   helper: TypeHelper.SYSTEM,
                   list: coreComponents[ViewType.TEXT]
                 },
@@ -484,42 +494,35 @@ export class ViewsEditorComponent implements OnInit {
     );
 
     const fakeId = getFakeId();
-    
+
     for (let el of toAdd) {
       let itemToAdd = _.cloneDeep(item);
       itemToAdd.mode = ViewMode.EDIT;
       itemToAdd.id = fakeId;
       itemToAdd.aspect = selectedAspect;
       itemToAdd.uniqueId = Math.round(Date.now() * Math.random());
-      
+
       // Add child to the selected block
       if (this.selection.get()?.type === ViewType.BLOCK) {
         el.view.findView(this.selection.get().id)?.addChildViewToViewTree(itemToAdd);
       }
-      // No valid selection, view is empty, and not adding block
-      // Create a base block
-      else if (!el.view && itemToAdd.type != ViewType.BLOCK) {
-        el.view = buildView(
-          {
-            id: getFakeId(),
-            viewRoot: null,
-            aspect: selectedAspect,
-            type: "block",
-            class: "p-2",
-          }
-        )
-        el.view.addChildViewToViewTree(itemToAdd);
-        el.view.mode = ViewMode.EDIT;
-      }
-      // Adding first block
-      else if (!el.view && itemToAdd.type === ViewType.BLOCK) {
-        el.view = itemToAdd;
-      }
       // By default without valid selection add to existing root
       else {
-        el.view.addChildViewToViewTree(itemToAdd);
+        el.view.findView(this.view.id)?.addChildViewToViewTree(itemToAdd);
       }
     }
+
+    if (this.selection.get()?.type === ViewType.BLOCK) {
+      const originalGroup: number[][] = groupedChildren.get(this.selection.get().id) ?? [];
+      originalGroup.push([fakeId]);
+      groupedChildren.set(this.selection.get().id, originalGroup);
+    }
+    else {
+      const originalGroup = groupedChildren.get(this.view.id) ?? [];
+      originalGroup.push([fakeId]);
+      groupedChildren.set(this.view.id, originalGroup);
+    }
+
     this.view = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     this.resetMenus();
   }
@@ -545,16 +548,18 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async savePage() {
-    console.log(buildViewTree(viewsByAspect.map((e) => e.view)));
-/*     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildViewTree(this.viewsByAspect.map((e) => e.view))).toPromise();
+    const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
+    console.log(buildedTree);
+    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree).toPromise();
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
-    AlertService.showAlert(AlertType.SUCCESS, 'Page Created'); */
+    AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
   
   async saveChanges() {
-    console.log(buildViewTree(viewsByAspect.map((e) => e.view)));
-/*     await this.api.saveViewChanges(this.course.id, this.page.id, buildViewTree(this.viewsByAspect.map((e) => e.view)), viewsDeleted).toPromise();
-    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved'); */
+    const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
+    console.log(buildedTree);
+    await this.api.saveViewChanges(this.course.id, this.page.id, buildedTree, viewsDeleted).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
   }
 
   // Aspects -------------------------------------------------------
@@ -568,10 +573,13 @@ export class ViewsEditorComponent implements OnInit {
     const correspondentView = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     if (correspondentView) {
       this.view = correspondentView;
-      this.view.switchMode(ViewMode.EDIT);
+      if (this.view) this.view.switchMode(ViewMode.EDIT);
+    }
+    else if (selectedAspect.userRole === null && selectedAspect.viewerRole === null) {
+      this.view = null;
     }
     else {
-      this.view = _.cloneDeep(viewsByAspect[0].view);
+      this.view = _.cloneDeep(viewsByAspect[0].view); // FIXME: should be view of the aspect most similar, less specific
       viewsByAspect.push({ aspect: selectedAspect, view: this.view });
     }
     ModalService.closeModal('manage-versions');

@@ -3105,7 +3105,7 @@ export class ApiHttpService {
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
-  public renderPageInEditor(pageID: number): Observable<{aspect: Aspect, view: View}[]> {
+  public renderPageInEditor(pageID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderPageInEditor');
@@ -3115,9 +3115,14 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map(obj => {
-        return { aspect: new Aspect(obj.aspect.viewerRole, obj.aspect.userRole), view: buildView(obj.view, true) }
-      })));
+      .pipe(map((res: any) => {
+        return {
+          viewTree: res['data']['viewTree'],
+          viewTreeByAspect: res['data']['viewTreeByAspect'].map(obj => {
+            return { aspect: new Aspect(obj.aspect.viewerRole, obj.aspect.userRole), view: buildView(obj.view, true) }
+          })
+        }
+      }));
   }
 
   public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {

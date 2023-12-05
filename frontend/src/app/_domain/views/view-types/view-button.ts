@@ -65,25 +65,15 @@ export class ViewButton extends View {
     if (!viewsAdded.has(this.id)) {
       if (this.parent) {
         const parent = viewsAdded.get(this.parent.id);
-
-        if (this.oldId) {
-          const arrayToPut = (parent as any).children.find((e) => e.find((view) => view.id === this.oldId));
-          if (arrayToPut) {
-            arrayToPut.push(viewForDatabase);
-          }
-          else {
-            (parent as any).children.push([viewForDatabase]);
-          }
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
         }
-        else {
-          (parent as any).children.push([viewForDatabase]);
-        }
-
       }
       else viewTree.push(viewForDatabase); // Is root
-      
-      viewsAdded.set(this.id, viewForDatabase);
     }
+    viewsAdded.set(this.id, viewForDatabase);
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor

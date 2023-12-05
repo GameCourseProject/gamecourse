@@ -84,7 +84,7 @@ const routes: Routes = [
         component: ViewsEditorComponent,
       },
       {
-        path: 'pages/editor/new-page',
+        path: 'pages/editor/new',
         component: ViewsEditorComponent
       },
       {

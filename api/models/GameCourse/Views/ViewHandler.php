@@ -453,8 +453,8 @@ class ViewHandler
                             "userRole" => $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null];
             $viewTreeByAspect[] = ["aspect" => $aspectRoles, "view" => $viewTreeOfAspect];
         }
-        return $viewTreeByAspect;
-    } // FIXME: maybe don't need this like this
+        return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
+    }
 
 
     /*** ---------------------------------------------------- ***/

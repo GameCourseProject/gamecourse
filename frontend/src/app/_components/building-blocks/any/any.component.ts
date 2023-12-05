@@ -172,9 +172,11 @@ export class BBAnyComponent implements OnInit {
     }
 
     // View doesn't exist anymore in any tree -> delete from database
-    if (viewsByAspect.filter((e) => e.view.findView(this.view.id)).length <= 0) {
+    if (this.view.id > 0 && viewsByAspect.filter((e) => e.view.findView(this.view.id)).length <= 0) {
       viewsDeleted.push(this.view.id);
     }
+
+    // TODO: remove from the groupedChildren map as well
   }
 
   duplicateAction() {

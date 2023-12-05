@@ -9,6 +9,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -175,31 +176,29 @@ export class ViewTable extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //
-    //   // Strip children
-    //   copy.headerRows = [];
-    //   copy.rows = [];
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build header & body rows into view tree
-    // for (const headerRow of this.headerRows) {
-    //   headerRow.buildViewTree('header');
-    // }
-    // for (const row of this.rows) {
-    //   row.buildViewTree('body');
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewTable.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+    
+    // Build children into view tree
+    for (const child of this.headerRows) {
+      child.buildViewTree();
+    }
+    for (const child of this.bodyRows) {
+      child.buildViewTree();
+    }
   }
 
   addChildViewToViewTree(view: View, options?: 'header' | 'body') { // TODO: refactor view editor
@@ -435,6 +434,31 @@ export class ViewTable extends View {
     return table;
   }
 
+  static toDatabase(obj: ViewTable): ViewTableDatabase {
+    return {
+      id: obj.id,
+      viewRoot: obj.viewRoot,
+      aspect: Aspect.toDatabase(obj.aspect),
+      type: obj.type,
+      cssId: obj.cssId,
+      class: obj.classList,
+      style: obj.styles,
+      visibilityType: obj.visibilityType,
+      visibilityCondition: obj.visibilityCondition,
+      loopData: obj.loopData,
+      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
+      events: obj.events,
+      footers: obj.footers,
+      searching: obj.searching,
+      columnFiltering: obj.columnFiltering,
+      paging: obj.paging,
+      lengthChange: obj.lengthChange,
+      info: obj.info,
+      ordering: obj.ordering,
+      orderingBy: obj.orderingBy,
+      children: groupedChildren.get(obj.id)
+    }
+  }
 }
 
 export interface ViewTableDatabase extends ViewDatabase {
@@ -446,5 +470,5 @@ export interface ViewTableDatabase extends ViewDatabase {
   info: boolean;
   ordering: boolean;
   orderingBy: string;
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
