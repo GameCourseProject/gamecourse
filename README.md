@@ -5,7 +5,7 @@
 - **Server**:<br>
 <ins>Environment</ins>: **PHP 7.3.21** and **Python 3.7.3**<br>
 You will need a server running PHP 7.3.21 version and a composer (dependency manager).<br>
-For example, you can use _XAMPP_. Guides here.
+For example, you can use _XAMPP_. Guides [here](#my-anchor).
 
 - **Database**:<br>
 <ins>Environment</ins>: **MySQL**<br>
@@ -53,7 +53,7 @@ After all of these steps, you should be able to access [https://pcm.rnl.ulisboa.
 
 ## Additional Guides
 ### Useful Software & Tools
-  * **XAMPP**: <br>
+  * **<a id="my-anchor"></a>XAMPP**: <br>
   XAMPP is a _PHP development environment_. It is a completely free, easy-to-install **Apache** distribution containing _MariaDB_, _PHP_, and _Perl_. See more [here](https://www.apachefriends.org/). <br><br>
   **How to Install?**
     - Download the latest version of XAMPP for **PHP 7.3** (version 7.3.21) [here](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.21/).
