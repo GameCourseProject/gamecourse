@@ -471,16 +471,18 @@ class PageController
 
     /**
      * Gets all Core Templates
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
      */
     public function getCoreTemplates(){
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
             return $pair;
         };
         
@@ -490,6 +492,7 @@ class PageController
 
     /**
      * Gets all Custom Templates of a course
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
@@ -503,10 +506,11 @@ class PageController
         API::requireCoursePermission($course);
         
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
             return $pair;
         };
         
@@ -596,6 +600,7 @@ class PageController
 
     /**
      * Gets all Shared Components
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
@@ -603,11 +608,12 @@ class PageController
     public function getSharedTemplates(){
         
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
             $pair->user = $template["sharedBy"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
             $pair->timestamp = $template["sharedTimestamp"];
             return $pair;
         };

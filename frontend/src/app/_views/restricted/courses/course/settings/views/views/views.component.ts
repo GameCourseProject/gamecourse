@@ -18,6 +18,7 @@ import {ThemingService} from "../../../../../../../_services/theming/theming.ser
 import {Moment} from "moment";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
+import { Template } from 'src/app/_domain/views/templates/template';
 
 @Component({
   selector: 'app-views',
@@ -38,6 +39,10 @@ export class ViewsComponent implements OnInit {
   coursePages: Page[];            // Course pages
   publicPages: Page[];            // Pages from other courses that are public
   arrangingPages: Page[];         // Copy of coursePages for arranging modal
+
+  systemTemplates: Template[];
+  courseTemplates: Template[];
+  publicTemplates: Template[];
 
   pageToManage: PageManageData;
   publicPagesCourses: {[publicPageId: number]: string} = {};  // Names from public pages' courses
@@ -97,6 +102,7 @@ export class ViewsComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getPages(courseID);
+      await this.getTemplates(courseID);
 
       this.loading.page = false;
     });
@@ -128,6 +134,12 @@ export class ViewsComponent implements OnInit {
       this.isHovered[this.pages[i].id] = false;
     }
 
+  }
+
+  async getTemplates(courseID: number) {
+    this.systemTemplates = await this.api.getCoreTemplates().toPromise() as Template[];
+    this.courseTemplates = await this.api.getCustomTemplates(courseID).toPromise() as Template[];
+    this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
   }
 
   /*** --------------------------------------------- ***/

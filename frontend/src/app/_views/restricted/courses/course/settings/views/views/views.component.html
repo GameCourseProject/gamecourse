@@ -46,34 +46,34 @@
 
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
-              <button class="btn btn-sm btn-{{page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-black' : 'text-white')}}">
+              <button class="btn btn-sm btn-{{page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
+                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-black' : 'text-white')}}">
                 </ng-icon>
               </button>
             </ng-container>
             <ng-template #defaultButton>
               <button class="btn btn-sm btn-{{!page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{!page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
+                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                <ng-icon name="{{!page.isPublic ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
                          class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-white' : 'text-dark')}}">
                 </ng-icon>
               </button>
             </ng-template>
           </div>
-          <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="chooseAction('configure visibility', page)">
-            <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isVisible ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
-            <span class="font-semibold my-0.5">{{page.isVisible ? 'Visible' : 'Not visible'}}</span>
+          <div class="badge badge-sm badge-{{page.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
+            (click)="chooseAction('make public/private', page)">
+            <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isPublic ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
+            <span class="font-semibold my-0.5">{{page.isPublic ? 'Public' : 'Private'}}</span>
           </div>
         </figure>
 
-        <div class="card-body -mt-4">
-          <div class="flex justify-between items-center border-b-base-200 border-b-2">
-            <span class="text-lg font-semibold -mb-2">{{page.name}}</span>
+        <div class="card-body -mt-2">
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-semibold">{{page.name}}</span>
             <div class="dropdown dropdown-right">
-              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4">
+              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </button>
 
@@ -88,10 +88,11 @@
 
             </div>
           </div>
-          <div class="mt-2.5">
+          <div class="divider rounded before:bg-base-200 after:bg-base-200 mb-0.5 -mt-1"></div>
+          <div>
             <p *ngIf="page.course !== course.id" class="text-xs"><strong>Imported from:</strong><br></p>
             <p *ngIf="page.course !== course.id" class="text-xs text-primary">{{publicPagesCourses[page.id]}}</p>
-            <p class="text-xs mt-2"><strong>Last edited:</strong> {{calculateDate(page.updateTimestamp)}}</p>
+            <p><span class="text-xs font-bold uppercase">Last edited:</span> {{calculateDate(page.updateTimestamp)}}</p>
           </div>
         </div>
 

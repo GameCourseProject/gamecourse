@@ -60,6 +60,7 @@ export class ViewsEditorComponent implements OnInit {
 
   loading = {
     page: true,
+    components: true,
     aspects: true,
     action: false
   };
@@ -188,9 +189,9 @@ export class ViewsEditorComponent implements OnInit {
     const customComponents = await this.api.getCustomComponents(this.course.id).toPromise();
     const sharedComponents = await this.api.getSharedComponents().toPromise();
 
-    const coreTemplates = await this.api.getCoreTemplates().toPromise();
-    const customTemplates = await this.api.getCustomTemplates(this.course.id).toPromise();
-    const sharedTemplates = await this.api.getSharedTemplates().toPromise();
+    const coreTemplates = await this.api.getCoreTemplates(true).toPromise();
+    const customTemplates = await this.api.getCustomTemplates(this.course.id, true).toPromise();
+    const sharedTemplates = await this.api.getSharedTemplates(true).toPromise();
 
     // Build views for core components
     // FIXME do this in api?
@@ -431,6 +432,8 @@ export class ViewsEditorComponent implements OnInit {
         description: 'Rearrange'
       }
     ];
+
+    this.loading.components = false;
   }
 
   /*** ------------------------------------------------ ***/
@@ -792,12 +795,12 @@ export class ViewsEditorComponent implements OnInit {
 
   triggerComponentSettings(event: MouseEvent, componentId: number) {
     this.componentSettings.id = this.componentSettings.id == componentId ? null : componentId;
-    this.componentSettings.top = event.pageY - 365;
+    this.componentSettings.top = event.pageY - 325;
   }
 
   triggerTemplateSettings(event: MouseEvent, templateId: number) {
     this.templateSettings.id = this.templateSettings.id == templateId ? null : templateId;
-    this.templateSettings.top = event.pageY - 415;
+    this.templateSettings.top = event.pageY - 325;
   }
 
   getSelectedAspect() {

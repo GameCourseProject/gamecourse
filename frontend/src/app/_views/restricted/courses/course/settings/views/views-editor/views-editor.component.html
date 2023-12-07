@@ -26,18 +26,20 @@
   <app-top-actions
     [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
     [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
-                       {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
+                      {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
                         {action: 'Final preview (real data)', icon: getIcon('real')}
-                      ]}]"
+                      ]}
+                    ]"
+    [align]="'center'"
     (btnClicked)="doActionPreview($event)">
   </app-top-actions>
 
-  <div *ngIf="!loading.page" class="flex grow space-x-4 mt-4">
+  <div *ngIf="!loading.components" class="flex flex-col grow mt-4">
     <!-- Menu of icons (for actions) -->
-    <div class="w-24 shrink-0">
-      <div class="card card-compact bg-base-100 shadow-xl flex flex-col items-center py-3">
+    <div class="shrink-0 absolute top-28 left-48">
+      <div class="card card-compact bg-base-100 shadow-md flex flex-row items-center px-2 w-fit">
 
         <div *ngFor="let option of options; let j = index" class="py-1 relative inline-block text-left">
           <div class="tooltip" [attr.data-tip]="option.description">
@@ -49,33 +51,35 @@
             </button>
           </div>
 
+          <!-- First menu: list for components -->
           <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" 
-                class="z-50 absolute left-12 -mt-12 w-48 rounded-xl shadow-lg bg-base-300 card card-compact
-                      {{option.description === 'Add Component' && 'border border-1 border-primary'}}">
-            <div *ngIf="option.description === 'Add Component'" class="p-4">
-              <h2 class="text-xl font-semibold text-center text-base-content mb-2">{{option.subMenu.title}}</h2>
-              <div class="bg-primary bg-opacity-60 rounded-xl flex">
-                <ul>
-                  <li *ngFor="let item of getItems(option), let i = index" (click)="triggerSubMenu(option.subMenu.items[item], j)"
-                    class="my-1.5 ml-5 block {{option.subMenu.items[item].isSelected ? 'text-white' : 'text-gray-700' }} font-semibold hover:text-white hover:cursor-pointer">
-                    <span>{{option.subMenu.items[item].title.capitalize()}}</span>
-                  </li>
-                </ul>
-              </div>
+                class="z-50 absolute w-48 rounded-xl bg-base-100 card card-compact shadow-xl top-16 -left-2">
+            <div *ngIf="option.description === 'Add Component'" class="p-4 rounded-xl border-2 border-primary">
+              <h2 class="text-xl font-semibold text-center text-base-content pt-1">{{option.subMenu.title}}</h2>
+              <div class="divider -my-0.5 before:bg-neutral/10 after:bg-neutral/10"></div>
+              <ul class="menu">
+                <li *ngFor="let item of getItems(option), let i = index">
+                  <a class="py-1 pl-5 rounded-lg {{option.subMenu.items[item].isSelected ? 'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30' : 'hover:bg-primary hover:bg-opacity-10'}}"
+                    (click)="triggerSubMenu(option.subMenu.items[item], j)">
+                    {{option.subMenu.items[item].title.capitalize()}}
+                  </a>
+                </li>
+              </ul>
             </div>
 
+            <!-- Second menu: componets/templates themselves -->
             <div [@dropdownAnimation] *ngIf="activeSubMenu" 
-                  class="z-50 border border-1 border-primary absolute w-96 rounded-xl shadow-lg bg-primary card card-compact
+                  class="z-50 border-2 border-primary absolute w-96 rounded-xl shadow-xl bg-primary card card-compact
                         {{option.description === 'Add Component' && 'left-[12.5rem]'}}">
-              <div class="p-4">
-                <div class="flex flex-row items-center justify-center mb-2">
-                  <ng-icon name="feather-info" size="1.2rem" color="white" class="tooltip" [attr.data-tip]="activeSubMenu.helper"/>
-                  <h2 class="ml-2 text-xl font-semibold text-center text-white">
+              <div>
+                <div class="flex flex-row items-center justify-center text-white pb-2 pt-3">
+                  <ng-icon name="feather-info" size="1.2rem" class="tooltip" [attr.data-tip]="activeSubMenu.helper"/>
+                  <h2 class="ml-2 text-xl font-semibold text-center">
                     {{activeSubMenu.title.capitalize()}}
                   </h2>
                 </div>
-                <div class="w-full bg-base-300 rounded-xl flex">
-                  <div class="border-r border-1.5 border-gray-500 w-[calc(34% + 0.25rem)]">
+                <div class="w-full bg-base-100 flex rounded-b-xl">
+                  <div class="border-r-2 border-neutral/10 w-fit py-2">
                     <ul>
                       <li *ngFor="let item of getCategoryListItem(), let i = index">
                         <div class="mt-1 mb-1 mx-3 hover:cursor-pointer hover:badge-secondary text-semibold
@@ -86,7 +90,7 @@
                     </ul>
                   </div>
 
-                  <div class="overflow-y-auto overflow-x-auto my-2 mx-2 gap-5 max-h-72 w-full">
+                  <div class="overflow-y-auto overflow-x-auto my-2 mx-3 gap-5 max-h-72 w-full">
                     <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
 
                     <!-- Templates -->
@@ -133,8 +137,7 @@
                       <!-- System components are divided into subcategories -->
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
                         <div *ngFor="let subcategory of getSubcategories()">
-                          <span class="ml-1">{{subcategory}}</span>
-                          <div class="divider -mt-1 -mb-[0rem]"></div>
+                          <span class="ml-1 text-xs font-bold text-neutral/40 uppercase">{{subcategory}}</span>
                           <div class="flex flex-wrap">
                             <div 
                               *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
@@ -179,8 +182,8 @@
     </div>
 
     <!-- Editor -->
-    <div class="grow rounded-xl border-4 border-neutral border-opacity-10 p-2">
-      <bb-any *ngIf="view" [view]="view"></bb-any>
+    <div class="grow rounded-xl border-2 border-neutral border-opacity-10 p-2">
+      <bb-any *ngIf="view && !loading.page" [view]="view"></bb-any>
     </div>
   </div>
 

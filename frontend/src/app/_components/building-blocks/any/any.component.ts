@@ -49,8 +49,8 @@ export class BBAnyComponent implements OnInit {
       this.courseID = parseInt(params.id);
 
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
-      this.visible = (this.view.mode == ViewMode.EDIT || this.view.mode == ViewMode.REARRANGE) ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
-        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean)));
+      this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     });
   }
 
@@ -146,9 +146,11 @@ export class BBAnyComponent implements OnInit {
     this.componentEditor.saveView();
 
     // Force rerender to show changes
-    this.visible = !this.visible;
+    // and recalculates visibility since it might have changed
+    this.visible = false;
     setTimeout(() => {
-      this.visible = !this.visible
+      this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     }, 100);
   }
   
