@@ -88,6 +88,10 @@ const routes: Routes = [
         component: ViewsEditorComponent
       },
       {
+        path: 'pages/editor/template/:id',
+        component: ViewsEditorComponent
+      },
+      {
         path: 'themes',
         component: ComingSoonComponent
       },

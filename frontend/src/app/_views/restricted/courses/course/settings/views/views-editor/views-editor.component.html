@@ -19,7 +19,7 @@
   <div class="divider -mt-2">
     <div class="flex justify-center mx-2">
       <ng-icon name="jam-pencil-f" size="1.5rem" class="text-primary mr-2"></ng-icon>
-      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : 'Create new'}}</span>
+      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : template ? 'Template \'' + template.name + '\'' : 'Create new'}}</span>
     </div>
   </div>
 
@@ -67,7 +67,7 @@
               </ul>
             </div>
 
-            <!-- Second menu: componets/templates themselves -->
+            <!-- Second menu: components/templates themselves -->
             <div [@dropdownAnimation] *ngIf="activeSubMenu" 
                   class="z-50 border-2 border-primary absolute w-96 rounded-xl shadow-xl bg-primary card card-compact
                         {{option.description === 'Add Component' && 'left-[12.5rem]'}}">
@@ -98,7 +98,7 @@
                       <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center hover:cursor-pointer">
                         <div class="w-full h-full flex flex-col" (click)="addTemplateToPage(item.view)">
                           <div>{{item.name}}</div>
-                          <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.timestamp}}</div>
+                          <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.sharedTimestamp}}</div>
                         </div>
                         <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition shrink-0" 
                             (click)="triggerTemplateSettings($event, item.id)">
@@ -112,7 +112,7 @@
                       <!-- Custom components list -->
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
-                          <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                          <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
                           <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
                               (click)="triggerComponentSettings($event, item.id)">
                             <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
@@ -124,13 +124,13 @@
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
                           <div class="flex flex-row justify-between items-center">
-                            <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addToPage(item.view)"></bb-any>
+                            <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
                             <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
                                   (click)="triggerComponentSettings($event, item.id)">
                               <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                             </div>
                           </div>
-                          <div class="text-xs mt-1">Shared: {{item.timestamp}}</div>
+                          <div class="text-xs mt-1">Shared: {{item.sharedTimestamp}}</div>
                         </div>
                       </div>
 
@@ -142,7 +142,7 @@
                             <div 
                               *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
                               class="hover:cursor-pointer p-1"
-                              (click)="addToPage(item)"
+                              (click)="addComponentToPage(item)"
                             >
                               <bb-any [view]="item"></bb-any>
                             </div>
@@ -189,7 +189,7 @@
 
   <div class="card-actions justify-end py-6">
     <button class="btn btn-ghost" (click)="closeEditor()">Cancel</button>
-    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
+    <button *ngIf="pageToManage || !template" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
     <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">Save Changes</button>
   </div>

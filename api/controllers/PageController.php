@@ -210,6 +210,30 @@ class PageController
     }
 
     /**
+     * Edits the view of a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function saveTemplate()
+    {
+        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+         
+        $viewTree = API::getValue("viewTree", "array");
+        $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+        
+        // Translate tree into logs
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
+        $template->editTemplate($template->getName(), $translatedTree);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -461,12 +485,26 @@ class PageController
             $pair->id = $component["id"];
             $pair->user = $component["sharedBy"];
             $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
-            $pair->timestamp = $component["sharedTimestamp"];
+            $pair->sharedTimestamp = $component["sharedTimestamp"];
             return $pair;
         };
         
         $customComponents = array_map($fun, CustomComponent::getSharedComponents());
         API::response($customComponents);
+    }
+
+    /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
+    public function getCustomTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+        API::response($template->getData());
     }
 
     /**
@@ -511,6 +549,9 @@ class PageController
             $pair->id = $template["id"];
             $pair->name = $template["name"];
             $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = false;
             return $pair;
         };
         
@@ -612,14 +653,17 @@ class PageController
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->user = $template["sharedBy"];
             $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
-            $pair->timestamp = $template["sharedTimestamp"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = true;
+            $pair->user = $template["sharedBy"];
+            $pair->sharedTimestamp = $template["sharedTimestamp"];
             return $pair;
         };
         
-        $customTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
-        API::response($customTemplates);
+        $sharedTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
+        API::response($sharedTemplates);
     }
 
 
@@ -678,6 +722,26 @@ class PageController
         API::requireCoursePermission($course);
 
         API::response($page->renderPageForEditor());
+    }
+
+    /**
+     * Renders a given template for editing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function renderCustomTemplateInEditor()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $course = $template->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditor());
     }
 
     /**

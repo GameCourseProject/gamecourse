@@ -35,14 +35,16 @@ export class ViewsComponent implements OnInit {
 
   course: Course;                 // Specific course in which pages are being manipulated
   pages: Page[] = [];             // All pages to show (course + public from other courses)
-
+  
   coursePages: Page[];            // Course pages
   publicPages: Page[];            // Pages from other courses that are public
   arrangingPages: Page[];         // Copy of coursePages for arranging modal
+  
+  templates: Template[] = [];     // All templates to show (course + public from other courses)
 
   systemTemplates: Template[];
-  courseTemplates: Template[];
-  publicTemplates: Template[];
+  courseTemplates: Template[];    // Course templates
+  publicTemplates: Template[];    // Templates from other courses that are public
 
   pageToManage: PageManageData;
   publicPagesCourses: {[publicPageId: number]: string} = {};  // Names from public pages' courses
@@ -60,7 +62,20 @@ export class ViewsComponent implements OnInit {
      { icon: 'feather-sliders', description: 'Configure visibility', type: 'configuration' },
      { icon: 'jam-upload', description: 'Export', type: 'configuration' },
      { icon: 'jam-files-f', description: 'Duplicate', type: 'configuration' },
-     { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }];
+      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }];
+  
+  // Actions for templates
+  templateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
+    color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
+      'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
+      'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
+    [{ icon: 'jam-pencil-f', description: 'Edit', type: 'edit', color: 'warning' },
+     //{ icon: 'feather-type', description: 'Rename', type: 'management' },
+     //{ icon: 'tabler-eye', description: 'Preview', type: 'management' },
+     //{ icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
+     //{ icon: 'feather-sliders', description: 'Configure visibility', type: 'configuration' },
+      //{ icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }
+    ];
 
   visibilityCheckbox: boolean;                    // For 'configure-visibility' modal
   isHovered: {[pageId: number]: boolean} = {};    // Changes padlock icon when hovering
@@ -76,7 +91,9 @@ export class ViewsComponent implements OnInit {
   // SEARCH AND FILTER
   reduce = new Reduce();
   pagesToShow: Page[] = [];
+  templatesToShow: Template[] = [];
   filteredPages: Page[] = [];                   // Pages search
+  filteredTemplates: Template[] = [];           // Templates search
 
   @ViewChild('fPage', {static: false}) fPage: NgForm;   // Page form
 
@@ -105,6 +122,7 @@ export class ViewsComponent implements OnInit {
       await this.getTemplates(courseID);
 
       this.loading.page = false;
+      this.loading.template = false;
     });
   }
 
@@ -137,9 +155,20 @@ export class ViewsComponent implements OnInit {
   }
 
   async getTemplates(courseID: number) {
-    this.systemTemplates = await this.api.getCoreTemplates().toPromise() as Template[];
+    this.systemTemplates = await this.api.getCoreTemplates().toPromise() as Template[]; // FIXME do I want to show these too?
     this.courseTemplates = await this.api.getCustomTemplates(courseID).toPromise() as Template[];
     this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
+
+    this.courseTemplates.forEach((temp) => {
+      let item = this.publicTemplates.find(e => temp.id === e.id);
+      if (item) {
+        Object.assign(temp, item);
+      }
+    })
+
+    this.templates = this.systemTemplates.concat(this.courseTemplates);
+    this.templatesToShow = this.templates;
+    this.filteredTemplates = this.templates;
   }
 
   /*** --------------------------------------------- ***/
@@ -198,6 +227,31 @@ export class ViewsComponent implements OnInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  async chooseTemplateAction(action:string, template: Template) {
+    action = action.toLowerCase();
+
+    if (action === 'edit') {
+      if (!template.isSystem)
+        await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
+
+    } else if (action === 'rename') {
+      // TODO
+      //ModalService.openModal('rename');
+
+    } else if (action === 'preview') {
+      // TODO
+
+    } else if (action === 'make public/private') {
+      // TODO
+      //ModalService.openModal('make-public-private-page')
+
+    } else if (action === 'delete') {
+      // TODO
+      //ModalService.openModal('delete-page');
+    }
+
+  }
 
   async chooseAction(action:string, page: Page) {
     action = action.toLowerCase();
@@ -406,15 +460,27 @@ export class ViewsComponent implements OnInit {
     if (searchQuery) {
       let pages: Page[] = [];
 
-      for (let i = 0;  i < this.filteredPages.length; i++){
+      for (let i = 0; i < this.filteredPages.length; i++) {
         if (((this.filteredPages[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
           pages.push(this.filteredPages[i]);
         }
       }
       this.pagesToShow = pages;
+
+      let templates: Template[] = [];
+
+      for (let i = 0; i < this.filteredTemplates.length; i++) {
+        if (((this.filteredTemplates[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          templates.push(this.filteredTemplates[i]);
+        }
+      }
+      this.templatesToShow = templates;
     }
 
-    else this.pagesToShow = this.pages;
+    else {
+      this.pagesToShow = this.pages;
+      this.templatesToShow = this.templates;
+    }
   }
 
   /*** --------------------------------------------- ***/

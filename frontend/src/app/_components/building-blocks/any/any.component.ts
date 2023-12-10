@@ -22,7 +22,7 @@ import { ModalService } from 'src/app/_services/modal.service';
 import * as _ from "lodash"
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 import { isMoreSpecific, viewsByAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
-import { getFakeId, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 
 @Component({
   selector: 'bb-any',
@@ -178,7 +178,22 @@ export class BBAnyComponent implements OnInit {
       viewsDeleted.push(this.view.id);
     }
 
-    // TODO: remove from the groupedChildren map as well
+    if (this.view.parent) {
+      let entry = groupedChildren.get(this.view.parent.id);
+      for (let group of entry) {
+        const index = group.indexOf(this.view.id);
+        if (index >= 0) {
+          group.splice(index, 1);
+          if (group.length <= 0) {
+            entry.splice(entry.indexOf([]), 1);
+            groupedChildren.set(this.view.parent.id, entry);
+          }
+          else {
+            groupedChildren.set(this.view.parent.id, entry);
+          }
+        }
+      }
+    }
   }
 
   duplicateAction() {
