@@ -588,7 +588,9 @@ class Page
     public function renderPageForEditor()
     {
         $pageInfo = $this->getData("course, viewRoot");
-        return ViewHandler::renderView($pageInfo["viewRoot"]);
+        $viewRoot = $pageInfo["viewRoot"];
+        $courseId = $pageInfo["course"];
+        return ViewHandler::buildViewComplete($viewRoot, $courseId);
     }
 
     /**

@@ -6,9 +6,7 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 
 import {buildView} from "../build-view/build-view";
-import { copyObject, exists } from "src/app/_utils/misc/misc";
-import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -86,28 +84,29 @@ export class ViewBlock extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    if (exists(baseFakeId)) this.replaceWithFakeIds();
+  buildViewTree() {
+    const viewForDatabase = ViewBlock.toDatabase(this);
 
-    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-      const copy = copyObject(this);
-      copy.children = []; // Strip children
-  
-      if (this.parent) { // Has parent
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
         const parent = viewsAdded.get(this.parent.id);
-        parent.addChildViewToViewTree(copy);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
       }
-      else viewTree.push(copy); // Is root
-        viewsAdded.set(copy.id, copy);
-     }
-    
-    // // Build children into view tree
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+
+    // Build children into view tree
     for (const child of this.children) {
       child.buildViewTree();
     }
   }
 
-  addChildViewToViewTree(view: View) { // TODO: refactor view editor
+  addChildViewToViewTree(view: View) {
     view.parent = this;
     this.children.push(view);
   }
@@ -141,14 +140,14 @@ export class ViewBlock extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const child of this.children) {
+      const found = child.findView(viewId);
+      if (found) return found;
+    }
     return null;
   }
 
@@ -232,7 +231,7 @@ export class ViewBlock extends View {
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,
-      children: obj.children.map(child => buildViewTree(child))
+      children: groupedChildren.get(obj.id)
     }
   }
 }
@@ -241,7 +240,7 @@ export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
   columns?: number,
   responsive?: boolean,
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum BlockDirection {

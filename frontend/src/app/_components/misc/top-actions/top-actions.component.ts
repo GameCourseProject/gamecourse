@@ -9,7 +9,9 @@ export class TopActionsComponent implements OnInit {
 
   @Input() leftActions?: {action: Action | string, icon?: string}[];   // NOTE: after two actions it goes to 'More actions' dropdown
   @Input() rightActions?: {action: Action | string, icon?: string, outline?: boolean, dropdown?: {action: Action | string, icon?: string, disable?: boolean}[],
-    color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error', disable?: boolean}[];
+    color?: 'ghost' | 'primary' | 'secondary' | 'accent' | 'neutral' | 'info' | 'success' | 'warning' | 'error', disable?: boolean
+  }[];
+  @Input() align?: 'center' | 'end' = 'end';
 
   @Output() btnClicked: EventEmitter<string> = new EventEmitter<string>();
 

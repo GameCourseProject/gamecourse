@@ -1,15 +1,15 @@
 <!-- Display version -->
 <ng-container *ngIf="view.mode === ViewMode.DISPLAY">
-  <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
+  <ng-container *ngIf="visible" [ngTemplateOutlet]="anyComponent"></ng-container>
 </ng-container>
 
 <!-- Preview version -->
 <ng-container *ngIf="view.mode === ViewMode.PREVIEW">
-  <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
+  <ng-container *ngIf="visible" [ngTemplateOutlet]="anyComponent"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
-<ng-container *ngIf="view.mode === ViewMode.EDIT && filterForAspect()">
+<ng-container *ngIf="view.mode === ViewMode.EDIT">
   <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
@@ -43,7 +43,8 @@
 
 <!-- Views -->
 <ng-template #anyComponent>
-  <div *ngIf="visible" [classList]="classes"
+  <div [classList]="classes"
+      [ngClass]="{'opacity-30 grayscale': view.mode === ViewMode.EDIT && !visible}"
       [attr.data-view-id]="view.id"
       [attr.data-view-root]="view.viewRoot"
       [goToPage]="{event: getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent, view}"

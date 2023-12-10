@@ -9,7 +9,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -176,31 +176,29 @@ export class ViewTable extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //
-    //   // Strip children
-    //   copy.headerRows = [];
-    //   copy.rows = [];
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build header & body rows into view tree
-    // for (const headerRow of this.headerRows) {
-    //   headerRow.buildViewTree('header');
-    // }
-    // for (const row of this.rows) {
-    //   row.buildViewTree('body');
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewTable.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+    
+    // Build children into view tree
+    for (const child of this.headerRows) {
+      child.buildViewTree();
+    }
+    for (const child of this.bodyRows) {
+      child.buildViewTree();
+    }
   }
 
   addChildViewToViewTree(view: View, options?: 'header' | 'body') { // TODO: refactor view editor
@@ -260,18 +258,18 @@ export class ViewTable extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const headerRow of this.headerRows) {
-    //   const found = headerRow.findView(viewId);
-    //   if (found) return headerRow;
-    // }
-    // for (const row of this.rows) {
-    //   const found = row.findView(viewId);
-    //   if (found) return row;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const headerRow of this.headerRows) {
+      const found = headerRow.findView(viewId);
+      if (found) return headerRow;
+    }
+    for (const row of this.bodyRows) {
+      const found = row.findView(viewId);
+      if (found) return row;
+    }
     return null;
   }
 
@@ -458,7 +456,7 @@ export class ViewTable extends View {
       info: obj.info,
       ordering: obj.ordering,
       orderingBy: obj.orderingBy,
-      children: obj.headerRows.map(child => buildViewTree(child))
+      children: groupedChildren.get(obj.id)
     }
   }
 }
@@ -472,5 +470,5 @@ export interface ViewTableDatabase extends ViewDatabase {
   info: boolean;
   ordering: boolean;
   orderingBy: string;
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }

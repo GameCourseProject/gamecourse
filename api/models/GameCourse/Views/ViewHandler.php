@@ -445,15 +445,16 @@ class ViewHandler
 
         // Get view tree for each aspect of view root
         $viewTreeByAspect = [];
-        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null);
+        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null)->getData("id, viewerRole, userRole");
         $aspects = Aspect::getAspectsInViewTree($viewRoot);
         foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = self::buildView($viewRoot, [$aspect, $defaultAspect]);
-            $viewTreeByAspect[$aspect->getId()] = $viewTreeOfAspect;
+            $viewTreeOfAspect = self::renderView($viewRoot, [$aspect, $defaultAspect]);
+            $aspectRoles = ["viewerRole" => $aspect["viewerRole"] ? Role::getRoleName($aspect["viewerRole"]) : null, 
+                            "userRole" => $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null];
+            $viewTreeByAspect[] = ["aspect" => $aspectRoles, "view" => $viewTreeOfAspect];
         }
-
         return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
-    } // FIXME: maybe don't need this like this
+    }
 
 
     /*** ---------------------------------------------------- ***/

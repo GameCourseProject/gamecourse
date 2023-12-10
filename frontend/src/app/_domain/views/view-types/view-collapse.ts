@@ -8,7 +8,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -85,25 +85,25 @@ export class ViewCollapse extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   copy.children = []; // Strip children
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build children into view tree
-    // for (const child of this.children) {
-    //   child.buildViewTree();
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewCollapse.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+
+    // Build children into view tree
+    this.header.buildViewTree();
+    this.content.buildViewTree();
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -145,14 +145,13 @@ export class ViewCollapse extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    if (this.header.findView(viewId)) return this.header;
+    if (this.content.findView(viewId)) return this.content;
+    
     return null;
   }
 
@@ -229,14 +228,14 @@ export class ViewCollapse extends View {
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
       events: obj.events,
       icon: obj.icon,
-      children: [buildViewTree(obj.header), buildViewTree(obj.content)]
+      children: groupedChildren.get(obj.id)
     }
   }
 }
 
 export interface ViewCollapseDatabase extends ViewDatabase {
   icon?: string,
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum CollapseIcon {

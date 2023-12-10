@@ -20,9 +20,9 @@ import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
 import * as _ from "lodash"
-import { Aspect } from 'src/app/_domain/views/aspects/aspect';
-import { selectedAspect, viewsDeleted } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { isMoreSpecific, viewsByAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 
 @Component({
   selector: 'bb-any',
@@ -49,8 +49,8 @@ export class BBAnyComponent implements OnInit {
       this.courseID = parseInt(params.id);
 
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
-      this.visible = (this.view.mode == ViewMode.EDIT || this.view.mode == ViewMode.REARRANGE) ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
-        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean)));
+      this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     });
   }
 
@@ -133,9 +133,6 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('save-as-component');
   }
 
-  filterForAspect() {
-    return _.isEqual(this.view.aspect, selectedAspect) || _.isEqual(this.view.aspect, new Aspect(null, null));
-  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -149,9 +146,11 @@ export class BBAnyComponent implements OnInit {
     this.componentEditor.saveView();
 
     // Force rerender to show changes
-    this.visible = !this.visible;
+    // and recalculates visibility since it might have changed
+    this.visible = false;
     setTimeout(() => {
-      this.visible = !this.visible
+      this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     }, 100);
   }
   
@@ -160,15 +159,48 @@ export class BBAnyComponent implements OnInit {
   }
 
   deleteAction() {
-    if (this.view.parent)
-      this.view.parent.removeChildView(this.view.id);
-    viewsDeleted.push(this.view.id);
+    const viewsWithThis = viewsByAspect.filter((e) => e.view.findView(this.view.id));
+    
+    const lowerInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
+      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+    );
+
+    for (let el of lowerInHierarchy) {
+      const view = el.view.findView(this.view.id);
+      if (view.parent) {
+        view.parent.removeChildView(this.view.id);
+      }
+    }
+
+    // View doesn't exist anymore in any tree -> delete from database
+    if (this.view.id > 0 && viewsByAspect.filter((e) => e.view.findView(this.view.id)).length <= 0) {
+      viewsDeleted.push(this.view.id);
+    }
+
+    if (this.view.parent) {
+      let entry = groupedChildren.get(this.view.parent.id);
+      for (let group of entry) {
+        const index = group.indexOf(this.view.id);
+        if (index >= 0) {
+          group.splice(index, 1);
+          if (group.length <= 0) {
+            entry.splice(entry.indexOf([]), 1);
+            groupedChildren.set(this.view.parent.id, entry);
+          }
+          else {
+            groupedChildren.set(this.view.parent.id, entry);
+          }
+        }
+      }
+    }
   }
 
   duplicateAction() {
     let duplicated = _.cloneDeep(this.view);
     duplicated.mode = ViewMode.EDIT;
-    duplicated.id = null;
+    duplicated.id = getFakeId();
+    duplicated.uniqueId = Math.round(Date.now() * Math.random());
 
     if (this.view.parent)
       this.view.parent.addChildViewToViewTree(duplicated);

@@ -1,23 +1,30 @@
-import {RoleTypeId} from "../../roles/role-type";
-import {Role} from "../../roles/role";
+import { Moment } from "moment";
+import { dateFromDatabase } from "src/app/_utils/misc/misc";
 
 export class Template {
   private _id: number;
   private _name: string;
-  private _courseId: number;
-  private _isGlobal: boolean;
-  private _roleType: RoleTypeId;
-  private _viewId: number;
-  private _roles?: {viewerRole: Role, userRole?: Role}[];
+  private _viewRoot: number;
+  private _creationTimestamp?: Moment;
+  private _updateTimestamp?: Moment;
+  private _isPublic?: boolean;
+  private _isSystem: boolean;
+  private _sharedTimestamp?: Moment;
 
-  constructor(id: number, name: string, courseId: number, isGlobal: boolean, roleType: RoleTypeId, viewId: number, roles?: {viewerRole: Role, userRole?: Role}[]) {
+  constructor(id: number, name: string, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment, isPublic: boolean = false, sharedTimestamp: Moment = null) {
     this.id = id;
     this.name = name;
-    this.courseId = courseId;
-    this.isGlobal = isGlobal;
-    this.roleType = roleType;
-    this.viewId = viewId;
-    if (roles)  this.roles = roles;
+    this.viewRoot = viewRoot;
+    this.creationTimestamp = creationTimestamp;
+    this.updateTimestamp = updateTimestamp;
+    this.isPublic = isPublic;
+    this.sharedTimestamp = sharedTimestamp;
+
+    if (this.creationTimestamp) {
+      this.isSystem = false;
+    } else {
+      this.isSystem = true;
+    }
   }
 
   get id(): number {
@@ -36,83 +43,74 @@ export class Template {
     this._name = value;
   }
 
-  get courseId(): number {
-    return this._courseId;
+  get viewRoot(): number {
+    return this._viewRoot;
   }
 
-  set courseId(value: number) {
-    this._courseId = value;
+  set viewRoot(value: number) {
+    this._viewRoot = value;
   }
 
-  get isGlobal(): boolean {
-    return this._isGlobal;
+  get creationTimestamp(): Moment {
+    return this._creationTimestamp;
   }
 
-  set isGlobal(value: boolean) {
-    this._isGlobal = value;
+  set creationTimestamp(value: Moment) {
+    this._creationTimestamp = value;
   }
 
-  get roleType(): RoleTypeId {
-    return this._roleType;
+  get updateTimestamp(): Moment {
+    return this._updateTimestamp;
   }
 
-  set roleType(value: RoleTypeId) {
-    this._roleType = value;
+  set updateTimestamp(value: Moment) {
+    this._updateTimestamp = value;
   }
 
-  get viewId(): number {
-    return this._viewId;
+  get isPublic(): boolean {
+    return this._isPublic;
   }
 
-  set viewId(value: number) {
-    this._viewId = value;
+  set isPublic(value: boolean) {
+    this._isPublic = value;
   }
 
-  get roles(): {viewerRole: Role, userRole?: Role}[] {
-    return this._roles;
+  get isSystem(): boolean {
+    return this._isSystem;
   }
 
-  set roles(value: {viewerRole: Role, userRole?: Role}[]) {
-    this._roles = value;
+  set isSystem(value: boolean) {
+    this._isSystem = value;
+  }
+  
+  get sharedTimestamp(): Moment {
+    return this._sharedTimestamp;
+  }
+
+  set sharedTimestamp(value: Moment) {
+    this._sharedTimestamp = value;
   }
 
   static fromDatabase(obj: TemplateDatabase): Template {
     return new Template(
-      parseInt(obj.id),
+      obj.id,
       obj.name,
-      parseInt(obj.course),
-      !!parseInt(obj.isGlobal),
-      obj.roleType as RoleTypeId,
-      parseInt(obj.viewId),
-      obj.roles ? this.parseRoles(obj.roles, obj.roleType) : null
+      obj.view,
+      obj.creationTimestamp ? dateFromDatabase(obj.creationTimestamp) : null,
+      obj.updateTimestamp ? dateFromDatabase(obj.updateTimestamp) : null,
+      obj.isPublic ? obj.isPublic : null,
+      obj.sharedTimestamp ? dateFromDatabase(obj.sharedTimestamp) : null
     );
   }
 
-  static parseRoles(roles: string[], roleType: string): {viewerRole: Role, userRole?: Role}[] {
-    const parsedRoles: {viewerRole: Role, userRole?: Role}[] = [];
-    // roles.forEach(role => {
-    //   let roleObj: {viewerRole: Role, userRole?: Role };
-    //   if (roleType === RoleTypeId.ROLE_SINGLE) {
-    //     roleObj = { viewerRole: Role.fromDatabase({name: role}) };
-    //
-    //   } else if (roleType === RoleTypeId.ROLE_INTERACTION) {
-    //     roleObj = {
-    //       viewerRole: Role.fromDatabase({name: role.split('>')[1]}),
-    //       userRole: Role.fromDatabase({name: role.split('>')[0]})
-    //     };
-    //   }
-    //   parsedRoles.push(roleObj);
-    // }); FIXME
-    return parsedRoles;
-  }
 }
 
 export interface TemplateDatabase {
-  id: string;
+  id: number;
   name: string;
-  course: string;
-  isGlobal: string;
-  roleType: string;
-  viewId: string;
-  roles?: string[];
+  view: number;
+  creationTimestamp?: string;
+  updateTimestamp?: string;
+  isPublic?: boolean;
+  sharedTimestamp?: string;
 }

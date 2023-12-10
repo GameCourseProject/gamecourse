@@ -4,8 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 import { buildView } from "../build-view/build-view";
+import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 
 export class ViewRow extends View {
@@ -62,25 +62,26 @@ export class ViewRow extends View {
     return null;
   }
 
-  buildViewTree(options?: 'header' | 'body') { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   copy.children = []; // Strip children
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy, options);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build children into view tree
-    // for (const child of this.children) {
-    //   child.buildViewTree();
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewRow.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+    
+    // Build children into view tree
+    for (const child of this.children) {
+      child.buildViewTree();
+    }
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -122,14 +123,14 @@ export class ViewRow extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const child of this.children) {
+      const found = child.findView(viewId);
+      if (found) return child;
+    }
     return null;
   }
 
@@ -204,14 +205,14 @@ export class ViewRow extends View {
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
       events: obj.events,
       rowType: obj.rowType,
-      children: obj.children.map(child => buildViewTree(child))
+      children: groupedChildren.get(obj.id)
     }
   }
 }
 
 export interface ViewRowDatabase extends ViewDatabase {
   rowType: RowType;
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum RowType {

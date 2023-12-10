@@ -210,6 +210,30 @@ class PageController
     }
 
     /**
+     * Edits the view of a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function saveTemplate()
+    {
+        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+         
+        $viewTree = API::getValue("viewTree", "array");
+        $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+        
+        // Translate tree into logs
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
+        $template->editTemplate($template->getName(), $translatedTree);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -461,7 +485,7 @@ class PageController
             $pair->id = $component["id"];
             $pair->user = $component["sharedBy"];
             $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
-            $pair->timestamp = $component["sharedTimestamp"];
+            $pair->sharedTimestamp = $component["sharedTimestamp"];
             return $pair;
         };
         
@@ -470,17 +494,33 @@ class PageController
     }
 
     /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
+    public function getCustomTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+        API::response($template->getData());
+    }
+
+    /**
      * Gets all Core Templates
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
      */
     public function getCoreTemplates(){
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
             return $pair;
         };
         
@@ -490,6 +530,7 @@ class PageController
 
     /**
      * Gets all Custom Templates of a course
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
@@ -503,10 +544,14 @@ class PageController
         API::requireCoursePermission($course);
         
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = false;
             return $pair;
         };
         
@@ -596,6 +641,7 @@ class PageController
 
     /**
      * Gets all Shared Components
+     * has an option to return the tree instead of just the viewRoot
      *
      * @return void
      * @throws Exception
@@ -603,17 +649,21 @@ class PageController
     public function getSharedTemplates(){
         
         $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = true;
             $pair->user = $template["sharedBy"];
-            $pair->view = ViewHandler::renderView($template["viewRoot"])[0];
-            $pair->timestamp = $template["sharedTimestamp"];
+            $pair->sharedTimestamp = $template["sharedTimestamp"];
             return $pair;
         };
         
-        $customTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
-        API::response($customTemplates);
+        $sharedTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
+        API::response($sharedTemplates);
     }
 
 
@@ -675,6 +725,26 @@ class PageController
     }
 
     /**
+     * Renders a given template for editing.
+     *
+     * @param int $pageId
+     * @param int $userId (optional)
+     * @throws Exception
+     */
+    public function renderCustomTemplateInEditor()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $course = $template->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditor());
+    }
+
+    /**
      * Renders a given page with mock data.
      *
      * @param int $pageId
@@ -717,40 +787,6 @@ class PageController
         $viewerRole = API::getValue("viewerRole", "string");
 
         API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
-    }
-
-    /**
-     * Returns existing aspects in a page
-     *
-     * @param int $pageId
-     * @throws Exception
-     */
-    public function getPageAspects()
-    {
-        API::requireValues("pageId");
-
-        $pageId = API::getValue("pageId", "int");
-        $page = API::verifyPageExists($pageId);
-
-        $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
-
-        // Convert role ids to role names
-        $res = [];
-        foreach($aspects as $aspect) {
-            $aspectWithNames = [];
-            if ($aspect["userRole"]) {
-                $aspectWithNames["userRole"] = Role::getRoleName($aspect["userRole"]);
-            } else {
-                $aspectWithNames["userRole"] = null;
-            }
-            if ($aspect["viewerRole"]) {
-                $aspectWithNames["viewerRole"] = Role::getRoleName($aspect["viewerRole"]);
-            } else {
-                $aspectWithNames["viewerRole"] = null;
-            }
-            $res[] = $aspectWithNames;
-        }
-        API::response($res);
     }
 
 

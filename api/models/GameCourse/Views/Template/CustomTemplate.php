@@ -45,6 +45,26 @@ class CustomTemplate extends Template
         return Course::getCourseById($this->getData("course"));
     }
 
+    public function getViewRoot(): int
+    {
+        return $this->getData("viewRoot");
+    }
+
+    /**
+     * Gets template data from the database.
+     *
+     * @example getData() --> gets all template data
+     * @example getData("field") --> gets template field
+     * @example getData("field1, field2") --> gets template fields
+     *
+     * @param string $field
+     * @return mixed
+     */
+    public function getData(string $field = "*")
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], $field);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -99,8 +119,6 @@ class CustomTemplate extends Template
         // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
-
-        $this->refreshUpdateTimestamp();
     }
 
 
@@ -226,6 +244,7 @@ class CustomTemplate extends Template
             Logging::processLogs($logs, $views, $this->getCourse()->getId());
         }
 
+        $this->refreshUpdateTimestamp();
         return $this;
     }
 
