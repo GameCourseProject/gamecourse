@@ -522,7 +522,11 @@ export class ViewsEditorComponent implements OnInit {
     this.activeSubMenu = subMenu.isSelected ? subMenu : null;
   }
 
-  async closeEditor(){
+  async closeEditor() {
+    ModalService.openModal("exit-management");
+  }
+  
+  async closeConfirmed() {
     await this.router.navigate(['pages'], {relativeTo: this.route.parent});
   }
 

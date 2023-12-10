@@ -314,3 +314,22 @@
     </div>
   </div>
 </ng-template>
+
+<!-- Discard changed Modal -->
+<app-modal
+  [id]="'exit-management'"
+  [templateRef]="EXIT_MANAGEMENT"
+  [size]="'md'"
+  [header]="'Discard changes?'"
+  [submitBtnText]="'Discard'"
+  [closeBtnText]="'Cancel'"
+  (submitBtnClicked)="closeConfirmed()"
+  [xButton]="false"
+  [static]="true">
+</app-modal>
+<ng-template #EXIT_MANAGEMENT>
+  <div class="w-full flex flex-wrap">
+    <span class="w-full">There are currently <strong>unsaved changes</strong>. This action <strong>cannot be undone</strong>.</span>
+    <span class="w-full">Do you want to proceed?</span>
+  </div>
+</ng-template>
