@@ -54,10 +54,10 @@
               </button>
             </ng-container>
             <ng-template #defaultButton>
-              <button class="btn btn-sm btn-{{!page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+              <button class="btn btn-sm btn-{{!page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
                       data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
-                <ng-icon name="{{!page.isPublic ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-white' : 'text-dark')}}">
+                <ng-icon name="{{!page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
+                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-white' : 'text-black')}}">
                 </ng-icon>
               </button>
             </ng-template>
@@ -222,7 +222,7 @@
 <!-- Delete Modal -->
 <app-modal *ngIf="mode === 'delete' && pageToManage"
            [id]="'delete-page'"
-           [templateRef]="DELETE"
+           [templateRef]="DELETE_PAGE"
            [header]="mode?.capitalize() + ' page \'' + pageToManage.name + '\'?'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Delete'"
@@ -231,7 +231,7 @@
            (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #DELETE>
+<ng-template #DELETE_PAGE>
   <div class="w-full flex flex-wrap">
     <span>Are your sure you want to delete '<strong>{{pageToManage.name}}</strong>' page? This action <strong> cannot be undone</strong>.</span>
   </div>
@@ -247,13 +247,41 @@
       </div>
     </div>
   </div>
+</ng-template>
 
+<app-modal *ngIf="mode === 'delete' && templateToManage"
+           [id]="'delete-template'"
+           [templateRef]="DELETE_TEMPLATE"
+           [header]="mode?.capitalize() + ' template \'' + templateToManage.name + '\'?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Delete'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #DELETE_TEMPLATE>
+  <div class="w-full flex flex-wrap">
+    <span>Are your sure you want to delete '<strong>{{templateToManage.name}}</strong>' template? This action <strong> cannot be undone</strong>.</span>
+  </div>
+
+  <div *ngIf="templateToManage.isPublic" class="justify-center flex">
+    <div class="alert alert-warning shadow-lg rounded-lg w-full mt-6">
+      <div>
+        <ng-icon [name]="'feather-alert-triangle'" size="1.2rem"></ng-icon>
+        <div class="ml-2.5">
+          <span>This template might be used by other courses at the moment. Deleting it would also
+            <strong>make it unavailable for them</strong>.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>
 
 <!-- Make public / private modal -->
 <app-modal *ngIf="mode === 'make public-private' && pageToManage"
            [id]="'make-public-private-page'"
-           [templateRef]="MAKE_PUBLIC_PRIVATE"
+           [templateRef]="MAKE_PUBLIC_PRIVATE_PAGE"
            [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isPublic ? 'private' : 'public') + '?'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Yes'"
@@ -262,7 +290,7 @@
            (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #MAKE_PUBLIC_PRIVATE>
+<ng-template #MAKE_PUBLIC_PRIVATE_PAGE>
   <div *ngIf="pageToManage.course === course.id" class="flex flex-wrap -mt-1">
     <span class="w-full" *ngIf="pageToManage.isPublic">This page will <strong>stop being available</strong>
       for other courses. Do you wish to proceed?</span>
@@ -274,6 +302,33 @@
     <span class="w-full" *ngIf="pageToManage.isPublic"><strong>This page belongs to another course</strong>. Making it
       private will <strong>stop being available for this and other courses</strong>. Do you wish to proceed?</span>
     <span class="w-full" *ngIf="!pageToManage.isPublic">This page will be <strong>available for other courses to
+      use and modify.</strong> Do you wish to proceed?</span>
+  </div>
+</ng-template>
+
+<app-modal *ngIf="mode === 'make public-private' && templateToManage"
+           [id]="'make-public-private-template'"
+           [templateRef]="MAKE_PUBLIC_PRIVATE_TEMPLATE"
+           [header]="'Make \'' + templateToManage.name + '\' ' + (templateToManage.isPublic ? 'private' : 'public') + '?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Yes'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #MAKE_PUBLIC_PRIVATE_TEMPLATE>
+  <div *ngIf="templateToManage.course === course.id" class="flex flex-wrap -mt-1">
+    <span class="w-full" *ngIf="templateToManage.isPublic">This template will <strong>stop being available</strong>
+      for other courses. Do you wish to proceed?</span>
+    <span class="w-full" *ngIf="!templateToManage.isPublic">This template will be <strong>available for other courses to
+      use and modify.</strong> Do you wish to proceed?</span>
+  </div>
+
+  <div *ngIf="templateToManage.course !== course.id" class="flex flex-wrap -mt-1">
+    <span class="w-full" *ngIf="templateToManage.isPublic"><strong>This template belongs to another course</strong>. Making it
+      private will <strong>stop being available for this and other courses</strong>. Do you wish to proceed?</span>
+    <span class="w-full" *ngIf="!templateToManage.isPublic">This template will be <strong>available for other courses to
       use and modify.</strong> Do you wish to proceed?</span>
   </div>
 </ng-template>
@@ -360,8 +415,8 @@
 
 <!-- Rename modal -->
 <app-modal *ngIf="mode === 'rename' && pageToManage"
-           [id]="'rename'"
-           [templateRef]="RENAME"
+           [id]="'rename-page'"
+           [templateRef]="RENAME_PAGE"
            [header]="'Rename \'' + pageName + '\''"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Save'"
@@ -370,7 +425,7 @@
            (submitBtnClicked)="fPage.onSubmit(null); doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #RENAME>
+<ng-template #RENAME_PAGE>
   <form #fPage="ngForm">
     <app-input-text
       [id] = "'page-name'"
@@ -385,7 +440,35 @@
       [maxLength]="60"
       [maxLengthErrorMessage]="'Page name is too long: maximum of 60 characters'">
     </app-input-text>
+  </form>
+</ng-template>
 
+<app-modal *ngIf="mode === 'rename' && templateToManage"
+           [id]="'rename-template'"
+           [templateRef]="RENAME_TEMPLATE"
+           [header]="'Rename \'' + templateName + '\''"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Save'"
+           [submitBtnColor]="'primary'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="fTemplate.onSubmit(null); doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #RENAME_TEMPLATE>
+  <form #fTemplate="ngForm">
+    <app-input-text
+      [id] = "'template-name'"
+      [form] = "fTemplate"
+      [classList]="'w-full flex flex-wrap'"
+      [(value)] = "templateToManage.name"
+      [placeholder]="'Template name'"
+      [topLabel]="'New name'"
+      [pattern]="'(?!^\\d+$)^.+$'"
+      [patternErrorMessage]="'Template name can\'t be composed of only numbers'"
+      [required]="true"
+      [maxLength]="60"
+      [maxLengthErrorMessage]="'Template name is too long: maximum of 60 characters'">
+    </app-input-text>
   </form>
 </ng-template>
 

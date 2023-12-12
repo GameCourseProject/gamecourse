@@ -66,6 +66,29 @@ class CustomTemplate extends Template
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
+    /**
+     * Gets all template data (including the fields of shared templates)
+     *
+     * @return mixed
+     */
+    public function getDataWithShared()
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], "*");
+        $shared = Core::database()->select($this::TABLE_TEMPLATE_SHARED, ["id" => $this->id], "sharedBy, sharedTimestamp");
+        if ($shared) {
+            $data["isPublic"] = true;
+            $data["sharedBy"] = $shared["sharedBy"];
+            $data["sharedTimestamp"] = $shared["sharedTimestamp"];
+        }
+        else {
+            $data["isPublic"] = false;
+            $data["sharedBy"] = null;
+            $data["sharedTimestamp"] = null;
+        }
+        
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, "*");
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/

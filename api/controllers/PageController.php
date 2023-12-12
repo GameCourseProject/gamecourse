@@ -234,6 +234,28 @@ class PageController
     }
 
     /**
+     * Edits a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function editTemplate()
+    {
+        API::requireValues("courseId", "templateId", "name");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $name = API::getValue("name");
+
+        $templateInfo = $template->editTemplate($name)->getDataWithShared();
+        API::response($templateInfo);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -259,7 +281,6 @@ class PageController
         $isPublic = API::getValue("isPublic", "bool");
 
         $pageInfo = $page->editPage($name, $isVisible, $isPublic, $visibleFrom, $visibleUntil, $position)->getData();
-
         API::response($pageInfo);
     }
 

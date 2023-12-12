@@ -72,7 +72,7 @@ import {
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
 import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
-import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
+import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
@@ -3058,6 +3058,23 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+  public editTemplate(courseID: number, template: TemplateManageData): Observable<Template> {
+    const data = {
+      courseId: courseID,
+      templateId: template.id,
+      name: template.name,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'editTemplate');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Template.fromDatabase(res['data'])) );
   }
 
   // Pages //////////////////////////////////////////////////////////////////////////
