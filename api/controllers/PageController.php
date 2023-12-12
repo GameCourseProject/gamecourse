@@ -285,6 +285,26 @@ class PageController
     }
 
     /**
+     * Updates page positions in the DB
+     * @return void
+     * @throws Exception
+     */
+    public function updatePagePositions(){
+        API::requireValues("courseId", "positions");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        $positions = API::getValue("positions", "array");
+
+        // set all to null to mantain the constraint
+        Page::clearPositions(array_map(function($el) {return $el["id"];}, $positions));
+        // set to new values
+        Page::setPositions($positions);
+    }
+
+    /**
      * Removes page from DB given its ID and course
      *
      * @return void

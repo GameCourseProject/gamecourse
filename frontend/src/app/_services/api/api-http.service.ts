@@ -3274,6 +3274,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => Page.fromDatabase(res['data'])) );
   }
 
+  public updatePagePositions(courseID: number, positions: {page: number, position: number}[]): Observable<void> {
+    const data = {
+      courseId: courseID,
+      positions: positions
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'updatePagePositions');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
   public deletePage(courseID: number, pageId: number): Observable<void> {
     const data = {
       courseId: courseID,

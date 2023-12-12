@@ -155,7 +155,7 @@
           </div>
           <div class="divider rounded before:bg-base-200 after:bg-base-200 mb-0.5 -mt-1"></div>
           <div>
-            <p *ngIf="template.isPublic"><span class="text-xs font-bold uppercase">Shared on:</span> {{calculateDate(template.sharedTimestamp)}}</p>
+            <!-- <p *ngIf="template.isPublic"><span class="text-xs font-bold uppercase">Shared on:</span> {{calculateDate(template.sharedTimestamp)}}</p> -->
             <p *ngIf="!template.isSystem"><span class="text-xs font-bold uppercase">Last edited:</span> {{calculateDate(template.updateTimestamp)}}</p>
           </div>
         </div>

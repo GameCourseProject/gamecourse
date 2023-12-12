@@ -191,6 +191,7 @@ export class ViewsComponent implements OnInit {
     event = event.toLowerCase();
     if (event === 'arrange pages') {
       this.arrangingPages = _.cloneDeep(this.coursePages);
+      console.log(this.arrangingPages);
       this.mode = 'arrange';
       ModalService.openModal('arrange-pages');
 
@@ -216,15 +217,18 @@ export class ViewsComponent implements OnInit {
   async arrangePages(){
     this.loading.action = true;
 
+    const newPositions = [];
+    
     // Save new positions
     for (let i = 0; i < this.arrangingPages.length; i++){
       // if order hasn't changed, skip the edition step (less accesses to DB)
-      if (this.arrangingPages[i].position === i) continue;
-      this.arrangingPages[i].position = i;
-      let page = initPageToManage(this.course.id, this.arrangingPages[i]);
-      await this.api.editPage(this.course.id, page).toPromise();
-
+      if (!this.arrangingPages[i].position || this.arrangingPages[i].position != i) {
+        this.arrangingPages[i].position = i;
+        newPositions.push({ id: this.arrangingPages[i].id, position: this.arrangingPages[i].position });
+      }
     }
+    
+    await this.api.updatePagePositions(this.course.id, newPositions).toPromise();
 
     this.coursePages = _.cloneDeep(this.arrangingPages);
     this.pages = this.coursePages.concat(this.publicPages);
@@ -392,48 +396,47 @@ export class ViewsComponent implements OnInit {
 
     } else {
       if (!this.fPage.valid) {
-          AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-          return;
-        }
+        AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+        return;
+      }
 
-        this.loading.action = true;
+      this.loading.action = true;
+
+      if (this.mode === 'visibility') {
+        page.isVisible = !page.isVisible;
+        if (page.visibleFrom === '') page.visibleFrom = null;
+        if (page.visibleUntil === '') page.visibleUntil = null;
+
+        if (!page.isVisible) {
+          page.visibleFrom = null;
+          page.visibleUntil = null;
+        }
+      }
+
+      if (this.mode === 'duplicate') {
+        const newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
+        await this.updatePages('add', newPage, origin);
+
+        AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
+        ModalService.closeModal('duplicate');
+
+      } else {
+        const editedPage = await this.api.editPage(this.course.id, page).toPromise();
+        await this.updatePages('update', editedPage, origin);
 
         if (this.mode === 'visibility') {
-          page.isVisible = !page.isVisible;
-          if (page.visibleFrom === '') page.visibleFrom = null;
-          if (page.visibleUntil === '') page.visibleUntil = null;
+          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
+            (page.isVisible ? 'visible' : 'not visible'));
+          ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
 
-          if (!page.isVisible) {
-            page.visibleFrom = null;
-            page.visibleUntil = null;
-          }
+        } else if (this.mode === 'rename') {
+          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' successfully renamed.');
+          ModalService.closeModal('rename-page');
+
         }
-
-        if (this.mode === 'duplicate') {
-          const newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
-          await this.updatePages('add', newPage, origin);
-
-          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
-          ModalService.closeModal('duplicate');
-
-        } else {
-          const editedPage = await this.api.editPage(this.course.id, page).toPromise();
-          await this.updatePages('update', editedPage, origin);
-
-          if (this.mode === 'visibility') {
-            AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
-              (page.isVisible ? 'visible' : 'not visible'));
-            ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
-
-          } else if (this.mode === 'rename') {
-            AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' successfully renamed.');
-            ModalService.closeModal('rename-page');
-
-          }
-        }
-
-        this.loading.action = false;
       }
+      this.loading.action = false;
+    }
   }
 
   async updatePages(option: 'update' | 'add' | 'remove' | 'remove or add', page: Page, origin: 'course' | 'public') {
