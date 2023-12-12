@@ -76,7 +76,7 @@ export class ViewsEditorComponent implements OnInit {
   aspectToSelect: Aspect;                         // Aspect selected in modal to switch to
   aspectToAdd: Aspect = new Aspect(null, null);   // New aspect
 
-  coreComponents: { id: number, view: View }[];
+  coreComponents: any;
   customComponents: { id: number, view: View }[];
   sharedComponents: { id: number, sharedTimestamp: string, user: number, view: View }[];
 
@@ -110,12 +110,8 @@ export class ViewsEditorComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       await this.getLoggedUser();
-
       await this.getComponents();
-      this.componentSettings = { id: null, top: null };
       await this.getTemplates();
-      this.templateSettings = { id: null, top: null };
-      this.setOptions();
       
       this.route.params.subscribe(async childParams => {
         const segmentForTemplate = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
@@ -154,6 +150,9 @@ export class ViewsEditorComponent implements OnInit {
 
       });
       this.loading.page = false;
+      this.componentSettings = { id: null, top: null };
+      this.templateSettings = { id: null, top: null };
+      this.setOptions();
     })
   }
 
@@ -221,20 +220,6 @@ export class ViewsEditorComponent implements OnInit {
     this.coreComponents = await this.api.getCoreComponents().toPromise();
     this.customComponents = await this.api.getCustomComponents(this.course.id).toPromise();
     this.sharedComponents = await this.api.getSharedComponents().toPromise();
-
-    // Build views for core components
-    // FIXME do this in api?
-    const types = Object.keys(this.coreComponents);
-    for (let type of types) {
-      const categories = Object.keys(this.coreComponents[type]);
-      for (let category of categories) {
-        this.coreComponents[type][category] = this.coreComponents[type][category].map((e) => {
-          const view = buildView(e);
-          view.switchMode(ViewMode.PREVIEW);
-          return view;
-        })
-      }
-    }
   }
 
   async getTemplates(): Promise<void> {
@@ -244,6 +229,17 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   setOptions() {
+    this.loading.components = true;
+    // Build views for core components
+    // FIXME do this in api?
+/*     const types = Object.keys(this.coreComponents);
+    for (let type of types) {
+      const categories = Object.keys(this.coreComponents[type]);
+      for (let category of categories) {
+        this.coreComponents[type][category] = this.coreComponents[type][category].map((e) => buildView(e))
+      }
+    }
+ */
     // FIXME: move to backend maybe ?
     this.options =  [
       { icon: 'jam-plus-circle',
@@ -260,7 +256,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.BLOCK]
+                  list: this.coreComponents.get(ViewType.BLOCK)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -282,7 +278,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.BUTTON]
+                  list: this.coreComponents.get(ViewType.BUTTON)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -304,7 +300,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.CHART]
+                  list: this.coreComponents.get(ViewType.CHART)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -326,7 +322,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.COLLAPSE]
+                  list: this.coreComponents.get(ViewType.COLLAPSE)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -348,7 +344,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.ICON]
+                  list: this.coreComponents.get(ViewType.ICON)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -370,7 +366,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.IMAGE]
+                  list: this.coreComponents.get(ViewType.IMAGE)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -392,7 +388,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.TABLE]
+                  list: this.coreComponents.get(ViewType.TABLE)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -414,7 +410,7 @@ export class ViewsEditorComponent implements OnInit {
                 { type: 'System',
                   isSelected: true,
                   helper: TypeHelper.SYSTEM,
-                  list: this.coreComponents[ViewType.TEXT]
+                  list: this.coreComponents.get(ViewType.TEXT)
                 },
                 { type: 'Custom',
                   isSelected: false,
@@ -469,7 +465,6 @@ export class ViewsEditorComponent implements OnInit {
         description: 'Rearrange'
       }
     ];
-
     this.loading.components = false;
   }
 
@@ -527,7 +522,7 @@ export class ViewsEditorComponent implements OnInit {
   }
   
   async closeConfirmed() {
-    await this.router.navigate(['pages'], {relativeTo: this.route.parent});
+    await this.router.navigate(['pages'], { relativeTo: this.route.parent });
   }
 
   addComponentToPage(item: View) {
@@ -595,7 +590,7 @@ export class ViewsEditorComponent implements OnInit {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
     console.log(buildedTree);
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree).toPromise();
-    await this.router.navigate(['pages'], { relativeTo: this.route.parent });
+    await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
   
@@ -716,7 +711,7 @@ export class ViewsEditorComponent implements OnInit {
     await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view])).toPromise();
     ModalService.closeModal('save-template');
     AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
-    this.closeEditor();
+    await this.closeConfirmed();
   }
   
   async shareTemplate() {
@@ -833,9 +828,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   getSubcategories() {
-    if (this.getSelectedCategories()[0]['list'])
-      return Object.keys(this.getSelectedCategories()[0]['list']);
-    else return [];
+    return this.getSelectedCategories()[0]['list'];
   }
 
   getComponentsOfSubcategory(subcategory: string) {

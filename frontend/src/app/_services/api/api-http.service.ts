@@ -18,7 +18,7 @@ import {Moment} from "moment/moment";
 import {Role} from "../../_domain/roles/role";
 import {Page} from "../../_domain/views/pages/page";
 import {Template} from "../../_domain/views/templates/template";
-import {View} from "../../_domain/views/view";
+import {View, ViewMode} from "../../_domain/views/view";
 import {buildView} from "../../_domain/views/build-view/build-view";
 import {dateFromDatabase, exists} from "../../_utils/misc/misc";
 import {
@@ -74,6 +74,7 @@ import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-pa
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
+import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
 @Injectable({
   providedIn: 'root'
@@ -2779,7 +2780,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public getCoreComponents(): Observable<{id: number, view: View}[]> {
+  public getCoreComponents(): Observable<Map<ViewType, { category: string, views: View[] }[]>> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getCoreComponents');
@@ -2787,7 +2788,28 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data']));
+      .pipe(map((res: any) => {
+        const map = new Map<ViewType, { category: string, views: View[] }[]>();
+
+        res["data"].forEach(({ category, view }) => {
+          view = buildView(view);
+          view.mode = ViewMode.PREVIEW;
+          const type = view.type;
+
+          if (!map.has(type)) {
+            map.set(type, []);
+          }
+
+          const categoryGroup = map.get(type).find((group) => group.category === category);
+          if (categoryGroup) {
+            categoryGroup.views.push(view);
+          } else {
+            map.get(type).push({ category, views: [view] });
+          }
+        });
+
+        return map;
+      }));
   }
 
   public getCustomComponents(courseID: number): Observable<{id: number, view: View}[]> {

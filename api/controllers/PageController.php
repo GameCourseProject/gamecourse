@@ -350,20 +350,14 @@ class PageController
      * @throws Exception
      */
     public function getCoreComponents(){
-        $coreComponents = [];
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->category = Category::getCategoryById($component["category"])->getName();
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            return $pair;
+        };
 
-        foreach (CoreComponent::getComponents() as $component) {
-            $category = Category::getCategoryById($component["category"])->getName();
-            $view = ViewHandler::renderView($component["viewRoot"])[0];
-            $type = $view['type'];
-
-            if (!isset($coreComponents[$type][$category])) {
-                $coreComponents[$type][$category] = [];
-            }
-
-            $coreComponents[$type][$category][] = $view;
-        }
-        
+        $coreComponents = array_map($fun, CoreComponent::getComponents());
         API::response($coreComponents);
     }
 
