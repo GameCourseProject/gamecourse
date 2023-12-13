@@ -1,6 +1,5 @@
-<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE && viewToEdit.type !== ViewType.CHART" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 <ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
-<ng-container *ngIf="viewToEdit.type === ViewType.CHART" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
 
 
 <!--------------------------------------------------->
@@ -20,6 +19,10 @@
     [required]="true"
     [classList]="'mb-4'">
   </app-input-select>
+
+  <!--------------------- Chart options ---------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.CHART" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+
   <!--------------------- Button options --------------------->
   <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
@@ -143,7 +146,7 @@
       [id]="'component-icon'"
       [(value)]="viewToEdit.size"
       [options]="getIconSizeOptions()"
-      [placeholder]="'Select component type'"
+      [placeholder]="'Select size'"
       [topLabel]="'Select size for your icon'"
       [helperText]="'Will display the icon bigger or smaller. Default is medium size.'"
       [helperPosition]="'right'"
@@ -596,8 +599,143 @@
     [(value)]="viewToEdit.chartType"
     [options]="getChartTypes()"
     [placeholder]="'Select chart type'"
-    [topLabel]="'Chart Type'"
+    [topLabel]="'Type of Chart'"
     [required]="true"
     [classList]="'mb-4'">
   </app-input-select>
+
+  <div class="flex flex-row mt-2 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Dimensions</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Not mandatory, only specify if needed. Default are width = 100% and height = 'auto'.
+  </div>
+  <div class="flex flex-row gap-2">
+    <app-input-text
+      [id]="'chart-width'"
+      [(value)]="viewToEdit.options.width"
+      [placeholder]="'e.g. 80%'"
+      [required]="false"
+      [leftLabel]="'Width '"
+      [size]="'sm'">
+    </app-input-text>
+    <app-input-text
+      [id]="'chart-height'"
+      [(value)]="viewToEdit.options.height"
+      [placeholder]="'e.g. 80%'"
+      [required]="false"
+      [leftLabel]="'Height'"
+      [size]="'sm'">
+    </app-input-text>
+  </div>
+
+  <div class="flex flex-row gap-10 mt-2">
+    <div class="w-1/2 shrink-0">
+      <div class="flex flex-row my-2 justify-start items-center gap-2">
+        <app-simple-helper [position]="'right'" [text]="'Series of data to display in chart.'"></app-simple-helper>
+        <span class="block font-semibold text-mg">Chart Data</span>
+      </div>
+      <app-input-text
+        [id]="'chart-data'"
+        [(value)]="viewToEdit.data"
+        [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
+        [required]="true">
+      </app-input-text>
+    </div>
+    <div class="grow">
+      <app-input-color
+        [id]="'chart-colors'"
+        [(value)]="viewToEdit.color"
+        [(values)]="viewToEdit.options.colors"
+        [placeholder]="'Chart Colors'"
+        [topLabel]="'Chart Colors'"
+        [helperText]="'Choose colors for each set of the data series.'"
+        [helperPosition]="'right'"
+        [multiple]="true">
+      </app-input-color>
+    </div>
+  </div>
+
+<!--   <div class="flex flex-row mt-2 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Labels</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
+  </div>
+  <app-input-checkbox
+    [id]="'block-responsive'"
+    [(value)]="viewToEdit.options."
+    [color]="'primary'"
+    (valueChange)="viewToEdit.responsive = !viewToEdit.responsive"
+    [label]="'Add data labels to this chart'"
+    [labelPosition]="'right'">
+  </app-input-checkbox> -->
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Axis</span>
+  </div>
+  <div class="flex flex-row">
+    <div class="grow border-r-2 border-neutral/10 px-4">
+      <app-input-text
+        [id]="'chart-x-label'"
+        [(value)]="viewToEdit.options.XAxisLabel"
+        [placeholder]="'e.g. \'Time (days)\' '"
+        [required]="false"
+        [topLabel]="'X-Axis label'"
+      ></app-input-text>
+      <app-input-number
+        [id]="'chart-x-ticks'"
+        [(value)]="viewToEdit.options.XAxisTickAmount"
+        [topLabel]="'X-Axis amount of ticks'"
+        [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the X-axis of the chart. It helps to improve readability.'"
+        [helperPosition]="'right'"
+      ></app-input-number>
+      <app-input-select
+        [id]="'chart-x-type'"
+        [(value)]="viewToEdit.options.XAxisType"
+        [options]="getXAxisDataTypes()"
+        [placeholder]="'Select X-Axis data type'"
+        [topLabel]="'X-Axis type of data'"
+        [required]="false"
+      ></app-input-select>
+    </div>
+    <div class="grow px-4">
+      <app-input-text
+        [id]="'chart-y-label'"
+        [(value)]="viewToEdit.options.YAxisLabel"
+        [placeholder]="'e.g. \'XP Evolution\' '"
+        [required]="false"
+        [topLabel]="'Y-Axis label'"
+      ></app-input-text>
+      <app-input-number
+        [id]="'chart-y-ticks'"
+        [(value)]="viewToEdit.options.YAxisTickAmount"
+        [topLabel]="'Y-Axis amount of ticks'"
+        [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the Y-axis of the chart. It helps to improve readability.'"
+        [helperPosition]="'right'"
+        [placeholder]="'Select a number'"
+      ></app-input-number>
+      <app-input-number
+        [id]="'chart-y-min'"
+        [(value)]="viewToEdit.options.YAxisMin"
+        [topLabel]="'Y-Axis minimum value'"
+        [placeholder]="'Select a minimum number'"
+      ></app-input-number>
+      <app-input-number
+        [id]="'chart-y-max'"
+        [(value)]="viewToEdit.options.YAxisMax"
+        [topLabel]="'Y-Axis maximum value'"
+        [placeholder]="'Select a maximum number'"
+      ></app-input-number>
+      <app-input-checkbox
+        [id]="'block-responsive'"
+        [(value)]="viewToEdit.options.YAxisReversed"
+        [color]="'primary'"
+        (valueChange)="switchYAxisReversed()"
+        [label]="'Reverse Y-Axis values'"
+        [labelPosition]="'right'"
+      ></app-input-checkbox>
+    </div>
+  </div>
+
 </ng-template>

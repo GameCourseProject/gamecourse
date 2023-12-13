@@ -439,7 +439,7 @@ export class ViewsEditorComponent implements OnInit {
           items: [
             {
               type: 'System',
-              isSelected: false,
+              isSelected: true,
               helper: TypeHelper.SYSTEM,
               list: this.coreTemplates
             },

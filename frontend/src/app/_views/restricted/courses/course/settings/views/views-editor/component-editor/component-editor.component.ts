@@ -77,6 +77,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.viewToPreview = _.cloneDeep(this.view);
       this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
+
+    console.log(this.view);
   }
 
   // Additional Tools --------------------------------------
@@ -267,6 +269,12 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
+  getXAxisDataTypes() {
+    return [{ value: "category", text: "Category" },
+      { value: "datetime", text: "Datetime" },
+      { value: "numeric", text: "Numeric" }];
+  }
+
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
@@ -283,6 +291,17 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     ]
   }
 
+  switchYAxisReversed() {
+    console.log(this.viewToEdit.options.YAxisReversed);
+    if (!this.viewToEdit.options.YAxisReversed) {
+      this.viewToEdit.options.YAxisReversed = true;
+    }
+    else {
+      this.viewToEdit.options.YAxisReversed = !this.viewToEdit.options.YAxisReversed;
+    }
+    console.log(this.viewToEdit.options.YAxisReversed);
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -291,7 +310,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.updateView(this.view, this.viewToEdit);
     
     // For aspects --------------------------------------
-    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view.findView(this.view.id));
+    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view?.findView(this.view.id));
     
     if (viewsWithThis.length > 0) {
       const lowerInHierarchy = viewsWithThis.filter((e) =>

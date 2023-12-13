@@ -20,13 +20,16 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() value: string;                                             // Where to store the value
   @Input() placeholder: string = '#ffffff';                           // Message to show by default
 
+  @Input() multiple?: boolean = false;                                // Allow several colors instead of just one
+  @Input() values?: string[] = [];                                    // Keep the several colors
+
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size FIXME: not working
   @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |     // Color
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add
   @Input() disabled?: boolean;                                        // Make it disabled
-  @Input() colors?: string[];                                   // Custom swatches of colors
+  @Input() colors?: string[];                                          // Custom swatches of colors
 
   @Input() topLabel?: string;                                         // Top label text
   @Input() leftLabel?: string;                                        // Text on prepended label
@@ -51,6 +54,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() incorrectErrorMessage?: string;                            // Message for incorrect error
 
   @Output() valueChange = new EventEmitter<string>();
+  @Output() valuesChange = new EventEmitter<string[]>();
 
   @ViewChild('inputColor', { static: false }) inputColor: NgModel;
 
@@ -133,6 +137,21 @@ export class InputColorComponent implements OnInit, AfterViewInit {
 
     const picker = document.getElementById('color-picker');
     picker.classList.add('hidden');
+  }
+
+  setColor(value: string) {
+    this.pickr.setColor(value)
+    this.valueChange.emit(value);
+  }
+
+  addInput(value: string) {
+    this.values.push(value);
+    this.valuesChange.emit(this.values);
+    this.value = null;
+  }
+
+  removeColor(index: number) {
+    this.values.splice(index, 1);
   }
 
   get InputSize(): typeof InputSize {
