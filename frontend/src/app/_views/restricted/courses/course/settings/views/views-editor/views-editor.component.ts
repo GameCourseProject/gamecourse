@@ -755,21 +755,22 @@ export class ViewsEditorComponent implements OnInit {
     }
     else if (action === 'Redo') {
     }
-    /*
     else if (action === 'Raw (default)') {
       this.previewMode = 'raw';
-      this.view = await this.api.renderPageInEditor(this.page.id).toPromise();
-      this.view.switchMode(ViewMode.EDIT);
-    }
-    else if (action === 'Final preview (real data)') {
-      this.previewMode = 'real';
-      this.view = await this.api.previewPage(this.page.id, this.view.aspect).toPromise();
+      const correspondentView = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
+      if (correspondentView) {
+        this.view = correspondentView;
+        if (this.view) this.view.switchMode(ViewMode.EDIT);
+      }
     }
     else if (action === 'Layout preview (mock data)') {
       this.previewMode = 'mock';
       this.view = await this.api.renderPageWithMockData(this.page.id).toPromise();
     }
-    */
+    else if (action === 'Final preview (real data)') {
+      this.previewMode = 'real';
+      this.view = await this.api.previewPage(this.page.id, this.view.aspect).toPromise();
+    }
   }
 
   /*** --------------------------------------------- ***/

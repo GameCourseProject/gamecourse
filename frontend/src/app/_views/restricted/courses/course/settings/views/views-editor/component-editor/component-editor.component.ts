@@ -46,6 +46,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   cellToEdit?: View = null;
   rowToEdit?: ViewRow = null;
 
+  categoryToAdd?: string = "";
+
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
   functions: CustomFunction[];
   ELfunctions: CustomFunction[];
@@ -265,16 +267,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
   
-  getChartTypes() {
-    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
-  }
-
-  getXAxisDataTypes() {
-    return [{ value: "category", text: "Category" },
-      { value: "datetime", text: "Datetime" },
-      { value: "numeric", text: "Numeric" }];
-  }
-
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
@@ -291,15 +283,30 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     ]
   }
 
-  switchYAxisReversed() {
-    console.log(this.viewToEdit.options.YAxisReversed);
-    if (!this.viewToEdit.options.YAxisReversed) {
-      this.viewToEdit.options.YAxisReversed = true;
-    }
-    else {
-      this.viewToEdit.options.YAxisReversed = !this.viewToEdit.options.YAxisReversed;
-    }
-    console.log(this.viewToEdit.options.YAxisReversed);
+  getChartTypes() {
+    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  }
+
+  getXAxisDataTypes() {
+    return [{ value: "category", text: "Category" },
+      { value: "datetime", text: "Datetime" },
+      { value: "numeric", text: "Numeric" }];
+  }
+
+  getChartLegendPositionOptions() {
+    return [{ value: "top", text: "Top" }, { value: "right", text: "Right" }, { value: "bottom", text: "Bottom" }, { value: "left", text: "Left" }]
+  }
+
+  getChartAlignmentOptions() {
+    return [{ value: "left", text: "Left" }, { value: "center", text: "Center" }, { value: "right", text: "Right" }]
+  }
+
+  getChartStrokeCurveOptions() {
+    return [{ value: "smooth", text: "Smooth" }, { value: "straight", text: "Straight" }, { value: "stepline", text: "Stepline" }]
+  }
+
+  getChartLineCapOptions() {
+    return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
 
   /*** --------------------------------------------- ***/
@@ -400,6 +407,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     else {
       this.viewToEdit.icon = this.viewToEdit.icon == icon ? null : icon;
     }
+  }
+
+  addXAxisCategory() {
+    if (this.viewToEdit.options.XAxisCategories) {
+      this.viewToEdit.options.XAxisCategories.push(this.categoryToAdd);
+    }
+    else {
+      this.viewToEdit.options.XAxisCategories = [this.categoryToAdd];
+    }
+    this.categoryToAdd = "";
+  }
+
+  removeXAxisCategory(index: number) {
+    this.viewToEdit.options.XAxisCategories.splice(index, 1);
   }
 
   // Exclusives for tables ---------------------

@@ -73,29 +73,23 @@
       To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
       For more information check the 'Additional Tools' box.
     </div>
-    <div class="flex flex-row gap-10">
-      <div class="flex flex-col grow">
-        <div class="flex flex-row mt-2 justify-start items-center gap-2">
-          <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
-          <span class="block font-semibold text-lg">Text</span>
-        </div>
-        <app-input-text
-          [id]="'component-text'"
-          [(value)]="viewToEdit.text"
-          [required]="false">
-        </app-input-text>
-      </div>
-      <div class="flex flex-col grow">
-        <div class="flex flex-row mt-2 justify-start items-center gap-2">
-          <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
-          <span class="block font-semibold text-lg">Link</span>
-        </div>
-        <app-input-text
-          [id]="'component-link'"
-          [(value)]="viewToEdit.link"
-          [required]="false">
-        </app-input-text>
-      </div>
+    <div class="grid grid-cols-2 gap-8">
+      <app-input-text
+        [id]="'component-text'"
+        [(value)]="viewToEdit.text"
+        [required]="false"
+        [topLabel]="'Text'"
+        [helperText]="'Text that will be displayed'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+      <app-input-text
+        [id]="'component-link'"
+        [(value)]="viewToEdit.link"
+        [required]="false"
+        [topLabel]="'Link'"
+        [helperText]="'Enables link when clicked'"
+        [helperPosition]="'right'"
+      ></app-input-text>
     </div>
   </ng-container>
 
@@ -106,29 +100,23 @@
       To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
       For more information check the 'Additional Tools' box.
     </div>
-    <div class="flex flex-row gap-10">
-      <div class="flex flex-col grow">
-        <div class="flex flex-row mt-2 justify-start items-center gap-2">
-          <app-simple-helper [position]="'right'" [text]="'Source of the image that will be displayed'"></app-simple-helper>
-          <span class="block font-semibold text-lg">Source</span>
-        </div>
-        <app-input-text
-          [id]="'component-source'"
-          [(value)]="viewToEdit.src"
-          [required]="true">
-        </app-input-text>
-      </div>
-      <div class="flex flex-col grow">
-        <div class="flex flex-row mt-2 justify-start items-center gap-2">
-          <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
-          <span class="block font-semibold text-lg">Link</span>
-        </div>
-        <app-input-text
-          [id]="'component-link'"
-          [(value)]="viewToEdit.link"
-          [required]="false">
-        </app-input-text>
-      </div>
+    <div class="grid grid-cols-2 gap-8">
+      <app-input-text
+        [id]="'component-source'"
+        [(value)]="viewToEdit.src"
+        [required]="false"
+        [topLabel]="'Source'"
+        [helperText]="'Source of the image that will be displayed'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+      <app-input-text
+        [id]="'component-link'"
+        [(value)]="viewToEdit.link"
+        [required]="false"
+        [topLabel]="'Link'"
+        [helperText]="'Enables link when clicked'"
+        [helperPosition]="'right'"
+      ></app-input-text>
     </div>
   </ng-container>
 
@@ -385,8 +373,8 @@
       <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
       <span class="block font-semibold text-lg">Interface Design</span>
     </div>
-    <div class="w-full flex flex-col md:flex-row gap-10">
-      <div class="md:w-1/2">
+    <div class="w-full h-full grid grid-cols-2 gap-8">
+      <div>
         <app-input-text
           [id]="'design-id'"
           [(value)]="viewToEdit.cssId"
@@ -409,7 +397,7 @@
           [helperPosition]="'right'"
         ></app-input-text>
       </div>
-      <div class="grow flex flex-col">
+      <div class="flex flex-col h-full">
         <div class="flex flex-row items-center mb-2">
           <span class="block font-semibold pl-1 py-1">Preview</span>
           <button class="ml-auto btn btn-sm btn-secondary" (click)="reloadPreview()">
@@ -674,8 +662,8 @@
   <div class="flex flex-row mt-4 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Axis</span>
   </div>
-  <div class="flex flex-row">
-    <div class="grow border-r-2 border-neutral/10 px-4">
+  <div class="grid grid-cols-2">
+    <div class="border-r-2 border-neutral/10 px-4">
       <app-input-text
         [id]="'chart-x-label'"
         [(value)]="viewToEdit.options.XAxisLabel"
@@ -698,8 +686,48 @@
         [topLabel]="'X-Axis type of data'"
         [required]="false"
       ></app-input-select>
+
+      <div class="bg-base-300 rounded-xl p-4 mt-4">
+        <div class="flex flex-row justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
+          <span class="block font-semibold text-mg pl-1">Add categories</span>
+        </div>
+        <div class="flex flex-row gap-2 mb-2">
+          <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row bg-secondary text-white py-1 px-2 rounded-lg text-sm">
+            {{cat}}
+            <span (click)="removeXAxisCategory(i)" class="hover:cursor-pointer">❌</span>
+          </div>
+        </div>
+        <div class="flex flex-row gap-2">
+          <app-input-text
+            [id]="'chart-x-label'"
+            [(value)]="categoryToAdd"
+            [placeholder]="'Add a category'"
+            [required]="false"
+          ></app-input-text>
+          <button class="btn btn-secondary" (click)="addXAxisCategory()">Add</button>
+        </div>
+      </div>
+
+      <app-input-checkbox
+        [id]="'chart-x-grid'"
+        [(value)]="viewToEdit.options.XAxisGrid"
+        [color]="'primary'"
+        [label]="'Show grid on X-Axis'"
+        [labelPosition]="'right'"
+        [classList]="'mt-4'"
+      ></app-input-checkbox>
+      <app-input-checkbox
+        *ngIf="viewToEdit.options.XAxisGrid"
+        [id]="'chart-stripped'"
+        [(value)]="viewToEdit.options.stripedGrid"
+        [color]="'primary'"
+        [label]="'Show stripped grid (alternate grid-lines)'"
+        [labelPosition]="'right'"
+        [classList]="'ml-6 -mt-2'"
+      ></app-input-checkbox>
     </div>
-    <div class="grow px-4">
+    <div class="px-4">
       <app-input-text
         [id]="'chart-y-label'"
         [(value)]="viewToEdit.options.YAxisLabel"
@@ -731,10 +759,208 @@
         [id]="'block-responsive'"
         [(value)]="viewToEdit.options.YAxisReversed"
         [color]="'primary'"
-        (valueChange)="switchYAxisReversed()"
         [label]="'Reverse Y-Axis values'"
         [labelPosition]="'right'"
+        [classList]="'mt-4'"
       ></app-input-checkbox>
+      <span class="ml-6 -mt-4 text-sm">(Instead of being ordered from bottom to top change from top to bottom)</span>
+      <app-input-checkbox
+        [id]="'chart-y-grid'"
+        [(value)]="viewToEdit.options.YAxisGrid"
+        [color]="'primary'"
+        [label]="'Show grid on Y-Axis'"
+        [labelPosition]="'right'"
+        [classList]="'mt-4'"
+      ></app-input-checkbox>
+      <app-input-checkbox
+        *ngIf="viewToEdit.options.YAxisGrid"
+        [id]="'chart-stripped'"
+        [(value)]="viewToEdit.options.stripedGrid"
+        [color]="'primary'"
+        [label]="'Show stripped grid (alternate grid-lines)'"
+        [labelPosition]="'right'"
+        [classList]="'ml-6 -mt-2'"
+      ></app-input-checkbox>
+    </div>
+  </div>
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Tooltips</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Small pop-up boxes that appear when you hover your mouse pointer over a data point. Tooltips are used to provide additional information about the data or element, helping users understand and interpret the chart more effectively.
+  </div>
+  <app-input-checkbox
+    [id]="'chart-tooltip'"
+    [(value)]="viewToEdit.options.tooltip"
+    [color]="'primary'"
+    [label]="'Add data tooltips to this chart'"
+    [labelPosition]="'right'"
+  ></app-input-checkbox>
+  <div *ngIf="viewToEdit.options.tooltip" class="bg-base-300 rounded-xl p-6 text-xs">
+    Make use of the points in the chart or write expressions if needed. <br>
+    To access points use this.x and this.y, which will access each point coordinates in the data series.<br><br>
+
+    Check the following example:<br>
+    For data series Serie1, with X-categories: 'Jan', 'Feb' and values:<br><br>
+
+    Serie1 = [10, 15]<br><br>
+
+    We can format the tooltips for X-axis to be: "The X value for " + this.x + " corresponds to Y value " + this.y + " in this series".<br><br>
+
+    Which would iterate through all data points in graph [ [10 , Jan] , [15 , Feb] , ... ]  and translate to:<br>
+    The X value for <strong>10</strong> corresponds to Y value <strong>Jan</strong>.<br>
+    The X value for <strong>15</strong> corresponds to Y value <strong>Feb</strong>.
+
+    <div class="flex flex-row mt-4">
+      <div class="grow border-r-2 border-neutral/10 pr-4">
+        <app-input-text
+          [id]="'chart-x-tooltip-format'"
+          [(value)]="viewToEdit.options.tooltipXFormatter"
+          [placeholder]="'e.g. \'X value:\' + this.x '"
+          [required]="false"
+          [topLabel]="'Format data tooltips for X values:'"
+        ></app-input-text>
+      </div>
+      <div class="grow pl-4">
+        <app-input-text
+          [id]="'chart-y-tooltip-format'"
+          [(value)]="viewToEdit.options.tooltipYFormatter"
+          [placeholder]="'e.g. \'Y value:\' + this.y '"
+          [required]="false"
+          [topLabel]="'Format data tooltips for Y values:'"
+        ></app-input-text>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 mt-4">
+    <div class="border-r-2 border-neutral/10 px-4">
+      <div class="flex flex-row mt-4 justify-start items-center gap-2">
+        <span class="block font-semibold text-mg pl-1">Title, Subtitle & Alignment</span>
+      </div>
+      <app-input-text
+        [id]="'chart-title'"
+        [(value)]="viewToEdit.options.title"
+        [placeholder]="'e.g. Leaderboard, Profile graph, ... '"
+        [topLabel]="'Title'"
+        ></app-input-text>
+        <app-input-text
+        [id]="'chart-subtitle'"
+        [(value)]="viewToEdit.options.subtitle"
+        [placeholder]="'e.g. Each student\'s leaderboard graph'"
+        [topLabel]="'Subtitle'"
+      ></app-input-text>
+      <app-input-select
+        [id]="'chart-align'"
+        [(value)]="viewToEdit.options.align"
+        [options]="getChartAlignmentOptions()"
+        [placeholder]="'Select alignment'"
+        [topLabel]="'Alignment of title & subtitle'"
+        [required]="false"
+      ></app-input-select>
+    </div>
+    <div class="px-4">
+      <div class="flex flex-row mt-4 justify-start items-center gap-2">
+        <span class="block font-semibold text-mg pl-1">Legend</span>
+      </div>
+      <app-input-checkbox
+        [id]="'chart-legend'"
+        [(value)]="viewToEdit.options.legend"
+        [color]="'primary'"
+        [label]="'Show legend in graph'"
+        [labelPosition]="'right'"
+      ></app-input-checkbox>
+      <div *ngIf="viewToEdit.options.legend" class="bg-base-300 rounded-xl p-4 text-xs">
+        <app-input-select
+          [id]="'chart-legend-position'"
+          [(value)]="viewToEdit.options.legendPosition"
+          [options]="getChartLegendPositionOptions()"
+          [placeholder]="'Select position'"
+          [topLabel]="'Choose position for legend (in regards of graph itself)'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-row mt-8 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data display</span>
+  </div>
+  <div class="grid grid-cols-3 gap-2">
+    <div class="border-r-2 border-neutral/10 p-4">
+      <div class="bg-base-300 rounded-xl p-4">
+        <app-input-select
+          [id]="'chart-lines'"
+          [(value)]="viewToEdit.options.strokeCurve"
+          [options]="getChartStrokeCurveOptions()"
+          [placeholder]="'Select stroke curve'"
+          [topLabel]="'Type of lines'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
+    </div>
+    <div class="border-r-2 border-neutral/10 p-4">
+      <div class="bg-base-300 rounded-xl p-4">
+        <app-input-select
+          [id]="'chart-ends'"
+          [(value)]="viewToEdit.options.strokeLineCap"
+          [options]="getChartLineCapOptions()"
+          [placeholder]="'Select line cap'"
+          [topLabel]="'Type of start and end of line'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
+    </div>
+    <div class="p-4">
+      <app-input-number
+        [id]="'chart-line-width'"
+        [(value)]="viewToEdit.options.strokeWidth"
+        [topLabel]="'Width of lines'"
+        [placeholder]="'Select a maximum number'"
+      ></app-input-number>
+      <app-input-number
+        [id]="'chart-marker-size'"
+        [(value)]="viewToEdit.options.markersSize"
+        [topLabel]="'Data points marker size'"
+        [placeholder]="'Select a maximum number'"
+      ></app-input-number>
+    </div>
+  </div>
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Extras</span>
+  </div>
+  <div class="grid grid-cols-2">
+    <app-input-checkbox
+      [id]="'chart-sparkline'"
+      [(value)]="viewToEdit.options.sparkline"
+      [color]="'primary'"
+      [label]="'Create spark-line of graph (hide everything but primary paths)'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+    <div>
+      <app-input-checkbox
+        [id]="'chart-toolbar'"
+        [(value)]="viewToEdit.options.toolbar"
+        [color]="'primary'"
+        [label]="'Show toolbar with actions'"
+        [labelPosition]="'right'"
+      ></app-input-checkbox>
+      <div *ngIf="viewToEdit.options.toolbar" class="bg-base-300 rounded-xl p-4">
+        <app-input-select
+          [id]="'chart-toolbar-actions'"
+          [(value)]="viewToEdit.options.toolbarActions"
+          [options]="getChartLineCapOptions()"
+          [placeholder]="'Select action'"
+          [topLabel]="'Available actions'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
     </div>
   </div>
 

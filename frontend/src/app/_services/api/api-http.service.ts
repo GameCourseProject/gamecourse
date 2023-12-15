@@ -3241,8 +3241,12 @@ export class ApiHttpService {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'previewPage');
       qs.push('pageId', pageID);
-      qs.push('userRole', aspect.userRole);
-      qs.push('viewerRole', aspect.viewerRole);
+      if (aspect.userRole) {
+        qs.push('userRole', aspect.userRole);
+      }
+      if (aspect.viewerRole) {
+        qs.push('viewerRole', aspect.viewerRole);
+      }
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

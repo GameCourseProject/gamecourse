@@ -35,7 +35,7 @@
       placeholder="{{placeholder}}"
       [(ngModel)]="value"
       (ngModelChange)="setColor(value)"
-      (keyup.enter)="multiple ? addInput(value) : null"
+      (keyup.enter)="multiple ? addInput() : null"
       [pattern]="pattern"
       [required]="required"
       [minlength]="minLength"
@@ -45,8 +45,14 @@
       [ngClass]="{'input-error': form && form.submitted && inputColor.invalid}"
     />
 
+    
+    <!-- Insert Button -->
+    <button *ngIf="multiple && value" type="button" class="btn btn-square btn-success !rounded-none btn-{{size}}" tabindex="0" (click)="addInput()">
+      <ng-icon [name]="'tabler-check'" size="1.5rem"></ng-icon>
+    </button>
+
     <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
-      <!-- Button -->
+      <!-- Color Picker Button -->
       <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}} btn-{{size}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
       </button>

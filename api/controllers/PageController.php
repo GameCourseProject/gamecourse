@@ -810,18 +810,21 @@ class PageController
      */
     public function previewPage()
     {
-        API::requireValues("pageId", "userRole", "viewerRole");
+        API::requireValues("pageId");
 
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
         
         $course = $page->getCourse();
-        API::requireCoursePermission($course);
+        $courseId = $course->getId();
 
         $userRole = API::getValue("userRole", "string");
-        $viewerRole = API::getValue("viewerRole", "string");
+        $userRoleId = $userRole ? Role::getRoleId($userRole, $courseId) : null;
 
-        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
+        $viewerRole = API::getValue("viewerRole", "string");
+        $viewerRoleId = $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null;
+
+        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
     }
 
 

@@ -144,8 +144,8 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     this.valueChange.emit(value);
   }
 
-  addInput(value: string) {
-    this.values.push(value);
+  addInput() {
+    this.values.push(this.value);
     this.valuesChange.emit(this.values);
     this.value = null;
   }
