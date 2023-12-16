@@ -65,6 +65,7 @@ import { ModuleCardComponent } from './_components/cards/module-card/module-card
 import { AspectCardComponent } from './_components/cards/aspect-card/aspect-card.component';
 import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-card.component';
 import { EventCardComponent } from './_components/cards/event-card/event-card.component';
+import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
@@ -288,6 +289,7 @@ import {
     AspectCardComponent,
     AuxVarCardComponent,
     EventCardComponent,
+    DatalabelCardComponent,
 
     AlertComponent,
 
@@ -373,6 +375,7 @@ import {
     AspectCardComponent,
     AuxVarCardComponent,
     EventCardComponent,
+    DatalabelCardComponent,
 
     AlertComponent,
 

@@ -1,0 +1,40 @@
+<div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 px-5 {{new || edit ? 'py-2' : 'py-6'}}">
+  <div class="grow">
+    <app-input-select
+      *ngIf="edit || new"
+      [id]="'datalabel-serie'"
+      [(value)]="datalabelToAdd.serie"
+      [options]="getSeries()"
+      [placeholder]="'Select specific serie from chart'"
+      [topLabel]="'Add data labels to series:'"
+      [search]="false"
+      [classList]="'-mt-2'"
+      [required]="true"
+    ></app-input-select>
+    <div *ngIf="!edit && !new">
+      <span class="block font-semibold text-md">Serie:</span>{{serie}}
+    </div>
+  </div>
+  <div class="grow">
+    <app-input-text
+      *ngIf="edit || new"
+      [id]="'datalabel-format'"
+      [(value)]="datalabelToAdd.format"
+      [topLabel]="'Format data labels:'"
+      [placeholder]="'e.g.  \'X :\' + this.point.x + \', Y :\' + this.point.y'"
+      [classList]="'-mt-2'"
+    ></app-input-text>
+    <div *ngIf="!edit && !new">
+      <span class="block font-semibold text-md">Format:</span>{{format}}
+    </div>
+  </div>
+  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()">Add</button>
+  <div *ngIf="edit" class="flex flex-col">
+    <button class="btn btn-xs btn-ghost" (click)="cancelAction()">Cancel</button>
+    <button class="btn btn-xs btn-secondary" (click)="saveAction()">Save</button>
+  </div>
+  <div *ngIf="!edit && !new" class="ml-auto flex flex-row gap-2">
+    <button class="btn btn-ghost p-0 m-0"><ng-icon name="jam-pencil" size="1.5rem" (click)="editAction()"/></button>
+    <button class="btn btn-ghost p-0 m-0"><ng-icon name="feather-X" size="1.5rem" color="red" (click)="deleteAction()"/></button>
+  </div>
+</div>

@@ -48,6 +48,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   categoryToAdd?: string = "";
 
+  strippedGridHorizontal?: boolean = false;
+  strippedGridVertical?: boolean = false;
+
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
   functions: CustomFunction[];
   ELfunctions: CustomFunction[];
@@ -195,6 +198,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.chartType = this.view.chartType;
       viewToEdit.data = this.view.data;
       viewToEdit.options = this.view.options;
+
+      if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
+      else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
     return viewToEdit;
   }
@@ -398,6 +404,27 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   
   deleteEvent(index: number) {
     this.viewToEdit.events.splice(index, 1);
+  }
+  
+  addDataLabel(event: { serie: string; format: string }) {
+    this.viewToEdit.options.dataLabelsOnSeries.push(event);
+  }
+  
+  updateDataLabel(event: { serie: string; format: string }, index: number) {
+    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1, event);
+  }
+  
+  deleteDataLabel(index: number) {
+    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1);
+  }
+
+  changeStripedGrid(event: boolean, orientation: string) {
+    if (event) {
+      this.viewToEdit.options.stripedGrid = orientation;
+    }
+    else {
+      this.viewToEdit.options.stripedGrid = null;
+    }
   }
 
   selectIcon(icon: string, required: boolean) {

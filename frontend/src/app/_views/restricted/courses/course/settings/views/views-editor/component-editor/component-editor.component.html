@@ -644,27 +644,37 @@
     </div>
   </div>
 
-<!--   <div class="flex flex-row mt-2 justify-start items-center gap-2">
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Data Labels</span>
   </div>
   <div class="text-xs pl-1 pb-2">
     Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
   </div>
   <app-input-checkbox
-    [id]="'block-responsive'"
-    [(value)]="viewToEdit.options."
+    [id]="'chart-datalabels'"
+    [(value)]="viewToEdit.options.dataLabels"
     [color]="'primary'"
-    (valueChange)="viewToEdit.responsive = !viewToEdit.responsive"
     [label]="'Add data labels to this chart'"
-    [labelPosition]="'right'">
-  </app-input-checkbox> -->
+    [labelPosition]="'right'"
+  ></app-input-checkbox>
+  <!-- TODO: Options for datalabels. Only certain series, and formatting.
+  <ng-container *ngIf="viewToEdit.options.dataLabels">
+    <div class="flex flex-col gap-2 mb-2 grow-0">
+      <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
+        <app-datalabel-card [el]="el" [chartSeries]="viewToEdit.options.series" [serie]="el.serie" [format]="el.format" (deleteEvent)="deleteDataLabel(i)" (updateEvent)="updateDataLabel($event, i)"/>
+      </div>
+      <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
+    </div>
+  </ng-container> 
+  -->
 
   <div class="flex flex-row mt-4 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Axis</span>
   </div>
   <div class="grid grid-cols-2">
-    <div class="border-r-2 border-neutral/10 px-4">
+    <div class="border-r-2 border-neutral/10 px-4"> <!-------------- X AXIS ------------------->
       <app-input-text
+        *ngIf="viewToEdit.chartType !== 'radar'"
         [id]="'chart-x-label'"
         [(value)]="viewToEdit.options.XAxisLabel"
         [placeholder]="'e.g. \'Time (days)\' '"
@@ -672,6 +682,7 @@
         [topLabel]="'X-Axis label'"
       ></app-input-text>
       <app-input-number
+        *ngIf="viewToEdit.chartType !== 'radar'"
         [id]="'chart-x-ticks'"
         [(value)]="viewToEdit.options.XAxisTickAmount"
         [topLabel]="'X-Axis amount of ticks'"
@@ -693,9 +704,9 @@
           <span class="block font-semibold text-mg pl-1">Add categories</span>
         </div>
         <div class="flex flex-row gap-2 mb-2">
-          <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row bg-secondary text-white py-1 px-2 rounded-lg text-sm">
+          <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
             {{cat}}
-            <span (click)="removeXAxisCategory(i)" class="hover:cursor-pointer">❌</span>
+            <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
           </div>
         </div>
         <div class="flex flex-row gap-2">
@@ -718,16 +729,20 @@
         [classList]="'mt-4'"
       ></app-input-checkbox>
       <app-input-checkbox
-        *ngIf="viewToEdit.options.XAxisGrid"
-        [id]="'chart-stripped'"
-        [(value)]="viewToEdit.options.stripedGrid"
+        *ngIf="viewToEdit.chartType !== 'radar' && viewToEdit.options.XAxisGrid"
+        [disabled]="strippedGridHorizontal"
+        [id]="'chart-stripped-x'"
+        [(value)]="strippedGridVertical"
         [color]="'primary'"
         [label]="'Show stripped grid (alternate grid-lines)'"
         [labelPosition]="'right'"
         [classList]="'ml-6 -mt-2'"
+        (valueChange)="changeStripedGrid($event, 'vertical')"
       ></app-input-checkbox>
+      <span *ngIf="strippedGridHorizontal" class="text-warning">You can only have one stripped grid in chart</span>
     </div>
-    <div class="px-4">
+
+    <div class="px-4" *ngIf="viewToEdit.chartType !== 'radar'"> <!-------------- Y AXIS ------------------->
       <app-input-text
         [id]="'chart-y-label'"
         [(value)]="viewToEdit.options.YAxisLabel"
@@ -774,12 +789,24 @@
       ></app-input-checkbox>
       <app-input-checkbox
         *ngIf="viewToEdit.options.YAxisGrid"
-        [id]="'chart-stripped'"
-        [(value)]="viewToEdit.options.stripedGrid"
+        [disabled]="strippedGridVertical"
+        [id]="'chart-stripped-y'"
+        [(value)]="strippedGridHorizontal"
         [color]="'primary'"
         [label]="'Show stripped grid (alternate grid-lines)'"
         [labelPosition]="'right'"
         [classList]="'ml-6 -mt-2'"
+        (valueChange)="changeStripedGrid($event, 'horizontal')"
+      ></app-input-checkbox>
+      <span *ngIf="strippedGridVertical" class="text-warning">You can only have one stripped grid in chart</span>
+    </div>
+    <div class="px-4" *ngIf="viewToEdit.chartType === 'radar'"> <!-------------- Y AXIS ------------------->
+      <app-input-checkbox
+        [id]="'chart-normalized'"
+        [(value)]="viewToEdit.options.normalized"
+        [color]="'primary'"
+        [label]="'Normalize data series'"
+        [labelPosition]="'right'"
       ></app-input-checkbox>
     </div>
   </div>
@@ -885,56 +912,110 @@
     </div>
   </div>
 
-  <div class="flex flex-row mt-8 justify-start items-center gap-2">
-    <span class="block font-semibold text-mg pl-1">Data display</span>
-  </div>
-  <div class="grid grid-cols-3 gap-2">
-    <div class="border-r-2 border-neutral/10 p-4">
-      <div class="bg-base-300 rounded-xl p-4">
-        <app-input-select
-          [id]="'chart-lines'"
-          [(value)]="viewToEdit.options.strokeCurve"
-          [options]="getChartStrokeCurveOptions()"
-          [placeholder]="'Select stroke curve'"
-          [topLabel]="'Type of lines'"
-          [required]="false"
-          [search]="false"
-        ></app-input-select>
+  <ng-container *ngIf="viewToEdit.chartType === 'line' || viewToEdit.chartType === 'combo'">
+    <div class="flex flex-row mt-8 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Data display</span>
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      <div class="border-r-2 border-neutral/10 p-4">
+        <div class="bg-base-300 rounded-xl p-4">
+          <app-input-select
+            [id]="'chart-lines'"
+            [(value)]="viewToEdit.options.strokeCurve"
+            [options]="getChartStrokeCurveOptions()"
+            [placeholder]="'Select stroke curve'"
+            [topLabel]="'Type of lines'"
+            [required]="false"
+            [search]="false"
+          ></app-input-select>
+        </div>
+      </div>
+      <div class="border-r-2 border-neutral/10 p-4">
+        <div class="bg-base-300 rounded-xl p-4">
+          <app-input-select
+            [id]="'chart-ends'"
+            [(value)]="viewToEdit.options.strokeLineCap"
+            [options]="getChartLineCapOptions()"
+            [placeholder]="'Select line cap'"
+            [topLabel]="'Type of start and end of line'"
+            [required]="false"
+            [search]="false"
+          ></app-input-select>
+        </div>
+      </div>
+      <div class="p-4">
+        <app-input-number
+          [id]="'chart-line-width'"
+          [(value)]="viewToEdit.options.strokeWidth"
+          [topLabel]="'Width of lines'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-marker-size'"
+          [(value)]="viewToEdit.options.markersSize"
+          [topLabel]="'Data points marker size'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
       </div>
     </div>
-    <div class="border-r-2 border-neutral/10 p-4">
-      <div class="bg-base-300 rounded-xl p-4">
-        <app-input-select
-          [id]="'chart-ends'"
-          [(value)]="viewToEdit.options.strokeLineCap"
-          [options]="getChartLineCapOptions()"
-          [placeholder]="'Select line cap'"
-          [topLabel]="'Type of start and end of line'"
-          [required]="false"
-          [search]="false"
-        ></app-input-select>
-      </div>
-    </div>
-    <div class="p-4">
-      <app-input-number
-        [id]="'chart-line-width'"
-        [(value)]="viewToEdit.options.strokeWidth"
-        [topLabel]="'Width of lines'"
-        [placeholder]="'Select a maximum number'"
-      ></app-input-number>
-      <app-input-number
-        [id]="'chart-marker-size'"
-        [(value)]="viewToEdit.options.markersSize"
-        [topLabel]="'Data points marker size'"
-        [placeholder]="'Select a maximum number'"
-      ></app-input-number>
-    </div>
-  </div>
+  </ng-container>
 
-  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+  <div class="flex flex-row mt-8 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Extras</span>
   </div>
-  <div class="grid grid-cols-2">
+  
+  <!-- BAR CHART EXTRAS -->
+  <div *ngIf="viewToEdit.chartType === 'bar'" class="grid grid-cols-2 gap-8">
+    <div>
+      <div class="flex flex-row mt-2 justify-start items-center gap-2">
+        <span class="block font-semibold text-md">Bars orientation</span>
+      </div>
+      <div class="flex flex-wrap">
+        <app-input-radio
+          [id]="'chart-orientation-vertical'"
+          [group]="'orientation'"
+          [optionValue]="'vertical'"
+          [(value)]="viewToEdit.options.orientation"
+          [color]="'primary'"
+          [classList]="'mr-8'"
+          [label]="'Vertical'">
+        </app-input-radio>
+        <app-input-radio
+          [id]="'chart-orientation-horizontal'"
+          [group]="'orientation'"
+          [optionValue]="'horizontal'"
+          [(value)]="viewToEdit.options.orientation"
+          [color]="'primary'"
+          [classList]="'mr-8'"
+          [label]="'Horizontal'">
+        </app-input-radio>
+      </div>
+    </div>
+    <app-input-number
+      [id]="'chart-bars-radius'"
+      [(value)]="viewToEdit.options.borderRadius"
+      [topLabel]="'Bars radius'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+  </div>
+
+  <!-- RADAR CHART EXTRAS -->
+  <div *ngIf="viewToEdit.chartType === 'radar'" class="grid grid-cols-2 gap-8">
+    <app-input-number
+      [id]="'chart-radar-points'"
+      [(value)]="viewToEdit.options.markersSize"
+      [topLabel]="'Data points marker size'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+    <app-input-number
+      [id]="'chart-radar-width'"
+      [(value)]="viewToEdit.options.strokeWidth"
+      [topLabel]="'Stroke width'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+  </div>
+
+  <!-- <div class="grid grid-cols-2"> -->
     <app-input-checkbox
       [id]="'chart-sparkline'"
       [(value)]="viewToEdit.options.sparkline"
@@ -942,6 +1023,7 @@
       [label]="'Create spark-line of graph (hide everything but primary paths)'"
       [labelPosition]="'right'"
     ></app-input-checkbox>
+    <!-- TODO : extra for line chart - toolbar actions
     <div>
       <app-input-checkbox
         [id]="'chart-toolbar'"
@@ -961,7 +1043,7 @@
           [search]="false"
         ></app-input-select>
       </div>
-    </div>
-  </div>
+    </div> -->
+  <!-- </div> -->
 
 </ng-template>
