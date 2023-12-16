@@ -8,7 +8,9 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { ViewText } from "./view-text";
+import { ViewBlock } from "./view-block";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -121,16 +123,10 @@ export class ViewCollapse extends View {
     // this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    this.content.replaceWithFakeIds();
+    this.header.replaceWithFakeIds();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -155,6 +151,9 @@ export class ViewCollapse extends View {
     return null;
   }
 
+  replaceView(viewId: number, view: View) {
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
     this.header.switchMode(mode);
@@ -164,10 +163,9 @@ export class ViewCollapse extends View {
   /**
    * Gets a default collapse view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewCollapse { // TODO: refactor view editor
-    return null;
-    // return new ViewBlock(id, id, parentId, role, ViewMode.EDIT, [], null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.BLOCK_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewCollapse {
+    return new ViewCollapse(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, CollapseIcon.ARROW,
+      [ViewText.getDefault(parent, viewRoot, getFakeId(), aspect ?? selectedAspect), ViewBlock.getDefault(parent, viewRoot, getFakeId(), aspect ?? selectedAspect)]);
   }
 
   /**

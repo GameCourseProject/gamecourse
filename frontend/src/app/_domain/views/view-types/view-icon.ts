@@ -4,7 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewIcon extends View {
   private _icon: string;
@@ -74,11 +74,8 @@ export class ViewIcon extends View {
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -91,6 +88,9 @@ export class ViewIcon extends View {
     else return null;
   }
 
+  replaceView(viewId: number, view: View) {
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
@@ -98,10 +98,8 @@ export class ViewIcon extends View {
   /**
    * Gets a default icon view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewIcon { // TODO: refactor view editor
-    return null;
-    // return new ViewText(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.TEXT_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewIcon {
+    return new ViewIcon(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, "tabler-question-mark");
   }
 
 

@@ -5,7 +5,7 @@ import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import { buildView } from "../build-view/build-view";
-import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 
 export class ViewRow extends View {
@@ -99,16 +99,12 @@ export class ViewRow extends View {
     // this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    // Replace IDs in children
+    for (const child of this.children) {
+      child.replaceWithFakeIds();
+    }
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -134,6 +130,9 @@ export class ViewRow extends View {
     return null;
   }
 
+  replaceView(viewId: number, view: View) {
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
     for (let child of this.children) child.switchMode(mode);
@@ -143,8 +142,8 @@ export class ViewRow extends View {
   /**
    * Gets a default row view.
    */
-  static getDefault(id: number, table: View, parentId: number = null, aspect: Aspect, type: RowType): ViewRow { // TODO: refactor view editor
-    return new ViewRow(ViewMode.EDIT, id, parentId, table, aspect, type, [],
+  static getDefault(id: number, table: View, viewRoot: number = null, aspect: Aspect, type: RowType): ViewRow {
+    return new ViewRow(ViewMode.EDIT, id, viewRoot, table, aspect, type, [],
       null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 

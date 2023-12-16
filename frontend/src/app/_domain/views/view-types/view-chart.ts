@@ -4,7 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewChart extends View {
   private _chartType: ChartType;
@@ -84,11 +84,8 @@ export class ViewChart extends View {
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -101,6 +98,9 @@ export class ViewChart extends View {
     else return null;
   }
 
+  replaceView(viewId: number, view: View) {
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
@@ -108,10 +108,8 @@ export class ViewChart extends View {
   /**
    * Gets a default chart view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewChart { // TODO: refactor view editor
-    return null;
-    // return new ViewChart(id, id, parentId, role, ViewMode.EDIT, ChartType.LINE, {provider: ''},
-    //   null, null, null, null, View.VIEW_CLASS + ' ' + this.CHART_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewChart {
+    return new ViewChart(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, ChartType.LINE, null, {});
   }
 
   /**

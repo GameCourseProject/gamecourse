@@ -13,12 +13,20 @@ import * as _ from "lodash"
 import { ViewSelectionService } from "src/app/_services/view-selection.service";
 import { ModalService } from 'src/app/_services/modal.service';
 import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ViewBlock } from "src/app/_domain/views/view-types/view-block";
+import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
 import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { Role } from "src/app/_domain/roles/role";
 import { Template } from "src/app/_domain/views/templates/template";
+import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
+import { ViewButtonDatabase, ViewButton } from "src/app/_domain/views/view-types/view-button";
+import { ViewChartDatabase, ViewChart } from "src/app/_domain/views/view-types/view-chart";
+import { ViewIconDatabase, ViewIcon } from "src/app/_domain/views/view-types/view-icon";
+import { ViewImageDatabase, ViewImage } from "src/app/_domain/views/view-types/view-image";
+import { ViewRowDatabase, ViewRow } from "src/app/_domain/views/view-types/view-row";
+import { ViewTableDatabase, ViewTable } from "src/app/_domain/views/view-types/view-table";
+import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/view-text";
 
 export let viewsByAspect: { aspect: Aspect, view: View }[];
 export let rolesHierarchy;
@@ -195,6 +203,7 @@ export class ViewsEditorComponent implements OnInit {
     let data;
     if (this.page) {
       data = await this.api.renderPageInEditor(this.page.id).toPromise();
+      console.log(data);
     }
     else if (this.template) {
       data = await this.api.renderTemplateInEditor(this.template.id).toPromise();
@@ -660,13 +669,22 @@ export class ViewsEditorComponent implements OnInit {
 
   async saveComponent() {
     let component = _.cloneDeep(this.selection.get());
+    component.replaceWithFakeIds();
 
     // Don't save child components
     if (component instanceof ViewBlock) {
       component.children = [];
-    } // FIXME probably need something similar for Collapse
+    }
+    else if (component instanceof ViewCollapse) { 
+      if (component.header instanceof ViewBlock) {
+        component.header.children = [];
+      }
+      if (component.content instanceof ViewBlock) {
+        component.content.children = [];
+      }
+    }
 
-    await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildViewTree(component)).toPromise();
+    await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildComponent(component)).toPromise();
     ModalService.closeModal('save-as-component');
     AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
     this.resetMenus();
@@ -890,4 +908,22 @@ export enum TypeHelper {
   SYSTEM = 'System components are provided by GameCourse and already configured and ready for use.',
   CUSTOM = 'Custom components are created by users in this course.',
   SHARED = 'Shared components are created by users in this course and shared with the rest of GameCourse\'s courses.'
+}
+
+export function buildComponent(view: View): ViewBlockDatabase[] | ViewButtonDatabase[] | ViewChartDatabase[]
+    | ViewCollapseDatabase[] | ViewIconDatabase[] | ViewImageDatabase[] | ViewRowDatabase[] | ViewTableDatabase[] | ViewTextDatabase[] {
+  const type = view.type;
+
+  if (type === ViewType.BLOCK) return [ViewBlock.toDatabase(view as ViewBlock)];
+  else if (type === ViewType.BUTTON) return [ViewButton.toDatabase(view as ViewButton)];
+  else if (type === ViewType.CHART) return [ViewChart.toDatabase(view as ViewChart)];
+  else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse)];
+  else if (type === ViewType.ICON) return [ViewIcon.toDatabase(view as ViewIcon)];
+  else if (type === ViewType.IMAGE) return [ViewImage.toDatabase(view as ViewImage)];
+  else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow)];
+  else if (type === ViewType.TABLE) return [ViewTable.toDatabase(view as ViewTable)];
+  else if (type === ViewType.TEXT) return [ViewText.toDatabase(view as ViewText)];
+  // NOTE: insert here other types of building-blocks
+
+  return null;
 }

@@ -644,172 +644,176 @@
     </div>
   </div>
 
-  <div class="flex flex-row mt-4 justify-start items-center gap-2">
-    <span class="block font-semibold text-mg pl-1">Data Labels</span>
-  </div>
-  <div class="text-xs pl-1 pb-2">
-    Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
-  </div>
-  <app-input-checkbox
-    [id]="'chart-datalabels'"
-    [(value)]="viewToEdit.options.dataLabels"
-    [color]="'primary'"
-    [label]="'Add data labels to this chart'"
-    [labelPosition]="'right'"
-  ></app-input-checkbox>
-  <!-- TODO: Options for datalabels. Only certain series, and formatting.
-  <ng-container *ngIf="viewToEdit.options.dataLabels">
-    <div class="flex flex-col gap-2 mb-2 grow-0">
-      <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
-        <app-datalabel-card [el]="el" [chartSeries]="viewToEdit.options.series" [serie]="el.serie" [format]="el.format" (deleteEvent)="deleteDataLabel(i)" (updateEvent)="updateDataLabel($event, i)"/>
-      </div>
-      <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
+  <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
+    <div class="flex flex-row mt-4 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Data Labels</span>
     </div>
-  </ng-container> 
-  -->
-
-  <div class="flex flex-row mt-4 justify-start items-center gap-2">
-    <span class="block font-semibold text-mg pl-1">Axis</span>
-  </div>
-  <div class="grid grid-cols-2">
-    <div class="border-r-2 border-neutral/10 px-4"> <!-------------- X AXIS ------------------->
-      <app-input-text
-        *ngIf="viewToEdit.chartType !== 'radar'"
-        [id]="'chart-x-label'"
-        [(value)]="viewToEdit.options.XAxisLabel"
-        [placeholder]="'e.g. \'Time (days)\' '"
-        [required]="false"
-        [topLabel]="'X-Axis label'"
-      ></app-input-text>
-      <app-input-number
-        *ngIf="viewToEdit.chartType !== 'radar'"
-        [id]="'chart-x-ticks'"
-        [(value)]="viewToEdit.options.XAxisTickAmount"
-        [topLabel]="'X-Axis amount of ticks'"
-        [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the X-axis of the chart. It helps to improve readability.'"
-        [helperPosition]="'right'"
-      ></app-input-number>
-      <app-input-select
-        [id]="'chart-x-type'"
-        [(value)]="viewToEdit.options.XAxisType"
-        [options]="getXAxisDataTypes()"
-        [placeholder]="'Select X-Axis data type'"
-        [topLabel]="'X-Axis type of data'"
-        [required]="false"
-      ></app-input-select>
-
-      <div class="bg-base-300 rounded-xl p-4 mt-4">
-        <div class="flex flex-row justify-start items-center gap-2">
-          <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
-          <span class="block font-semibold text-mg pl-1">Add categories</span>
+    <div class="text-xs pl-1 pb-2">
+      Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
+    </div>
+    <app-input-checkbox
+      [id]="'chart-datalabels'"
+      [(value)]="viewToEdit.options.dataLabels"
+      [color]="'primary'"
+      [label]="'Add data labels to this chart'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+    <!-- TODO: Options for datalabels. Only certain series, and formatting.
+    <ng-container *ngIf="viewToEdit.options.dataLabels">
+      <div class="flex flex-col gap-2 mb-2 grow-0">
+        <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
+          <app-datalabel-card [el]="el" [chartSeries]="viewToEdit.options.series" [serie]="el.serie" [format]="el.format" (deleteEvent)="deleteDataLabel(i)" (updateEvent)="updateDataLabel($event, i)"/>
         </div>
-        <div class="flex flex-row gap-2 mb-2">
-          <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
-            {{cat}}
-            <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
+        <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
+      </div>
+    </ng-container> 
+    -->
+  </ng-container>
+
+  <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
+    <div class="flex flex-row mt-4 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Axis</span>
+    </div>
+    <div class="grid grid-cols-2">
+      <div class="border-r-2 border-neutral/10 px-4"> <!-------------- X AXIS ------------------->
+        <app-input-text
+          *ngIf="viewToEdit.chartType !== 'radar'"
+          [id]="'chart-x-label'"
+          [(value)]="viewToEdit.options.XAxisLabel"
+          [placeholder]="'e.g. \'Time (days)\' '"
+          [required]="false"
+          [topLabel]="'X-Axis label'"
+        ></app-input-text>
+        <app-input-number
+          *ngIf="viewToEdit.chartType !== 'radar'"
+          [id]="'chart-x-ticks'"
+          [(value)]="viewToEdit.options.XAxisTickAmount"
+          [topLabel]="'X-Axis amount of ticks'"
+          [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the X-axis of the chart. It helps to improve readability.'"
+          [helperPosition]="'right'"
+        ></app-input-number>
+        <app-input-select
+          [id]="'chart-x-type'"
+          [(value)]="viewToEdit.options.XAxisType"
+          [options]="getXAxisDataTypes()"
+          [placeholder]="'Select X-Axis data type'"
+          [topLabel]="'X-Axis type of data'"
+          [required]="false"
+        ></app-input-select>
+
+        <div class="bg-base-300 rounded-xl p-4 mt-4">
+          <div class="flex flex-row justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
+            <span class="block font-semibold text-mg pl-1">Add categories</span>
+          </div>
+          <div class="flex flex-row gap-2 mb-2">
+            <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
+              {{cat}}
+              <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
+            </div>
+          </div>
+          <div class="flex flex-row gap-2">
+            <app-input-text
+              [id]="'chart-x-label'"
+              [(value)]="categoryToAdd"
+              [placeholder]="'Add a category'"
+              [required]="false"
+            ></app-input-text>
+            <button class="btn btn-secondary" (click)="addXAxisCategory()">Add</button>
           </div>
         </div>
-        <div class="flex flex-row gap-2">
-          <app-input-text
-            [id]="'chart-x-label'"
-            [(value)]="categoryToAdd"
-            [placeholder]="'Add a category'"
-            [required]="false"
-          ></app-input-text>
-          <button class="btn btn-secondary" (click)="addXAxisCategory()">Add</button>
-        </div>
+
+        <app-input-checkbox
+          [id]="'chart-x-grid'"
+          [(value)]="viewToEdit.options.XAxisGrid"
+          [color]="'primary'"
+          [label]="'Show grid on X-Axis'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <app-input-checkbox
+          *ngIf="viewToEdit.chartType !== 'radar' && viewToEdit.options.XAxisGrid"
+          [disabled]="strippedGridHorizontal"
+          [id]="'chart-stripped-x'"
+          [(value)]="strippedGridVertical"
+          [color]="'primary'"
+          [label]="'Show stripped grid (alternate grid-lines)'"
+          [labelPosition]="'right'"
+          [classList]="'ml-6 -mt-2'"
+          (valueChange)="changeStripedGrid($event, 'vertical')"
+        ></app-input-checkbox>
+        <span *ngIf="strippedGridHorizontal" class="text-warning">You can only have one stripped grid in chart</span>
       </div>
 
-      <app-input-checkbox
-        [id]="'chart-x-grid'"
-        [(value)]="viewToEdit.options.XAxisGrid"
-        [color]="'primary'"
-        [label]="'Show grid on X-Axis'"
-        [labelPosition]="'right'"
-        [classList]="'mt-4'"
-      ></app-input-checkbox>
-      <app-input-checkbox
-        *ngIf="viewToEdit.chartType !== 'radar' && viewToEdit.options.XAxisGrid"
-        [disabled]="strippedGridHorizontal"
-        [id]="'chart-stripped-x'"
-        [(value)]="strippedGridVertical"
-        [color]="'primary'"
-        [label]="'Show stripped grid (alternate grid-lines)'"
-        [labelPosition]="'right'"
-        [classList]="'ml-6 -mt-2'"
-        (valueChange)="changeStripedGrid($event, 'vertical')"
-      ></app-input-checkbox>
-      <span *ngIf="strippedGridHorizontal" class="text-warning">You can only have one stripped grid in chart</span>
+      <div class="px-4" *ngIf="viewToEdit.chartType !== 'radar'"> <!-------------- Y AXIS ------------------->
+        <app-input-text
+          [id]="'chart-y-label'"
+          [(value)]="viewToEdit.options.YAxisLabel"
+          [placeholder]="'e.g. \'XP Evolution\' '"
+          [required]="false"
+          [topLabel]="'Y-Axis label'"
+        ></app-input-text>
+        <app-input-number
+          [id]="'chart-y-ticks'"
+          [(value)]="viewToEdit.options.YAxisTickAmount"
+          [topLabel]="'Y-Axis amount of ticks'"
+          [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the Y-axis of the chart. It helps to improve readability.'"
+          [helperPosition]="'right'"
+          [placeholder]="'Select a number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-y-min'"
+          [(value)]="viewToEdit.options.YAxisMin"
+          [topLabel]="'Y-Axis minimum value'"
+          [placeholder]="'Select a minimum number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-y-max'"
+          [(value)]="viewToEdit.options.YAxisMax"
+          [topLabel]="'Y-Axis maximum value'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
+        <app-input-checkbox
+          [id]="'block-responsive'"
+          [(value)]="viewToEdit.options.YAxisReversed"
+          [color]="'primary'"
+          [label]="'Reverse Y-Axis values'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <span class="ml-6 -mt-4 text-sm">(Instead of being ordered from bottom to top change from top to bottom)</span>
+        <app-input-checkbox
+          [id]="'chart-y-grid'"
+          [(value)]="viewToEdit.options.YAxisGrid"
+          [color]="'primary'"
+          [label]="'Show grid on Y-Axis'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <app-input-checkbox
+          *ngIf="viewToEdit.options.YAxisGrid"
+          [disabled]="strippedGridVertical"
+          [id]="'chart-stripped-y'"
+          [(value)]="strippedGridHorizontal"
+          [color]="'primary'"
+          [label]="'Show stripped grid (alternate grid-lines)'"
+          [labelPosition]="'right'"
+          [classList]="'ml-6 -mt-2'"
+          (valueChange)="changeStripedGrid($event, 'horizontal')"
+        ></app-input-checkbox>
+        <span *ngIf="strippedGridVertical" class="text-warning">You can only have one stripped grid in chart</span>
+      </div>
+      <div class="px-4" *ngIf="viewToEdit.chartType === 'radar'">
+        <app-input-checkbox
+          [id]="'chart-normalized'"
+          [(value)]="viewToEdit.options.normalized"
+          [color]="'primary'"
+          [label]="'Normalize data series'"
+          [labelPosition]="'right'"
+        ></app-input-checkbox>
+      </div>
     </div>
-
-    <div class="px-4" *ngIf="viewToEdit.chartType !== 'radar'"> <!-------------- Y AXIS ------------------->
-      <app-input-text
-        [id]="'chart-y-label'"
-        [(value)]="viewToEdit.options.YAxisLabel"
-        [placeholder]="'e.g. \'XP Evolution\' '"
-        [required]="false"
-        [topLabel]="'Y-Axis label'"
-      ></app-input-text>
-      <app-input-number
-        [id]="'chart-y-ticks'"
-        [(value)]="viewToEdit.options.YAxisTickAmount"
-        [topLabel]="'Y-Axis amount of ticks'"
-        [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the Y-axis of the chart. It helps to improve readability.'"
-        [helperPosition]="'right'"
-        [placeholder]="'Select a number'"
-      ></app-input-number>
-      <app-input-number
-        [id]="'chart-y-min'"
-        [(value)]="viewToEdit.options.YAxisMin"
-        [topLabel]="'Y-Axis minimum value'"
-        [placeholder]="'Select a minimum number'"
-      ></app-input-number>
-      <app-input-number
-        [id]="'chart-y-max'"
-        [(value)]="viewToEdit.options.YAxisMax"
-        [topLabel]="'Y-Axis maximum value'"
-        [placeholder]="'Select a maximum number'"
-      ></app-input-number>
-      <app-input-checkbox
-        [id]="'block-responsive'"
-        [(value)]="viewToEdit.options.YAxisReversed"
-        [color]="'primary'"
-        [label]="'Reverse Y-Axis values'"
-        [labelPosition]="'right'"
-        [classList]="'mt-4'"
-      ></app-input-checkbox>
-      <span class="ml-6 -mt-4 text-sm">(Instead of being ordered from bottom to top change from top to bottom)</span>
-      <app-input-checkbox
-        [id]="'chart-y-grid'"
-        [(value)]="viewToEdit.options.YAxisGrid"
-        [color]="'primary'"
-        [label]="'Show grid on Y-Axis'"
-        [labelPosition]="'right'"
-        [classList]="'mt-4'"
-      ></app-input-checkbox>
-      <app-input-checkbox
-        *ngIf="viewToEdit.options.YAxisGrid"
-        [disabled]="strippedGridVertical"
-        [id]="'chart-stripped-y'"
-        [(value)]="strippedGridHorizontal"
-        [color]="'primary'"
-        [label]="'Show stripped grid (alternate grid-lines)'"
-        [labelPosition]="'right'"
-        [classList]="'ml-6 -mt-2'"
-        (valueChange)="changeStripedGrid($event, 'horizontal')"
-      ></app-input-checkbox>
-      <span *ngIf="strippedGridVertical" class="text-warning">You can only have one stripped grid in chart</span>
-    </div>
-    <div class="px-4" *ngIf="viewToEdit.chartType === 'radar'"> <!-------------- Y AXIS ------------------->
-      <app-input-checkbox
-        [id]="'chart-normalized'"
-        [(value)]="viewToEdit.options.normalized"
-        [color]="'primary'"
-        [label]="'Normalize data series'"
-        [labelPosition]="'right'"
-      ></app-input-checkbox>
-    </div>
-  </div>
+  </ng-container>
 
   <div class="flex flex-row mt-4 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Data Tooltips</span>
@@ -965,7 +969,7 @@
   </div>
   
   <!-- BAR CHART EXTRAS -->
-  <div *ngIf="viewToEdit.chartType === 'bar'" class="grid grid-cols-2 gap-8">
+  <div *ngIf="viewToEdit.chartType === 'bar' || viewToEdit.chartType === 'combo'" class="grid grid-cols-2 gap-8">
     <div>
       <div class="flex flex-row mt-2 justify-start items-center gap-2">
         <span class="block font-semibold text-md">Bars orientation</span>
@@ -1015,6 +1019,51 @@
     ></app-input-number>
   </div>
 
+  <!-- PIE CHART EXTRAS -->
+  <ng-container *ngIf="viewToEdit.chartType === 'pie'">
+    <div class="grid grid-cols-2 mb-4">
+      <div class="border-r-2 border-neutral/10 px-4">
+        <app-input-number
+          [id]="'chart-pie-start-angle'"
+          [(value)]="viewToEdit.options.startAngle"
+          [topLabel]="'Custom start angle'"
+          [placeholder]="'Select a number (from 0 to 360)'"
+          [helperText]="'Custom angle from which the pie slices start. Default is 0.'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-pie-end-angle'"
+          [(value)]="viewToEdit.options.endAngle"
+          [topLabel]="'Custom end angle'"
+          [placeholder]="'Select a number (from 0 to 360)'"
+          [helperText]="'Custom angle from which the pie slices end. Default is 360.'"
+        ></app-input-number>
+      </div>
+      <div class="px-4">
+        <app-input-number
+          [id]="'chart-pie-x-offset'"
+          [(value)]="viewToEdit.options.offsetX"
+          [topLabel]="'Custom x-offset'"
+          [placeholder]="'Select a number'"
+          [helperText]="'Sets left offset to the entire pie chart area.'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-pie-y-offset'"
+          [(value)]="viewToEdit.options.offsetY"
+          [topLabel]="'Custom y-ofset'"
+          [placeholder]="'Select a number'"
+          [helperText]="'Sets top offset to the entire pie chart area.'"
+        ></app-input-number>
+      </div>
+    </div>
+    <app-input-checkbox
+      [id]="'chart-pie-expandOnClick'"
+      [(value)]="viewToEdit.options.expandOnClick"
+      [color]="'primary'"
+      [label]="'Expand visually slice when clicked'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+  </ng-container>
+
   <!-- <div class="grid grid-cols-2"> -->
     <app-input-checkbox
       [id]="'chart-sparkline'"
@@ -1023,7 +1072,7 @@
       [label]="'Create spark-line of graph (hide everything but primary paths)'"
       [labelPosition]="'right'"
     ></app-input-checkbox>
-    <!-- TODO : extra for line chart - toolbar actions
+    <!-- TODO : toolbar actions
     <div>
       <app-input-checkbox
         [id]="'chart-toolbar'"

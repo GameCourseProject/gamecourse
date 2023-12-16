@@ -4,7 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewText extends View {
   private _text: string;
@@ -74,11 +74,8 @@ export class ViewText extends View {
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -91,6 +88,9 @@ export class ViewText extends View {
     else return null;
   }
 
+  replaceView(viewId: number, view: View) {
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
@@ -98,8 +98,9 @@ export class ViewText extends View {
   /**
    * Gets a default text view.
    */
-  static getDefault(id: number, parentId: number = null, parent: View, aspect: Aspect, text: string = ""): ViewText { // TODO: refactor view editor
-    return new ViewText(ViewMode.EDIT, id, parentId, parent, aspect, text, null, null, null, null, VisibilityType.VISIBLE, null, null, [], []);
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect, text?: string): ViewText { // TODO: refactor view editor
+    return new ViewText(ViewMode.EDIT, id, viewRoot, parent, aspect ?? selectedAspect, text ?? "",
+      null, null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
 
