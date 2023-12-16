@@ -134,13 +134,13 @@
                         </div>
                       </div>
 
-                      <!-- System components are divided into subcategories -->
+                      <!-- System components, divided into subcategories -->
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
                         <div *ngFor="let subcategory of getSubcategories()">
-                          <span class="ml-1 text-xs font-bold text-neutral/40 uppercase">{{subcategory}}</span>
+                          <span class="ml-1 text-xs font-bold text-neutral/40 uppercase">{{subcategory.category}}</span>
                           <div class="flex flex-wrap">
                             <div 
-                              *ngFor="let item of getComponentsOfSubcategory(subcategory)" 
+                              *ngFor="let item of subcategory.views" 
                               class="hover:cursor-pointer p-1"
                               (click)="addComponentToPage(item)"
                             >

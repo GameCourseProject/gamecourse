@@ -506,6 +506,35 @@ class Page
         return $this;
     }
 
+    
+    /**
+     * Clear positions of all pages received as input
+     *
+     * @throws Exception
+     */
+    public static function clearPositions(array $ids)
+    {
+        $sql = "UPDATE page SET position = null WHERE id IN (" . implode(',', $ids) . ")";
+        Core::database()->executeQuery($sql);
+    }
+
+    /**
+     * Sets positions of all pages received as input
+     *
+     * @throws Exception
+     */
+    public static function setPositions(array $array)
+    {
+        $sql = "UPDATE page SET position = CASE ";
+
+        foreach($array as $pair) {
+            $sql .= "WHEN id = " . $pair["id"] . " THEN " . $pair["position"] . " ";
+        }
+        $sql .= "ELSE position END WHERE id IN (" . implode(',', array_map(function($el) {return $el["id"];}, $array)) . ")";
+
+        Core::database()->executeQuery($sql);
+    }
+
     /**
      * Deletes a page from the database and removes all its views.
      * Option to keep views linked to page (created by reference)

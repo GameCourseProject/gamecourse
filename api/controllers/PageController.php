@@ -234,6 +234,28 @@ class PageController
     }
 
     /**
+     * Edits a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function editTemplate()
+    {
+        API::requireValues("courseId", "templateId", "name");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $name = API::getValue("name");
+
+        $templateInfo = $template->editTemplate($name)->getDataWithShared();
+        API::response($templateInfo);
+    }
+
+    /**
      * Updates page in the DB
      * @return void
      * @throws Exception
@@ -259,8 +281,27 @@ class PageController
         $isPublic = API::getValue("isPublic", "bool");
 
         $pageInfo = $page->editPage($name, $isVisible, $isPublic, $visibleFrom, $visibleUntil, $position)->getData();
-
         API::response($pageInfo);
+    }
+
+    /**
+     * Updates page positions in the DB
+     * @return void
+     * @throws Exception
+     */
+    public function updatePagePositions(){
+        API::requireValues("courseId", "positions");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        $positions = API::getValue("positions", "array");
+
+        // set all to null to mantain the constraint
+        Page::clearPositions(array_map(function($el) {return $el["id"];}, $positions));
+        // set to new values
+        Page::setPositions($positions);
     }
 
     /**
@@ -350,20 +391,14 @@ class PageController
      * @throws Exception
      */
     public function getCoreComponents(){
-        $coreComponents = [];
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->category = Category::getCategoryById($component["category"])->getName();
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            return $pair;
+        };
 
-        foreach (CoreComponent::getComponents() as $component) {
-            $category = Category::getCategoryById($component["category"])->getName();
-            $view = ViewHandler::renderView($component["viewRoot"])[0];
-            $type = $view['type'];
-
-            if (!isset($coreComponents[$type][$category])) {
-                $coreComponents[$type][$category] = [];
-            }
-
-            $coreComponents[$type][$category][] = $view;
-        }
-        
+        $coreComponents = array_map($fun, CoreComponent::getComponents());
         API::response($coreComponents);
     }
 
@@ -775,18 +810,21 @@ class PageController
      */
     public function previewPage()
     {
-        API::requireValues("pageId", "userRole", "viewerRole");
+        API::requireValues("pageId");
 
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
         
         $course = $page->getCourse();
-        API::requireCoursePermission($course);
+        $courseId = $course->getId();
 
         $userRole = API::getValue("userRole", "string");
-        $viewerRole = API::getValue("viewerRole", "string");
+        $userRoleId = $userRole ? Role::getRoleId($userRole, $courseId) : null;
 
-        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
+        $viewerRole = API::getValue("viewerRole", "string");
+        $viewerRoleId = $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null;
+
+        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
     }
 
 

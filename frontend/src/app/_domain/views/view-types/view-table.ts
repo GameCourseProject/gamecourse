@@ -9,7 +9,7 @@ import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 
 import {ErrorService} from "../../../_services/error.service";
-import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -227,19 +227,15 @@ export class ViewTable extends View {
     // Table has its own editor, do nothing
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const headerRow of this.headerRows) {
-    //   headerRow.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    // for (const row of this.rows) {
-    //   row.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    // Replace IDs in children
+    for (const headerRow of this.headerRows) {
+      headerRow.replaceWithFakeIds();
+    }
+    for (const row of this.bodyRows) {
+      row.replaceWithFakeIds();
+    }
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -271,6 +267,9 @@ export class ViewTable extends View {
       if (found) return row;
     }
     return null;
+  }
+
+  replaceView(viewId: number, view: View) {
   }
 
   switchMode(mode: ViewMode) {
@@ -365,13 +364,11 @@ export class ViewTable extends View {
   /**
    * Gets a default table view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewTable { // TODO: refactor view editor
-    return null;
-    // return new ViewTable(id, id, parentId, role, ViewMode.EDIT,
-    //   [ViewRow.getDefault(id - 1, id, role, this.TABLE_HEADER_CLASS)],
-    //   [ViewRow.getDefault(id - 3, id, role, this.TABLE_BODY_CLASS)],
-    //   null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.TABLE_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable { // TODO: refactor view editor
+    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, false, false, false, false, false, false, false, null, []);
+    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.HEADER)];
+    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.BODY)];
+    return table;
   }
 
   /**

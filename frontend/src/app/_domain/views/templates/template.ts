@@ -5,13 +5,14 @@ export class Template {
   private _id: number;
   private _name: string;
   private _viewRoot: number;
+  private _isSystem: boolean;
+  private _course?: number;
   private _creationTimestamp?: Moment;
   private _updateTimestamp?: Moment;
   private _isPublic?: boolean;
-  private _isSystem: boolean;
   private _sharedTimestamp?: Moment;
 
-  constructor(id: number, name: string, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment, isPublic: boolean = false, sharedTimestamp: Moment = null) {
+  constructor(id: number, name: string, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment, course: number = null, isPublic: boolean = false, sharedTimestamp: Moment = null) {
     this.id = id;
     this.name = name;
     this.viewRoot = viewRoot;
@@ -19,6 +20,7 @@ export class Template {
     this.updateTimestamp = updateTimestamp;
     this.isPublic = isPublic;
     this.sharedTimestamp = sharedTimestamp;
+    this.course = course;
 
     if (this.creationTimestamp) {
       this.isSystem = false;
@@ -50,6 +52,15 @@ export class Template {
   set viewRoot(value: number) {
     this._viewRoot = value;
   }
+
+  get course(): number {
+    return this._course;
+  }
+
+  set course(value: number) {
+    this._course = value;
+  }
+
 
   get creationTimestamp(): Moment {
     return this._creationTimestamp;
@@ -98,6 +109,7 @@ export class Template {
       obj.view,
       obj.creationTimestamp ? dateFromDatabase(obj.creationTimestamp) : null,
       obj.updateTimestamp ? dateFromDatabase(obj.updateTimestamp) : null,
+      obj.course ? obj.course : null,
       obj.isPublic ? obj.isPublic : null,
       obj.sharedTimestamp ? dateFromDatabase(obj.sharedTimestamp) : null
     );
@@ -108,6 +120,7 @@ export class Template {
 export interface TemplateDatabase {
   id: number;
   name: string;
+  course?: number;
   view: number;
   creationTimestamp?: string;
   updateTimestamp?: string;

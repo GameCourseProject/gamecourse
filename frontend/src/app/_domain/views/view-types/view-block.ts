@@ -6,7 +6,7 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 
 import {buildView} from "../build-view/build-view";
-import { groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -116,16 +116,12 @@ export class ViewBlock extends View {
     this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    // Replace IDs in children
+    for (const child of this.children) {
+      child.replaceWithFakeIds();
+    }
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -151,6 +147,18 @@ export class ViewBlock extends View {
     return null;
   }
 
+  replaceView(viewId: number, view: View) {
+    // Look for view in children
+    let index = 0;
+    for (const child of this.children) {
+      if (child.id === viewId) {
+        this.children.splice(index, 1, view);
+      }
+      child.replaceView(viewId, view);
+      index += 1;
+    }
+  }
+
   switchMode(mode: ViewMode) {
     this.mode = mode;
     for (let child of this.children) {
@@ -161,10 +169,8 @@ export class ViewBlock extends View {
   /**
    * Gets a default block view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewBlock { // TODO: refactor view editor
-    return null;
-    // return new ViewBlock(id, id, parentId, role, ViewMode.EDIT, [], null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.BLOCK_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
+    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, BlockDirection.VERTICAL, null, true, []);
   }
 
   /**

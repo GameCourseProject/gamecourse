@@ -193,6 +193,8 @@ export abstract class View {
 
   abstract findView(viewId: number): View;
 
+  abstract replaceView(viewId: number, view: View);
+
   abstract switchMode(mode: ViewMode);
 
 

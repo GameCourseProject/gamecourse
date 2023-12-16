@@ -23,7 +23,7 @@ import { ApiHttpService } from "src/app/_services/api/api-http.service";
 import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { ActivatedRoute } from "@angular/router";
 import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { getFakeId, groupedChildren, selectedAspect } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { isMoreSpecific, viewsByAspect } from "../views-editor.component";
 
 @Component({
@@ -45,6 +45,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   tableSelectedTab: string = "Overall";
   cellToEdit?: View = null;
   rowToEdit?: ViewRow = null;
+
+  categoryToAdd?: string = "";
+
+  strippedGridHorizontal?: boolean = false;
+  strippedGridVertical?: boolean = false;
 
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
   functions: CustomFunction[];
@@ -191,6 +196,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.chartType = this.view.chartType;
       viewToEdit.data = this.view.data;
       viewToEdit.options = this.view.options;
+
+      if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
+      else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
     return viewToEdit;
   }
@@ -199,7 +207,36 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  updateView(to: View, from: ViewManageData) {
+  changeComponentType(view: View, type: ViewType): View {
+    let newView;
+    if (type === ViewType.BLOCK) {
+      newView = ViewBlock.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.BUTTON) {
+      newView = ViewButton.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.CHART) {
+      newView = ViewChart.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.COLLAPSE) {
+      newView = ViewCollapse.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.ICON) {
+      newView = ViewIcon.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.IMAGE) {
+      newView = ViewImage.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.TABLE) {
+      newView = ViewTable.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    else if (type === ViewType.TEXT) {
+      newView = ViewText.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+    }
+    return newView;
+  }
+
+  updateView(to: View, from: ViewManageData): View {
     to.classList = from.classList;
     to.type = from.type;
     to.visibilityType = from.visibilityType;
@@ -253,6 +290,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.data = from.data;
       to.options = from.options;
     }
+
+    return to;
   }
 
   get ViewType(): typeof ViewType {
@@ -260,13 +299,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   getComponentTypes() {
-    return Object.values(ViewType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+    return Object.values(ViewType).filter(e => e !== ViewType.ROW).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
   
-  getChartTypes() {
-    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
-  }
-
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
@@ -283,15 +318,52 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     ]
   }
 
+  getChartTypes() {
+    return Object.values(ChartType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  }
+
+  getXAxisDataTypes() {
+    return [{ value: "category", text: "Category" },
+      { value: "datetime", text: "Datetime" },
+      { value: "numeric", text: "Numeric" }];
+  }
+
+  getChartLegendPositionOptions() {
+    return [{ value: "top", text: "Top" }, { value: "right", text: "Right" }, { value: "bottom", text: "Bottom" }, { value: "left", text: "Left" }]
+  }
+
+  getChartAlignmentOptions() {
+    return [{ value: "left", text: "Left" }, { value: "center", text: "Center" }, { value: "right", text: "Right" }]
+  }
+
+  getChartStrokeCurveOptions() {
+    return [{ value: "smooth", text: "Smooth" }, { value: "straight", text: "Straight" }, { value: "stepline", text: "Stepline" }]
+  }
+
+  getChartLineCapOptions() {
+    return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
   async saveView() {
-    this.updateView(this.view, this.viewToEdit);
+    // Changing the type requires creating a new instance of the new class
+    // need to update all references
+    let changedType = false;
+    if (this.view.type != this.viewToEdit.type) {
+      this.view = this.changeComponentType(this.view, this.viewToEdit.type);
+      this.updateView(this.view, this.viewToEdit);
+      viewsByAspect.find((e) => _.isEqual(selectedAspect, e.aspect)).view.replaceView(this.view.id, this.view);
+      changedType = true;
+    }
+    else {
+      this.updateView(this.view, this.viewToEdit);
+    }
     
     // For aspects --------------------------------------
-    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view.findView(this.view.id));
+    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view?.findView(this.view.id));
     
     if (viewsWithThis.length > 0) {
       const lowerInHierarchy = viewsWithThis.filter((e) =>
@@ -299,17 +371,35 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
         || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
       );
       
+      // this view isn't used in any other version "above"
       if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
-        // this view isn't used in any other version "above"
-        // no need to create a new id, keep it and just
+        console.log("above all");
+        // if the type changed need to delete the old one and create a new in backend
+        const oldId = this.view.id;
+        if (changedType) {
+          viewsDeleted.push(oldId);
+          this.view.id = getFakeId();
+          
+          let entry = groupedChildren.get(this.view.parent.id);
+          if (entry) {
+            const group = entry.find((e) => e.includes(oldId));
+            const index = group.findIndex((e) => e === oldId);
+            group.splice(index, 1, this.view.id);
+            groupedChildren.set(this.view.parent.id, entry);
+          }
+        }
+        // else no need to create a new id
+        
         // propagate the changes to the views lower in hierarchy
         for (let el of lowerInHierarchy) {
-          const view = el.view.findView(this.view.id);
-          this.updateView(view, this.viewToEdit);
+          const view = el.view.findView(oldId);
+          if (changedType) { view.parent.replaceView(oldId, this.view); }
+          else { this.updateView(view, this.viewToEdit); }
         }
       }
+
+      // this is a new view in the tree with a new id
       else {
-        // this is a new view in the tree with a new id
         const oldId = this.view.id;
         this.view.id = getFakeId();
         this.view.aspect = selectedAspect;
@@ -319,19 +409,36 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
           group.find((e) => e.includes(oldId)).push(this.view.id);
           groupedChildren.set(this.view.parent.id, group);
         }
-        else {
-          // this is the first child inserted
+        else { // this is the first child inserted
           groupedChildren.set(this.view.parent.id, [[this.view.id]]);
         }
 
         // propagate the changes to the views lower in hierarchy that have the oldId
         for (let el of lowerInHierarchy) {
-          const view = el.view.findView(oldId);
-          this.updateView(view, this.viewToEdit);
+          let view = el.view.findView(oldId);
+          if (changedType) { view.parent.replaceView(view.id, this.view); }
+          else { this.updateView(view, this.viewToEdit); }
+          view = el.view.findView(oldId);
           view.id = this.view.id;
           view.aspect = this.view.aspect;
         }
         // views above in the hierarchy keep the old version
+      }
+    }
+
+    // this view is the only that uses this component, but component type changed
+    // need to delete in backend and force creating new with new id
+    else if (changedType) {
+      const oldId = this.view.id;
+      viewsDeleted.push(oldId);
+      this.view.id = getFakeId();
+
+      let entry = groupedChildren.get(this.view.parent.id);
+      if (entry) {
+        const group = entry.find((e) => e.includes(oldId));
+        const index = group.findIndex((e) => e === oldId);
+        group.splice(index, 1, this.view.id);
+        groupedChildren.set(this.view.parent.id, entry);
       }
     }
 
@@ -340,7 +447,14 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   reloadPreview() {
-    this.updateView(this.viewToPreview, this.viewToEdit);
+    if (this.viewToPreview.type != this.viewToEdit.type) {
+      this.viewToPreview = this.changeComponentType(this.viewToPreview, this.viewToEdit.type);
+      this.updateView(this.viewToPreview, this.viewToEdit);
+      this.viewToPreview.switchMode(ViewMode.PREVIEW);
+    }
+    else {
+      this.updateView(this.viewToPreview, this.viewToEdit);
+    }
     this.show = false;
 
     setTimeout(() => {
@@ -373,6 +487,27 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   deleteEvent(index: number) {
     this.viewToEdit.events.splice(index, 1);
   }
+  
+  addDataLabel(event: { serie: string; format: string }) {
+    this.viewToEdit.options.dataLabelsOnSeries.push(event);
+  }
+  
+  updateDataLabel(event: { serie: string; format: string }, index: number) {
+    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1, event);
+  }
+  
+  deleteDataLabel(index: number) {
+    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1);
+  }
+
+  changeStripedGrid(event: boolean, orientation: string) {
+    if (event) {
+      this.viewToEdit.options.stripedGrid = orientation;
+    }
+    else {
+      this.viewToEdit.options.stripedGrid = null;
+    }
+  }
 
   selectIcon(icon: string, required: boolean) {
     if (required) {
@@ -383,6 +518,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
   }
 
+  addXAxisCategory() {
+    if (this.viewToEdit.options.XAxisCategories) {
+      this.viewToEdit.options.XAxisCategories.push(this.categoryToAdd);
+    }
+    else {
+      this.viewToEdit.options.XAxisCategories = [this.categoryToAdd];
+    }
+    this.categoryToAdd = "";
+  }
+
+  removeXAxisCategory(index: number) {
+    this.viewToEdit.options.XAxisCategories.splice(index, 1);
+  }
+
   // Exclusives for tables ---------------------
 
   getNumberOfCols() {
@@ -390,20 +539,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
   addBodyRow(index: number) {
     const rowId = getFakeId();
-    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.BODY);
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(getFakeId(), rowId, newRow, selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, selectedAspect, "Cell");
       newRow.children.push(newCell);
     }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
   addHeaderRow(index: number) {
-    const rowId = getFakeId();;
-    const newRow = ViewRow.getDefault(rowId, this.view, this.view.id, this.view.aspect, RowType.HEADER);
+    const rowId = getFakeId();
+    const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(getFakeId(), rowId, newRow, selectedAspect, "Header");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, selectedAspect, "Header");
       newRow.children.push(newCell);
     }
     this.viewToEdit.headerRows.splice(index, 0, newRow);
@@ -442,11 +591,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
   addColumn(index: number) {
     if (this.viewToEdit.headerRows[0]) {
-      const newHeaderCell = ViewText.getDefault(getFakeId(), this.viewToEdit.headerRows[0].id, this.viewToEdit.headerRows[0], selectedAspect, "Header");
+      const newHeaderCell = ViewText.getDefault(this.viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), selectedAspect, "Header");
       this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
     }
     for (let row of this.viewToEdit.bodyRows) {
-      const newCell = ViewText.getDefault(getFakeId(), row.id, row, selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), selectedAspect, "Cell");
       row.children.splice(index, 0, newCell);
     }
   }
