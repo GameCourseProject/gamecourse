@@ -29,12 +29,12 @@
                       {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
-                        {action: 'Final preview (real data)', icon: getIcon('real')}
                       ]}
                     ]"
     [align]="'center'"
     (btnClicked)="doActionPreview($event)">
   </app-top-actions>
+  <!-- TODO: {action: 'Final preview (real data)', icon: getIcon('real')} -->
 
   <div *ngIf="!loading.components" class="flex flex-col grow mt-4">
     <!-- Menu of icons (for actions) -->

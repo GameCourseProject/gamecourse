@@ -3222,12 +3222,17 @@ export class ApiHttpService {
       }));
   }
 
-  public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {
+  public renderPageWithMockData(pageID: number, aspect: Aspect): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderPageWithMockData');
       qs.push('pageId', pageID);
-      if (exists(userID)) qs.push('renderPageWithMockData', userID);
+      if (aspect.userRole) {
+        qs.push('userRole', aspect.userRole);
+      }
+      if (aspect.viewerRole) {
+        qs.push('viewerRole', aspect.viewerRole);
+      }
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

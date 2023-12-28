@@ -27,6 +27,10 @@ use GameCourse\Views\Template\TemplateType;
 use GameCourse\Views\Variable\Variable;
 use GameCourse\Views\ViewType\ViewType;
 use GameCourse\Views\Visibility\VisibilityType;
+use GameCourse\User\User;
+use GameCourse\User\CourseUser;
+use GameCourse\Core\AuthService;
+use Faker\Factory;
 
 /**
  * This class is responsible for handling views.
@@ -333,11 +337,31 @@ class ViewHandler
      *  - false --> don't populate;
      *  - true --> populate w/ mocked data;
      *  - array with params --> populate with actual data (e.g. ["course" => 1, "viewer" => 10, "user" => 20])
+     * @param bool|array $aspectToMock
+     *  - array with params --> e.g. ["course" => 1, "viewerRole" => 1, "userRole" => 2]
      * @return array
      * @throws Exception
      */
-    public static function renderView(int $viewRoot, array $sortedAspects = null, $populate = false): array
+    public static function renderView(int $viewRoot, array $sortedAspects = null, $populate = false, $aspectToMock = null): array
     {
+        $mockData = $populate && !is_array($populate);
+
+        if ($mockData) {
+            $faker = Factory::create();
+
+            // Create temporary viewer with viewer role
+            $fakeViewer = User::addUser($faker->name(), "ist0", AuthService::FENIX, $faker->email(),
+                $faker->numberBetween(-99999, -11111), null, null, false, true);
+            CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+
+            // Create temporary user with user role
+            $fakeUser = User::addUser($faker->name(), "ist1", AuthService::FENIX, $faker->email(),
+                $faker->numberBetween(-99999, -11111), null, null, false, true);
+            CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+
+            $sortedAspects = Aspect::getAspectsByViewerAndUser($aspectToMock["course"], $fakeViewer->getId(), $fakeUser->getId(), true);
+        }
+
         // Build view tree
         $viewTree = self::buildView($viewRoot, $sortedAspects);
 
@@ -348,16 +372,20 @@ class ViewHandler
                 self::compileView($view);
             }
 
-            // Evaluate each view
-            $mockData = !is_array($populate);
             foreach ($viewTree as &$view) {
                 self::evaluateView($view, new EvaluateVisitor(
-                    $mockData ? ["course" => 0, "viewer" => 0, "user" => 0] : $populate,
+                    $mockData ? ["course" => $aspectToMock["course"], "viewer" => $fakeViewer->getId(), "user" => $fakeUser->getId()] : $populate,
                     $mockData
                 ));
             }
         }
 
+        // Delete temporary users
+        if ($mockData) {
+            User::deleteUser($fakeViewer->getId());
+            User::deleteUser($fakeUser->getId());
+        }
+        
         // If rendering for specific aspects, put in correct format
         if ($sortedAspects) {
             $nrAspects = count($viewTree);

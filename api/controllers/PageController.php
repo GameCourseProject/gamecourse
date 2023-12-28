@@ -796,9 +796,11 @@ class PageController
         API::requireCoursePermission($course);
 
         $viewerId = Core::getLoggedUser()->getId();
-        $userId = API::getValue("userId", "int");
 
-        API::response($page->renderPage($viewerId, $userId, true));
+        $viewerRole = API::getValue("viewerRole", "string");
+        $userRole = API::getValue("userRole", "string");
+
+        API::response($page->renderPage($viewerId, null, ["viewerRole" => $viewerRole, "userRole" => $userRole]));
     }
 
     /**

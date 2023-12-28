@@ -203,7 +203,6 @@ export class ViewsEditorComponent implements OnInit {
     let data;
     if (this.page) {
       data = await this.api.renderPageInEditor(this.page.id).toPromise();
-      console.log(data);
     }
     else if (this.template) {
       data = await this.api.renderTemplateInEditor(this.template.id).toPromise();
@@ -597,7 +596,7 @@ export class ViewsEditorComponent implements OnInit {
 
   async savePage() {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
-    console.log(buildedTree);
+    //console.log(buildedTree);
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree).toPromise();
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
@@ -605,7 +604,7 @@ export class ViewsEditorComponent implements OnInit {
   
   async saveChanges() {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
-    console.log(buildedTree);
+    //console.log(buildedTree);
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted).toPromise();
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
@@ -783,12 +782,12 @@ export class ViewsEditorComponent implements OnInit {
     }
     else if (action === 'Layout preview (mock data)') {
       this.previewMode = 'mock';
-      this.view = await this.api.renderPageWithMockData(this.page.id).toPromise();
+      this.view = await this.api.renderPageWithMockData(this.page.id, selectedAspect).toPromise();
     }
-    else if (action === 'Final preview (real data)') {
+/*     else if (action === 'Final preview (real data)') {
       this.previewMode = 'real';
       this.view = await this.api.previewPage(this.page.id, this.view.aspect).toPromise();
-    }
+    } */
   }
 
   /*** --------------------------------------------- ***/

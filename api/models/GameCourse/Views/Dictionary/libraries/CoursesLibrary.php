@@ -81,11 +81,11 @@ class CoursesLibrary extends Library
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
-        if (Core::dictionary()->mockData()) {
+/*         if (Core::dictionary()->mockData()) {
             // TODO: mock course
             $course = [];
 
-        } else $course = Course::getCourseById($courseId);
+        } else  */$course = Course::getCourseById($courseId);
         return new ValueNode($course, $this);
     }
 }
