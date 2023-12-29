@@ -7,6 +7,7 @@ import {Event} from "../events/event";
 
 import {buildView} from "../build-view/build-view";
 import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { viewsByAspect } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -111,7 +112,7 @@ export class ViewBlock extends View {
     this.children.push(view);
   }
 
-  removeChildView(childViewId: number) { // TODO: refactor view editor
+  removeChildView(childViewId: number) {
     const index = this.children.findIndex(child => child.id === childViewId);
     this.children.splice(index, 1);
   }

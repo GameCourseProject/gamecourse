@@ -759,6 +759,34 @@ class ViewHandler
                 // Update view
                 $views[$view["id"]] = $view;
                 $logs[] = new EditLog($view["id"]);
+
+                // Move view (if changed)
+                // WARNING: this isn't creating logs, it's moving the views immediately
+                // I needed this to not lose track of the positions when moving to an already occupyied position
+                if (isset($parent["parent"])) {
+                    $prevPos = (int)Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "child" => $view["id"]], "position");
+                    if (isset($prevPos) && $prevPos != $parent["pos"]) {
+
+                        // If the position is already occupied, need to disoccupy it first to keep the constraint
+                        $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
+                        if (!empty($occupying)) {
+                            Core::database()->executeQuery("SET @i=0");
+                            $sql = "SELECT MAX(if(@i=position,@i:=position+1,@i)) FROM " . self::TABLE_VIEW_PARENT . " WHERE parent = " . $parent["parent"] . " ORDER BY position";
+                            $tempPos = intval(Core::database()->executeQuery($sql)->fetchColumn());
+
+                            self::moveView($occupying["child"], 
+                                ["parent" => $parent["parent"], "pos" => $parent["pos"]], 
+                                ["parent" => $parent["parent"], "pos" => $tempPos]
+                            );
+                        }
+
+                        self::moveView($view["id"], 
+                            ["parent" => $parent["parent"], "pos" => $prevPos],
+                            ["parent" => $parent["parent"], "pos" => $parent["pos"]]
+                        );
+                    }
+                }
+
             }
 
             // Translate view of a specific type

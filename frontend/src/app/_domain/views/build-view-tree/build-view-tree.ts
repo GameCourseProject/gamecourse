@@ -51,7 +51,27 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
 
   // Go through each aspect and add to view tree
   for (const view of viewsOfAspects) {
-    view && view.buildViewTree();
+    if (view) view.buildViewTree();
+  }
+  
+  // Clean up unexistent ids
+  // This is specially useful if an aspect was deleted, since while building the tree
+  // it wont find a matching view for the ids
+  recursiveRemoveUnexistent(viewTree[0]);
+  function recursiveRemoveUnexistent(view: any) {
+    if ('children' in view) {
+      for (let group of view.children) {
+        for (let child of group) {
+          if (typeof child === "number") {
+            viewsDeleted.push(child);
+          }
+          else {
+            recursiveRemoveUnexistent(child);
+          }
+        }
+        view.children.splice(view.children.indexOf(group), 1, group.filter(e => typeof e !== "number"));
+      }
+    }
   }
   return viewTree;
 }

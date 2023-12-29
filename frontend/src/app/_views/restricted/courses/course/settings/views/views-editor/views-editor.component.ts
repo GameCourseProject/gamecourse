@@ -81,6 +81,7 @@ export class ViewsEditorComponent implements OnInit {
 
   aspects: Aspect[];                              // Aspects saved
   aspectsToEdit: Aspect[];                        // Aspects currently being edited in modal
+  aspectsToDelete: Aspect[];                      // Aspects currently being deleted in modal
   aspectToSelect: Aspect;                         // Aspect selected in modal to switch to
   aspectToAdd: Aspect = new Aspect(null, null);   // New aspect
 
@@ -124,6 +125,8 @@ export class ViewsEditorComponent implements OnInit {
       this.route.params.subscribe(async childParams => {
         const segmentForTemplate = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
+        this.aspectsToDelete = [];
+        this.selection.setRearrange(false);
         
         if (segment === 'new') {
           // Prepare for creation
@@ -596,7 +599,7 @@ export class ViewsEditorComponent implements OnInit {
 
   async savePage() {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
-    //console.log(buildedTree);
+    console.log(buildedTree);
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree).toPromise();
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
@@ -604,13 +607,16 @@ export class ViewsEditorComponent implements OnInit {
   
   async saveChanges() {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
-    //console.log(buildedTree);
+    console.log(viewsByAspect);
+    console.log(buildedTree);
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted).toPromise();
+      await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
       await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted).toPromise();
+      await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else {
@@ -638,6 +644,7 @@ export class ViewsEditorComponent implements OnInit {
       this.view = _.cloneDeep(viewsByAspect[0].view); // FIXME: should be view of the aspect most similar, less specific
       viewsByAspect.push({ aspect: selectedAspect, view: this.view });
     }
+    this.previewMode = 'raw';
     ModalService.closeModal('manage-versions');
   }
 
@@ -651,6 +658,10 @@ export class ViewsEditorComponent implements OnInit {
     ModalService.closeModal('manage-versions');
     this.aspects = this.aspectsToEdit;
     this.aspectsToEdit = _.cloneDeep(this.aspects);
+    for (let deleted of this.aspectsToDelete) {
+      viewsByAspect = viewsByAspect.filter(e => e.aspect.userRole !== deleted.userRole || e.aspect.viewerRole !== deleted.viewerRole);
+    }
+    this.aspectsToDelete = [];
   }
 
   discardAspects() {
@@ -659,9 +670,8 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   removeAspect(aspectIdx: number) {
-    this.aspectsToEdit.splice(aspectIdx, 1);
-    // TODO: should delete its view tree
-    // TODO: when editing roles of a existing aspect should also traverse view tree to edit there
+    const deleted = this.aspectsToEdit.splice(aspectIdx, 1);
+    this.aspectsToDelete.push(deleted[0]);
   }
   
   // Components -----------------------------------------------------
