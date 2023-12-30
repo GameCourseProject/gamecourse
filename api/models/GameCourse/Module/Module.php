@@ -14,6 +14,7 @@ use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Dictionary\ProvidersLibrary;
 use Utils\Utils;
+use GameCourse\Views\Template\CoreTemplate;
 
 /**
  * This is the Module model, which implements the necessary methods
@@ -518,7 +519,8 @@ abstract class Module
      */
     protected function initTemplates()
     {
-        // TODO
+        $viewTree = json_decode(file_get_contents(MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Template.txt"), true);
+        $template = CoreTemplate::addTemplate($viewTree, $this->getName(), 2, 1, $this->id);
     }
 
     /**

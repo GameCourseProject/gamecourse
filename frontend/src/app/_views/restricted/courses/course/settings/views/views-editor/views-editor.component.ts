@@ -75,10 +75,13 @@ export class ViewsEditorComponent implements OnInit {
     action: false
   };
 
+  editable?: boolean = true;                      // If true, can modify the page, else it's essentially just a preview
+
   course: Course;                                 // Specific course in which page exists
   page: Page;                                     // page where information will be saved
   pageToManage: PageManageData;                   // Manage data
   template: Template;                             // template where information will be saved
+  coreTemplate: Template;                         // core template to view, non editable
 
   aspects: Aspect[];                              // Aspects saved
   aspectsToEdit: Aspect[];                        // Aspects currently being edited in modal
@@ -148,11 +151,16 @@ export class ViewsEditorComponent implements OnInit {
             })
           }];
           this.view = viewsByAspect[0].view;
-          this.view.switchMode(ViewMode.EDIT);
+          if (this.editable) this.view.switchMode(ViewMode.EDIT);
           initGroupedChildren([]);
         }
         else if (segmentForTemplate === 'template') {
           await this.getTemplate(parseInt(segment));
+          await this.getView();
+        }
+        else if (segmentForTemplate === 'system-template') {
+          this.editable = false;
+          await this.getCoreTemplate(parseInt(segment));
           await this.getView();
         }
         else {
@@ -203,13 +211,20 @@ export class ViewsEditorComponent implements OnInit {
     this.template = await this.api.getCustomTemplateById(templateID).toPromise();
   }
 
+  async getCoreTemplate(templateID: number): Promise<void> {
+    this.coreTemplate = await this.api.getCoreTemplateById(templateID).toPromise();
+  }
+
   async getView(): Promise<void> {
     let data;
     if (this.page) {
       data = await this.api.renderPageInEditor(this.page.id).toPromise();
     }
     else if (this.template) {
-      data = await this.api.renderTemplateInEditor(this.template.id).toPromise();
+      data = await this.api.renderCustomTemplateInEditor(this.template.id).toPromise();
+    }
+    else if (this.coreTemplate) {
+      data = await this.api.renderCoreTemplateInEditor(this.coreTemplate.id, this.course.id).toPromise();
     }
     else {
       AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
@@ -219,7 +234,8 @@ export class ViewsEditorComponent implements OnInit {
     viewsByAspect = data["viewTreeByAspect"];
     initGroupedChildren(data["viewTree"]);
     this.view = viewsByAspect[0].view;
-    this.view.switchMode(ViewMode.EDIT);
+    
+    if (this.editable) this.view.switchMode(ViewMode.EDIT);
     
     this.aspects = viewsByAspect.map((e) => e.aspect);
     setSelectedAspect(this.aspects[0]);
@@ -637,7 +653,7 @@ export class ViewsEditorComponent implements OnInit {
     const correspondentView = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     if (correspondentView) {
       this.view = correspondentView;
-      if (this.view) this.view.switchMode(ViewMode.EDIT);
+      if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
     }
     else if (selectedAspect.userRole === null && selectedAspect.viewerRole === null) {
       this.view = null;
@@ -789,7 +805,7 @@ export class ViewsEditorComponent implements OnInit {
       const correspondentView = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
       if (correspondentView) {
         this.view = correspondentView;
-        if (this.view) this.view.switchMode(ViewMode.EDIT);
+        if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
       }
     }
     else if (action === 'Layout preview (mock data)') {

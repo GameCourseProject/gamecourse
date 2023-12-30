@@ -2887,6 +2887,19 @@ export class ApiHttpService {
 
   // Templates //////////////////////////////////////////////////////////////////////////
 
+  public getCoreTemplateById(templateID: number): Observable<Template> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCoreTemplateById');
+      qs.push('templateId', templateID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Template.fromDatabase(res['data'])) );
+  }
+
   public getCustomTemplateById(templateID: number): Observable<Template> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
@@ -3023,11 +3036,32 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public renderTemplateInEditor(templateID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
+  public renderCustomTemplateInEditor(templateID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderCustomTemplateInEditor');
       qs.push('templateId', templateID);
+    };
+    
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => {
+        return {
+          viewTree: res['data']['viewTree'],
+          viewTreeByAspect: res['data']['viewTreeByAspect'].map(obj => {
+            return { aspect: new Aspect(obj.aspect.viewerRole, obj.aspect.userRole), view: buildView(obj.view, true) }
+          })
+        }
+      }));
+  }
+
+  public renderCoreTemplateInEditor(templateID: number, courseID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderCoreTemplateInEditor');
+      qs.push('templateId', templateID);
+      qs.push('courseId', courseID);
     };
     
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

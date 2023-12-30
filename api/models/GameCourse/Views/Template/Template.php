@@ -67,20 +67,6 @@ abstract class Template
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Gets a template by its ID.
-     * Returns null if template doesn't exist.
-     *
-     * @param int $id
-     */
-    public static function getTemplateById(int $id): ?CustomTemplate
-    {
-        $templateClass = "\\" . get_called_class();
-        $template = new $templateClass($id);
-        if ($template->exists()) return $template;
-        else return null;
-    }
-
-    /**
      * Gets templates by a given view root.
      *
      * @param int $viewRoot
@@ -189,6 +175,19 @@ abstract class Template
         $viewRoot = $templateInfo["viewRoot"];
         $courseId = $templateInfo["course"];
         return ViewHandler::buildViewComplete($viewRoot, $courseId);
+    }
+
+    /**
+     * Renders a template for editing.
+     *
+     * @param int $course
+     * @return array
+     * @throws Exception
+     */
+    public function renderTemplateForEditorGivenCourse(int $course)
+    {
+        $viewRoot = $this->getData("viewRoot");
+        return ViewHandler::buildViewComplete($viewRoot, $course);
     }
 
 

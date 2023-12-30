@@ -45,6 +45,22 @@ class CoreTemplate extends Template
         return null;
     }
 
+    /**
+     * Gets template data from the database.
+     *
+     * @example getData() --> gets all template data
+     * @example getData("field") --> gets template field
+     * @example getData("field1, field2") --> gets template fields
+     *
+     * @param string $field
+     * @return mixed
+     */
+    public function getData(string $field = "*")
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], $field);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+    }
+
     public function getImage(): ?string
     {
         return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
@@ -150,6 +166,19 @@ class CoreTemplate extends Template
         return $templates;
     }
 
+    /**
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
+     *
+     * @param int $id
+     */
+    public static function getTemplateById(int $id): ?CoreTemplate
+    {
+        $template = new CoreTemplate($id);
+        if ($template->exists()) return $template;
+        else return null;
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** --------------- Template Manipulation -------------- ***/
@@ -195,7 +224,7 @@ class CoreTemplate extends Template
             "category" => $categoryId,
             "module" => $moduleId
         ]);
-        Utils::updateItemPosition(null, $position, self::TABLE_TEMPLATE, "position", $id, self::getTemplates($categoryId));
+        //Utils::updateItemPosition(null, $position, self::TABLE_TEMPLATE, "position", $id, self::getTemplates($categoryId));
 
         return new CoreTemplate($viewRoot);
     }

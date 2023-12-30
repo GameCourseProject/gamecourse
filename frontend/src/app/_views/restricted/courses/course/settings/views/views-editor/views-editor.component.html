@@ -19,12 +19,16 @@
   <div class="divider -mt-2">
     <div class="flex justify-center mx-2">
       <ng-icon name="jam-pencil-f" size="1.5rem" class="text-primary mr-2"></ng-icon>
-      <span class="text-base-content text-xl font-semibold">{{page ? 'Page \'' + page.name + '\'' : template ? 'Template \'' + template.name + '\'' : 'Create new'}}</span>
+      <span class="text-base-content text-xl font-semibold">
+        {{page ? 'Page \'' + page.name + '\'' 
+        : template ? 'Template \'' + template.name + '\'' 
+        : coreTemplate ? 'Template \'' + coreTemplate.name + '\''
+        : 'Create new'}}</span>
     </div>
   </div>
 
   <app-top-actions
-    [leftActions]="[{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}]"
+    [leftActions]="editable ? [{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}] : []"
     [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
                       {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
@@ -38,7 +42,7 @@
 
   <div *ngIf="!loading.components" class="flex flex-col grow mt-4">
     <!-- Menu of icons (for actions) -->
-    <div class="shrink-0 absolute top-28 left-48">
+    <div *ngIf="editable" class="shrink-0 absolute top-28 left-48">
       <div class="card card-compact bg-base-100 shadow-md flex flex-row items-center px-2 w-fit">
 
         <div *ngFor="let option of options; let j = index" class="py-1 relative inline-block text-left">
@@ -182,12 +186,12 @@
     </div>
 
     <!-- Editor -->
-    <div class="grow rounded-xl border-2 border-neutral border-opacity-10 p-2">
+    <div class="grow {{editable ? 'rounded-xl border-2 border-neutral border-opacity-10 p-2' : ''}}">
       <bb-any *ngIf="view && !loading.page" [view]="view" id="capture"></bb-any>
     </div>
   </div>
 
-  <div class="card-actions justify-end py-6">
+  <div *ngIf="editable" class="card-actions justify-end py-6">
     <button class="btn btn-ghost" (click)="closeEditor()">Cancel</button>
     <button *ngIf="pageToManage || !template" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
     <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>

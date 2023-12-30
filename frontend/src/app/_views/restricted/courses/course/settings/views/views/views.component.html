@@ -128,7 +128,7 @@
           </div>
           <div *ngIf="template.isSystem" class="badge badge-sm absolute bottom-1 left-1 -z-999 hover:cursor-pointer">
             <ng-icon name="jam-circle-f" size="0.5rem" class="text-gray-400 mr-0.5"></ng-icon>
-            <span class="font-semibold my-0.5">Core</span>
+            <span class="font-semibold my-0.5">System</span>
           </div>
         </figure>
 
@@ -140,8 +140,19 @@
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </button>
 
-              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+              <!-- Options dropdown -->
+              <ul *ngIf="!template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
                 <li *ngFor="let action of templateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
+                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
+                    <span class="font-semibold">{{action.description}}</span>
+                  </div>
+                </li>
+              </ul>
+
+              <!-- Options dropdown FOR SYSTEM TEMPLATES (more restrictive) -->
+              <ul *ngIf="template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+                <li *ngFor="let action of coreTemplateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>

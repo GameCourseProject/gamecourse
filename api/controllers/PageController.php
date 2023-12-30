@@ -542,6 +542,20 @@ class PageController
      *
      * @throws Exception
      */
+    public function getCoreTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+        API::response($template->getData());
+    }
+
+    /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
     public function getCustomTemplateById()
     {
         API::requireValues("templateId");
@@ -778,8 +792,7 @@ class PageController
     /**
      * Renders a given template for editing.
      *
-     * @param int $pageId
-     * @param int $userId (optional)
+     * @param int $templateId
      * @throws Exception
      */
     public function renderCustomTemplateInEditor()
@@ -793,6 +806,26 @@ class PageController
         API::requireCoursePermission($course);
 
         API::response($template->renderTemplateForEditor());
+    }
+
+    /**
+     * Renders a core template for previewing.
+     *
+     * @param int $templateId
+     * @throws Exception
+     */
+    public function renderCoreTemplateInEditor()
+    {
+        API::requireValues("templateId", "courseId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditorGivenCourse($courseId));
     }
 
     /**

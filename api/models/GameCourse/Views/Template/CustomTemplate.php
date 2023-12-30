@@ -200,6 +200,20 @@ class CustomTemplate extends Template
     }
 
     /**
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
+     *
+     * @param int $id
+     */
+    public static function getTemplateById(int $id): CustomTemplate
+    {
+        $template = new CustomTemplate($id);
+        if ($template->exists()) return $template;
+        else return null;
+    }
+
+
+    /**
      * Gets shared templates.
      *
      * @return array
