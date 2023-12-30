@@ -17,9 +17,10 @@ export class Page {
   //private _roleType: RoleTypeId;
   //private _seqId: number;
   //private _theme: string;
+  private _image?: string;
 
   constructor(id: number, course: number, name: string, isVisible: boolean, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment,
-              visibleFrom: Moment, visibleUntil: Moment, position: number, isPublic: boolean) {
+              visibleFrom: Moment, visibleUntil: Moment, position: number, isPublic: boolean, image?: string) {
     this._id = id;
     this._course = course;
     this._name = name;
@@ -31,6 +32,7 @@ export class Page {
     this._visibleUntil = visibleUntil;
     this._position = position;
     this._isPublic = isPublic;
+    this._image = image;
     //this._roleType = roleType;
     //this._seqId = seqId;
     //this._theme = theme;
@@ -147,8 +149,14 @@ export class Page {
   set theme(value: string) {
     this._theme = value;
   }*/
+  
+  get image(): string {
+    return this._image;
+  }
 
-
+  set image(value: string) {
+    this._image = value;
+  }
 
   static fromDatabase(obj: PageDatabase): Page {
     return new Page(
@@ -162,7 +170,8 @@ export class Page {
       dateFromDatabase(obj.visibleFrom),
       dateFromDatabase(obj.visibleUntil),
       obj.position,
-      obj.isPublic
+      obj.isPublic,
+      obj.image ?? null,
       /*parseInt(obj.id) || null,
       obj.name,
       parseInt(obj.course) || null,
@@ -190,4 +199,5 @@ export interface PageDatabase {
   visibleUntil: string;
   position: number;
   isPublic: boolean;
+  image: string;
 }

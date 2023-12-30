@@ -45,6 +45,29 @@ class CoreTemplate extends Template
         return null;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets template data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return CORE_TEMPLATES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(CORE_TEMPLATES_DATA_FOLDER) . "/" . $this->getId();
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -89,6 +112,14 @@ class CoreTemplate extends Template
             Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -109,7 +140,13 @@ class CoreTemplate extends Template
         if ($moduleId) $where[] = ["module" => $moduleId];
 
         $templates = Core::database()->selectMultiple(self::TABLE_TEMPLATE, $where, "*", "category, position");
-        foreach ($templates as &$template) { $template = self::parse($template); }
+
+        foreach ($templates as &$template) { 
+            $template = self::parse($template); 
+            // Get image
+            $templateForImage = new CoreTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
         return $templates;
     }
 

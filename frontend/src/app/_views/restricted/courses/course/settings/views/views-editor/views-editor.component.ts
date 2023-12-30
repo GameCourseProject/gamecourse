@@ -27,6 +27,7 @@ import { ViewImageDatabase, ViewImage } from "src/app/_domain/views/view-types/v
 import { ViewRowDatabase, ViewRow } from "src/app/_domain/views/view-types/view-row";
 import { ViewTableDatabase, ViewTable } from "src/app/_domain/views/view-types/view-table";
 import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/view-text";
+import html2canvas from "html2canvas";
 
 export let viewsByAspect: { aspect: Aspect, view: View }[];
 export let rolesHierarchy;
@@ -241,16 +242,7 @@ export class ViewsEditorComponent implements OnInit {
 
   setOptions() {
     this.loading.components = true;
-    // Build views for core components
-    // FIXME do this in api?
-/*     const types = Object.keys(this.coreComponents);
-    for (let type of types) {
-      const categories = Object.keys(this.coreComponents[type]);
-      for (let category of categories) {
-        this.coreComponents[type][category] = this.coreComponents[type][category].map((e) => buildView(e))
-      }
-    }
- */
+
     // FIXME: move to backend maybe ?
     this.options =  [
       { icon: 'jam-plus-circle',
@@ -599,8 +591,11 @@ export class ViewsEditorComponent implements OnInit {
 
   async savePage() {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
+
     console.log(buildedTree);
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree).toPromise();
+    
+    const image = await this.takeScreenshot();
+    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
@@ -609,19 +604,26 @@ export class ViewsEditorComponent implements OnInit {
     const buildedTree = buildViewTree(viewsByAspect.map((e) => e.view));
     console.log(viewsByAspect);
     console.log(buildedTree);
+    const image = await this.takeScreenshot();
     if (this.page) {
-      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted).toPromise();
+      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
       await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
-      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted).toPromise();
+      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, image).toPromise();
       await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else {
       AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
     }
+  }
+
+  async takeScreenshot() {
+    return await html2canvas(document.querySelector("#capture")).then(canvas => {
+      return canvas.toDataURL('image/png');
+    });
   }
 
   // Aspects -------------------------------------------------------
@@ -732,13 +734,13 @@ export class ViewsEditorComponent implements OnInit {
     }
   }
 
-  // Layouts --------------------------------------------------------
+  // Templates --------------------------------------------------------
 
   async saveTemplate() {
-    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view])).toPromise();
-    ModalService.closeModal('save-template');
-    AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+    const image = await this.takeScreenshot();
+    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view]), image).toPromise();
     await this.closeConfirmed();
+    AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
   }
   
   async shareTemplate() {

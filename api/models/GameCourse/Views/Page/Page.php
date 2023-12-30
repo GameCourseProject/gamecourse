@@ -33,6 +33,28 @@ class Page
         $this->id = $id;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets page data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return PAGES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(PAGES_DATA_FOLDER) . "/" . $this->getId();
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Getters --------------------- ***/
@@ -242,6 +264,14 @@ class Page
         }
     }
 
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -306,7 +336,12 @@ class Page
 
         $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
 
-        foreach ($pages as &$page) { $page = self::parse($page); }
+        foreach ($pages as &$page) { 
+            $page = self::parse($page); 
+            // Get image
+            $pageForImage = new Page($page["id"]);
+            $page["image"] = $pageForImage->getImage();
+        }
 
         return $pages;
     }

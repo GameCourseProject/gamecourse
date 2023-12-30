@@ -170,7 +170,7 @@ class PageController
      */
     public function createPage()
     {
-        API::requireValues("courseId", "name", "viewTree");
+        API::requireValues("courseId", "name", "viewTree", "image");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -179,8 +179,11 @@ class PageController
         
         $name = API::getValue("name");
         $viewTree = API::getValue("viewTree", "array");
+
+        $image = API::getValue("image");
         
-        Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page->setImage($image);
     }
 
     /**
@@ -201,6 +204,9 @@ class PageController
         
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $page->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
@@ -227,6 +233,9 @@ class PageController
          
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $template->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
@@ -556,6 +565,7 @@ class PageController
             $pair->id = $template["id"];
             $pair->name = $template["name"];
             $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->image = $template["image"];
             return $pair;
         };
         
@@ -587,6 +597,7 @@ class PageController
             $pair->creationTimestamp = $template["creationTimestamp"];
             $pair->updateTimestamp = $template["updateTimestamp"];
             $pair->isPublic = false;
+            $pair->image = $template["image"];
             return $pair;
         };
         
@@ -612,8 +623,12 @@ class PageController
         $name = API::getValue("name");
         $viewTree = API::getValue("viewTree", "array");
         
-        $templateInfo = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
-        API::response($templateInfo);
+        $image = API::getValue("image");
+
+        $template = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $template->setImage($image);
+
+        API::response($template->getData());
     }
 
     /**
@@ -694,6 +709,7 @@ class PageController
             $pair->isPublic = true;
             $pair->user = $template["sharedBy"];
             $pair->sharedTimestamp = $template["sharedTimestamp"];
+            $pair->image = $template["image"];
             return $pair;
         };
         

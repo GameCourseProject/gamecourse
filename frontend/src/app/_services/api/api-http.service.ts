@@ -2900,11 +2900,12 @@ export class ApiHttpService {
       .pipe( map((res: any) => Template.fromDatabase(res['data'])) );
   }
 
-  public saveCustomTemplate(courseID: number, name: string, viewTree): Observable<void> {
+  public saveCustomTemplate(courseID: number, name: string, viewTree, image): Observable<void> {
     const data = {
       courseId: courseID,
       name: name,
-      viewTree: viewTree
+      viewTree: viewTree,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2927,7 +2928,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     if (tree) {
       return this.get(url, ApiHttpService.httpOptions)
-        .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+        .pipe(map((res: any) => res['data'].map((e) => {return {id: e.id, name: e.name, view: buildView(e.view, true)}})));
     }
     else {
       return this.get(url, ApiHttpService.httpOptions)
@@ -2946,7 +2947,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     if (tree) {
       return this.get(url, ApiHttpService.httpOptions)
-        .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+        .pipe(map((res: any) => res['data'].map((e) => {return { id: e.id, name: e.name, view: buildView(e.view, true)}})));
     }
     else {
       return this.get(url, ApiHttpService.httpOptions)
@@ -3042,12 +3043,13 @@ export class ApiHttpService {
       }));
   }
 
-  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[]): Observable<void> {
+  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       viewTree: viewTree,
-      viewsDeleted: viewsDeleted
+      viewsDeleted: viewsDeleted,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -3079,11 +3081,12 @@ export class ApiHttpService {
 
   // Pages //////////////////////////////////////////////////////////////////////////
 
-  public saveViewAsPage(courseID: number, name: string, viewTree): Observable<void> {
+  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<void> {
     const data = {
       courseId: courseID,
       name: name,
-      viewTree: viewTree
+      viewTree: viewTree,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -3096,12 +3099,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[]): Observable<void> {
+  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
       viewTree: viewTree,
-      viewsDeleted: viewsDeleted
+      viewsDeleted: viewsDeleted,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {

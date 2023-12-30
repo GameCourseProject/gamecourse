@@ -39,10 +39,9 @@
   <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let page of pagesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+        <figure class="relative w-full aspect-video">
 
-          <!-- FIXME: Replace <img> with screenshots of pages -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
+          <img class="absolute w-full h-full object-contain" src="{{page.image ?? 'assets/imgs/img-dark.png'}}" alt="{{page.name}} page">
 
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
@@ -118,10 +117,9 @@
   <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let template of templatesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+        <figure class="relative w-full aspect-video">
 
-          <!-- FIXME: Replace <img> with screenshots of templates -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{template.name}} template">
+          <img class="absolute w-full h-full object-contain" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
 
           <div *ngIf="!template.isSystem" class="badge badge-sm badge-{{template.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
             (click)="chooseTemplateAction('make public/private', template)">
