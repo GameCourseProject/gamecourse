@@ -136,6 +136,14 @@ class CoreTemplate extends Template
         Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
     }
 
+    /**
+     * @throws Exception
+     */
+    public function deleteImage()
+    {
+        Utils::deleteFile($this->getDataFolder(), "screenshot.png", true);
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -188,15 +196,15 @@ class CoreTemplate extends Template
      * Adds a core template to the database.
      * Returns the newly created template.
      *
+     * @param int $courseId
      * @param array $viewTree
      * @param string $name
      * @param int $categoryId
-     * @param int $position
      * @param string|null $moduleId
      * @return CoreTemplate
      * @throws Exception
      */
-    public static function addTemplate(array $viewTree, string $name, int $categoryId, int $position, string $moduleId = null): CoreTemplate
+    public static function addTemplate(int $courseId, array $viewTree, string $name, int $categoryId, string $moduleId = null): CoreTemplate
     {
         // Verify view tree only has system and/or module aspects
         try {
@@ -219,14 +227,14 @@ class CoreTemplate extends Template
         // Create new template
         self::trim($name);
         $id = Core::database()->insert(self::TABLE_TEMPLATE, [
+            // "course" => $courseId, TODO: core templates should have a course since they vary with the modules
             "viewRoot" => $viewRoot,
             "name" => $name,
             "category" => $categoryId,
             "module" => $moduleId
         ]);
-        //Utils::updateItemPosition(null, $position, self::TABLE_TEMPLATE, "position", $id, self::getTemplates($categoryId));
 
-        return new CoreTemplate($viewRoot);
+        return new CoreTemplate($id);
     }
 
     /**

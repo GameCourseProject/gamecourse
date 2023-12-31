@@ -661,8 +661,11 @@ class PageController
         API::requireCoursePermission($course);
 
         $templateId = API::getValue("templateId", "int");
+
+        $template = CustomTemplate::getTemplateById($templateId);
+        $template->deleteImage();
         
-        CustomTemplate::deleteTemplate($templateId);
+        CustomTemplate::deleteTemplate($template->getId());
     }
 
     /**

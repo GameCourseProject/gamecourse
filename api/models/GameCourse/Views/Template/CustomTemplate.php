@@ -175,6 +175,17 @@ class CustomTemplate extends Template
         Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
     }
 
+    /**
+     * @throws Exception
+     */
+    public function deleteImage()
+    {
+        $path = $this->getDataFolder() . "/" . "screenshot.png";
+        if (file_exists($path)) {
+            Utils::deleteFile($this->getDataFolder(), "screenshot.png", true);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -340,7 +351,7 @@ class CustomTemplate extends Template
     {
         $template = self::getTemplateById($id);
         if ($template) {
-            parent::deleteTemplate($id, $keepLinked);
+            ViewHandler::deleteViewTree($id, $template->getViewRoot(), $keepLinked);
             Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
         }
     }

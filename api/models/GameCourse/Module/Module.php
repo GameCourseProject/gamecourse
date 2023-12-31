@@ -519,8 +519,20 @@ abstract class Module
      */
     protected function initTemplates()
     {
-        $viewTree = json_decode(file_get_contents(MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Template.txt"), true);
-        $template = CoreTemplate::addTemplate($viewTree, $this->getName(), 2, 1, $this->id);
+        $templatePath = MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Template.txt";
+
+        if (file_exists($templatePath)) {
+            $viewTree = json_decode(file_get_contents($templatePath), true);
+            $template = CoreTemplate::addTemplate($this->course->getId(), $viewTree, $this->getName(), 2, $this->id); // 2 is the category "Module"
+
+            $imagePath = MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Screenshot.png";
+
+            if (file_exists($imagePath)) {
+                $type = pathinfo($imagePath, PATHINFO_EXTENSION);
+                $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($imagePath));
+                $template->setImage($base64);
+            }
+        }
     }
 
     /**
@@ -648,6 +660,7 @@ abstract class Module
 
     protected function removeTemplates()
     {
+        Core::database()->delete(CoreTemplate::TABLE_TEMPLATE, ["module" => $this->id]);
     }
 
     /**
