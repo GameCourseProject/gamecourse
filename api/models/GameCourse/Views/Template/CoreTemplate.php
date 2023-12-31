@@ -153,13 +153,14 @@ class CoreTemplate extends Template
      * Gets core templates in the system.
      * Options for a specific category or module.
      *
+     * @param int $courseId
      * @param int|null $categoryId
      * @param string|null $moduleId
      * @return array
      */
-    public static function getTemplates(int $categoryId = null, string $moduleId = null): array
+    public static function getTemplates(int $courseId, int $categoryId = null, string $moduleId = null): array
     {
-        $where = [];
+        $where = ["course" => $courseId];
         if ($categoryId) $where[] = ["category" => $categoryId];
         if ($moduleId) $where[] = ["module" => $moduleId];
 
@@ -209,7 +210,7 @@ class CoreTemplate extends Template
         // Verify view tree only has system and/or module aspects
         try {
             // NOTE: will throw an exception if aspect not found
-            Aspect::getAspectsInViewTree(null, $viewTree, 0);
+            Aspect::getAspectsInViewTree(null, $viewTree, $courseId);
 
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -222,12 +223,12 @@ class CoreTemplate extends Template
         }
 
         // Add view tree of template
-        $viewRoot = ViewHandler::insertViewTree($viewTree, 0);
+        $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
 
         // Create new template
         self::trim($name);
         $id = Core::database()->insert(self::TABLE_TEMPLATE, [
-            // "course" => $courseId, TODO: core templates should have a course since they vary with the modules
+            "course" => $courseId,
             "viewRoot" => $viewRoot,
             "name" => $name,
             "category" => $categoryId,

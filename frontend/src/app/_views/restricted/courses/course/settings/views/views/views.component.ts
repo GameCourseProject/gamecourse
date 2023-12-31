@@ -173,7 +173,7 @@ export class ViewsComponent implements OnInit {
   }
 
   async getTemplates(courseID: number) {
-    this.systemTemplates = await this.api.getCoreTemplates().toPromise() as Template[]; // FIXME do I want to show these too?
+    this.systemTemplates = await this.api.getCoreTemplates(courseID).toPromise() as Template[]; // FIXME do I want to show these too?
     this.courseTemplates = await this.api.getCustomTemplates(courseID).toPromise() as Template[];
     this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
     this.calculateTemplates();

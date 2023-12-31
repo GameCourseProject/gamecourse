@@ -2931,10 +2931,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public getCoreTemplates(tree: boolean = false): Observable<{ id: number, name: string, view: View }[] | Template[]> {
+  public getCoreTemplates(courseID: number, tree: boolean = false): Observable<{ id: number, name: string, view: View }[] | Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getCoreTemplates');
+      qs.push('courseId', courseID);
       qs.push('tree', tree);
     };
 

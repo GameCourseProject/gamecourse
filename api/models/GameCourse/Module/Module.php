@@ -523,7 +523,7 @@ abstract class Module
 
         if (file_exists($templatePath)) {
             $viewTree = json_decode(file_get_contents($templatePath), true);
-            $template = CoreTemplate::addTemplate($this->course->getId(), $viewTree, $this->getName(), 2, $this->id); // 2 is the category "Module"
+            $template = CoreTemplate::addTemplate($this->course->getId(), $viewTree, $this->getName(), 1, $this->id); // 1 is the category "Module"
 
             $imagePath = MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Screenshot.png";
 
@@ -660,7 +660,7 @@ abstract class Module
 
     protected function removeTemplates()
     {
-        Core::database()->delete(CoreTemplate::TABLE_TEMPLATE, ["module" => $this->id]);
+        Core::database()->delete(CoreTemplate::TABLE_TEMPLATE, ["course" => $this->course->getId(), "module" => $this->id]);
     }
 
     /**

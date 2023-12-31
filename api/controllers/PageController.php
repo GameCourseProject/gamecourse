@@ -573,6 +573,13 @@ class PageController
      * @throws Exception
      */
     public function getCoreTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
         $fun = function($template) {
             $tree = API::getValue("tree", "bool");
             $pair = (object)[];
@@ -583,7 +590,7 @@ class PageController
             return $pair;
         };
         
-        $coreTemplates = array_map($fun, CoreTemplate::getTemplates());
+        $coreTemplates = array_map($fun, CoreTemplate::getTemplates($courseId));
         API::response($coreTemplates);
     }
 

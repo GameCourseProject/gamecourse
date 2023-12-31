@@ -251,7 +251,7 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   async getTemplates(): Promise<void> {
-    this.coreTemplates = await this.api.getCoreTemplates(true).toPromise() as { id: number, name: string, view: View }[];
+    this.coreTemplates = await this.api.getCoreTemplates(this.course.id, true).toPromise() as { id: number, name: string, view: View }[];
     this.customTemplates = await this.api.getCustomTemplates(this.course.id, true).toPromise() as { id: number, name: string, view: View }[];
     this.sharedTemplates = await this.api.getSharedTemplates(true).toPromise() as { id: number, sharedTimestamp: string, user: number, view: View }[];
   }

@@ -343,11 +343,13 @@ CREATE TABLE template_core(
   category                    int unsigned NOT NULL,
   position                    int unsigned,
   module                      varchar(50) DEFAULT NULL,
+  course                      int unsigned NOT NULL,
 
   UNIQUE key(category, position),
   FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
   FOREIGN key(category) REFERENCES view_category(id) ON DELETE CASCADE,
-  FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+  FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE,
+  FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 CREATE TABLE template_custom(
