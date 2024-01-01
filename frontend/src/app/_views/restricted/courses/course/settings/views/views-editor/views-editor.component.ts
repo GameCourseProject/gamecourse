@@ -16,7 +16,7 @@ import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, recursiveGroupChildrenTemplates, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { Role } from "src/app/_domain/roles/role";
 import { Template } from "src/app/_domain/views/templates/template";
 import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
@@ -75,13 +75,16 @@ export class ViewsEditorComponent implements OnInit {
     action: false
   };
 
-  editable?: boolean = true;                      // If true, can modify the page, else it's essentially just a preview
+  view: View;                                     // Full view tree of the page
+  editable?: boolean = true;                      // If true, can modify the view, else it's essentially just a preview
+  previewMode: 'raw' | 'mock' | 'real' = 'raw';   // Preview mode selected to render
 
   course: Course;                                 // Specific course in which page exists
+  user: User;                                     // Logged in user
   page: Page;                                     // page where information will be saved
   pageToManage: PageManageData;                   // Manage data
   template: Template;                             // template where information will be saved
-  coreTemplate: Template;                         // core template to view, non editable
+  coreTemplate: Template;                         // core template to view
 
   aspects: Aspect[];                              // Aspects saved
   aspectsToEdit: Aspect[];                        // Aspects currently being edited in modal
@@ -89,27 +92,30 @@ export class ViewsEditorComponent implements OnInit {
   aspectToSelect: Aspect;                         // Aspect selected in modal to switch to
   aspectToAdd: Aspect = new Aspect(null, null);   // New aspect
 
+  options: Option[];
+  activeSubMenu: SubMenu;
+
   coreComponents: any;
   customComponents: { id: number, view: View }[];
   sharedComponents: { id: number, sharedTimestamp: string, user: number, view: View }[];
 
   coreTemplates: { id: number, name: string, view: View }[];
   customTemplates: { id: number, name: string, view: View }[];
-  sharedTemplates: { id: number, sharedTimestamp: string, user: number, view: View }[];
-
-  user: User;
-
-  previewMode: 'raw' | 'mock' | 'real' = 'raw';   // Preview mode selected to render
-
-  options: Option[];
-  activeSubMenu: SubMenu;
+  sharedTemplates: { id: number, name: string, sharedTimestamp: string, user: number, view: View }[];
 
   newComponentName: string;                       // Name for custom component to be saved
   newTemplateName: string;                        // Name for custom template to be saved
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
   templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
-  view: View;                                     // Full view tree of the page
+  templateToAdd: any;                                      // Template that will be added, after user selects by value or by reference in the modal
+
+  // ADD TEMPLATE OPTIONS
+  duplicateOptions: {name: string, char: string}[] = [     
+    {name: "By reference", char: "ref"},
+    {name: "By value", char: "value"}
+  ];
+  optionSelected: string = null;
 
   constructor(
     private api: ApiHttpService,
@@ -253,7 +259,7 @@ export class ViewsEditorComponent implements OnInit {
   async getTemplates(): Promise<void> {
     this.coreTemplates = await this.api.getCoreTemplates(this.course.id, true).toPromise() as { id: number, name: string, view: View }[];
     this.customTemplates = await this.api.getCustomTemplates(this.course.id, true).toPromise() as { id: number, name: string, view: View }[];
-    this.sharedTemplates = await this.api.getSharedTemplates(true).toPromise() as { id: number, sharedTimestamp: string, user: number, view: View }[];
+    this.sharedTemplates = await this.api.getSharedTemplates(true).toPromise() as { id: number, name: string, sharedTimestamp: string, user: number, view: View }[];
   }
 
   setOptions() {
@@ -586,23 +592,49 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   addTemplateToPage(item: View) {
-    let itemToAdd = _.cloneDeep(item);
-    itemToAdd.switchMode(ViewMode.EDIT);
+    // All Aspects that should display the new item (this one and all others beneath in hierarchy)
+    const toAdd = viewsByAspect.filter((e) =>
+      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
+      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+    );
 
-    // Page becomes the template
-    if (!this.view) {
-      this.view = itemToAdd;
+    let newItem = _.cloneDeep(item);
+    newItem.mode = ViewMode.EDIT;
+    newItem.aspect = selectedAspect;
+    if (this.optionSelected === "value") newItem.replaceWithFakeIds();
+
+    for (let el of toAdd) {
+      let itemToAdd = _.cloneDeep(newItem);
+      itemToAdd.uniqueId = Math.round(Date.now() * Math.random()); // FIXME child views too probably
+
+      // Add child to the selected block
+      if (this.selection.get()?.type === ViewType.BLOCK) {
+        el.view.findView(this.selection.get().id)?.addChildViewToViewTree(itemToAdd);
+      }
+      // By default without valid selection add to existing root
+      else {
+        el.view.findView(this.view.id)?.addChildViewToViewTree(itemToAdd);
+      }
     }
-    // Add to the selected block
-    else if (this.selection.get()?.type == ViewType.BLOCK) {
-      this.selection.get().addChildViewToViewTree(itemToAdd);
+
+    recursiveGroupChildrenTemplates(newItem);
+
+    if (this.selection.get()?.type === ViewType.BLOCK) {
+      const originalGroup: number[][] = groupedChildren.get(this.selection.get().id) ?? [];
+      originalGroup.push([newItem.id]);
+      groupedChildren.set(this.selection.get().id, originalGroup);
     }
-    // By default without valid selection add to existing root
     else {
-      this.view.addChildViewToViewTree(itemToAdd);
+      const originalGroup = groupedChildren.get(this.view.id) ?? [];
+      originalGroup.push([newItem.id]);
+      groupedChildren.set(this.view.id, originalGroup);
     }
 
+    this.view = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     this.resetMenus();
+
+    this.optionSelected = null;
+    ModalService.closeModal("add-template");
   }
 
   async savePage() {
@@ -797,6 +829,7 @@ export class ViewsEditorComponent implements OnInit {
     }
     else if (action === 'Undo') {
       console.log(this.view);
+      console.log(groupedChildren);
     }
     else if (action === 'Redo') {
     }
@@ -879,6 +912,11 @@ export class ViewsEditorComponent implements OnInit {
 
   getComponentsOfSubcategory(subcategory: string) {
     return this.getSelectedCategories()[0]['list'][subcategory];
+  }
+
+  openAddTemplateModal(item: any) {
+    this.templateToAdd = item;
+    ModalService.openModal('add-template');
   }
 
   openSaveAsPageModal() {

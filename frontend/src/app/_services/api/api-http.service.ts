@@ -2969,7 +2969,7 @@ export class ApiHttpService {
     }
   }
 
-  public getSharedTemplates(tree: boolean = false): Observable<{id: number, sharedTimestamp: string, user: number, view: View}[] | Template[]> {
+  public getSharedTemplates(tree: boolean = false): Observable<{id: number, name: string, sharedTimestamp: string, user: number, view: View}[] | Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getSharedTemplates');

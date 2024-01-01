@@ -100,7 +100,7 @@
                     <!-- Templates -->
                     <div *ngIf="getSelectedCategories().length > 0 && option.description === 'Choose Template'" class="flex flex-col gap-2">
                       <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center hover:cursor-pointer">
-                        <div class="w-full h-full flex flex-col" (click)="addTemplateToPage(item.view)">
+                        <div class="w-full h-full flex flex-col" (click)="openAddTemplateModal(item)">
                           <div>{{item.name}}</div>
                           <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.sharedTimestamp}}</div>
                         </div>
@@ -335,5 +335,69 @@
   <div class="w-full flex flex-wrap">
     <span class="w-full">There are currently <strong>unsaved changes</strong>. This action <strong>cannot be undone</strong>.</span>
     <span class="w-full">Do you want to proceed?</span>
+  </div>
+</ng-template>
+
+<!-- Add template modal -->
+<app-modal
+  *ngIf="templateToAdd"
+  [id]="'add-template'"
+  [templateRef]="ADD_TEMPLATE"
+  [header]="'Add \'' + templateToAdd.name + '\''"
+  [closeBtnText]="'Cancel'"
+  [submitBtnText]="'Add'"
+  [submitBtnColor]="'primary'"
+  [actionInProgress]="loading.action"
+  [size]="'md'"
+  (submitBtnClicked)="addTemplateToPage(templateToAdd.view)"
+></app-modal>
+<ng-template #ADD_TEMPLATE>
+  <div class="w-full flex flex-wrap mb-3">
+    <span class="font-semibold w-full">Choose one of the following options for adding template '{{templateToAdd.name}}'<span class="text-secondary ml-1">*</span>
+    </span>
+
+    <div class="md:w-2/5">
+      <app-input-radio
+        [id]="'by-reference'"
+        [group] = "'duplicate-option'"
+        [optionValue] = "duplicateOptions[0].char"
+        [color]="'secondary'"
+        [classList]="'mt-2'"
+        [label]="duplicateOptions[0].name"
+        [labelPosition]="'right'"
+        [(value)]="optionSelected"
+      ></app-input-radio>
+    </div>
+    <div class="md:w-2/5">
+      <app-input-radio
+        [id]="'by-value'"
+        [group] = "'duplicate-option'"
+        [optionValue] = "duplicateOptions[1].char"
+        [color]="'secondary'"
+        [classList]="'mt-2'"
+        [label]="duplicateOptions[1].name"
+        [labelPosition]="'right'"
+        [(value)]="optionSelected"
+      ></app-input-radio>
+    </div>
+  </div>
+
+  <!-- Small divider -->
+  <ng-container class="border-b-base-300 border-b-2"></ng-container>
+
+  <div class="mt-6 text-sm">
+    <div>
+      <span class="text-secondary w-full"><strong>Copy by value:</strong></span>
+      <span class="text-opacity-60 w-full">
+        Each copy is <strong>individual</strong>.
+        The changes made in the copy version <strong>won't affect</strong> the original.
+      </span>
+    </div>
+    <div class="mt-1.5">
+      <span class="text-secondary w-full"><strong>Copy by reference:</strong></span>
+      <span class="text-opacity-60 w-full">
+        The changes made in the copy version <strong>will also affect</strong> the original.
+      </span>
+    </div>
   </div>
 </ng-template>

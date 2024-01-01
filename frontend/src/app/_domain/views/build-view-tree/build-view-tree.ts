@@ -39,6 +39,17 @@ function recursiveGroupChildren(view: any) {
   }
 }
 
+export function recursiveGroupChildrenTemplates(view: any) {
+  if ('children' in view) {
+    for (let child of view.children) {
+      const group = groupedChildren.get(view.id) ?? [];
+      group.push([child.id]);
+      groupedChildren.set(view.id, group);
+      recursiveGroupChildrenTemplates(child);
+    }
+  }
+}
+
 /**
  * Builds a view tree to be sent to database by merging all aspects
  * according to view ids and viewIds.
