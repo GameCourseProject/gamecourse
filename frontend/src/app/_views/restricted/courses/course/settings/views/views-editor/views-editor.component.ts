@@ -16,7 +16,7 @@ import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
 import { User } from "src/app/_domain/users/user";
 import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, recursiveGroupChildrenTemplates, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { addToGroupedChildren, buildViewTree, getFakeId, groupedChildren, initGroupedChildren, selectedAspect, setSelectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { Role } from "src/app/_domain/roles/role";
 import { Template } from "src/app/_domain/views/templates/template";
 import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
@@ -551,47 +551,18 @@ export class ViewsEditorComponent implements OnInit {
   }
 
   addComponentToPage(item: View) {
-    // All Aspects that should display the new item (this one and all others beneath in hierarchy)
-    const toAdd = viewsByAspect.filter((e) =>
-      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
-      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
-    );
-
-    const fakeId = getFakeId();
-
-    for (let el of toAdd) {
-      let itemToAdd = _.cloneDeep(item);
-      itemToAdd.mode = ViewMode.EDIT;
-      itemToAdd.id = fakeId;
-      itemToAdd.aspect = selectedAspect;
-      itemToAdd.uniqueId = Math.round(Date.now() * Math.random());
-
-      // Add child to the selected block
-      if (this.selection.get()?.type === ViewType.BLOCK) {
-        el.view.findView(this.selection.get().id)?.addChildViewToViewTree(itemToAdd);
-      }
-      // By default without valid selection add to existing root
-      else {
-        el.view.findView(this.view.id)?.addChildViewToViewTree(itemToAdd);
-      }
-    }
-
-    if (this.selection.get()?.type === ViewType.BLOCK) {
-      const originalGroup: number[][] = groupedChildren.get(this.selection.get().id) ?? [];
-      originalGroup.push([fakeId]);
-      groupedChildren.set(this.selection.get().id, originalGroup);
-    }
-    else {
-      const originalGroup = groupedChildren.get(this.view.id) ?? [];
-      originalGroup.push([fakeId]);
-      groupedChildren.set(this.view.id, originalGroup);
-    }
-
-    this.view = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
-    this.resetMenus();
+    this.optionSelected = "value";
+    this.addViewToPage(item);
+    this.optionSelected = null;
+  }
+  
+  addTemplateToPage(item: View) {
+    this.addViewToPage(item);
+    this.optionSelected = null;
+    ModalService.closeModal("add-template");
   }
 
-  addTemplateToPage(item: View) {
+  addViewToPage(item: View) {
     // All Aspects that should display the new item (this one and all others beneath in hierarchy)
     const toAdd = viewsByAspect.filter((e) =>
       (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
@@ -599,7 +570,7 @@ export class ViewsEditorComponent implements OnInit {
     );
 
     let newItem = _.cloneDeep(item);
-    newItem.mode = ViewMode.EDIT;
+    if (this.editable) newItem.switchMode(ViewMode.EDIT);
     newItem.aspect = selectedAspect;
     if (this.optionSelected === "value") newItem.replaceWithFakeIds();
 
@@ -617,24 +588,17 @@ export class ViewsEditorComponent implements OnInit {
       }
     }
 
-    recursiveGroupChildrenTemplates(newItem);
-
+    // Add child to the selected block
     if (this.selection.get()?.type === ViewType.BLOCK) {
-      const originalGroup: number[][] = groupedChildren.get(this.selection.get().id) ?? [];
-      originalGroup.push([newItem.id]);
-      groupedChildren.set(this.selection.get().id, originalGroup);
+      addToGroupedChildren(newItem, this.selection.get().id);
     }
+    // By default without valid selection add to existing root
     else {
-      const originalGroup = groupedChildren.get(this.view.id) ?? [];
-      originalGroup.push([newItem.id]);
-      groupedChildren.set(this.view.id, originalGroup);
+      addToGroupedChildren(newItem, this.view.id);
     }
 
     this.view = viewsByAspect.find((e) => _.isEqual(e.aspect, selectedAspect))?.view;
     this.resetMenus();
-
-    this.optionSelected = null;
-    ModalService.closeModal("add-template");
   }
 
   async savePage() {

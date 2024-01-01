@@ -39,13 +39,13 @@ function recursiveGroupChildren(view: any) {
   }
 }
 
-export function recursiveGroupChildrenTemplates(view: any) {
-  if ('children' in view) {
-    for (let child of view.children) {
-      const group = groupedChildren.get(view.id) ?? [];
-      group.push([child.id]);
-      groupedChildren.set(view.id, group);
-      recursiveGroupChildrenTemplates(child);
+export function addToGroupedChildren(view: View, parentId: number) {
+  const group: number[][] = groupedChildren.get(parentId) ?? [];
+  group.push([view.id]);
+  groupedChildren.set(parentId, group);
+  if ('children' in view) { 
+    for (let child of (view as any).children) {
+      addToGroupedChildren(child, view.id);
     }
   }
 }
