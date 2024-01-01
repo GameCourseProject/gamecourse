@@ -197,6 +197,15 @@ export abstract class View {
 
   abstract switchMode(mode: ViewMode);
 
+  getAllVariables() : Variable[] {
+    if (this.parent) {
+      return this.parent.getAllVariables().concat(this.variables);
+    }
+    else {
+      return this.variables;
+    }
+  }
+
 
   /**
    * Custom way to stringify this class.

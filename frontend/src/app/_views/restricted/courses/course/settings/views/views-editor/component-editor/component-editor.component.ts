@@ -88,10 +88,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables =
-    "# These are the variables available in this component, from the component's parents.\n\n";
+    let helpVariables = "# These are the variables available in this component, from the component's parents.\n\n";
 
-    for (const variable of this.viewToEdit.variables){
+    for (const variable of this.view.getAllVariables()) {
       helpVariables += "%" + variable.name + " = " + variable.value + "\n";
     }
 
