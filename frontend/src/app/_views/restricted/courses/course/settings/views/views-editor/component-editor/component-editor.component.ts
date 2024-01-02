@@ -342,6 +342,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   getChartLineCapOptions() {
     return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
+  
+  getProgressSizes() {
+    return [{ value: "xs", text: "Extra Small" }, { value: "sm", text: "Small" }, { value: "md", text: "Medium" }, { value: "lg", text: "Large" }]
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
