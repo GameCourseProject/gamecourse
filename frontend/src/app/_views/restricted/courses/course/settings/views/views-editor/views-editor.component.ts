@@ -606,8 +606,8 @@ export class ViewsEditorComponent implements OnInit {
 
     console.log(buildedTree);
     
-    const image = await this.takeScreenshot();
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
+    //const image = await this.takeScreenshot();
+    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, null).toPromise(); // FIXME null -> image
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }

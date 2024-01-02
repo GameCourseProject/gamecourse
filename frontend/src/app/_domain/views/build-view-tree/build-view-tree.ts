@@ -1,5 +1,9 @@
 import { Aspect } from "../aspects/aspect";
 import { View, ViewDatabase } from "../view";
+import { ViewBlock } from "../view-types/view-block";
+import { ViewCollapse } from "../view-types/view-collapse";
+import { ViewRow } from "../view-types/view-row";
+import { ViewTable } from "../view-types/view-table";
 
 export let viewTree: any[];                           // The view tree being built
 export let viewsAdded: Map<number, ViewDatabase>;     // Holds building-blocks that have already been added to the tree
@@ -43,10 +47,27 @@ export function addToGroupedChildren(view: View, parentId: number) {
   const group: number[][] = groupedChildren.get(parentId) ?? [];
   group.push([view.id]);
   groupedChildren.set(parentId, group);
-  if ('children' in view) { 
-    for (let child of (view as any).children) {
+  if (view instanceof ViewBlock) { 
+    for (let child of view.children) {
       addToGroupedChildren(child, view.id);
     }
+  }
+  else if (view instanceof ViewTable) { 
+    for (let child of view.headerRows) {
+      addToGroupedChildren(child, view.id);
+    }
+    for (let child of view.bodyRows) {
+      addToGroupedChildren(child, view.id);
+    }
+  }
+  else if (view instanceof ViewRow) { 
+    for (let child of view.children) {
+      addToGroupedChildren(child, view.id);
+    }
+  }
+  else if (view instanceof ViewCollapse) { 
+    addToGroupedChildren(view.header, view.id);
+    addToGroupedChildren(view.content, view.id);
   }
 }
 
