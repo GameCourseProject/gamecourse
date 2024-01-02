@@ -38,6 +38,10 @@ export abstract class Event {
     this._expression = value;
   }
 
+  static toDatabase(obj: Event) {
+    return { type: obj.type, action: obj.expression };
+  }
+
 
   /**
    * Transforms an event into a string.

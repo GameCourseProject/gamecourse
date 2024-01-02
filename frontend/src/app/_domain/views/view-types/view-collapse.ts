@@ -224,9 +224,9 @@ export class ViewCollapse extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       icon: obj.icon,
-      children: groupedChildren.get(obj.id)
+      children: groupedChildren.get(obj.id) ?? []
     }
   }
 }

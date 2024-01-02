@@ -152,7 +152,7 @@ export class ViewImage extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       src: obj.src,
       link: obj.link
     }

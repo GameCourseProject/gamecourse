@@ -234,11 +234,11 @@ export class ViewBlock extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,
-      children: groupedChildren.get(obj.id)
+      children: groupedChildren.get(obj.id) ?? []
     }
   }
 }

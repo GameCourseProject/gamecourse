@@ -444,7 +444,7 @@ export class ViewTable extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       footers: obj.footers,
       searching: obj.searching,
       columnFiltering: obj.columnFiltering,
@@ -453,7 +453,7 @@ export class ViewTable extends View {
       info: obj.info,
       ordering: obj.ordering,
       orderingBy: obj.orderingBy,
-      children: groupedChildren.get(obj.id)
+      children: groupedChildren.get(obj.id) ?? []
     }
   }
 }
