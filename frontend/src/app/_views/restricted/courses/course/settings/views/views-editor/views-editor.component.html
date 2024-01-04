@@ -28,7 +28,7 @@
   </div>
 
   <app-top-actions
-    [leftActions]="editable ? [{action: 'Undo', icon: 'tabler-arrow-back-up'}, {action: 'Redo', icon: 'tabler-arrow-forward-up'}] : []"
+    [leftActions]="editable ? [{action: 'Undo', icon: 'tabler-arrow-back-up', disable: !history.hasUndo()}, {action: 'Redo', icon: 'tabler-arrow-forward-up', disable: !history.hasRedo()}] : []"
     [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
                       {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},

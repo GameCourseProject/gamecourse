@@ -23,6 +23,7 @@ import * as _ from "lodash"
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 import { isMoreSpecific, viewsByAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
 import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import { HistoryService } from 'src/app/_services/history.service';
 
 @Component({
   selector: 'bb-any',
@@ -41,7 +42,8 @@ export class BBAnyComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    public selection: ViewSelectionService
+    public selection: ViewSelectionService,
+    private history: HistoryService
   ) { }
 
   ngOnInit(): void {
@@ -194,6 +196,11 @@ export class BBAnyComponent implements OnInit {
         }
       }
     }
+
+    this.history.saveState({
+      viewsByAspect: viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
 
   duplicateAction() {
@@ -202,8 +209,13 @@ export class BBAnyComponent implements OnInit {
     duplicated.id = getFakeId();
     duplicated.uniqueId = Math.round(Date.now() * Math.random());
 
-    if (this.view.parent)
+    if (this.view.parent) {
       this.view.parent.addChildViewToViewTree(duplicated);
+      this.history.saveState({
+        viewsByAspect: viewsByAspect,
+        groupedChildren: groupedChildren
+      });
+    }
   }
 
 }

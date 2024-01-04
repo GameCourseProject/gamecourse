@@ -23,6 +23,10 @@ export function setSelectedAspect(aspect: Aspect) {
   selectedAspect = aspect;
 }
 
+export function setGroupedChildren(value: Map<number, number[][]>) {
+  groupedChildren = value;
+}
+
 export function initGroupedChildren(viewTree: any[]) {
   groupedChildren = new Map<number, number[][]>();
   for (let view of viewTree) {

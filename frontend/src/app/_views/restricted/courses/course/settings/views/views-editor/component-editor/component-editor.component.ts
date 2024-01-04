@@ -25,6 +25,7 @@ import { ActivatedRoute } from "@angular/router";
 import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
 import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import { isMoreSpecific, viewsByAspect } from "../views-editor.component";
+import { HistoryService } from "src/app/_services/history.service";
 
 @Component({
   selector: 'app-component-editor',
@@ -59,6 +60,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private history: HistoryService
   ) { }
 
   async ngOnInit() {
@@ -447,6 +449,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
     if (!this.saveButton) ModalService.closeModal('component-editor');
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
+
+    this.history.saveState({
+      viewsByAspect: viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
 
   reloadPreview() {
