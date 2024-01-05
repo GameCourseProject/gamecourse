@@ -630,8 +630,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     console.log(buildedTree);
     console.log(groupedChildren);
     
-    //const image = await this.takeScreenshot();
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, null).toPromise(); // FIXME null -> image
+    const image = await this.takeScreenshot();
+    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise(); // FIXME null -> image
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
