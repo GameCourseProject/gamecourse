@@ -5,11 +5,10 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -360,14 +359,26 @@ export class ViewTable extends View {
     // else if (to === 'down') type === 'header' ? this.headerRows.insertAtIndex(of + 1, rowToMove) : this.rows.insertAtIndex(of + 1, rowToMove);
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (const headerRow of this.headerRows) {
+      headerRow.modifyAspect(old, newAspect);
+    }
+    for (const row of this.bodyRows) {
+      row.modifyAspect(old, newAspect);
+    }
+  }
 
   /**
    * Gets a default table view.
    */
-  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable { // TODO: refactor view editor
-    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, false, false, false, false, false, false, false, null, []);
-    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.HEADER)];
-    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.BODY)];
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable {
+    const defaultAspect = new Aspect(null, null);
+    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, false, false, false, false, false, false, false, null, []);
+    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.HEADER)];
+    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.BODY)];
     return table;
   }
 

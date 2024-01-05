@@ -1,4 +1,3 @@
-import { Aspect } from "../aspects/aspect";
 import { View, ViewDatabase } from "../view";
 import { ViewBlock } from "../view-types/view-block";
 import { ViewCollapse } from "../view-types/view-collapse";
@@ -8,7 +7,6 @@ import { ViewTable } from "../view-types/view-table";
 export let viewTree: any[];                           // The view tree being built
 export let viewsAdded: Map<number, ViewDatabase>;     // Holds building-blocks that have already been added to the tree
 export let viewsDeleted: number[] = [];               // viewIds of views that were completely deleted -> delete from database
-export let selectedAspect: Aspect;                    // Selected aspect for previewing and editing
 let fakeId: number = -1;                              // Fake, negative ids, for new views, to be generated in backend
 
 export let groupedChildren: Map<number, number[][]>;
@@ -17,10 +15,6 @@ export function getFakeId() : number {
   const id = fakeId;
   fakeId -= 1;
   return id;
-}
-
-export function setSelectedAspect(aspect: Aspect) {
-  selectedAspect = aspect;
 }
 
 export function setGroupedChildren(value: Map<number, number[][]>) {
@@ -48,9 +42,11 @@ function recursiveGroupChildren(view: any) {
 }
 
 export function addToGroupedChildren(view: View, parentId: number) {
-  const group: number[][] = groupedChildren.get(parentId) ?? [];
-  group.push([view.id]);
-  groupedChildren.set(parentId, group);
+  if (parentId) {
+    const group: number[][] = groupedChildren.get(parentId) ?? [];
+    group.push([view.id]);
+    groupedChildren.set(parentId, group);
+  }
   if (view instanceof ViewBlock) { 
     for (let child of view.children) {
       addToGroupedChildren(child, view.id);

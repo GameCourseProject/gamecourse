@@ -6,7 +6,7 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import { buildView } from "../build-view/build-view";
 import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
-
+import * as _ from "lodash"
 
 export class ViewRow extends View {
   private _rowType: RowType;
@@ -136,6 +136,15 @@ export class ViewRow extends View {
   switchMode(mode: ViewMode) {
     this.mode = mode;
     for (let child of this.children) child.switchMode(mode);
+  }
+
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (const child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
   }
 
 

@@ -7,7 +7,7 @@ import { Aspect } from '../_domain/views/aspects/aspect';
   providedIn: 'root'
 })
 export class HistoryService {
-    private states: {viewsByAspect: { aspect: Aspect, view: View }[], groupedChildren: Map<number, number[][]>}[] = [];
+    private states: {viewsByAspect: { aspect: Aspect, view: View | null }[], groupedChildren: Map<number, number[][]>}[] = [];
     private currentStateIndex: number = -1;
 
     constructor() {}

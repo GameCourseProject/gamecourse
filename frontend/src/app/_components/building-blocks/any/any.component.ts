@@ -21,9 +21,9 @@ import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
 import * as _ from "lodash"
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
-import { isMoreSpecific, viewsByAspect } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
-import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import { HistoryService } from 'src/app/_services/history.service';
+import { ViewEditorService } from 'src/app/_services/view-editor.service';
 
 @Component({
   selector: 'bb-any',
@@ -39,11 +39,13 @@ export class BBAnyComponent implements OnInit {
 
   classes: string;
   visible: boolean;
+  delete: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     public selection: ViewSelectionService,
-    private history: HistoryService
+    private history: HistoryService,
+    public service: ViewEditorService
   ) { }
 
   ngOnInit(): void {
@@ -154,6 +156,11 @@ export class BBAnyComponent implements OnInit {
       this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     }, 100);
+
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
   
   saveAction() {
@@ -161,61 +168,21 @@ export class BBAnyComponent implements OnInit {
   }
 
   deleteAction() {
-    const viewsWithThis = viewsByAspect.filter((e) => e.view.findView(this.view.id));
-    
-    const lowerInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
-      || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
-    );
-
-    for (let el of lowerInHierarchy) {
-      const view = el.view.findView(this.view.id);
-      if (view.parent) {
-        view.parent.removeChildView(this.view.id);
-      }
-    }
-
-    // View doesn't exist anymore in any tree -> delete from database
-    if (this.view.id > 0 && viewsByAspect.filter((e) => e.view.findView(this.view.id)).length <= 0) {
-      viewsDeleted.push(this.view.id);
-    }
-
-    if (this.view.parent) {
-      let entry = groupedChildren.get(this.view.parent.id);
-      for (let group of entry) {
-        const index = group.indexOf(this.view.id);
-        if (index >= 0) {
-          group.splice(index, 1);
-          if (group.length <= 0) {
-            entry.splice(entry.indexOf([]), 1);
-            groupedChildren.set(this.view.parent.id, entry);
-          }
-          else {
-            groupedChildren.set(this.view.parent.id, entry);
-          }
-        }
-      }
-    }
-
+    this.service.delete(this.view);
+    this.selection.clear();
+    this.delete = true;
     this.history.saveState({
-      viewsByAspect: viewsByAspect,
+      viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
   }
 
   duplicateAction() {
-    let duplicated = _.cloneDeep(this.view);
-    duplicated.mode = ViewMode.EDIT;
-    duplicated.id = getFakeId();
-    duplicated.uniqueId = Math.round(Date.now() * Math.random());
-
-    if (this.view.parent) {
-      this.view.parent.addChildViewToViewTree(duplicated);
-      this.history.saveState({
-        viewsByAspect: viewsByAspect,
-        groupedChildren: groupedChildren
-      });
-    }
+    this.service.duplicate(this.view);
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
 
 }

@@ -4,10 +4,9 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
-import { viewsByAspect } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -167,11 +166,20 @@ export class ViewBlock extends View {
     }
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (let child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
+  }
+
   /**
    * Gets a default block view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
-    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, BlockDirection.VERTICAL, null, true, []);
+    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
   }
 
   /**

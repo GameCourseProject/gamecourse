@@ -4,7 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewIcon extends View {
   private _icon: string;
@@ -95,11 +96,17 @@ export class ViewIcon extends View {
     this.mode = mode;
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+  }
+
   /**
    * Gets a default icon view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewIcon {
-    return new ViewIcon(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, "tabler-question-mark");
+    return new ViewIcon(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), "tabler-question-mark");
   }
 
 
