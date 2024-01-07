@@ -10,6 +10,7 @@ import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-
 import { ViewText } from "./view-text";
 import { ViewBlock } from "./view-block";
 import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -219,7 +220,7 @@ export class ViewCollapse extends View {
     return collapse;
   }
 
-  static toDatabase(obj: ViewCollapse): ViewCollapseDatabase {
+  static toDatabase(obj: ViewCollapse, component: boolean = false): ViewCollapseDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
@@ -234,7 +235,8 @@ export class ViewCollapse extends View {
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
       events: obj.events.map(event => Event.toDatabase(event)),
       icon: obj.icon,
-      children: groupedChildren.get(obj.id) ?? []
+      children: component ? [buildComponent(obj.header), buildComponent(obj.content)]
+        : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }

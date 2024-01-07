@@ -982,7 +982,7 @@ export function buildComponent(view: View): ViewBlockDatabase[] | ViewButtonData
   if (type === ViewType.BLOCK) return [ViewBlock.toDatabase(view as ViewBlock)];
   else if (type === ViewType.BUTTON) return [ViewButton.toDatabase(view as ViewButton)];
   else if (type === ViewType.CHART) return [ViewChart.toDatabase(view as ViewChart)];
-  else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse)];
+  else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse, true)];
   else if (type === ViewType.ICON) return [ViewIcon.toDatabase(view as ViewIcon)];
   else if (type === ViewType.IMAGE) return [ViewImage.toDatabase(view as ViewImage)];
   else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow, true)];
