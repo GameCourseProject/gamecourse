@@ -113,13 +113,13 @@
   <span *ngIf="!loading.template && templates.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   <span *ngIf="templates.length !== 0 && templatesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
-  <!-- Template cards -->
+  <!-- Templates cards -->
   <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let template of templatesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-video">
+        <figure class="relative w-full aspect-video bg-white">
 
-          <img class="absolute w-full h-full object-contain" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
+          <img class="absolute w-full" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
 
           <div *ngIf="!template.isSystem" class="badge badge-sm badge-{{template.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
             (click)="chooseTemplateAction('make public/private', template)">

@@ -630,7 +630,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     console.log(buildedTree);
     console.log(groupedChildren);
     
-    const image = await this.takeScreenshot();
+    let image;
+    try {
+      image = await this.takeScreenshot();
+    } catch {
+      image = null;
+    }
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise(); // FIXME null -> image
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
@@ -642,7 +647,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     console.log(this.service.viewsByAspect);
     console.log(buildedTree);
 
-    const image = await this.takeScreenshot();
+    let image;
+    try {
+      image = await this.takeScreenshot();
+    } catch {
+      image = null;
+    }
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
       await this.closeConfirmed();
@@ -775,7 +785,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   // Templates --------------------------------------------------------
 
   async saveTemplate() {
-    const image = await this.takeScreenshot();
+    let image;
+    try {
+      image = await this.takeScreenshot();
+    } catch {
+      image = null;
+    }
     await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view]), image).toPromise();
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
