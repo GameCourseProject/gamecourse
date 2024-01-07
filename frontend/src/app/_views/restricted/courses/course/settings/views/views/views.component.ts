@@ -73,9 +73,17 @@ export class ViewsComponent implements OnInit {
       'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
     [{ icon: 'jam-pencil-f', description: 'Edit', type: 'edit', color: 'warning' },
      { icon: 'feather-type', description: 'Rename', type: 'management' },
-     //{ icon: 'tabler-eye', description: 'Preview', type: 'management' },
+     { icon: 'tabler-eye', description: 'Preview', type: 'management' },
      { icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }
+    ];
+  
+  // Actions for SYSTEM templates
+  coreTemplateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
+    color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
+      'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
+      'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
+    [{ icon: 'tabler-eye', description: 'Preview', type: 'management' },
     ];
 
   visibilityCheckbox: boolean;                    // For 'configure-visibility' modal
@@ -165,7 +173,7 @@ export class ViewsComponent implements OnInit {
   }
 
   async getTemplates(courseID: number) {
-    this.systemTemplates = await this.api.getCoreTemplates().toPromise() as Template[]; // FIXME do I want to show these too?
+    this.systemTemplates = await this.api.getCoreTemplates(courseID).toPromise() as Template[]; // FIXME do I want to show these too?
     this.courseTemplates = await this.api.getCustomTemplates(courseID).toPromise() as Template[];
     this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
     this.calculateTemplates();
@@ -191,7 +199,6 @@ export class ViewsComponent implements OnInit {
     event = event.toLowerCase();
     if (event === 'arrange pages') {
       this.arrangingPages = _.cloneDeep(this.coursePages);
-      console.log(this.arrangingPages);
       this.mode = 'arrange';
       ModalService.openModal('arrange-pages');
 
@@ -248,8 +255,7 @@ export class ViewsComponent implements OnInit {
     action = action.toLowerCase();
 
     if (action === 'edit') {
-      if (!template.isSystem)
-        await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
+      await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
 
     } else if (action === 'rename') {
       this.mode = 'rename';
@@ -258,7 +264,10 @@ export class ViewsComponent implements OnInit {
       ModalService.openModal('rename-template');
 
     } else if (action === 'preview') {
-      // TODO
+      if (template.isSystem)
+        await this.router.navigate(['pages/editor/system-template/' + template.id], { relativeTo: this.route.parent });
+      else
+        await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
 
     } else if (action === 'make public/private') {
       this.templateToManage = initTemplateToManage(this.course.id, template);
@@ -330,7 +339,7 @@ export class ViewsComponent implements OnInit {
       ModalService.openModal('rename-page');
 
     } else if (action === 'preview') {
-      // TODO
+      await this.router.navigate(['pages/editor/' + page.id], {relativeTo: this.route.parent});
 
     } else if (action === 'make public/private') {
       this.pageToManage = initPageToManage(this.course.id, page);

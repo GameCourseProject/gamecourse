@@ -21,7 +21,8 @@
   </app-input-select>
 
   <!--------------------- Chart options ---------------------->
-  <ng-container *ngIf="viewToEdit.type === ViewType.CHART" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType === 'progress'" [ngTemplateOutlet]="PROGRESS_EDITOR"></ng-container>
 
   <!--------------------- Button options --------------------->
   <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
@@ -208,7 +209,6 @@
       [topLabel]="'Icon'"
       [helperText]="'Icon that will be displayed in collapse when opened/closed.'"
       [helperPosition]="'right'"
-      [required]="true"
       [search]="false">
     </app-input-select>
     <div class="flex flex-row gap-10">
@@ -1095,4 +1095,145 @@
     </div> -->
   <!-- </div> -->
 
+</ng-template>
+
+<ng-template #PROGRESS_EDITOR>
+  <app-input-select
+    [id]="'chart-type'"
+    [(value)]="viewToEdit.chartType"
+    [options]="getChartTypes()"
+    [placeholder]="'Select chart type'"
+    [topLabel]="'Type of Chart'"
+    [required]="true"
+    [classList]="'mb-4'">
+  </app-input-select>
+  
+  <app-input-select
+    [id]="'chart-progress-size'"
+    [(value)]="viewToEdit.options.size"
+    [options]="getProgressSizes()"
+    [placeholder]="'Select size'"
+    [topLabel]="'Dimensions'"
+    [classList]="'mb-4'">
+  </app-input-select>
+
+  <div class="grid grid-cols-2 gap-8 mb-4">
+    <app-input-color
+      [id]="'chart-progress-color'"
+      [(value)]="viewToEdit.options.progressColor"
+      [placeholder]="'Choose a Color'"
+      [topLabel]="'Progress Bar Color'"
+      [helperText]="'Choose color for displaying the progress bar.'"
+      [helperPosition]="'right'">
+    </app-input-color>
+    <app-input-color
+      [id]="'chart-progress-background'"
+      [(value)]="viewToEdit.options.trackColor"
+      [placeholder]="'Choose a Color'"
+      [topLabel]="'Background Color'"
+      [helperText]="'Choose color for displaying the progress bar\'s background.'"
+      [helperPosition]="'right'">
+    </app-input-color>
+  </div>
+
+  <div class="grid grid-cols-2 gap-8 mb-8">
+    <app-input-text
+      [id]="'chart-data'"
+      [(value)]="viewToEdit.data.value"
+      [placeholder]="'e.g. {xp.getUserExtraCreditXP(%user)}'"
+      [required]="true"
+      [topLabel]="'Chart Data'"
+      [helperText]="'Series of data to display in chart.'"
+    ></app-input-text>
+    <app-input-number
+      [id]="'chart-progress-max'"
+      [(value)]="viewToEdit.data.max"
+      [topLabel]="'Maximum value'"
+      [placeholder]="'Select a maximum number'"
+      [className]="'mt-1'"
+    ></app-input-number>
+  </div>
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Labels</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Textual labels that are associated with individual progress bars on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
+  </div>
+  <div class="grid grid-cols-2 gap-8 mb-4">
+    <div>
+      <app-input-text
+        [id]="'chart-progress-label-left'"
+        [(value)]="viewToEdit.options.labelLeft"
+        [topLabel]="'Label Left'"
+      ></app-input-text>
+      <app-input-text
+        [id]="'chart-progress-label-middle'"
+        [(value)]="viewToEdit.options.labelMiddle"
+        [topLabel]="'Label Middle'"
+      ></app-input-text>
+    </div>
+    <div>
+      <app-input-text
+        [id]="'chart-progress-label-right'"
+        [(value)]="viewToEdit.options.labelRight"
+        [topLabel]="'Label Right'"
+      ></app-input-text>
+      <app-input-text
+        *ngIf="viewToEdit.options.size === 'md' || viewToEdit.options.size === 'lg'"
+        [id]="'chart-progress-label-inside'"
+        [(value)]="viewToEdit.options.labelInside"
+        [topLabel]="'Label Inside'"
+      ></app-input-text>
+    </div>
+  </div>
+
+  <div class="flex flex-row mt-8 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Tooltips</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Small pop-up boxes that appear when you hover your mouse pointer over a progress bar. Tooltips are used to provide additional information about the data, helping users understand and interpret the chart more effectively.
+  </div>
+  <div class="flex flex-wrap">
+    <app-input-radio
+      [id]="'chart-progress-datalabel-relative'"
+      [group]="'progress-datalabel'"
+      [optionValue]="'relative'"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Relative'"
+      [helperText]="'Uses percentages (%)'"
+      ></app-input-radio>
+      <app-input-radio
+      [id]="'chart-progress-datalabel-absolute'"
+      [group]="'progress-datalabel'"
+      [optionValue]="'absolute'"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Absolute'"
+      [helperText]="'Uses absolute values.'"
+    ></app-input-radio>
+    <app-input-radio
+      [id]="'chart-progress-datalabel-other'"
+      [group]="'progress-datalabel'"
+      [optionValue]="(viewToEdit.options.tooltip != 'relative' && viewToEdit.options.tooltip != 'absolute') ? viewToEdit.options.tooltip : null"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Custom Tooltip'"
+    ></app-input-radio>
+  </div>
+  <div *ngIf="viewToEdit.options.tooltip != 'relative' && viewToEdit.options.tooltip != 'absolute'">
+    <div class="text-xs pl-1 pb-2 mt-2">
+      Write the message you want to display in the tooltip. 
+      Don't forget that if you use expressions you need to encapsulated them with curvy brackets: {{ '{' }} {{ '}' }}
+    </div>
+    <app-input-text
+      [id]="'chart-progress-datalabel-other'"
+      [(value)]="viewToEdit.options.tooltip"
+      [placeholder]="'e.g. {%userExtraCredit} XP'"
+    ></app-input-text>
+  </div>
 </ng-template>

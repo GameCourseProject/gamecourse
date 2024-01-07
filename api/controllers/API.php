@@ -9,6 +9,7 @@ use GameCourse\Module\Module;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\Template\CoreTemplate;
 use GameCourse\Views\Template\CustomTemplate;
 
 /**
@@ -220,6 +221,14 @@ class API
 //        return $page;
 //    }
 //
+    public static function verifyCoreTemplateExists(int $templateId): CoreTemplate
+    {
+        $template = CoreTemplate::getTemplateById($templateId);
+        if (!$template)
+            API::error('There is no template with ID = ' . $templateId . '.', 404);
+        return $template;
+    }
+
     public static function verifyCustomTemplateExists(int $templateId): CustomTemplate
     {
         $template = CustomTemplate::getTemplateById($templateId);

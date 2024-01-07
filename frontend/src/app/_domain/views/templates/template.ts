@@ -11,8 +11,11 @@ export class Template {
   private _updateTimestamp?: Moment;
   private _isPublic?: boolean;
   private _sharedTimestamp?: Moment;
+  private _image?: string;
 
-  constructor(id: number, name: string, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment, course: number = null, isPublic: boolean = false, sharedTimestamp: Moment = null) {
+  constructor(id: number, name: string, viewRoot: number, creationTimestamp: Moment, updateTimestamp: Moment, course: number = null,
+    isPublic: boolean = false, sharedTimestamp: Moment = null, image?: string)
+  {
     this.id = id;
     this.name = name;
     this.viewRoot = viewRoot;
@@ -27,6 +30,7 @@ export class Template {
     } else {
       this.isSystem = true;
     }
+    this.image = image;
   }
 
   get id(): number {
@@ -102,6 +106,14 @@ export class Template {
     this._sharedTimestamp = value;
   }
 
+  get image(): string {
+    return this._image;
+  }
+
+  set image(value: string) {
+    this._image = value;
+  }
+
   static fromDatabase(obj: TemplateDatabase): Template {
     return new Template(
       obj.id,
@@ -111,7 +123,8 @@ export class Template {
       obj.updateTimestamp ? dateFromDatabase(obj.updateTimestamp) : null,
       obj.course ? obj.course : null,
       obj.isPublic ? obj.isPublic : null,
-      obj.sharedTimestamp ? dateFromDatabase(obj.sharedTimestamp) : null
+      obj.sharedTimestamp ? dateFromDatabase(obj.sharedTimestamp) : null,
+      obj.image ?? null
     );
   }
 
@@ -126,4 +139,5 @@ export interface TemplateDatabase {
   updateTimestamp?: string;
   isPublic?: boolean;
   sharedTimestamp?: string;
+  image?: string;
 }

@@ -170,7 +170,7 @@ class PageController
      */
     public function createPage()
     {
-        API::requireValues("courseId", "name", "viewTree");
+        API::requireValues("courseId", "name", "viewTree", "image");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -179,8 +179,11 @@ class PageController
         
         $name = API::getValue("name");
         $viewTree = API::getValue("viewTree", "array");
+
+        $image = API::getValue("image");
         
-        Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page->setImage($image);
     }
 
     /**
@@ -201,6 +204,9 @@ class PageController
         
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $page->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
@@ -227,6 +233,9 @@ class PageController
          
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $template->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
@@ -533,6 +542,20 @@ class PageController
      *
      * @throws Exception
      */
+    public function getCoreTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+        API::response($template->getData());
+    }
+
+    /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
     public function getCustomTemplateById()
     {
         API::requireValues("templateId");
@@ -550,16 +573,24 @@ class PageController
      * @throws Exception
      */
     public function getCoreTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
         $fun = function($template) {
             $tree = API::getValue("tree", "bool");
             $pair = (object)[];
             $pair->id = $template["id"];
             $pair->name = $template["name"];
             $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->image = $template["image"];
             return $pair;
         };
         
-        $coreTemplates = array_map($fun, CoreTemplate::getTemplates());
+        $coreTemplates = array_map($fun, CoreTemplate::getTemplates($courseId));
         API::response($coreTemplates);
     }
 
@@ -587,6 +618,7 @@ class PageController
             $pair->creationTimestamp = $template["creationTimestamp"];
             $pair->updateTimestamp = $template["updateTimestamp"];
             $pair->isPublic = false;
+            $pair->image = $template["image"];
             return $pair;
         };
         
@@ -612,8 +644,12 @@ class PageController
         $name = API::getValue("name");
         $viewTree = API::getValue("viewTree", "array");
         
-        $templateInfo = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree)->getData();
-        API::response($templateInfo);
+        $image = API::getValue("image");
+
+        $template = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $template->setImage($image);
+
+        API::response($template->getData());
     }
 
     /**
@@ -632,8 +668,11 @@ class PageController
         API::requireCoursePermission($course);
 
         $templateId = API::getValue("templateId", "int");
+
+        $template = CustomTemplate::getTemplateById($templateId);
+        $template->deleteImage();
         
-        CustomTemplate::deleteTemplate($templateId);
+        CustomTemplate::deleteTemplate($template->getId());
     }
 
     /**
@@ -694,6 +733,7 @@ class PageController
             $pair->isPublic = true;
             $pair->user = $template["sharedBy"];
             $pair->sharedTimestamp = $template["sharedTimestamp"];
+            $pair->image = $template["image"];
             return $pair;
         };
         
@@ -762,8 +802,7 @@ class PageController
     /**
      * Renders a given template for editing.
      *
-     * @param int $pageId
-     * @param int $userId (optional)
+     * @param int $templateId
      * @throws Exception
      */
     public function renderCustomTemplateInEditor()
@@ -777,6 +816,26 @@ class PageController
         API::requireCoursePermission($course);
 
         API::response($template->renderTemplateForEditor());
+    }
+
+    /**
+     * Renders a core template for previewing.
+     *
+     * @param int $templateId
+     * @throws Exception
+     */
+    public function renderCoreTemplateInEditor()
+    {
+        API::requireValues("templateId", "courseId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditorGivenCourse($courseId));
     }
 
     /**
@@ -796,9 +855,11 @@ class PageController
         API::requireCoursePermission($course);
 
         $viewerId = Core::getLoggedUser()->getId();
-        $userId = API::getValue("userId", "int");
 
-        API::response($page->renderPage($viewerId, $userId, true));
+        $viewerRole = API::getValue("viewerRole", "string");
+        $userRole = API::getValue("userRole", "string");
+
+        API::response($page->renderPage($viewerId, null, ["viewerRole" => $viewerRole, "userRole" => $userRole]));
     }
 
     /**

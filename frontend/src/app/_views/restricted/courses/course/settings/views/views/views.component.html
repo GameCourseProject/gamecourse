@@ -39,10 +39,9 @@
   <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let page of pagesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+        <figure class="relative w-full aspect-video bg-white">
 
-          <!-- FIXME: Replace <img> with screenshots of pages -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
+          <img class="absolute w-full" src="{{page.image ?? 'assets/imgs/img-dark.png'}}" alt="{{page.name}} page">
 
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
@@ -114,14 +113,13 @@
   <span *ngIf="!loading.template && templates.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
   <span *ngIf="templates.length !== 0 && templatesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
-  <!-- Template cards -->
+  <!-- Templates cards -->
   <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let template of templatesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+        <figure class="relative w-full aspect-video bg-white">
 
-          <!-- FIXME: Replace <img> with screenshots of templates -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{template.name}} template">
+          <img class="absolute w-full" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
 
           <div *ngIf="!template.isSystem" class="badge badge-sm badge-{{template.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
             (click)="chooseTemplateAction('make public/private', template)">
@@ -130,7 +128,7 @@
           </div>
           <div *ngIf="template.isSystem" class="badge badge-sm absolute bottom-1 left-1 -z-999 hover:cursor-pointer">
             <ng-icon name="jam-circle-f" size="0.5rem" class="text-gray-400 mr-0.5"></ng-icon>
-            <span class="font-semibold my-0.5">Core</span>
+            <span class="font-semibold my-0.5">System</span>
           </div>
         </figure>
 
@@ -142,8 +140,19 @@
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </button>
 
-              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+              <!-- Options dropdown -->
+              <ul *ngIf="!template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
                 <li *ngFor="let action of templateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
+                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
+                    <span class="font-semibold">{{action.description}}</span>
+                  </div>
+                </li>
+              </ul>
+
+              <!-- Options dropdown FOR SYSTEM TEMPLATES (more restrictive) -->
+              <ul *ngIf="template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+                <li *ngFor="let action of coreTemplateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>

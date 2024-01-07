@@ -8,7 +8,7 @@
 
     <!-- Actions -->
     <div class="hidden sm:block">
-      <button *ngFor="let action of leftActions.slice(0, 2)" class="btn btn-sm btn-ghost gap-2"
+      <button *ngFor="let action of leftActions.slice(0, 2)" class="btn btn-sm btn-ghost gap-2 {{action.disable ? 'hover:pointer-events-none text-base-content/30' : ''}}"
         (click)="btnClicked.emit(action.action)">
 
         <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.5rem" color="fillCurrent"></ng-icon>

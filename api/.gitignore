@@ -48,9 +48,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Course & User data
+# Course, User, Pages and Templates data
 /course_data/
 /user_data/
+/pages_data/
+/templates_core_data/
+/templates_custom_data/
 
 # AutoGame
 autogame/imported-functions/*/

@@ -23,8 +23,9 @@ import { ApiHttpService } from "src/app/_services/api/api-http.service";
 import { moveItemInArray } from "@angular/cdk/drag-drop";
 import { ActivatedRoute } from "@angular/router";
 import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { getFakeId, groupedChildren, selectedAspect, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
-import { isMoreSpecific, viewsByAspect } from "../views-editor.component";
+import { getFakeId, groupedChildren, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
+import { HistoryService } from "src/app/_services/history.service";
+import { ViewEditorService } from "src/app/_services/view-editor.service";
 
 @Component({
   selector: 'app-component-editor',
@@ -59,6 +60,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
+    private history: HistoryService,
+    public service: ViewEditorService
   ) { }
 
   async ngOnInit() {
@@ -88,10 +91,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables =
-    "# These are the variables available in this component, from the component's parents.\n\n";
+    let helpVariables = "# These are the variables available in this component, from the component's parents.\n\n";
 
-    for (const variable of this.viewToEdit.variables){
+    for (const variable of this.view.getAllVariables()) {
       helpVariables += "%" + variable.name + " = " + variable.value + "\n";
     }
 
@@ -343,6 +345,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   getChartLineCapOptions() {
     return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
+  
+  getProgressSizes() {
+    return [{ value: "xs", text: "Extra Small" }, { value: "sm", text: "Small" }, { value: "md", text: "Medium" }, { value: "lg", text: "Large" }]
+  }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
@@ -355,7 +361,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     if (this.view.type != this.viewToEdit.type) {
       this.view = this.changeComponentType(this.view, this.viewToEdit.type);
       this.updateView(this.view, this.viewToEdit);
-      viewsByAspect.find((e) => _.isEqual(selectedAspect, e.aspect)).view.replaceView(this.view.id, this.view);
+      this.service.viewsByAspect.find((e) => _.isEqual(this.service.selectedAspect, e.aspect)).view.replaceView(this.view.id, this.view);
       changedType = true;
     }
     else {
@@ -363,12 +369,12 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     
     // For aspects --------------------------------------
-    const viewsWithThis = viewsByAspect.filter((e) => !_.isEqual(selectedAspect, e.aspect) && e.view?.findView(this.view.id));
+    const viewsWithThis = this.service.viewsByAspect.filter((e) => !_.isEqual(this.service.selectedAspect, e.aspect) && e.view?.findView(this.view.id));
     
     if (viewsWithThis.length > 0) {
       const lowerInHierarchy = viewsWithThis.filter((e) =>
-        (e.aspect.userRole === selectedAspect.userRole && isMoreSpecific(e.aspect.viewerRole, selectedAspect.viewerRole))
-        || (e.aspect.userRole !== selectedAspect.userRole && isMoreSpecific(e.aspect.userRole, selectedAspect.userRole))
+        (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.viewerRole, this.service.selectedAspect.viewerRole))
+        || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.userRole, this.service.selectedAspect.userRole))
       );
       
       // this view isn't used in any other version "above"
@@ -402,7 +408,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       else {
         const oldId = this.view.id;
         this.view.id = getFakeId();
-        this.view.aspect = selectedAspect;
+        this.view.aspect = this.service.selectedAspect;
 
         let group = groupedChildren.get(this.view.parent.id);
         if (group) {
@@ -542,7 +548,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, this.service.selectedAspect, "Cell");
       newRow.children.push(newCell);
     }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
@@ -552,7 +558,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, selectedAspect, "Header");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, this.service.selectedAspect, "Header");
       newRow.children.push(newCell);
     }
     this.viewToEdit.headerRows.splice(index, 0, newRow);
@@ -591,11 +597,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
   addColumn(index: number) {
     if (this.viewToEdit.headerRows[0]) {
-      const newHeaderCell = ViewText.getDefault(this.viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), selectedAspect, "Header");
+      const newHeaderCell = ViewText.getDefault(this.viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
       this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
     }
     for (let row of this.viewToEdit.bodyRows) {
-      const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
       row.children.splice(index, 0, newCell);
     }
   }

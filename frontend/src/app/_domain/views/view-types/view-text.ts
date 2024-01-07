@@ -4,7 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewText extends View {
   private _text: string;
@@ -94,12 +95,18 @@ export class ViewText extends View {
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
+  
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+  }
 
   /**
    * Gets a default text view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect, text?: string): ViewText { // TODO: refactor view editor
-    return new ViewText(ViewMode.EDIT, id, viewRoot, parent, aspect ?? selectedAspect, text ?? "",
+    return new ViewText(ViewMode.EDIT, id, viewRoot, parent, aspect ?? new Aspect(null, null), text ?? "",
       null, null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
@@ -154,7 +161,7 @@ export class ViewText extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       text: obj.text,
       link: obj._link
     }

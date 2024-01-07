@@ -4,7 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { getFakeId, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewChart extends View {
   private _chartType: ChartType;
@@ -105,11 +106,17 @@ export class ViewChart extends View {
     this.mode = mode;
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+  }
+
   /**
    * Gets a default chart view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewChart {
-    return new ViewChart(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, ChartType.LINE, null, {});
+    return new ViewChart(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), ChartType.LINE, null, {});
   }
 
   /**
@@ -164,7 +171,7 @@ export class ViewChart extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       chartType: obj.chartType,
       data: obj.data,
       options: obj.options

@@ -89,6 +89,29 @@ class CustomTemplate extends Template
         return is_array($data) ? self::parse($data) : self::parse(null, $data, "*");
     }
 
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets template data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return CUSTOM_TEMPLATES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(CUSTOM_TEMPLATES_DATA_FOLDER) . "/" . $this->getId();
+    }
+
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
     /*** ---------------------------------------------------- ***/
@@ -144,6 +167,25 @@ class CustomTemplate extends Template
             Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteImage()
+    {
+        $path = $this->getDataFolder() . "/" . "screenshot.png";
+        if (file_exists($path)) {
+            Utils::deleteFile($this->getDataFolder(), "screenshot.png", true);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -159,9 +201,28 @@ class CustomTemplate extends Template
     public static function getTemplates(int $courseId): array
     {
         $templates = Core::database()->selectMultiple(self::TABLE_TEMPLATE, ["course" => $courseId], "*", "name");
-        foreach ($templates as &$template) { $template = self::parse($template); }
+        foreach ($templates as &$template) { 
+            $template = self::parse($template);
+            // Get image
+            $templateForImage = new CustomTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
         return $templates;
     }
+
+    /**
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
+     *
+     * @param int $id
+     */
+    public static function getTemplateById(int $id): CustomTemplate
+    {
+        $template = new CustomTemplate($id);
+        if ($template->exists()) return $template;
+        else return null;
+    }
+
 
     /**
      * Gets shared templates.
@@ -173,7 +234,12 @@ class CustomTemplate extends Template
     {
         $table = self::TABLE_TEMPLATE_SHARED . " s JOIN " . self::TABLE_TEMPLATE . " c on s.id = c.id";
         $templates = Core::database()->selectMultiple($table, [], "*", "s.sharedTimestamp");
-        foreach ($templates as &$template) { $template = self::parse($template); }
+        foreach ($templates as &$template) { 
+            $template = self::parse($template);
+            // Get image
+            $templateForImage = new CustomTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
         return $templates;
     }
 
@@ -285,7 +351,7 @@ class CustomTemplate extends Template
     {
         $template = self::getTemplateById($id);
         if ($template) {
-            parent::deleteTemplate($id, $keepLinked);
+            ViewHandler::deleteViewTree($id, $template->getViewRoot(), $keepLinked);
             Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
         }
     }

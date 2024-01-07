@@ -2792,7 +2792,7 @@ export class ApiHttpService {
         const map = new Map<ViewType, { category: string, views: View[] }[]>();
 
         res["data"].forEach(({ category, view }) => {
-          view = buildView(view);
+          view = buildView(view, true);
           view.mode = ViewMode.PREVIEW;
           const type = view.type;
 
@@ -2821,7 +2821,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view)}})));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
   }
 
   public getSharedComponents(): Observable<{id: number, sharedTimestamp: string, user: number, view: View}[]> {
@@ -2832,7 +2832,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view), sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}})));
+      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true), sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}})));
   }
 
   public shareComponent(componentID: number, courseID: number, userID: number, description: string): Observable<void> {
@@ -2887,6 +2887,19 @@ export class ApiHttpService {
 
   // Templates //////////////////////////////////////////////////////////////////////////
 
+  public getCoreTemplateById(templateID: number): Observable<Template> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCoreTemplateById');
+      qs.push('templateId', templateID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => Template.fromDatabase(res['data'])) );
+  }
+
   public getCustomTemplateById(templateID: number): Observable<Template> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
@@ -2900,11 +2913,12 @@ export class ApiHttpService {
       .pipe( map((res: any) => Template.fromDatabase(res['data'])) );
   }
 
-  public saveCustomTemplate(courseID: number, name: string, viewTree): Observable<void> {
+  public saveCustomTemplate(courseID: number, name: string, viewTree, image): Observable<void> {
     const data = {
       courseId: courseID,
       name: name,
-      viewTree: viewTree
+      viewTree: viewTree,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2917,17 +2931,18 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public getCoreTemplates(tree: boolean = false): Observable<{ id: number, name: string, view: View }[] | Template[]> {
+  public getCoreTemplates(courseID: number, tree: boolean = false): Observable<{ id: number, name: string, view: View }[] | Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getCoreTemplates');
+      qs.push('courseId', courseID);
       qs.push('tree', tree);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     if (tree) {
       return this.get(url, ApiHttpService.httpOptions)
-        .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+        .pipe(map((res: any) => res['data'].map((e) => {return {id: e.id, name: e.name, view: buildView(e.view, true)}})));
     }
     else {
       return this.get(url, ApiHttpService.httpOptions)
@@ -2946,7 +2961,7 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     if (tree) {
       return this.get(url, ApiHttpService.httpOptions)
-        .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+        .pipe(map((res: any) => res['data'].map((e) => {return { id: e.id, name: e.name, view: buildView(e.view, true)}})));
     }
     else {
       return this.get(url, ApiHttpService.httpOptions)
@@ -2954,7 +2969,7 @@ export class ApiHttpService {
     }
   }
 
-  public getSharedTemplates(tree: boolean = false): Observable<{id: number, sharedTimestamp: string, user: number, view: View}[] | Template[]> {
+  public getSharedTemplates(tree: boolean = false): Observable<{id: number, name: string, sharedTimestamp: string, user: number, view: View}[] | Template[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'getSharedTemplates');
@@ -3022,7 +3037,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public renderTemplateInEditor(templateID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
+  public renderCustomTemplateInEditor(templateID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderCustomTemplateInEditor');
@@ -3042,12 +3057,34 @@ export class ApiHttpService {
       }));
   }
 
-  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[]): Observable<void> {
+  public renderCoreTemplateInEditor(templateID: number, courseID: number): Observable<{ viewTree: any, viewTreeByAspect: { aspect: Aspect, view: View }[] }> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'renderCoreTemplateInEditor');
+      qs.push('templateId', templateID);
+      qs.push('courseId', courseID);
+    };
+    
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => {
+        return {
+          viewTree: res['data']['viewTree'],
+          viewTreeByAspect: res['data']['viewTreeByAspect'].map(obj => {
+            return { aspect: new Aspect(obj.aspect.viewerRole, obj.aspect.userRole), view: buildView(obj.view, true) }
+          })
+        }
+      }));
+  }
+
+  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       viewTree: viewTree,
-      viewsDeleted: viewsDeleted
+      viewsDeleted: viewsDeleted,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -3079,11 +3116,12 @@ export class ApiHttpService {
 
   // Pages //////////////////////////////////////////////////////////////////////////
 
-  public saveViewAsPage(courseID: number, name: string, viewTree): Observable<void> {
+  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<void> {
     const data = {
       courseId: courseID,
       name: name,
-      viewTree: viewTree
+      viewTree: viewTree,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -3096,12 +3134,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[]): Observable<void> {
+  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
       viewTree: viewTree,
-      viewsDeleted: viewsDeleted
+      viewsDeleted: viewsDeleted,
+      image: image
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -3222,12 +3261,17 @@ export class ApiHttpService {
       }));
   }
 
-  public renderPageWithMockData(pageID: number, userID?: number): Observable<View> {
+  public renderPageWithMockData(pageID: number, aspect: Aspect): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'renderPageWithMockData');
       qs.push('pageId', pageID);
-      if (exists(userID)) qs.push('renderPageWithMockData', userID);
+      if (aspect.userRole) {
+        qs.push('userRole', aspect.userRole);
+      }
+      if (aspect.viewerRole) {
+        qs.push('viewerRole', aspect.viewerRole);
+      }
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

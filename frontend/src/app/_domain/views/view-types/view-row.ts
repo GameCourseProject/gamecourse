@@ -6,7 +6,8 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import { buildView } from "../build-view/build-view";
 import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
-
+import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewRow extends View {
   private _rowType: RowType;
@@ -138,6 +139,15 @@ export class ViewRow extends View {
     for (let child of this.children) child.switchMode(mode);
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (const child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
+  }
+
 
   /**
    * Gets a default row view.
@@ -189,7 +199,7 @@ export class ViewRow extends View {
     return row;
   }
 
-  static toDatabase(obj: ViewRow): ViewRowDatabase {
+  static toDatabase(obj: ViewRow, component: boolean = false): ViewRowDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
@@ -202,9 +212,9 @@ export class ViewRow extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       rowType: obj.rowType,
-      children: groupedChildren.get(obj.id)
+      children: component ? obj.children.map(child => buildComponent(child)) : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }

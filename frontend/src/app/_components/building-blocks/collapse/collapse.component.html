@@ -49,12 +49,14 @@
     <!-- Title -->
     <input type="checkbox" />
     <div class="collapse-title">
-      {{view.header.type}}
+      <bb-any *ngIf="view.header.type === ViewType.TEXT" [view]="view.header"></bb-any>
+      <span *ngIf="view.header.type  !== ViewType.TEXT">{{view.header.type.capitalize()}}</span>
     </div>
     
     <!-- Content -->
     <div class="collapse-content">
-      {{view.content.type}}
+      <bb-any *ngIf="view.content.type === ViewType.TEXT" [view]="view.content"></bb-any>
+      <span *ngIf="view.content.type !== ViewType.TEXT">{{view.content.type.capitalize()}}</span>
     </div>
   </div>
 </ng-template>

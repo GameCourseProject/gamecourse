@@ -92,6 +92,10 @@ const routes: Routes = [
         component: ViewsEditorComponent
       },
       {
+        path: 'pages/editor/system-template/:id',
+        component: ViewsEditorComponent
+      },
+      {
         path: 'themes',
         component: ComingSoonComponent
       },

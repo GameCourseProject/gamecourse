@@ -4,9 +4,9 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -111,7 +111,7 @@ export class ViewBlock extends View {
     this.children.push(view);
   }
 
-  removeChildView(childViewId: number) { // TODO: refactor view editor
+  removeChildView(childViewId: number) {
     const index = this.children.findIndex(child => child.id === childViewId);
     this.children.splice(index, 1);
   }
@@ -166,11 +166,20 @@ export class ViewBlock extends View {
     }
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (let child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
+  }
+
   /**
    * Gets a default block view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
-    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, BlockDirection.VERTICAL, null, true, []);
+    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
   }
 
   /**
@@ -233,11 +242,11 @@ export class ViewBlock extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,
-      children: groupedChildren.get(obj.id)
+      children: groupedChildren.get(obj.id) ?? []
     }
   }
 }

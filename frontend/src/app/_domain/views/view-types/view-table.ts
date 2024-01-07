@@ -5,11 +5,11 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, selectedAspect, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -274,8 +274,6 @@ export class ViewTable extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
-    for (let header of this.headerRows) header.switchMode(mode);
-    for (let row of this.bodyRows) row.switchMode(mode);
   }
 
   insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
@@ -360,14 +358,26 @@ export class ViewTable extends View {
     // else if (to === 'down') type === 'header' ? this.headerRows.insertAtIndex(of + 1, rowToMove) : this.rows.insertAtIndex(of + 1, rowToMove);
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (const headerRow of this.headerRows) {
+      headerRow.modifyAspect(old, newAspect);
+    }
+    for (const row of this.bodyRows) {
+      row.modifyAspect(old, newAspect);
+    }
+  }
 
   /**
    * Gets a default table view.
    */
-  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable { // TODO: refactor view editor
-    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? selectedAspect, false, false, false, false, false, false, false, null, []);
-    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.HEADER)];
-    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? selectedAspect, RowType.BODY)];
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable {
+    const defaultAspect = new Aspect(null, null);
+    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, false, false, false, false, false, false, false, null, []);
+    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.HEADER)];
+    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.BODY)];
     return table;
   }
 
@@ -431,7 +441,7 @@ export class ViewTable extends View {
     return table;
   }
 
-  static toDatabase(obj: ViewTable): ViewTableDatabase {
+  static toDatabase(obj: ViewTable, component: boolean = false): ViewTableDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
@@ -444,7 +454,7 @@ export class ViewTable extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       footers: obj.footers,
       searching: obj.searching,
       columnFiltering: obj.columnFiltering,
@@ -453,7 +463,8 @@ export class ViewTable extends View {
       info: obj.info,
       ordering: obj.ordering,
       orderingBy: obj.orderingBy,
-      children: groupedChildren.get(obj.id)
+      children: component ? obj.headerRows.map(row => buildComponent(row)).concat(obj.bodyRows.map(row => buildComponent(row)))
+        : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }

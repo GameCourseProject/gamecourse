@@ -161,8 +161,8 @@
 
     <app-progress-chart
       [id]="'v' + view.uniqueId.toString()"
-      [value]="edit ? 0 : view.data.value"
-      [max]="edit ? 100 : view.data.max"
+      [value]="view.data.value"
+      [max]="view.data.max"
       [size]="view.options?.size || 'sm'"
       [classList]="view.classList"
       [tooltip]="view.options?.tooltip || undefined"
