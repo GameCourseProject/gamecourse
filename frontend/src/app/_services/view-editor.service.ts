@@ -4,6 +4,7 @@ import { View, ViewMode } from '../_domain/views/view';
 import * as _ from "lodash"
 import { addToGroupedChildren, getFakeId, groupedChildren, viewsDeleted } from '../_domain/views/build-view-tree/build-view-tree';
 import { Subject } from 'rxjs';
+import { ViewTable } from '../_domain/views/view-types/view-table';
 
 
 /**
@@ -104,9 +105,19 @@ export class ViewEditorService {
       || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
     );
 
-    let newItem = _.cloneDeep(item);
-    newItem.aspect = this.selectedAspect;
-    newItem.switchMode(ViewMode.EDIT);
+    let newItem;
+    if (item instanceof ViewTable) {
+      newItem = new ViewTable(ViewMode.EDIT, item.id, item.viewRoot, null, this.selectedAspect, item.footers, item.searching,
+        item.columnFiltering, item.paging, item.lengthChange, item.info, item.ordering, item.orderingBy,
+        item.headerRows.concat(item.bodyRows), item.cssId, item.classList, item.styles, item.visibilityType,
+        item.visibilityCondition, item.loopData, item.variables, item.events);
+    }
+    else {
+      newItem = _.cloneDeep(item);
+      newItem.aspect = this.selectedAspect;
+      newItem.switchMode(ViewMode.EDIT);
+    }
+
     if (mode === "value") newItem.replaceWithFakeIds();
     
     // Add to a view

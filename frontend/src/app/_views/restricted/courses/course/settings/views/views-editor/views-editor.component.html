@@ -147,6 +147,7 @@
                               *ngFor="let item of subcategory.views" 
                               class="hover:cursor-pointer p-1"
                               (click)="addComponentToPage(item)"
+                              [ngClass]="{'w-full': item.type === ViewType.TABLE}"
                             >
                               <bb-any [view]="item"></bb-any>
                             </div>

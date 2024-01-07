@@ -2,6 +2,7 @@ import {Component, Input, OnInit} from '@angular/core';
 
 import {ViewCollapse} from "../../../_domain/views/view-types/view-collapse";
 import {ViewMode} from "../../../_domain/views/view";
+import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 
 @Component({
   selector: 'bb-collapse',
@@ -25,6 +26,10 @@ export class BBCollapseComponent implements OnInit {
 
   get ViewMode(): typeof ViewMode {
     return ViewMode;
+  }
+
+  get ViewType(): typeof ViewType {
+    return ViewType;
   }
 
 }

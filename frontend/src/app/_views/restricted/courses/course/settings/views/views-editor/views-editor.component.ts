@@ -855,6 +855,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  get ViewType(): typeof ViewType {
+    return ViewType;
+  }
+
   getIcon(mode: string): string {
     if (mode === this.previewMode) return 'tabler-check';
     else return '';
@@ -981,8 +985,8 @@ export function buildComponent(view: View): ViewBlockDatabase[] | ViewButtonData
   else if (type === ViewType.COLLAPSE) return [ViewCollapse.toDatabase(view as ViewCollapse)];
   else if (type === ViewType.ICON) return [ViewIcon.toDatabase(view as ViewIcon)];
   else if (type === ViewType.IMAGE) return [ViewImage.toDatabase(view as ViewImage)];
-  else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow)];
-  else if (type === ViewType.TABLE) return [ViewTable.toDatabase(view as ViewTable)];
+  else if (type === ViewType.ROW) return [ViewRow.toDatabase(view as ViewRow, true)];
+  else if (type === ViewType.TABLE) return [ViewTable.toDatabase(view as ViewTable, true)];
   else if (type === ViewType.TEXT) return [ViewText.toDatabase(view as ViewText)];
   // NOTE: insert here other types of building-blocks
 

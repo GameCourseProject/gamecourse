@@ -9,6 +9,7 @@ import {buildView} from "../build-view/build-view";
 import {ErrorService} from "../../../_services/error.service";
 import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -273,8 +274,6 @@ export class ViewTable extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
-    for (let header of this.headerRows) header.switchMode(mode);
-    for (let row of this.bodyRows) row.switchMode(mode);
   }
 
   insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
@@ -442,7 +441,7 @@ export class ViewTable extends View {
     return table;
   }
 
-  static toDatabase(obj: ViewTable): ViewTableDatabase {
+  static toDatabase(obj: ViewTable, component: boolean = false): ViewTableDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
@@ -464,7 +463,8 @@ export class ViewTable extends View {
       info: obj.info,
       ordering: obj.ordering,
       orderingBy: obj.orderingBy,
-      children: groupedChildren.get(obj.id) ?? []
+      children: component ? obj.headerRows.map(row => buildComponent(row)).concat(obj.bodyRows.map(row => buildComponent(row)))
+        : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }
