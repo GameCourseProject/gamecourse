@@ -201,7 +201,7 @@ export abstract class View {
 
   getAllVariables() : Variable[] {
     if (this.parent) {
-      return this.parent.getAllVariables().concat(this.variables);
+      return this.parent.getAllVariables().concat(this.variables ?? []);
     }
     else {
       return this.variables;

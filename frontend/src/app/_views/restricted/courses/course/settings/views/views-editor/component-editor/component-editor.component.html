@@ -10,15 +10,15 @@
 <div class="overflow-x-hidden">
   
   <app-input-select
-    *ngIf="viewToEdit.type !== ViewType.ROW"
+    *ngIf="viewToEdit.type !== ViewType.ROW && view.parent"
     [id]="'type'"
     [(value)]="viewToEdit.type"
     [options]="getComponentTypes()"
     [placeholder]="'Select component type'"
     [topLabel]="'Component Type'"
     [required]="true"
-    [classList]="'mb-4'">
-  </app-input-select>
+    [classList]="'mb-4'"
+  ></app-input-select>
 
   <!--------------------- Chart options ---------------------->
   <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
@@ -505,7 +505,6 @@
         <span>Header</span>
         <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center">
           <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
-          <button class="btn btn-ghost rounded-full p-1" (click)="deleteHeaderRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
         </div>
         <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
         <div class="divider"></div>

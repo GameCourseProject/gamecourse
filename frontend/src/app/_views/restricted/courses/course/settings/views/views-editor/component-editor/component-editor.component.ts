@@ -60,7 +60,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
-    private history: HistoryService,
     public service: ViewEditorService
   ) { }
 
@@ -155,6 +154,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       events: this.view.events ?? [],
       variables: this.view.variables ?? [],
     };
+
     if (this.view instanceof ViewButton) {
       viewToEdit.text = this.view.text;
       viewToEdit.color = this.view.color ?? null;
@@ -182,7 +182,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
     }
-    else if (this.view instanceof ViewTable) {
+    else if (this.view instanceof ViewChart) {
+      viewToEdit.chartType = this.view.chartType;
+      viewToEdit.data = this.view.data;
+      viewToEdit.options = this.view.options;
+
+      if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
+      else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
+    }
+
+    if (this.view instanceof ViewTable) {
       viewToEdit.headerRows = this.view.headerRows;
       viewToEdit.bodyRows = this.view.bodyRows;
       viewToEdit.footers = this.view.footers;
@@ -194,14 +203,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.ordering = this.view.ordering;
       viewToEdit.orderingBy = this.view.orderingBy;
     }
-    else if (this.view instanceof ViewChart) {
-      viewToEdit.chartType = this.view.chartType;
-      viewToEdit.data = this.view.data;
-      viewToEdit.options = this.view.options;
-
-      if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
-      else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
+    else { // have rows prepared in case user switches type to table
+      viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
+      viewToEdit.bodyRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY)];
+      viewToEdit.headerRows[0].children = [ViewText.getDefault(viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header")];
+      viewToEdit.bodyRows[0].children = [ViewText.getDefault(viewToEdit.bodyRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell")];
     }
+
     return viewToEdit;
   }
 
@@ -292,7 +300,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.data = from.data;
       to.options = from.options;
     }
-
     return to;
   }
 
@@ -361,11 +368,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     if (this.view.type != this.viewToEdit.type) {
       this.view = this.changeComponentType(this.view, this.viewToEdit.type);
       this.updateView(this.view, this.viewToEdit);
+      this.view.switchMode(ViewMode.EDIT);
       this.service.viewsByAspect.find((e) => _.isEqual(this.service.selectedAspect, e.aspect)).view.replaceView(this.view.id, this.view);
       changedType = true;
     }
     else {
       this.updateView(this.view, this.viewToEdit);
+      this.view.switchMode(ViewMode.EDIT);
     }
     
     // For aspects --------------------------------------
@@ -452,6 +461,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     AlertService.showAlert(AlertType.SUCCESS, 'Component Saved');
   }
 
+  discardView() {
+    this.ngOnChanges();
+  }
+
   reloadPreview() {
     if (this.viewToPreview.type != this.viewToEdit.type) {
       this.viewToPreview = this.changeComponentType(this.viewToPreview, this.viewToEdit.type);
@@ -460,6 +473,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else {
       this.updateView(this.viewToPreview, this.viewToEdit);
+      this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
     this.show = false;
 
@@ -544,30 +558,25 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return this.viewToEdit.bodyRows[0]?.children.length ?? this.viewToEdit.headerRows[0]?.children.length ?? 0
   }
   addBodyRow(index: number) {
-    const rowId = getFakeId();
-    const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
+    const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, this.service.selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
       newRow.children.push(newCell);
     }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
   addHeaderRow(index: number) {
-    const rowId = getFakeId();
-    const newRow = ViewRow.getDefault(rowId, this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
+    const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, rowId, this.service.selectedAspect, "Header");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
       newRow.children.push(newCell);
     }
     this.viewToEdit.headerRows.splice(index, 0, newRow);
   }
   deleteBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
-  }
-  deleteHeaderRow(index: number) {
-    this.viewToEdit.headerRows.splice(index, 1);
   }
   moveBodyRow(from: number, to: number) {
     if (0 <= to && to < this.viewToEdit.bodyRows.length) {
