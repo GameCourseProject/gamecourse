@@ -31,4 +31,27 @@ class AutoGameController
         API::requireCoursePermission($course);
         API::response(AutoGame::getLastRun($courseId));
     }
+
+        /**
+     * @throws Exception
+     */
+    public function getStatus()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $autogame = AutoGame::getStatus($courseId);
+
+        API::response([
+            "isEnabled" => boolval($autogame["isEnabled"]),
+            "startedRunning" => $autogame["startedRunning"],
+            "finishedRunning" => $autogame["finishedRunning"],
+            "isRunning" => boolval($autogame["isRunning"]),
+            "logs" => AutoGame::getLogs($courseId)
+        ]);
+    }
 }

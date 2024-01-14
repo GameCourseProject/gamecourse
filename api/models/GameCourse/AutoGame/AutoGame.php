@@ -119,6 +119,17 @@ abstract class AutoGame
         return boolval(Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId], "isEnabled"));
     }
 
+    /**
+     * Returns Autogame's information.
+     *
+     * @param int $courseId
+     * @return array
+     */
+    public static function getStatus(int $courseId): array
+    {
+        return Core::database()->select(self::TABLE_AUTOGAME, ["course" => $courseId]);
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Running --------------------- ***/
