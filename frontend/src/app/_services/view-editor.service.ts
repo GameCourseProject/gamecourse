@@ -115,8 +115,8 @@ export class ViewEditorService {
     else {
       newItem = _.cloneDeep(item);
       newItem.aspect = this.selectedAspect;
-      newItem.switchMode(ViewMode.EDIT);
     }
+    newItem.switchMode(ViewMode.EDIT);
 
     if (mode === "value") newItem.replaceWithFakeIds();
     

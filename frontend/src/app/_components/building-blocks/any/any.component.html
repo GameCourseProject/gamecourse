@@ -69,12 +69,14 @@
   [id]="'component-editor'"
   [templateRef]="COMPONENT_EDITOR"
   [header]="'Edit component'"
-  [closeBtnText]="'Close'"
+  [xButton]="false"
+  [closeBtnText]="'Cancel'"
   [submitBtnText]="'Save'"
   [size]="'lg'"
   [static]="true"
   (click)="$event.stopPropagation()"
   (submitBtnClicked)="submitEditAction()"
+  (closeBtnClicked)="cancelEditAction()"
   [classList]="'overflow-x-hidden'"
 />
 

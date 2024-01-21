@@ -29,6 +29,7 @@ import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-part
 import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page.component';
 import {DragDropModule} from "@angular/cdk/drag-drop";
 import {RulesComponent} from "./settings/rules/section-rules/rules/rules.component";
+import { AutogameComponent } from './settings/autogame/autogame.component';
 
 
 @NgModule({
@@ -52,6 +53,7 @@ import {RulesComponent} from "./settings/rules/section-rules/rules/rules.compone
     ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent,
+    AutogameComponent,
     PreferenceQuestionnaireComponent,
     ProfilingComponent,
     DataSourceStatusComponent,

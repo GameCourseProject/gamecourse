@@ -7,6 +7,7 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Config\InputType;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\DependencyMode;
@@ -71,10 +72,14 @@ class ProgressReport extends Module
         $this->initDatabase();
 
         // Init config
-        Core::database()->insert(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
+        Core::database()->insert(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId(), "isEnabled" => true, "frequency" => "00 18 * * FRI"]);
 
         // Init logs file
         file_put_contents($this->getLogsPath(), "");
+
+        // Add CronJob
+        $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
+        new CronJob($script, $this->getSchedule(), $this->getCourse()->getId());
 
         $this->initEvents();
     }
@@ -105,7 +110,8 @@ class ProgressReport extends Module
         $this->cleanDatabase();
         $this->removeEvents();
 
-        CronJob::removeCronJob("ProgressReport", $this->course->getId());
+        $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
+        CronJob::removeCronJob($script, $this->course->getId());
         unlink($this->getLogsPath());
     }
 
@@ -119,9 +125,47 @@ class ProgressReport extends Module
         return true;
     }
 
+    public function getGeneralInputs(): array
+    {
+        return [
+            [
+                "name" => "Schedule",
+                "description" => "Define when progress reports should be sent to students.",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/2",
+                                "type" => InputType::SCHEDULE,
+                                "id" => "schedule",
+                                "value" => $this->getSchedule(),
+                                "options" => [
+                                    "required" => true,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveGeneralInputs(array $inputs)
+    {
+        foreach ($inputs as $input) {
+            if ($input["id"] == "schedule") $this->saveSchedule($input["value"]);
+        }
+    }
+
     public function getPersonalizedConfig(): ?array
     {
-        return ["position" => "before"];
+        return ["position" => "after"];
     }
 
 
@@ -129,17 +173,35 @@ class ProgressReport extends Module
     /*** --------------- Module Specific --------------- ***/
     /*** ----------------------------------------------- ***/
 
+    public function getSchedule(): string
+    {
+      return Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->getCourse()->getId()], "frequency");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveSchedule(string $expression)
+    {
+      Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, ["frequency" => $expression,], ["course" => $this->getCourse()->getId()]);
+
+      $expression = $this->getSchedule();
+      $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
+      new CronJob($script, $expression, $this->getCourse()->getId());
+    }
+
     /*** ----- Progress Report ------ ***/
 
     public function getProgressReportConfig(): array
     {
         $config = Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
         return [
-            "endDate" => $config["endDate"],
-            "periodicityTime" => $config["periodicityTime"],
-            "periodicityHours" => isset($config["periodicityHours"]) ? intval($config["periodicityHours"]) : null,
-            "periodicityDay" => isset($config["periodicityDay"]) ? intval($config["periodicityDay"]) : null,
-            "isEnabled" => boolval($config["isEnabled"])
+            //"endDate" => $config["endDate"],
+            //"periodicityTime" => $config["periodicityTime"],
+            //"periodicityHours" => isset($config["periodicityHours"]) ? intval($config["periodicityHours"]) : null,
+            //"periodicityDay" => isset($config["periodicityDay"]) ? intval($config["periodicityDay"]) : null,
+            "isEnabled" => boolval($config["isEnabled"]),
+            "frequency" => $config["frequency"]
         ];
     }
 

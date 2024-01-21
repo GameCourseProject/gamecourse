@@ -152,7 +152,9 @@ export class BBAnyComponent implements OnInit {
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
     this.visible = false;
+    this.selection.setRearrange(true);
     setTimeout(() => {
+      this.selection.setRearrange(false);
       this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     }, 100);
@@ -161,6 +163,11 @@ export class BBAnyComponent implements OnInit {
       viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
+  }
+
+  cancelEditAction() {
+    this.componentEditor.discardView();
+    ModalService.closeModal('save-as-component');
   }
   
   saveAction() {

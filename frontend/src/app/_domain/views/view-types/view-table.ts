@@ -10,6 +10,7 @@ import {ErrorService} from "../../../_services/error.service";
 import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { ViewText } from "./view-text";
 
 export class ViewTable extends View {
   private _headerRows: ViewRow[];
@@ -274,6 +275,12 @@ export class ViewTable extends View {
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
+    for (const headerRow of this.headerRows) {
+      headerRow.switchMode(mode);
+    }
+    for (const row of this.bodyRows) {
+      row.switchMode(mode);
+    }
   }
 
   insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
@@ -375,9 +382,18 @@ export class ViewTable extends View {
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable {
     const defaultAspect = new Aspect(null, null);
-    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, false, false, false, false, false, false, false, null, []);
-    table.headerRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.HEADER)];
-    table.bodyRows = [ViewRow.getDefault(getFakeId(), table, viewRoot, aspect ?? defaultAspect, RowType.BODY)];
+    
+    const header = ViewRow.getDefault(getFakeId(), null, viewRoot, aspect ?? defaultAspect, RowType.HEADER);
+    header.children = [ViewText.getDefault(header, viewRoot, getFakeId(), aspect ?? defaultAspect, "Header")]
+    
+    const row = ViewRow.getDefault(getFakeId(), null, viewRoot, aspect ?? defaultAspect, RowType.BODY);
+    row.children = [ViewText.getDefault(row, viewRoot, getFakeId(), aspect ?? defaultAspect, "Cell")]
+    
+    const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, false, false, false, false, false, false, false, null,
+      [header, row]);
+    table.headerRows[0].parent = table;
+    table.bodyRows[0].parent = table;
+
     return table;
   }
 

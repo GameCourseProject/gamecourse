@@ -3501,7 +3501,24 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])));
   }
 
+  public getAutogameStatus(courseID: number): Observable<DataSourceStatus> {
+    const data = {
+      "courseId": courseID,
+    }
 
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'getStatus');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => {
+        res['data']['startedRunning'] = dateFromDatabase(res['data']['startedRunning']);
+        res['data']['finishedRunning'] = dateFromDatabase(res['data']['finishedRunning']);
+        return res['data'];
+      }) );
+  }
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/
