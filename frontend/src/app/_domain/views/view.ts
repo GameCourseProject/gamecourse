@@ -193,7 +193,20 @@ export abstract class View {
 
   abstract findView(viewId: number): View;
 
+  abstract replaceView(viewId: number, view: View);
+
   abstract switchMode(mode: ViewMode);
+
+  abstract modifyAspect(old: Aspect, newAspect: Aspect);
+
+  getAllVariables() : Variable[] {
+    if (this.parent) {
+      return this.parent.getAllVariables().concat(this.variables ?? []);
+    }
+    else {
+      return this.variables;
+    }
+  }
 
 
   /**
@@ -283,9 +296,9 @@ export interface ViewDatabase {
 }
 
 export enum ViewMode {
-  DISPLAY = 'display', // final appearence and behaviour
-  PREVIEW = 'preview', // used in the edit component modal
-  EDIT = 'edit', // default in views editor
+  DISPLAY = 'display',    // final appearence and behaviour
+  PREVIEW = 'preview',    // used in the edit component modal
+  EDIT = 'edit',          // default in views editor
   REARRANGE = 'rearrange' // rearrange in views editor
 }
 

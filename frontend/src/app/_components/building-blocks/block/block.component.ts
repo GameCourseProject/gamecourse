@@ -3,6 +3,7 @@ import {Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {ViewMode} from "../../../_domain/views/view";
 import { DragDrop, DragRef, moveItemInArray } from '@angular/cdk/drag-drop';
+import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 
 @Component({
   selector: 'bb-block',
@@ -19,8 +20,6 @@ export class BBBlockComponent implements OnInit {
   @ViewChild('dropList', { static: false }) dropListRef: ElementRef;
   @ViewChildren('dragItem') dragItems: QueryList<ElementRef>;
   private dragRefs: DragRef[] = new Array<DragRef>();
-
-  readonly DEFAULT = '(Empty block)';
 
   constructor(
     private dragDropService: DragDrop,
@@ -67,6 +66,8 @@ export class BBBlockComponent implements OnInit {
 
   drop(event: any) {
     moveItemInArray(this.view.children, event.previousIndex, event.currentIndex);
+    const group = groupedChildren.get(this.view.id);
+    moveItemInArray(group, event.previousIndex, event.currentIndex);
   }
 
   get ViewMode(): typeof ViewMode {

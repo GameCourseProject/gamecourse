@@ -33,6 +33,28 @@ class Page
         $this->id = $id;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets page data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return PAGES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(PAGES_DATA_FOLDER) . "/" . $this->getId();
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Getters --------------------- ***/
@@ -242,6 +264,14 @@ class Page
         }
     }
 
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -306,7 +336,12 @@ class Page
 
         $pages = Core::database()->selectMultiple(self::TABLE_PAGE, $where, "*", "position");
 
-        foreach ($pages as &$page) { $page = self::parse($page); }
+        foreach ($pages as &$page) { 
+            $page = self::parse($page); 
+            // Get image
+            $pageForImage = new Page($page["id"]);
+            $page["image"] = $pageForImage->getImage();
+        }
 
         return $pages;
     }
@@ -506,6 +541,35 @@ class Page
         return $this;
     }
 
+    
+    /**
+     * Clear positions of all pages received as input
+     *
+     * @throws Exception
+     */
+    public static function clearPositions(array $ids)
+    {
+        $sql = "UPDATE page SET position = null WHERE id IN (" . implode(',', $ids) . ")";
+        Core::database()->executeQuery($sql);
+    }
+
+    /**
+     * Sets positions of all pages received as input
+     *
+     * @throws Exception
+     */
+    public static function setPositions(array $array)
+    {
+        $sql = "UPDATE page SET position = CASE ";
+
+        foreach($array as $pair) {
+            $sql .= "WHEN id = " . $pair["id"] . " THEN " . $pair["position"] . " ";
+        }
+        $sql .= "ELSE position END WHERE id IN (" . implode(',', array_map(function($el) {return $el["id"];}, $array)) . ")";
+
+        Core::database()->executeQuery($sql);
+    }
+
     /**
      * Deletes a page from the database and removes all its views.
      * Option to keep views linked to page (created by reference)
@@ -564,19 +628,24 @@ class Page
      *
      * @param int $viewerId
      * @param int|null $userId
-     * @param bool $mockedData
+     * @param array $mockedData
      * @return array
      * @throws Exception
      */
-    public function renderPage(int $viewerId, int $userId = null, bool $mockedData = false): array
+    public function renderPage(int $viewerId, int $userId = null, array $mockedData = null): array
     {
         // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
 
         $pageInfo = $this->getData("course, viewRoot");
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
-        $paramsToPopulate = $mockedData ? true : ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId];
-        return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, $paramsToPopulate);
+
+        if ($mockedData) {
+            return ViewHandler::renderView($pageInfo["viewRoot"], null, true, ["course" => $pageInfo["course"], "viewerRole" => $mockedData["viewerRole"], "userRole" => $mockedData["userRole"]]);
+        }
+        else {
+            return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId]);
+        }
     }
 
     /**
@@ -588,7 +657,9 @@ class Page
     public function renderPageForEditor()
     {
         $pageInfo = $this->getData("course, viewRoot");
-        return ViewHandler::renderView($pageInfo["viewRoot"]);
+        $viewRoot = $pageInfo["viewRoot"];
+        $courseId = $pageInfo["course"];
+        return ViewHandler::buildViewComplete($viewRoot, $courseId);
     }
 
     /**
@@ -612,7 +683,7 @@ class Page
             throw new Exception("Need either viewer ID or an aspect to preview a page.");
 
         // Render for a specific viewer and user
-        if ($viewerId) return $this->renderPage($viewerId, $userId, true);
+        if ($viewerId) return $this->renderPage($viewerId, $userId);
 
         // Render for a specific aspect
         $pageInfo = $this->getData("course, viewRoot");

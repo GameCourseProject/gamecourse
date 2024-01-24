@@ -80,7 +80,7 @@
             </button>
           </div>
 
-          <div *ngIf="!isDefaultRole(role.name) && !isAdaptationRole(role.name) && !isAdaptationTitle(role.name)"
+          <div *ngIf="!isAdaptationRole(role.name) && !isAdaptationTitle(role.name) && (visiblePages.length > 0 || !isDefaultRole(role.name))"
                class="tooltip align-middle" data-tip="Edit"
                (click)="mode = 'edit'; roleToManage = initRoleToManage(role); ModalService.openModal('manage')">
 
@@ -127,7 +127,7 @@
   <form #f="ngForm">
 
     <!-- Name -->
-    <app-input-text
+    <app-input-text *ngIf="!isDefaultRole(roleToManage.name) && !isAdaptationRole(roleToManage.name) && !isAdaptationTitle(roleToManage.name)"
       [id]="'role-name'"
       [form]="f"
       [(value)]="roleToManage.name"

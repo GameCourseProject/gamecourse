@@ -18,6 +18,8 @@ import {ThemingService} from "../../../../../../../_services/theming/theming.ser
 import {Moment} from "moment";
 import {DownloadManager} from "../../../../../../../_utils/download/download-manager";
 import {ResourceManager} from "../../../../../../../_utils/resources/resource-manager";
+import { Template } from 'src/app/_domain/views/templates/template';
+import { User } from 'src/app/_domain/users/user';
 
 @Component({
   selector: 'app-views',
@@ -28,17 +30,25 @@ export class ViewsComponent implements OnInit {
 
   loading = {
     page: true,
+    template: true,
     action: false
   };
 
   course: Course;                 // Specific course in which pages are being manipulated
   pages: Page[] = [];             // All pages to show (course + public from other courses)
-
+  
   coursePages: Page[];            // Course pages
   publicPages: Page[];            // Pages from other courses that are public
   arrangingPages: Page[];         // Copy of coursePages for arranging modal
+  
+  templates: Template[] = [];     // All templates to show (course + public from other courses)
+
+  systemTemplates: Template[];
+  courseTemplates: Template[];    // Course templates
+  publicTemplates: Template[];    // Templates from other courses that are public
 
   pageToManage: PageManageData;
+  templateToManage: TemplateManageData;
   publicPagesCourses: {[publicPageId: number]: string} = {};  // Names from public pages' courses
   mode: 'import-pc' | 'import-gc' | 'rename' | 'arrange' | 'delete' | 'remove page' | 'visibility' | 'make public-private' | 'duplicate';
 
@@ -54,11 +64,32 @@ export class ViewsComponent implements OnInit {
      { icon: 'feather-sliders', description: 'Configure visibility', type: 'configuration' },
      { icon: 'jam-upload', description: 'Export', type: 'configuration' },
      { icon: 'jam-files-f', description: 'Duplicate', type: 'configuration' },
-     { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }];
+      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }];
+  
+  // Actions for templates
+  templateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
+    color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
+      'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
+      'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
+    [{ icon: 'jam-pencil-f', description: 'Edit', type: 'edit', color: 'warning' },
+     { icon: 'feather-type', description: 'Rename', type: 'management' },
+     { icon: 'tabler-eye', description: 'Preview', type: 'management' },
+     { icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
+     { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }
+    ];
+  
+  // Actions for SYSTEM templates
+  coreTemplateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
+    color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
+      'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
+      'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
+    [{ icon: 'tabler-eye', description: 'Preview', type: 'management' },
+    ];
 
   visibilityCheckbox: boolean;                    // For 'configure-visibility' modal
   isHovered: {[pageId: number]: boolean} = {};    // Changes padlock icon when hovering
   pageName: string;                               // Auxiliar for page name ('rename' modal)
+  templateName: string;                           // Auxiliar for template name ('rename' modal)
 
   // DUPLICATE OPTIONS
   duplicateOptions: {name: string, char: string}[] = [
@@ -70,13 +101,18 @@ export class ViewsComponent implements OnInit {
   // SEARCH AND FILTER
   reduce = new Reduce();
   pagesToShow: Page[] = [];
+  templatesToShow: Template[] = [];
   filteredPages: Page[] = [];                   // Pages search
+  filteredTemplates: Template[] = [];           // Templates search
 
   @ViewChild('fPage', {static: false}) fPage: NgForm;   // Page form
+  @ViewChild('fTemplate', {static: false}) fTemplate: NgForm;   // Template form
 
   // Import action
   importData: {file: File, replace: boolean} = { file: null, replace: true };
-  @ViewChild('fImport', {static: false}) fImport: NgForm;
+  @ViewChild('fImport', { static: false }) fImport: NgForm;
+  
+  user: User;
 
   constructor(
     private api: ApiHttpService,
@@ -95,9 +131,12 @@ export class ViewsComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
+      await this.getLoggedUser();
       await this.getPages(courseID);
+      await this.getTemplates(courseID);
 
       this.loading.page = false;
+      this.loading.template = false;
     });
   }
 
@@ -107,6 +146,10 @@ export class ViewsComponent implements OnInit {
 
   async getCourse(courseID: number): Promise<void> {
     this.course = await this.api.getCourseById(courseID).toPromise();
+  }
+
+  async getLoggedUser(): Promise<void> {
+    this.user = await this.api.getLoggedUser().toPromise();
   }
 
   async getPages(courseID: number) {
@@ -129,6 +172,25 @@ export class ViewsComponent implements OnInit {
 
   }
 
+  async getTemplates(courseID: number) {
+    this.systemTemplates = await this.api.getCoreTemplates(courseID).toPromise() as Template[]; // FIXME do I want to show these too?
+    this.courseTemplates = await this.api.getCustomTemplates(courseID).toPromise() as Template[];
+    this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
+    this.calculateTemplates();
+  }
+  
+  calculateTemplates() {
+    this.courseTemplates.forEach((temp) => {
+      let item = this.publicTemplates.find(e => temp.id === e.id);
+      if (item) {
+        Object.assign(temp, item);
+      }
+    })
+    this.templates = this.systemTemplates.concat(this.courseTemplates);
+    this.templatesToShow = this.templates;
+    this.filteredTemplates = this.templates;
+  }
+
   /*** --------------------------------------------- ***/
   /*** -------------- Top Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -141,7 +203,10 @@ export class ViewsComponent implements OnInit {
       ModalService.openModal('arrange-pages');
 
     } else if (event === 'create new page') {
-      await this.router.navigate(['pages/editor/new-page'], {relativeTo: this.route.parent});
+      await this.router.navigate(['pages/editor/new'], {relativeTo: this.route.parent});
+
+    } else if (event === 'create new template') {
+      await this.router.navigate(['pages/editor/new'], {relativeTo: this.route.parent});
 
     } else if (event === 'import page(s) from pc'){
       this.mode = 'import-pc';
@@ -159,15 +224,18 @@ export class ViewsComponent implements OnInit {
   async arrangePages(){
     this.loading.action = true;
 
+    const newPositions = [];
+    
     // Save new positions
     for (let i = 0; i < this.arrangingPages.length; i++){
       // if order hasn't changed, skip the edition step (less accesses to DB)
-      if (this.arrangingPages[i].position === i) continue;
-      this.arrangingPages[i].position = i;
-      let page = initPageToManage(this.course.id, this.arrangingPages[i]);
-      await this.api.editPage(this.course.id, page).toPromise();
-
+      if (!this.arrangingPages[i].position || this.arrangingPages[i].position != i) {
+        this.arrangingPages[i].position = i;
+        newPositions.push({ id: this.arrangingPages[i].id, position: this.arrangingPages[i].position });
+      }
     }
+    
+    await this.api.updatePagePositions(this.course.id, newPositions).toPromise();
 
     this.coursePages = _.cloneDeep(this.arrangingPages);
     this.pages = this.coursePages.concat(this.publicPages);
@@ -183,6 +251,81 @@ export class ViewsComponent implements OnInit {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  async chooseTemplateAction(action:string, template: Template) {
+    action = action.toLowerCase();
+
+    if (action === 'edit') {
+      await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
+
+    } else if (action === 'rename') {
+      this.mode = 'rename';
+      this.templateToManage = initTemplateToManage(this.course.id, template);
+      this.templateName = _.cloneDeep(this.templateToManage.name);
+      ModalService.openModal('rename-template');
+
+    } else if (action === 'preview') {
+      if (template.isSystem)
+        await this.router.navigate(['pages/editor/system-template/' + template.id], { relativeTo: this.route.parent });
+      else
+        await this.router.navigate(['pages/editor/template/' + template.id], { relativeTo: this.route.parent });
+
+    } else if (action === 'make public/private') {
+      this.templateToManage = initTemplateToManage(this.course.id, template);
+      this.mode = 'make public-private';
+      ModalService.openModal('make-public-private-template')
+
+    } else if (action === 'delete') {
+      this.templateToManage = initTemplateToManage(this.course.id, template);
+      this.mode = 'delete';
+      ModalService.openModal('delete-template');
+    }
+
+  }
+
+  async doTemplateAction(){
+    const template = _.cloneDeep(this.templateToManage);
+    let origin: 'course' | 'public' = template.isPublic ? 'public' : 'course';
+
+    if (this.mode === 'make public-private') {
+      this.loading.action = true;
+
+      template.isPublic = !template.isPublic;
+      if (template.isPublic) {
+        await this.api.shareTemplate(template.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
+      }
+      else {
+        await this.api.makePrivateTemplate(template.id, this.user.id).toPromise();
+      }
+      const newTemplate = await this.api.editTemplate(this.course.id, template).toPromise();
+      await this.updateTemplates('update', newTemplate, origin);
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Template \'' + template.name + '\' ' +
+        (template.isPublic ? 'published' : 'make private'));
+      ModalService.closeModal('make-public-private-template');
+
+      this.loading.action = false;
+
+    } else if (this.mode === 'delete'){
+      this.loading.action = true;
+
+      await this.api.deleteCustomTemplate(template.id, this.course.id).toPromise();
+      await this.updateTemplates('remove', template, origin);
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Template \'' + template.name + '\' deleted successfully.')
+      ModalService.closeModal('delete-template');
+
+      this.loading.action = false;
+    }
+    else {
+      const editedTemplate = await this.api.editTemplate(this.course.id, template).toPromise();
+      await this.updateTemplates('update', editedTemplate, origin);
+      if (this.mode === 'rename') {
+        AlertService.showAlert(AlertType.SUCCESS, 'Template \'' + template.name + '\' successfully renamed.');
+        ModalService.closeModal('rename-template');
+      }
+    }
+  }
+
   async chooseAction(action:string, page: Page) {
     action = action.toLowerCase();
 
@@ -193,10 +336,10 @@ export class ViewsComponent implements OnInit {
       this.mode = 'rename';
       this.pageToManage = initPageToManage(this.course.id, page);
       this.pageName = _.cloneDeep(this.pageToManage.name);
-      ModalService.openModal('rename');
+      ModalService.openModal('rename-page');
 
     } else if (action === 'preview') {
-      // TODO
+      await this.router.navigate(['pages/editor/' + page.id], {relativeTo: this.route.parent});
 
     } else if (action === 'make public/private') {
       this.pageToManage = initPageToManage(this.course.id, page);
@@ -262,48 +405,47 @@ export class ViewsComponent implements OnInit {
 
     } else {
       if (!this.fPage.valid) {
-          AlertService.showAlert(AlertType.ERROR, 'Invalid form');
-          return;
-        }
+        AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+        return;
+      }
 
-        this.loading.action = true;
+      this.loading.action = true;
+
+      if (this.mode === 'visibility') {
+        page.isVisible = !page.isVisible;
+        if (page.visibleFrom === '') page.visibleFrom = null;
+        if (page.visibleUntil === '') page.visibleUntil = null;
+
+        if (!page.isVisible) {
+          page.visibleFrom = null;
+          page.visibleUntil = null;
+        }
+      }
+
+      if (this.mode === 'duplicate') {
+        const newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
+        await this.updatePages('add', newPage, origin);
+
+        AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
+        ModalService.closeModal('duplicate');
+
+      } else {
+        const editedPage = await this.api.editPage(this.course.id, page).toPromise();
+        await this.updatePages('update', editedPage, origin);
 
         if (this.mode === 'visibility') {
-          page.isVisible = !page.isVisible;
-          if (page.visibleFrom === '') page.visibleFrom = null;
-          if (page.visibleUntil === '') page.visibleUntil = null;
+          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
+            (page.isVisible ? 'visible' : 'not visible'));
+          ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
 
-          if (!page.isVisible) {
-            page.visibleFrom = null;
-            page.visibleUntil = null;
-          }
+        } else if (this.mode === 'rename') {
+          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' successfully renamed.');
+          ModalService.closeModal('rename-page');
+
         }
-
-        if (this.mode === 'duplicate') {
-          const newPage = await this.api.copyPage(this.course.id, page.id, this.optionSelected).toPromise();
-          await this.updatePages('add', newPage, origin);
-
-          AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' duplicated successfully.');
-          ModalService.closeModal('duplicate');
-
-        } else {
-          const editedPage = await this.api.editPage(this.course.id, page).toPromise();
-          await this.updatePages('update', editedPage, origin);
-
-          if (this.mode === 'visibility') {
-            AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' made ' +
-              (page.isVisible ? 'visible' : 'not visible'));
-            ModalService.closeModal(page.isVisible ? 'configure-visibility' : 'configure-not-visibility');
-
-          } else if (this.mode === 'rename') {
-            AlertService.showAlert(AlertType.SUCCESS, 'Page \'' + page.name + '\' successfully renamed.');
-            ModalService.closeModal('rename');
-
-          }
-        }
-
-        this.loading.action = false;
       }
+      this.loading.action = false;
+    }
   }
 
   async updatePages(option: 'update' | 'add' | 'remove' | 'remove or add', page: Page, origin: 'course' | 'public') {
@@ -334,10 +476,39 @@ export class ViewsComponent implements OnInit {
     this.pagesToShow = this.pages;
   }
 
+  async updateTemplates(option: 'update' | 'add' | 'remove' | 'remove or add', template: Template, origin: 'core' | 'course' | 'public') {
+    if (option === 'remove'){
+      const index = origin === 'course' ? this.courseTemplates.findIndex(myTemplate => myTemplate.id === template.id)
+        : this.publicTemplates.findIndex(myTemplate => myTemplate.id === template.id);
+
+      origin === 'course' ? this.courseTemplates.splice(index, 1) : this.publicTemplates.splice(index, 1);
+
+    } else if (option === 'add'){
+      origin === 'course' ? this.courseTemplates.push(template) : this.publicTemplates.push(template);
+
+    } else if (option === 'update') {
+      const index = origin === 'course' ? this.courseTemplates.findIndex(myTemplate => myTemplate.id === template.id)
+        : this.publicTemplates.findIndex(myTemplate => myTemplate.id === template.id);
+
+      origin === 'course' ? this.courseTemplates.splice(index, 1, template) : this.publicTemplates.splice(index, 1, template);
+
+    } else if (option === 'remove or add'){
+      const index = origin === 'course' ? this.courseTemplates.findIndex(myTemplate => myTemplate.id === template.id)
+        : this.publicTemplates.findIndex(myTemplate => myTemplate.id === template.id);
+
+      origin === 'course' ? this.courseTemplates.splice(index, 1, template) : this.publicTemplates.splice(index, 1);
+    }
+
+    this.calculateTemplates();
+  }
+
   resetChanges(){
     if (this.mode === 'arrange') this.arrangingPages = null;
     else if (this.mode === 'visibility') this.visibilityCheckbox = null;
-    else if (this.mode === 'rename') this.pageName = null;
+    else if (this.mode === 'rename') {
+      this.pageName = null;
+      this.templateName = null;
+    }
     else if (this.mode === 'duplicate') this.optionSelected = null;
     else if (this.mode === 'import-pc'){
       this.importData = {file: null, replace: true};
@@ -345,6 +516,7 @@ export class ViewsComponent implements OnInit {
     }
 
     this.pageToManage = null;
+    this.templateToManage = null;
     this.mode = null;
   }
 
@@ -390,15 +562,27 @@ export class ViewsComponent implements OnInit {
     if (searchQuery) {
       let pages: Page[] = [];
 
-      for (let i = 0;  i < this.filteredPages.length; i++){
+      for (let i = 0; i < this.filteredPages.length; i++) {
         if (((this.filteredPages[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
           pages.push(this.filteredPages[i]);
         }
       }
       this.pagesToShow = pages;
+
+      let templates: Template[] = [];
+
+      for (let i = 0; i < this.filteredTemplates.length; i++) {
+        if (((this.filteredTemplates[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          templates.push(this.filteredTemplates[i]);
+        }
+      }
+      this.templatesToShow = templates;
     }
 
-    else this.pagesToShow = this.pages;
+    else {
+      this.pagesToShow = this.pages;
+      this.templatesToShow = this.templates;
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -436,6 +620,15 @@ export interface PageManageData {
   position?: number,
   isPublic?: boolean
 }
+export interface TemplateManageData {
+  id?: number,
+  name?: string,
+  course?: number,
+  viewRoot?: number,
+  creationTimestamp?: string,
+  updateTimestamp?: string,
+  isPublic?: boolean
+}
 
 export function initPageToManage(courseID: number, page?: Page): PageManageData {
   const pageData: PageManageData = {
@@ -452,4 +645,17 @@ export function initPageToManage(courseID: number, page?: Page): PageManageData 
   };
   if (page) pageData.id = page.id;
   return pageData;
+}
+
+export function initTemplateToManage(courseID: number, template?: Template): TemplateManageData {
+  const templateData: TemplateManageData = {
+    course: template?.course ?? courseID,
+    name: template?.name ?? null,
+    viewRoot: template?.viewRoot ?? null,
+    creationTimestamp: template?.creationTimestamp ? template.creationTimestamp.format('YYYY-MM-DD') : null,
+    updateTimestamp: template?.updateTimestamp ? template.updateTimestamp.format('YYYY-MM-DD') : null,
+    isPublic: template?.isPublic ?? false
+  };
+  if (template) templateData.id = template.id;
+  return templateData;
 }

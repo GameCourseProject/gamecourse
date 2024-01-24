@@ -6,6 +6,15 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{topLabel}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
+  <!-- Multiple Color Samples -->
+  <div *ngIf="multiple" class="w-full flex flex-wrap gap-2 {{values.length > 0 ? 'mb-2' : ''}}">
+    <div *ngFor="let color of values; index as i" class="flex flex-row gap-1 items-center bg-base-300 text-base-content text-sm py-2 px-4 rounded-lg">
+      <div class="w-4 h-4 !rounded shadow border" [ngStyle]="{backgroundColor: color}"></div>
+      {{color}}
+      <span class="bg-base-300 px-0 hover:cursor-pointer" (click)="removeColor(i)">❌</span>
+    </div>
+  </div>
+
   <!-- Group Input -->
   <label class="input-group {{InputGroupSize[size]}} relative">
 
@@ -25,7 +34,8 @@
       class="input input-bordered {{InputSize[size]}} {{InputColor[color]}} {{value ? 'pl-9' : ''}} {{!leftLabel ? '!rounded-l-md' : ''}} w-full cursor-text"
       placeholder="{{placeholder}}"
       [(ngModel)]="value"
-      (ngModelChange)="pickr.setColor(value); valueChange.emit(value)"
+      (ngModelChange)="setColor(value)"
+      (keyup.enter)="multiple ? addInput() : null"
       [pattern]="pattern"
       [required]="required"
       [minlength]="minLength"
@@ -35,8 +45,14 @@
       [ngClass]="{'input-error': form && form.submitted && inputColor.invalid}"
     />
 
+    
+    <!-- Insert Button -->
+    <button *ngIf="multiple && value" type="button" class="btn btn-square btn-success !rounded-none btn-{{size}}" tabindex="0" (click)="addInput()">
+      <ng-icon [name]="'tabler-check'" size="1.5rem"></ng-icon>
+    </button>
+
     <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
-      <!-- Button -->
+      <!-- Color Picker Button -->
       <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}} btn-{{size}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
       </button>

@@ -1,27 +1,109 @@
-import {View} from "../view";
-import {exists} from "../../../_utils/misc/misc";
+import { View, ViewDatabase } from "../view";
+import { ViewBlock } from "../view-types/view-block";
+import { ViewCollapse } from "../view-types/view-collapse";
+import { ViewRow } from "../view-types/view-row";
+import { ViewTable } from "../view-types/view-table";
 
-export let viewsAdded: Map<number, View>;     // Holds building-blocks that have already been added to the tree
-export let viewTree: any[];                   // The view tree being built
-export let baseFakeId: number;                // The minimum fake ID in the beginning; serves as a base
+export let viewTree: any[];                           // The view tree being built
+export let viewsAdded: Map<number, ViewDatabase>;     // Holds building-blocks that have already been added to the tree
+export let viewsDeleted: number[] = [];               // viewIds of views that were completely deleted -> delete from database
+let fakeId: number = -1;                              // Fake, negative ids, for new views, to be generated in backend
+
+export let groupedChildren: Map<number, number[][]>;
+
+export function getFakeId() : number {
+  const id = fakeId;
+  fakeId -= 1;
+  return id;
+}
+
+export function setGroupedChildren(value: Map<number, number[][]>) {
+  groupedChildren = value;
+}
+
+export function initGroupedChildren(viewTree: any[]) {
+  groupedChildren = new Map<number, number[][]>();
+  for (let view of viewTree) {
+    recursiveGroupChildren(view);
+  }
+}
+
+function recursiveGroupChildren(view: any) {
+  if ('children' in view) {
+    for (let child of view.children) {
+      const group = groupedChildren.get(view.id) ?? [];
+      group.push(child.map((e) => e.id));
+      groupedChildren.set(view.id, group);
+      for (let el of child) {
+        recursiveGroupChildren(el);
+      }
+    }
+  }
+}
+
+export function addToGroupedChildren(view: View, parentId: number) {
+  if (parentId) {
+    const group: number[][] = groupedChildren.get(parentId) ?? [];
+    group.push([view.id]);
+    groupedChildren.set(parentId, group);
+  }
+  if (view instanceof ViewBlock) { 
+    for (let child of view.children) {
+      addToGroupedChildren(child, view.id);
+    }
+  }
+  else if (view instanceof ViewTable) { 
+    for (let child of view.headerRows) {
+      addToGroupedChildren(child, view.id);
+    }
+    for (let child of view.bodyRows) {
+      addToGroupedChildren(child, view.id);
+    }
+  }
+  else if (view instanceof ViewRow) { 
+    for (let child of view.children) {
+      addToGroupedChildren(child, view.id);
+    }
+  }
+  else if (view instanceof ViewCollapse) { 
+    addToGroupedChildren(view.header, view.id);
+    addToGroupedChildren(view.content, view.id);
+  }
+}
 
 /**
  * Builds a view tree to be sent to database by merging all aspects
  * according to view ids and viewIds.
- * In cases where a new view should be created in database, by passing
- * the base fake id it will build a view tree with only fake ids.
  *
- * @param aspects
- * @param baseId
+ * @param viewsOfAspects
  */
-export function buildViewTree(aspects: View[], baseId?: number): any[] {
-  viewsAdded = new Map<number, View>();
+export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
+  viewsAdded = new Map<number, ViewDatabase>();
   viewTree = [];
-  baseFakeId = exists(baseId) ? baseId : null;
 
   // Go through each aspect and add to view tree
-  for (const aspect of aspects) {
-    aspect.buildViewTree();
+  for (const view of viewsOfAspects) {
+    if (view) view.buildViewTree();
+  }
+  
+  // Clean up unexistent ids
+  // This is specially useful if an aspect was deleted, since while building the tree
+  // it wont find a matching view for the ids
+  recursiveRemoveUnexistent(viewTree[0]);
+  function recursiveRemoveUnexistent(view: any) {
+    if ('children' in view) {
+      for (let group of view.children) {
+        for (let child of group) {
+          if (typeof child === "number") {
+            viewsDeleted.push(child);
+          }
+          else {
+            recursiveRemoveUnexistent(child);
+          }
+        }
+        view.children.splice(view.children.indexOf(group), 1, group.filter(e => typeof e !== "number"));
+      }
+    }
   }
   return viewTree;
 }

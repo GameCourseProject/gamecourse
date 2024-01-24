@@ -7,8 +7,8 @@ export class GoToPageEvent extends Event {
   private _pageId: string;
   private _userId?: string;
 
-  constructor(type: EventType, pageId: string, userId?: string) {
-    super(type, EventAction.GO_TO_PAGE);
+  constructor(type: EventType, expression: string, pageId: string, userId?: string) {
+    super(type, EventAction.GO_TO_PAGE, expression);
     this.pageId = pageId;
     if (exists(userId)) this.userId = userId;
   }

@@ -72,7 +72,7 @@ export class RolesComponent implements OnInit {
   async getVisiblePages(courseID: number): Promise<void> {
     const pages = await this.api.getCoursePages(courseID, true).toPromise();
     this.visiblePages = pages.map(page => {
-      return {value: 'p-' + page.id, text: page.name};
+      return {value: page.id.toString(), text: page.name};
     })
   }
 

@@ -13,6 +13,7 @@
     [classList]="'-mt-6'"
     [leftActions]="[{action: 'Arrange Pages', icon: 'feather-move'}]"
     [rightActions]="[{action: 'Create new Page', icon: 'feather-file', color: 'primary', outline: true},
+                     {action: 'Create new Template', icon: 'jam-layout', color: 'primary', outline: true},
                      {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                       {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
                       {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
@@ -38,47 +39,46 @@
   <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let page of pagesToShow">
       <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
-        <figure class="relative w-full aspect-square">
+        <figure class="relative w-full aspect-video bg-white">
 
-          <!-- FIXME: Replace <img> with screenshots of pages -->
-          <img class="absolute w-full h-full object-cover top-0 left-0" src="assets/imgs/img-dark.png" alt="{{page.name}} page">
+          <img class="absolute w-full" src="{{page.image ?? 'assets/imgs/img-dark.png'}}" alt="{{page.name}} page">
 
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
-              <button class="btn btn-sm btn-{{page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-black' : 'text-white')}}">
+              <button class="btn btn-sm btn-{{page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
+                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-black' : 'text-white')}}">
                 </ng-icon>
               </button>
             </ng-container>
             <ng-template #defaultButton>
-              <button class="btn btn-sm btn-{{!page.isPublic ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
-                      data-tip="Make public/private" (click)="chooseAction('make public/private', page)">
-                <ng-icon name="{{!page.isPublic ? 'jam-padlock-open-f' : 'jam-padlock-f'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isPublic ? 'text-white' : 'text-dark')}}">
+              <button class="btn btn-sm btn-{{!page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                <ng-icon name="{{!page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
+                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-white' : 'text-black')}}">
                 </ng-icon>
               </button>
             </ng-template>
           </div>
-          <div class="badge badge-sm badge-{{page.isVisible ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="chooseAction('configure visibility', page)">
-            <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isVisible ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
-            <span class="font-semibold my-0.5">{{page.isVisible ? 'Visible' : 'Not visible'}}</span>
+          <div class="badge badge-sm badge-{{page.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
+            (click)="chooseAction('make public/private', page)">
+            <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isPublic ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
+            <span class="font-semibold my-0.5">{{page.isPublic ? 'Public' : 'Private'}}</span>
           </div>
         </figure>
 
-        <div class="card-body -mt-4">
-          <div class="flex justify-between items-center border-b-gray-200 border-b-2">
-            <span class="text-lg font-semibold -mb-2">{{page.name}}</span>
+        <div class="card-body -mt-2">
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-semibold">{{page.name}}</span>
             <div class="dropdown dropdown-right">
-              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4">
+              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </button>
 
               <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
                 <li *ngFor="let action of actions; let i = index" (click)="chooseAction(action.description, page)">
-                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-content border-b-2' : '' }}">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>
                   </div>
@@ -87,10 +87,11 @@
 
             </div>
           </div>
-          <div class="mt-2.5">
+          <div class="divider rounded before:bg-base-200 after:bg-base-200 mb-0.5 -mt-1"></div>
+          <div>
             <p *ngIf="page.course !== course.id" class="text-xs"><strong>Imported from:</strong><br></p>
             <p *ngIf="page.course !== course.id" class="text-xs text-primary">{{publicPagesCourses[page.id]}}</p>
-            <p class="text-xs mt-2"><strong>Last edited:</strong> {{calculateDate(page.updateTimestamp)}}</p>
+            <p><span class="text-xs font-bold uppercase">Last edited:</span> {{calculateDate(page.updateTimestamp)}}</p>
           </div>
         </div>
 
@@ -99,8 +100,81 @@
 
   </div>
 
-  <!-- Loader -->
   <app-loader [loading]="loading.page"></app-loader>
+
+  <!-- Header for Layouts -->
+  <app-header
+    [classList]="'text-md mt-16'"
+    [title]="'Templates'"
+    [icon]="'jam-layout'"
+    [loading]="loading.action">
+  </app-header>
+
+  <span *ngIf="!loading.template && templates.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
+  <span *ngIf="templates.length !== 0 && templatesToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
+
+  <!-- Templates cards -->
+  <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
+    <div *ngFor="let template of templatesToShow">
+      <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
+        <figure class="relative w-full aspect-video bg-white">
+
+          <img class="absolute w-full" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
+
+          <div *ngIf="!template.isSystem" class="badge badge-sm badge-{{template.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
+            (click)="chooseTemplateAction('make public/private', template)">
+            <ng-icon name="jam-circle-f" size="0.5rem" class="{{template.isPublic ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
+            <span class="font-semibold my-0.5">{{template.isPublic ? 'Public' : 'Private'}}</span>
+          </div>
+          <div *ngIf="template.isSystem" class="badge badge-sm absolute bottom-1 left-1 -z-999 hover:cursor-pointer">
+            <ng-icon name="jam-circle-f" size="0.5rem" class="text-gray-400 mr-0.5"></ng-icon>
+            <span class="font-semibold my-0.5">System</span>
+          </div>
+        </figure>
+
+        <div class="card-body -mt-2">
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-semibold">{{template.name}}</span>
+            <div class="dropdown dropdown-right">
+              <button class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
+                <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
+              </button>
+
+              <!-- Options dropdown -->
+              <ul *ngIf="!template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+                <li *ngFor="let action of templateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
+                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
+                    <span class="font-semibold">{{action.description}}</span>
+                  </div>
+                </li>
+              </ul>
+
+              <!-- Options dropdown FOR SYSTEM TEMPLATES (more restrictive) -->
+              <ul *ngIf="template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+                <li *ngFor="let action of coreTemplateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
+                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
+                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
+                    <span class="font-semibold">{{action.description}}</span>
+                  </div>
+                </li>
+              </ul>
+
+            </div>
+          </div>
+          <div class="divider rounded before:bg-base-200 after:bg-base-200 mb-0.5 -mt-1"></div>
+          <div>
+            <!-- <p *ngIf="template.isPublic"><span class="text-xs font-bold uppercase">Shared on:</span> {{calculateDate(template.sharedTimestamp)}}</p> -->
+            <p *ngIf="!template.isSystem"><span class="text-xs font-bold uppercase">Last edited:</span> {{calculateDate(template.updateTimestamp)}}</p>
+          </div>
+        </div>
+
+      </div>
+  </div>
+
+  <!-- Loader -->
+  <app-loader [loading]="loading.template"></app-loader>
+
 </div>
 
 
@@ -157,7 +231,7 @@
 <!-- Delete Modal -->
 <app-modal *ngIf="mode === 'delete' && pageToManage"
            [id]="'delete-page'"
-           [templateRef]="DELETE"
+           [templateRef]="DELETE_PAGE"
            [header]="mode?.capitalize() + ' page \'' + pageToManage.name + '\'?'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Delete'"
@@ -166,7 +240,7 @@
            (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #DELETE>
+<ng-template #DELETE_PAGE>
   <div class="w-full flex flex-wrap">
     <span>Are your sure you want to delete '<strong>{{pageToManage.name}}</strong>' page? This action <strong> cannot be undone</strong>.</span>
   </div>
@@ -182,13 +256,41 @@
       </div>
     </div>
   </div>
+</ng-template>
 
+<app-modal *ngIf="mode === 'delete' && templateToManage"
+           [id]="'delete-template'"
+           [templateRef]="DELETE_TEMPLATE"
+           [header]="mode?.capitalize() + ' template \'' + templateToManage.name + '\'?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Delete'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #DELETE_TEMPLATE>
+  <div class="w-full flex flex-wrap">
+    <span>Are your sure you want to delete '<strong>{{templateToManage.name}}</strong>' template? This action <strong> cannot be undone</strong>.</span>
+  </div>
+
+  <div *ngIf="templateToManage.isPublic" class="justify-center flex">
+    <div class="alert alert-warning shadow-lg rounded-lg w-full mt-6">
+      <div>
+        <ng-icon [name]="'feather-alert-triangle'" size="1.2rem"></ng-icon>
+        <div class="ml-2.5">
+          <span>This template might be used by other courses at the moment. Deleting it would also
+            <strong>make it unavailable for them</strong>.</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>
 
 <!-- Make public / private modal -->
 <app-modal *ngIf="mode === 'make public-private' && pageToManage"
            [id]="'make-public-private-page'"
-           [templateRef]="MAKE_PUBLIC_PRIVATE"
+           [templateRef]="MAKE_PUBLIC_PRIVATE_PAGE"
            [header]="'Make \'' + pageToManage.name + '\' ' + (pageToManage.isPublic ? 'private' : 'public') + '?'"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Yes'"
@@ -197,7 +299,7 @@
            (submitBtnClicked)="doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #MAKE_PUBLIC_PRIVATE>
+<ng-template #MAKE_PUBLIC_PRIVATE_PAGE>
   <div *ngIf="pageToManage.course === course.id" class="flex flex-wrap -mt-1">
     <span class="w-full" *ngIf="pageToManage.isPublic">This page will <strong>stop being available</strong>
       for other courses. Do you wish to proceed?</span>
@@ -209,6 +311,33 @@
     <span class="w-full" *ngIf="pageToManage.isPublic"><strong>This page belongs to another course</strong>. Making it
       private will <strong>stop being available for this and other courses</strong>. Do you wish to proceed?</span>
     <span class="w-full" *ngIf="!pageToManage.isPublic">This page will be <strong>available for other courses to
+      use and modify.</strong> Do you wish to proceed?</span>
+  </div>
+</ng-template>
+
+<app-modal *ngIf="mode === 'make public-private' && templateToManage"
+           [id]="'make-public-private-template'"
+           [templateRef]="MAKE_PUBLIC_PRIVATE_TEMPLATE"
+           [header]="'Make \'' + templateToManage.name + '\' ' + (templateToManage.isPublic ? 'private' : 'public') + '?'"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Yes'"
+           [submitBtnColor]="'error'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #MAKE_PUBLIC_PRIVATE_TEMPLATE>
+  <div *ngIf="templateToManage.course === course.id" class="flex flex-wrap -mt-1">
+    <span class="w-full" *ngIf="templateToManage.isPublic">This template will <strong>stop being available</strong>
+      for other courses. Do you wish to proceed?</span>
+    <span class="w-full" *ngIf="!templateToManage.isPublic">This template will be <strong>available for other courses to
+      use and modify.</strong> Do you wish to proceed?</span>
+  </div>
+
+  <div *ngIf="templateToManage.course !== course.id" class="flex flex-wrap -mt-1">
+    <span class="w-full" *ngIf="templateToManage.isPublic"><strong>This template belongs to another course</strong>. Making it
+      private will <strong>stop being available for this and other courses</strong>. Do you wish to proceed?</span>
+    <span class="w-full" *ngIf="!templateToManage.isPublic">This template will be <strong>available for other courses to
       use and modify.</strong> Do you wish to proceed?</span>
   </div>
 </ng-template>
@@ -295,8 +424,8 @@
 
 <!-- Rename modal -->
 <app-modal *ngIf="mode === 'rename' && pageToManage"
-           [id]="'rename'"
-           [templateRef]="RENAME"
+           [id]="'rename-page'"
+           [templateRef]="RENAME_PAGE"
            [header]="'Rename \'' + pageName + '\''"
            [closeBtnText]="'Cancel'"
            [submitBtnText]="'Save'"
@@ -305,7 +434,7 @@
            (submitBtnClicked)="fPage.onSubmit(null); doAction()"
            (onClose)="resetChanges()">
 </app-modal>
-<ng-template #RENAME>
+<ng-template #RENAME_PAGE>
   <form #fPage="ngForm">
     <app-input-text
       [id] = "'page-name'"
@@ -320,7 +449,35 @@
       [maxLength]="60"
       [maxLengthErrorMessage]="'Page name is too long: maximum of 60 characters'">
     </app-input-text>
+  </form>
+</ng-template>
 
+<app-modal *ngIf="mode === 'rename' && templateToManage"
+           [id]="'rename-template'"
+           [templateRef]="RENAME_TEMPLATE"
+           [header]="'Rename \'' + templateName + '\''"
+           [closeBtnText]="'Cancel'"
+           [submitBtnText]="'Save'"
+           [submitBtnColor]="'primary'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="fTemplate.onSubmit(null); doTemplateAction()"
+           (onClose)="resetChanges()">
+</app-modal>
+<ng-template #RENAME_TEMPLATE>
+  <form #fTemplate="ngForm">
+    <app-input-text
+      [id] = "'template-name'"
+      [form] = "fTemplate"
+      [classList]="'w-full flex flex-wrap'"
+      [(value)] = "templateToManage.name"
+      [placeholder]="'Template name'"
+      [topLabel]="'New name'"
+      [pattern]="'(?!^\\d+$)^.+$'"
+      [patternErrorMessage]="'Template name can\'t be composed of only numbers'"
+      [required]="true"
+      [maxLength]="60"
+      [maxLengthErrorMessage]="'Template name is too long: maximum of 60 characters'">
+    </app-input-text>
   </form>
 </ng-template>
 

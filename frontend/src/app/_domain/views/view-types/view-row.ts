@@ -4,9 +4,10 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 import { buildView } from "../build-view/build-view";
-
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewRow extends View {
   private _rowType: RowType;
@@ -62,25 +63,26 @@ export class ViewRow extends View {
     return null;
   }
 
-  buildViewTree(options?: 'header' | 'body') { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   copy.children = []; // Strip children
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy, options);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build children into view tree
-    // for (const child of this.children) {
-    //   child.buildViewTree();
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewRow.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+    
+    // Build children into view tree
+    for (const child of this.children) {
+      child.buildViewTree();
+    }
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -98,16 +100,12 @@ export class ViewRow extends View {
     // this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    // Replace IDs in children
+    for (const child of this.children) {
+      child.replaceWithFakeIds();
+    }
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -122,31 +120,41 @@ export class ViewRow extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const child of this.children) {
+      const found = child.findView(viewId);
+      if (found) return child;
+    }
     return null;
+  }
+
+  replaceView(viewId: number, view: View) {
   }
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
+    for (let child of this.children) child.switchMode(mode);
+  }
+
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (const child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
   }
 
 
   /**
    * Gets a default row view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewRow { // TODO: refactor view editor
-    return null;
-    // return new ViewRow(id, id, parentId, role, ViewMode.EDIT,
-    //   [ViewText.getDefault(id - 1, id, role)],
-    //   null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.ROW_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(id: number, table: View, viewRoot: number = null, aspect: Aspect, type: RowType): ViewRow {
+    return new ViewRow(ViewMode.EDIT, id, viewRoot, table, aspect, type, [],
+      null, null, null, VisibilityType.VISIBLE, null, null, [], []);
   }
 
   /**
@@ -191,11 +199,11 @@ export class ViewRow extends View {
     return row;
   }
 
-  static toDatabase(obj: ViewRow): ViewRowDatabase {
+  static toDatabase(obj: ViewRow, component: boolean = false): ViewRowDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,
@@ -204,16 +212,16 @@ export class ViewRow extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       rowType: obj.rowType,
-      children: obj.children.map(child => buildViewTree(child))
+      children: component ? obj.children.map(child => buildComponent(child)) : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }
 
 export interface ViewRowDatabase extends ViewDatabase {
   rowType: RowType;
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum RowType {

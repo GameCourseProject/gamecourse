@@ -45,6 +45,45 @@ class CoreTemplate extends Template
         return null;
     }
 
+    /**
+     * Gets template data from the database.
+     *
+     * @example getData() --> gets all template data
+     * @example getData("field") --> gets template field
+     * @example getData("field1, field2") --> gets template fields
+     *
+     * @param string $field
+     * @return mixed
+     */
+    public function getData(string $field = "*")
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], $field);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets template data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return CORE_TEMPLATES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(CORE_TEMPLATES_DATA_FOLDER) . "/" . $this->getId();
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -89,6 +128,22 @@ class CoreTemplate extends Template
             Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteImage()
+    {
+        Utils::deleteFile($this->getDataFolder(), "screenshot.png", true);
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- General --------------------- ***/
@@ -98,19 +153,39 @@ class CoreTemplate extends Template
      * Gets core templates in the system.
      * Options for a specific category or module.
      *
+     * @param int $courseId
      * @param int|null $categoryId
      * @param string|null $moduleId
      * @return array
      */
-    public static function getTemplates(int $categoryId = null, string $moduleId = null): array
+    public static function getTemplates(int $courseId, int $categoryId = null, string $moduleId = null): array
     {
-        $where = [];
+        $where = ["course" => $courseId];
         if ($categoryId) $where[] = ["category" => $categoryId];
         if ($moduleId) $where[] = ["module" => $moduleId];
 
         $templates = Core::database()->selectMultiple(self::TABLE_TEMPLATE, $where, "*", "category, position");
-        foreach ($templates as &$template) { $template = self::parse($template); }
+
+        foreach ($templates as &$template) { 
+            $template = self::parse($template); 
+            // Get image
+            $templateForImage = new CoreTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
         return $templates;
+    }
+
+    /**
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
+     *
+     * @param int $id
+     */
+    public static function getTemplateById(int $id): ?CoreTemplate
+    {
+        $template = new CoreTemplate($id);
+        if ($template->exists()) return $template;
+        else return null;
     }
 
 
@@ -122,20 +197,20 @@ class CoreTemplate extends Template
      * Adds a core template to the database.
      * Returns the newly created template.
      *
+     * @param int $courseId
      * @param array $viewTree
      * @param string $name
      * @param int $categoryId
-     * @param int $position
      * @param string|null $moduleId
      * @return CoreTemplate
      * @throws Exception
      */
-    public static function addTemplate(array $viewTree, string $name, int $categoryId, int $position, string $moduleId = null): CoreTemplate
+    public static function addTemplate(int $courseId, array $viewTree, string $name, int $categoryId, string $moduleId = null): CoreTemplate
     {
         // Verify view tree only has system and/or module aspects
         try {
             // NOTE: will throw an exception if aspect not found
-            Aspect::getAspectsInViewTree(null, $viewTree, 0);
+            Aspect::getAspectsInViewTree(null, $viewTree, $courseId);
 
         } catch (Exception $e) {
             $error = $e->getMessage();
@@ -148,19 +223,19 @@ class CoreTemplate extends Template
         }
 
         // Add view tree of template
-        $viewRoot = ViewHandler::insertViewTree($viewTree, 0);
+        $viewRoot = ViewHandler::insertViewTree($viewTree, $courseId);
 
         // Create new template
         self::trim($name);
         $id = Core::database()->insert(self::TABLE_TEMPLATE, [
+            "course" => $courseId,
             "viewRoot" => $viewRoot,
             "name" => $name,
             "category" => $categoryId,
             "module" => $moduleId
         ]);
-        Utils::updateItemPosition(null, $position, self::TABLE_TEMPLATE, "position", $id, self::getTemplates($categoryId));
 
-        return new CoreTemplate($viewRoot);
+        return new CoreTemplate($id);
     }
 
     /**

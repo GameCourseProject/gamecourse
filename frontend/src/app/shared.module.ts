@@ -62,6 +62,10 @@ import { TableData } from "./_components/tables/table-data/table-data.component"
 // Components: cards
 import { CourseCardComponent } from './_components/cards/course-card/course-card.component';
 import { ModuleCardComponent } from './_components/cards/module-card/module-card.component';
+import { AspectCardComponent } from './_components/cards/aspect-card/aspect-card.component';
+import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-card.component';
+import { EventCardComponent } from './_components/cards/event-card/event-card.component';
+import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
@@ -220,7 +224,11 @@ import {
   tablerUserCircle,
   tablerUsers,
   tablerDotsVertical,
-  tablerBrush
+  tablerBrush,
+  tablerRowInsertBottom,
+  tablerRowInsertTop,
+  tablerColumnInsertLeft,
+  tablerColumnInsertRight,
 } from "@ng-icons/tabler-icons";
 
 
@@ -278,6 +286,10 @@ import {
 
     CourseCardComponent,
     ModuleCardComponent,
+    AspectCardComponent,
+    AuxVarCardComponent,
+    EventCardComponent,
+    DatalabelCardComponent,
 
     AlertComponent,
 
@@ -360,6 +372,10 @@ import {
 
     CourseCardComponent,
     ModuleCardComponent,
+    AspectCardComponent,
+    AuxVarCardComponent,
+    EventCardComponent,
+    DatalabelCardComponent,
 
     AlertComponent,
 
@@ -506,7 +522,11 @@ import {
       tablerUserCircle,
       tablerUsers,
       tablerDotsVertical,
-      tablerBrush
+      tablerBrush,
+      tablerRowInsertBottom,
+      tablerRowInsertTop,
+      tablerColumnInsertLeft,
+      tablerColumnInsertRight,
     }),
     DataTablesModule,
     NgApexchartsModule,

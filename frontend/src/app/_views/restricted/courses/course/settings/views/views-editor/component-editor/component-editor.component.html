@@ -1,350 +1,297 @@
-<app-modal
-  [id]="'component-editor'"
-  [templateRef]="COMPONENT_EDITOR"
-  [header]="'Edit component'"
-  [closeBtnText]="'Close'"
-  [submitBtnText]="'Save'"
-  [size]="'lg'"
-  (click)="$event.stopPropagation()"
-  (submitBtnClicked)="q.onSubmit(null); saveView()"
-/>
+<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+<ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
 
-<ng-template #COMPONENT_EDITOR>
-  <form #q="ngForm">
-    <app-input-select
-      [id]="'type'"
-      [form]="q"
-      [(value)]="viewToEdit.type"
-      [options]="getComponentTypes()"
-      [placeholder]="'Select component type'"
-      [topLabel]="'Component Type'"
-      [required]="true"
-      [classList]="'mb-4'">
-    </app-input-select>
 
-    <!--------------------- Button options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
-      <div class="flex flex-row mt-2 justify-start items-center gap-2">
-        <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
-        <span class="block font-semibold text-mg">Text</span>
-      </div>
-      <div class="text-xs pl-1 pb-2">
-        You can either write ordinary text or write expressions to define the following field.<br>
-        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
-        For more information check the 'Additional Tools' box.
-      </div>
-      <app-input-text
-        [id]="'visibility-condition-expression'"
-        [form]="q"
-        [(value)]="viewToEdit.text"
-        [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
-        [required]="false">
-      </app-input-text>
-      <div class="flex md:flex-row flex-col mt-2">
-        <div class="md:w-1/2">
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Icon that will be displayed in button alongside the text'"></app-simple-helper>
-            <span class="block font-semibold text-mg">Want to Add an Icon?</span>
-          </div>
-          <div class="flex flex-wrap">
-            <div *ngFor="let icon of getIcons()" class="btn btn-ghost -py-2 px-1" (click)="selectIcon(icon, false)" [ngClass]="{'outline outline-2 outline-primary': this.viewToEdit.icon == icon}">
-              <ng-icon [name]="icon" [size]="'1.8rem'"></ng-icon>
-            </div>
-          </div>
-        </div>
-      
-        <div class="grow">
-          <app-input-color
-            [id]="'button-color'"
-            [form]="q"
-            [(value)]="viewToEdit.color"
-            [placeholder]="'Button Color'"
-            [topLabel]="'Color'"
-            [helperText]="'Choose color for the button'"
-            [helperPosition]="'right'">
-          </app-input-color>
-        </div>
-      </div>
-    </ng-container>
+<!--------------------------------------------------->
+<!----- EDITOR FOR TEXT, BUTTONS, BLOCKS, ETC. ------>
+<!--------------------------------------------------->
 
-    <!--------------------- Text options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.TEXT">
-      <div class="text-xs pl-1 pb-2">
-        You can either write ordinary text or write expressions to define the following fields.<br>
-        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
-        For more information check the 'Additional Tools' box.
-      </div>
-      <div class="flex flex-row gap-10">
-        <div class="flex flex-col grow">
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
-            <span class="block font-semibold text-lg">Text</span>
-          </div>
-          <app-input-text
-            [id]="'component-text'"
-            [form]="q"
-            [(value)]="viewToEdit.text"
-            [required]="false">
-          </app-input-text>
-        </div>
-        <div class="flex flex-col grow">
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
-            <span class="block font-semibold text-lg">Link</span>
-          </div>
-          <app-input-text
-            [id]="'component-link'"
-            [form]="q"
-            [(value)]="viewToEdit.link"
-            [required]="false">
-          </app-input-text>
-        </div>
-      </div>
-    </ng-container>
+<ng-template #GENERIC_EDITOR>
+<div class="overflow-x-hidden">
+  
+  <app-input-select
+    *ngIf="viewToEdit.type !== ViewType.ROW && view.parent"
+    [id]="'type'"
+    [(value)]="viewToEdit.type"
+    [options]="getComponentTypes()"
+    [placeholder]="'Select component type'"
+    [topLabel]="'Component Type'"
+    [required]="true"
+    [classList]="'mb-4'"
+  ></app-input-select>
 
-    <!--------------------- Image options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.IMAGE">
-      <div class="text-xs pl-1 pb-2">
-        You can either write ordinary text or write expressions to define the following fields.<br>
-        To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
-        For more information check the 'Additional Tools' box.
-      </div>
-      <div class="flex flex-row gap-10">
-        <div class="flex flex-col grow">
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Source of the image that will be displayed'"></app-simple-helper>
-            <span class="block font-semibold text-lg">Source</span>
-          </div>
-          <app-input-text
-            [id]="'component-source'"
-            [form]="q"
-            [(value)]="viewToEdit.src"
-            [required]="true">
-          </app-input-text>
-        </div>
-        <div class="flex flex-col grow">
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Enables link when clicked'"></app-simple-helper>
-            <span class="block font-semibold text-lg">Link</span>
-          </div>
-          <app-input-text
-            [id]="'component-link'"
-            [form]="q"
-            [(value)]="viewToEdit.link"
-            [required]="false">
-          </app-input-text>
-        </div>
-      </div>
-    </ng-container>
+  <!--------------------- Chart options ---------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType === 'progress'" [ngTemplateOutlet]="PROGRESS_EDITOR"></ng-container>
 
-    <!--------------------- Icon options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.ICON">
-      <div class="flex flex-row mt-2 justify-start items-center gap-2">
-        <span class="block font-semibold text-mg">Choose Icon <span class="text-secondary">*</span></span>
-      </div>
-      <div class="flex flex-wrap">
-        <div *ngFor="let icon of getIcons()" class="btn btn-ghost -py-2 px-1" (click)="selectIcon(icon, true)" [ngClass]="{'outline outline-2 outline-primary': this.viewToEdit.icon == icon}">
-          <ng-icon [name]="icon" [size]="'1.8rem'"></ng-icon>
+  <!--------------------- Button options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.BUTTON">
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <app-simple-helper [position]="'right'" [text]="'Text that will be displayed'"></app-simple-helper>
+      <span class="block font-semibold text-mg">Text</span>
+    </div>
+    <div class="text-xs pl-1 pb-2">
+      You can either write ordinary text or write expressions to define the following field.<br>
+      To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+      For more information check the 'Additional Tools' box.
+    </div>
+    <app-input-text
+      [id]="'visibility-condition-expression'"
+      [(value)]="viewToEdit.text"
+      [placeholder]="'e.g. { courses.getCourseById(%course).name }, \'click to see badges\', ...'"
+      [required]="false">
+    </app-input-text>
+    <div class="flex md:flex-row flex-col mt-2">
+      <div class="md:w-1/2">
+        <div class="flex flex-row mt-2 justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Icon that will be displayed in button alongside the text'"></app-simple-helper>
+          <span class="block font-semibold text-mg">Want to Add an Icon?</span>
         </div>
-      </div>
-      <app-input-select
-        [id]="'component-icon'"
-        [form]="q"
-        [(value)]="viewToEdit.size"
-        [options]="getIconSizeOptions()"
-        [placeholder]="'Select component type'"
-        [topLabel]="'Select size for your icon'"
-        [helperText]="'Will display the icon bigger or smaller. Default is medium size.'"
-        [helperPosition]="'right'"
-        [required]="true"
-        [search]="false">
-      </app-input-select>
-    </ng-container>
-
-    <!--------------------- Block options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK">
-      <div class="flex flex-row">
-        <div>
-          <div class="flex flex-row mt-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Choose whether the components inside will be displayed horizontal or vertically.'"></app-simple-helper>
-            <span class="block font-semibold text-md">Direction</span>
-          </div>
-          <div class="flex flex-wrap">
-            <app-input-radio
-              [id]="'block-direction-horizontal'"
-              [group]="'direction'"
-              [form]="q"
-              [optionValue]="'horizontal'"
-              [(value)]="viewToEdit.direction"
-              [color]="'primary'"
-              [classList]="'mr-8'"
-              [label]="'Horizontal'">
-            </app-input-radio>
-            <app-input-radio
-              [id]="'block-direction-horizontal'"
-              [group]="'direction'"
-              [form]="q"
-              [optionValue]="'vertical'"
-              [(value)]="viewToEdit.direction"
-              [color]="'primary'"
-              [classList]="'mr-8'"
-              [label]="'Vertical'">
-            </app-input-radio>
+        <div class="flex flex-wrap">
+          <div *ngFor="let icon of getIcons()" class="btn btn-ghost -py-2 px-1" (click)="selectIcon(icon, false)" [ngClass]="{'outline outline-2 outline-primary': this.viewToEdit.icon == icon}">
+            <ng-icon [name]="icon" [size]="'1.8rem'"></ng-icon>
           </div>
         </div>
-        <app-input-number
-          *ngIf="viewToEdit.direction == 'horizontal'"
-          [id]="'block-columns'"
-          [form]="q"
-          [(value)]="viewToEdit.columns"
-          [placeholder]="'Select number of columns'"
-          [topLabel]="'Columns'"
-          [minValue]="1"
-          [helperText]="'Chose in how many columns you want to divide the block.'"
+      </div>
+    
+      <div class="grow">
+        <app-input-color
+          [id]="'button-color'"
+          [(value)]="viewToEdit.color"
+          [placeholder]="'Button Color'"
+          [topLabel]="'Color'"
+          [helperText]="'Choose color for the button'"
           [helperPosition]="'right'">
-        </app-input-number>
-        <div class="ml-8">
-          <div class="flex flex-row my-2 justify-start items-center gap-2">
-            <app-simple-helper [position]="'right'" [text]="'Make it adjust automatically to the width and height of the rendering device.'"></app-simple-helper>
-            <span class="block font-semibold text-md">Responsiveness</span>
-          </div>
-          <app-input-checkbox
-            [id]="'block-responsive'"
-            [(value)]="viewToEdit.responsive"
-            [color]="'primary'"
-            (valueChange)="viewToEdit.responsive = !viewToEdit.responsive"
-            [label]="'Make it responsive'"
-            [labelPosition]="'right'">
-          </app-input-checkbox>
-        </div>
+        </app-input-color>
       </div>
-    </ng-container>
+    </div>
+  </ng-container>
 
-    <!--------------------- Collapse options --------------------->
-    <ng-container *ngIf="viewToEdit.type === ViewType.COLLAPSE">
-      <app-input-select
-        [id]="'collapse-icon'"
-        [form]="q"
-        [(value)]="viewToEdit.collapseIcon"
-        [options]="getCollapseIconOptions()"
-        [topLabel]="'Icon'"
-        [helperText]="'Icon that will be displayed in collapse when opened/closed.'"
+  <!--------------------- Text options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.TEXT">
+    <div class="text-xs pl-1 pb-2">
+      You can either write ordinary text or write expressions to define the following fields.<br>
+      To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+      For more information check the 'Additional Tools' box.
+    </div>
+    <div class="grid grid-cols-2 gap-8">
+      <app-input-text
+        [id]="'component-text'"
+        [(value)]="viewToEdit.text"
+        [required]="false"
+        [topLabel]="'Text'"
+        [helperText]="'Text that will be displayed'"
         [helperPosition]="'right'"
-        [required]="true"
-        [search]="false">
-      </app-input-select>
-      <div class="flex flex-row gap-10">
-        <div class="grow">
-          <app-input-select
-            [id]="'collapse-header-type'"
-            [form]="q"
-            [(value)]="viewToEdit.header.type"
-            [options]="getComponentTypes()"
-            [placeholder]="'Select component type'"
-            [topLabel]="'Header Component Type'"
-            [helperText]="'Select the type of component you want to be showing.'"
-            [helperPosition]="'right'"
-            [required]="true">
-          </app-input-select>
+      ></app-input-text>
+      <app-input-text
+        [id]="'component-link'"
+        [(value)]="viewToEdit.link"
+        [required]="false"
+        [topLabel]="'Link'"
+        [helperText]="'Enables link when clicked'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+    </div>
+  </ng-container>
+
+  <!--------------------- Image options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.IMAGE">
+    <div class="text-xs pl-1 pb-2">
+      You can either write ordinary text or write expressions to define the following fields.<br>
+      To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}
+      For more information check the 'Additional Tools' box.
+    </div>
+    <div class="grid grid-cols-2 gap-8">
+      <app-input-text
+        [id]="'component-source'"
+        [(value)]="viewToEdit.src"
+        [required]="false"
+        [topLabel]="'Source'"
+        [helperText]="'Source of the image that will be displayed'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+      <app-input-text
+        [id]="'component-link'"
+        [(value)]="viewToEdit.link"
+        [required]="false"
+        [topLabel]="'Link'"
+        [helperText]="'Enables link when clicked'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+    </div>
+  </ng-container>
+
+  <!--------------------- Icon options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.ICON">
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg">Choose Icon <span class="text-secondary">*</span></span>
+    </div>
+    <div class="flex flex-wrap">
+      <div *ngFor="let icon of getIcons()" class="btn btn-ghost -py-2 px-1" (click)="selectIcon(icon, true)" [ngClass]="{'outline outline-2 outline-primary': this.viewToEdit.icon == icon}">
+        <ng-icon [name]="icon" [size]="'1.8rem'"></ng-icon>
+      </div>
+    </div>
+    <app-input-select
+      [id]="'component-icon'"
+      [(value)]="viewToEdit.size"
+      [options]="getIconSizeOptions()"
+      [placeholder]="'Select size'"
+      [topLabel]="'Select size for your icon'"
+      [helperText]="'Will display the icon bigger or smaller. Default is medium size.'"
+      [helperPosition]="'right'"
+      [required]="true"
+      [search]="false">
+    </app-input-select>
+  </ng-container>
+
+  <!--------------------- Block options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.BLOCK">
+    <div class="flex flex-row">
+      <div>
+        <div class="flex flex-row mt-2 justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Choose whether the components inside will be displayed horizontal or vertically.'"></app-simple-helper>
+          <span class="block font-semibold text-md">Direction</span>
         </div>
-        <div class="grow">
-          <app-input-select
-            [id]="'collapse-content-type'"
-            [form]="q"
-            [(value)]="viewToEdit.content.type"
-            [options]="getComponentTypes()"
-            [placeholder]="'Select component type'"
-            [topLabel]="'Content Component Type'"
-            [helperText]="'Select the type of component you want as content.'"
-            [helperPosition]="'right'"
-            [required]="true">
-          </app-input-select>
+        <div class="flex flex-wrap">
+          <app-input-radio
+            [id]="'block-direction-horizontal'"
+            [group]="'direction'"
+            [optionValue]="'horizontal'"
+            [(value)]="viewToEdit.direction"
+            [color]="'primary'"
+            [classList]="'mr-8'"
+            [label]="'Horizontal'">
+          </app-input-radio>
+          <app-input-radio
+            [id]="'block-direction-horizontal'"
+            [group]="'direction'"
+            [optionValue]="'vertical'"
+            [(value)]="viewToEdit.direction"
+            [color]="'primary'"
+            [classList]="'mr-8'"
+            [label]="'Vertical'">
+          </app-input-radio>
         </div>
       </div>
-    </ng-container>
-
-
-    <!--------------------------------------------------->
-    <!--------------------- GENERAL --------------------->
-    <!--------------------------------------------------->
-    <div class="divider"></div>
-    <div class="prose">
-      <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
+      <app-input-number
+        *ngIf="viewToEdit.direction == 'horizontal'"
+        [id]="'block-columns'"
+        [(value)]="viewToEdit.columns"
+        [placeholder]="'Select number of columns'"
+        [topLabel]="'Columns'"
+        [minValue]="1"
+        [helperText]="'Chose in how many columns you want to divide the block.'"
+        [helperPosition]="'right'">
+      </app-input-number>
+      <div class="ml-8">
+        <div class="flex flex-row my-2 justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Make it adjust automatically to the width and height of the rendering device.'"></app-simple-helper>
+          <span class="block font-semibold text-md">Responsiveness</span>
+        </div>
+        <app-input-checkbox
+          [id]="'block-responsive'"
+          [(value)]="viewToEdit.responsive"
+          [color]="'primary'"
+          (valueChange)="viewToEdit.responsive = !viewToEdit.responsive"
+          [label]="'Make it responsive'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+      </div>
     </div>
+  </ng-container>
+
+  <!--------------------- Collapse options --------------------->
+  <ng-container *ngIf="viewToEdit.type === ViewType.COLLAPSE">
+    <app-input-select
+      [id]="'collapse-icon'"
+      [(value)]="viewToEdit.collapseIcon"
+      [options]="getCollapseIconOptions()"
+      [topLabel]="'Icon'"
+      [helperText]="'Icon that will be displayed in collapse when opened/closed.'"
+      [helperPosition]="'right'"
+      [search]="false">
+    </app-input-select>
     <div class="flex flex-row gap-10">
-      <div class="mt-2">
-        <div class="flex flex-row justify-start items-center gap-2">
-          <app-simple-helper 
-          [position]="'right'" 
-          [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'"></app-simple-helper>
-          <span class="block font-semibold text-md">Auxiliary Variables</span>
-        </div>
-        
-        <!-- Variables -->
-        <div class="flex flex-col gap-2 mb-2">
-          <!-- Existing -->
-          <div *ngFor="let variable of viewToEdit.variables" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
-            <div class="w-28">
-              <span class="block font-semibold text-md">Name:</span>{{variable.name}}
-            </div>
-            <div class="w-80">
-              <span class="block font-semibold text-md">Expression:</span>{{variable.value}}
-            </div>
-          </div>
-          <!-- New -->
-          <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
-            <div class="w-28">
-              <app-input-text
-              [id]="'aux-var-name'"
-              [form]="q"
-              [(value)]="variableToAdd.name"
-              [topLabel]="'Name:'"
-              [placeholder]="'courseColor'"
-              [size]="'sm'"
-              ></app-input-text>
-            </div>
-            <div class="w-80">
-              <app-input-text
-              [id]="'aux-var-expression'"
-              [form]="q"
-              [(value)]="variableToAdd.value"
-              [topLabel]="'Expression:'"
-              [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
-              See the \'Additional Tools\' box for more information.'"
-              [placeholder]="'{ courses.getCourseById{%course}.color }'"
-              [size]="'sm'"
-              ></app-input-text>
-            </div>
-            <button class="btn btn-secondary" (click)="addAuxVar()">Add</button>
-          </div>
-        </div>
-
-        <!-- Data Iteration -->
-        <app-input-text
-          [id]="'design-id'"
-          [form]="q"
-          [(value)]="viewToEdit.loopData"
-          [topLabel]="'Data Iteration'"
-          [helperText]="'Determines how many times this component will be repeated.
-            \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this 
-            course. If there are 3 kill strees in the course, the text will be repeated 3 times.'"
+      <div class="grow">
+        <app-input-select
+          [id]="'collapse-header-type'"
+          [(value)]="viewToEdit.header.type"
+          [options]="getComponentTypes()"
+          [placeholder]="'Select component type'"
+          [topLabel]="'Header Component Type'"
+          [helperText]="'Select the type of component you want to be showing.'"
           [helperPosition]="'right'"
-          [placeholder]="'e.g. { skillTrees.trees }'"
-        ></app-input-text>
+          [required]="true">
+        </app-input-select>
       </div>
-
-      <!-- Additional Tools -->
-      <div class="h-full w-full">
-        <app-input-code
-          [id]="'component-tools'"
-          [title]="'Additional Tools'"
-          [tabs]="additionalToolsTabs"
-          [classList]="'grow'"
-        ></app-input-code>
+      <div class="grow">
+        <app-input-select
+          [id]="'collapse-content-type'"
+          [(value)]="viewToEdit.content.type"
+          [options]="getComponentTypes()"
+          [placeholder]="'Select component type'"
+          [topLabel]="'Content Component Type'"
+          [helperText]="'Select the type of component you want as content.'"
+          [helperPosition]="'right'"
+          [required]="true">
+        </app-input-select>
       </div>
     </div>
+  </ng-container>
 
-    <!-- Events -->
+  <!--------------------------------------------------->
+  <!--------------------- GENERAL --------------------->
+  <!--------------------------------------------------->
+  <div *ngIf="viewToEdit.type !== ViewType.ROW" class="divider"></div>
+  <div class="prose">
+    <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
+  </div>
+  <div class="flex flex-row gap-10">
+    <div class="mt-2">
+      <div class="flex flex-row justify-start items-center gap-2">
+        <app-simple-helper 
+        [position]="'right'" 
+        [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'"></app-simple-helper>
+        <span class="block font-semibold text-md">Auxiliary Variables</span>
+      </div>
+      
+      <!-- Variables -->
+      <div class="flex flex-col gap-2 mb-2 grow-0">
+        <!-- Existing -->
+        <div *ngFor="let variable of viewToEdit.variables; index as i">
+          <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
+        </div>
+        <!-- New -->
+        <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
+      </div>
+
+      <!-- Data Iteration -->
+      <app-input-text
+        [id]="'design-id'"
+        [(value)]="viewToEdit.loopData"
+        [topLabel]="'Data Iteration'"
+        [helperText]="'Determines how many times this component will be repeated.
+          \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this 
+          course. If there are 3 skill trees in the course, the text will be repeated 3 times.'"
+        [helperPosition]="'right'"
+        [placeholder]="'e.g. { skillTrees.trees }'"
+      ></app-input-text>
+    </div>
+
+    <!-- Additional Tools -->
+    <div class="w-full overflow-x-auto">
+      <app-input-code
+        *ngIf="additionalToolsTabs"
+        [id]="'component-tools'"
+        [title]="'Additional Tools'"
+        [tabs]="additionalToolsTabs"
+      ></app-input-code>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
+
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
       <app-simple-helper 
         [position]="'right'" 
@@ -353,44 +300,21 @@
     </div>
     <div class="flex flex-col gap-2 mb-2">
       <!-- Existing -->
-      <div *ngFor="let event of viewToEdit.events" class="card bg-base-200 shadow-md flex flex-row p-5 items-end gap-2">
-        <div class="w-36">
-          <span class="block font-semibold text-md">When:</span>{{event.type}}
-        </div>
-        <div class="grow">
-          <span class="block font-semibold text-md">Do:</span>{{event.action}}
-        </div>
+      <div *ngFor="let event of viewToEdit.events; index as i">
+        <app-event-card [event]="event" (deleteEvent)="deleteEvent(i)" (updateEvent)="updateEvent($event, i)"/>
       </div>
       <!-- New -->
-      <div class="card bg-base-200 shadow-md flex flex-row pb-5 pt-1 px-5 items-end gap-2">
-        <div class="w-36">
-          <app-input-select
-            [id]="'event-when'"
-            [form]="q"
-            [(value)]="eventToAdd.type"
-            [options]="getEventTypes()"
-            [placeholder]="'Select event'"
-            [topLabel]="'When:'"
-            [search]="false">
-          </app-input-select>
-        </div>
-        <div class="grow">
-          <app-input-text
-            [id]="'event-do'"
-            [form]="q"
-            [(value)]="eventToAdd.action"
-            [topLabel]="'Do:'"
-            [placeholder]="'{ actions.goToPage(pages.getPageByName(\'Awards\').id, %user) }'"
-          ></app-input-text>
-        </div>
-        <button class="btn btn-secondary" (click)="addEvent()">Add</button>
-      </div>
+      <app-event-card [new]="true" (createEvent)="addEvent($event)"/>
     </div>
 
+  </ng-container> <!----------------------------->
 
-    <!--------------------------------------------------->
-    <!--------------------- STYLING --------------------->
-    <!--------------------------------------------------->
+
+  <!--------------------------------------------------->
+  <!--------------------- STYLING --------------------->
+  <!--------------------------------------------------->
+  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
+
     <div class="divider"></div>
     <div class="prose">
       <h3 class="flex gap-2 items-center"><ng-icon name="tabler-brush" size="1.5rem"/>Styling</h3>
@@ -404,29 +328,26 @@
       <app-input-radio
         [id]="'visibility-yes'"
         [group]="'visibility'"
-        [form]="q"
         [optionValue]="'visible'"
         [(value)]="viewToEdit.visibilityType"
         [color]="'primary'"
         [classList]="'mr-8'"
         [label]="'Visible'">
       </app-input-radio>
-  
+
       <app-input-radio
         [id]="'visibility-no'"
         [group]="'visibility'"
-        [form]="q"
         [optionValue]="'invisible'"
         [(value)]="viewToEdit.visibilityType"
         [color]="'primary'"
         [classList]="'mr-8'"
         [label]="'Not visible'">
       </app-input-radio>
-  
+
       <app-input-radio
         [id]="'visibility-condition'"
         [group]="'visibility'"
-        [form]="q"
         [optionValue]="'conditional'"
         [(value)]="viewToEdit.visibilityType"
         [color]="'primary'"
@@ -437,11 +358,10 @@
     <div *ngIf="viewToEdit.visibilityType == 'conditional'" class="mb-5">
       <span class="text-xs pl-1">
         Write an expression that makes this component visible.
-        Don't forget that exoressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
+        Don't forget that expressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
       </span>
       <app-input-text
         [id]="'visibility-condition-expression'"
-        [form]="q"
         [(value)]="viewToEdit.visibilityCondition"
         [placeholder]="'e.g. { %userLevel.number < %nrLevels-1 }'"
         [required]="false">
@@ -453,11 +373,10 @@
       <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
       <span class="block font-semibold text-lg">Interface Design</span>
     </div>
-    <div class="w-full flex flex-col md:flex-row gap-10">
-      <div class="md:w-1/2">
+    <div class="w-full h-full grid grid-cols-2 gap-8">
+      <div>
         <app-input-text
           [id]="'design-id'"
-          [form]="q"
           [(value)]="viewToEdit.cssId"
           [topLabel]="'ID'"
           [helperText]="'Html\'s ID tag'"
@@ -465,7 +384,6 @@
         ></app-input-text>
         <app-input-text
           [id]="'design-class'"
-          [form]="q"
           [(value)]="viewToEdit.classList"
           [topLabel]="'Class'"
           [helperText]="'Html\'s Class tag'"
@@ -473,14 +391,13 @@
         ></app-input-text>
         <app-input-text
           [id]="'design-style'"
-          [form]="q"
           [(value)]="viewToEdit.style"
           [topLabel]="'Style'"
           [helperText]="'Html\'s Style tag'"
           [helperPosition]="'right'"
         ></app-input-text>
       </div>
-      <div class="grow flex flex-col">
+      <div class="flex flex-col h-full">
         <div class="flex flex-row items-center mb-2">
           <span class="block font-semibold pl-1 py-1">Preview</span>
           <button class="ml-auto btn btn-sm btn-secondary" (click)="reloadPreview()">
@@ -501,23 +418,821 @@
         <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
         <span class="block font-semibold text-lg">Table Layout Settings</span>
       </div>
-      <app-input-checkbox
-        [id]="'table-footers'"
-        [(value)]="viewToEdit.footers"
-        [color]="'primary'"
-        (valueChange)="viewToEdit.footers = !viewToEdit.footers"
-        [label]="'Add footers'"
-        [labelPosition]="'right'">
-      </app-input-checkbox>
-      <app-input-checkbox
-        [id]="'table-searching'"
-        [(value)]="viewToEdit.searching"
-        [color]="'primary'"
-        (valueChange)="this.viewToEdit.searching = !this.viewToEdit.searching"
-        [label]="'Allow overall searching'"
-        [labelPosition]="'right'">
-      </app-input-checkbox>
+      <div class="flex flex-wrap gap-x-5">
+        <app-input-checkbox
+          [id]="'table-footers'"
+          [(value)]="viewToEdit.footers"
+          [color]="'primary'"
+          [label]="'Add footers'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-searching'"
+          [(value)]="viewToEdit.searching"
+          [color]="'primary'"
+          [label]="'Allow overall searching'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-filtering'"
+          [(value)]="viewToEdit.columnFiltering"
+          [color]="'primary'"
+          [label]="'Allow column filtering'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-paging'"
+          [(value)]="viewToEdit.paging"
+          [color]="'primary'"
+          [label]="'Show number of pages'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-info'"
+          [(value)]="viewToEdit.info"
+          [color]="'primary'"
+          [label]="'Show number of entries/page'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-lengthChange'"
+          [(value)]="viewToEdit.lengthChange"
+          [color]="'primary'"
+          [label]="'Allow customization of nº entries/page'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+        <app-input-checkbox
+          [id]="'table-ordering'"
+          [(value)]="viewToEdit.ordering"
+          [color]="'primary'"
+          [label]="'Allow ordering customization'"
+          [labelPosition]="'right'">
+        </app-input-checkbox>
+      </div>
     </div>
+    
+  </ng-container> <!----------------------------->
 
-  </form>
+  <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
+    <button class="ml-auto btn btn-ghost" (click)="initViewToEdit()">Discard</button>
+    <button class="btn btn-primary" (click)="saveView()">Save</button>
+  </div>
+
+</div>
+</ng-template>
+
+
+
+<!--------------------------------------------------->
+<!---------------- EDITOR FOR TABLES ---------------->
+<!--------------------------------------------------->
+<ng-template #TABLE_EDITOR>
+  <div class="flex flex-row">
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Overall' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+            (click)="tableSelectedTab = 'Overall'">Overall</button>
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Rows' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+            (click)="tableSelectedTab = 'Rows'">Rows</button>
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Cells' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+            (click)="tableSelectedTab = 'Cells'">Cells</button>
+  </div>
+  <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
+    <ng-container *ngIf="tableSelectedTab == 'Overall'" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+
+    <!--------------------- Rows Tab --------------------->
+    <ng-container *ngIf="tableSelectedTab == 'Rows'">
+      <span class="block font-semibold text-lg mb-2">Current Rows:</span>
+      <div class="flex flex-col gap-2">
+        <span>Header</span>
+        <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center">
+          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+        </div>
+        <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
+        <div class="divider"></div>
+        <span>Body</span>
+        <div *ngFor="let row of this.viewToEdit.bodyRows; index as i">
+          <div class="flex flex-row items-center">
+            <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
+            <button class="btn btn-ghost rounded-full p-1" (click)="deleteBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+          </div>
+          <!-- Row editor -->
+          <div *ngIf="row === rowToEdit" class="bg-base-100 my-4 rounded-xl p-6">
+            <app-component-editor [view]="rowToEdit" [saveButton]="true"/>
+          </div>
+        </div>
+        <button *ngIf="this.viewToEdit.bodyRows?.length <= 0" class="btn btn-secondary" (click)="addBodyRow(0)" >Add Body Row</button>
+      </div>
+
+    </ng-container>
+
+    <!--------------------- Cells Tab --------------------->
+    <ng-container *ngIf="tableSelectedTab == 'Cells'">
+      <span class="block font-semibold text-lg mb-2">Current Cells:</span>
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-row items-center gap-3 divide-x-2 divide-base-100">
+          <div *ngFor="let col of [].constructor(getNumberOfCols()); index as i" class="w-full flex justify-center">
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-left'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-right'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i)"><ng-icon [name]="'tabler-column-insert-left'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i+1)"><ng-icon [name]="'tabler-column-insert-right'" [size]="'1.5rem'"/></button>
+            <button class="shrink btn btn-ghost rounded-full p-0" (click)="deleteColumn(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+          </div>
+        </div>
+        <span>Header</span>
+        <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center gap-3">
+          <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;" 
+                class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
+                (click)="selectCell(cell)">
+              {{$any(cell).text ?? "Cell"}}
+          </div>
+        </div>
+        <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.headerRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
+        <div class="divider"></div>
+        <span>Body</span>
+        <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center gap-3">
+          <div *ngFor="let cell of this.viewToEdit.bodyRows[i].children;" 
+                class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
+                (click)="selectCell(cell)">
+            Cell
+          </div>
+        </div>
+        <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.bodyRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
+      
+        <!-- Cell editor -->
+        <div *ngIf="cellToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
+          <div class="prose">
+            <h3>Edit cell</h3>
+          </div>
+          <app-component-editor [view]="cellToEdit" [saveButton]="true"/>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</ng-template>
+
+
+
+<!--------------------------------------------------->
+<!---------------- EDITOR FOR CHARTS ---------------->
+<!--------------------------------------------------->
+<ng-template #CHART_EDITOR>
+  <app-input-select
+    [id]="'chart-type'"
+    [(value)]="viewToEdit.chartType"
+    [options]="getChartTypes()"
+    [placeholder]="'Select chart type'"
+    [topLabel]="'Type of Chart'"
+    [required]="true"
+    [classList]="'mb-4'">
+  </app-input-select>
+
+  <div class="flex flex-row mt-2 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Dimensions</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Not mandatory, only specify if needed. Default are width = 100% and height = 'auto'.
+  </div>
+  <div class="flex flex-row gap-2">
+    <app-input-text
+      [id]="'chart-width'"
+      [(value)]="viewToEdit.options.width"
+      [placeholder]="'e.g. 80%'"
+      [required]="false"
+      [leftLabel]="'Width '"
+      [size]="'sm'">
+    </app-input-text>
+    <app-input-text
+      [id]="'chart-height'"
+      [(value)]="viewToEdit.options.height"
+      [placeholder]="'e.g. 80%'"
+      [required]="false"
+      [leftLabel]="'Height'"
+      [size]="'sm'">
+    </app-input-text>
+  </div>
+
+  <div class="flex flex-row gap-10 mt-2">
+    <div class="w-1/2 shrink-0">
+      <div class="flex flex-row my-2 justify-start items-center gap-2">
+        <app-simple-helper [position]="'right'" [text]="'Series of data to display in chart.'"></app-simple-helper>
+        <span class="block font-semibold text-mg">Chart Data</span>
+      </div>
+      <app-input-text
+        [id]="'chart-data'"
+        [(value)]="viewToEdit.data"
+        [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
+        [required]="true">
+      </app-input-text>
+    </div>
+    <div class="grow">
+      <app-input-color
+        [id]="'chart-colors'"
+        [(value)]="viewToEdit.color"
+        [(values)]="viewToEdit.options.colors"
+        [placeholder]="'Chart Colors'"
+        [topLabel]="'Chart Colors'"
+        [helperText]="'Choose colors for each set of the data series.'"
+        [helperPosition]="'right'"
+        [multiple]="true">
+      </app-input-color>
+    </div>
+  </div>
+
+  <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
+    <div class="flex flex-row mt-4 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Data Labels</span>
+    </div>
+    <div class="text-xs pl-1 pb-2">
+      Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
+    </div>
+    <app-input-checkbox
+      [id]="'chart-datalabels'"
+      [(value)]="viewToEdit.options.dataLabels"
+      [color]="'primary'"
+      [label]="'Add data labels to this chart'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+    <!-- TODO: Options for datalabels. Only certain series, and formatting.
+    <ng-container *ngIf="viewToEdit.options.dataLabels">
+      <div class="flex flex-col gap-2 mb-2 grow-0">
+        <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
+          <app-datalabel-card [el]="el" [chartSeries]="viewToEdit.options.series" [serie]="el.serie" [format]="el.format" (deleteEvent)="deleteDataLabel(i)" (updateEvent)="updateDataLabel($event, i)"/>
+        </div>
+        <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
+      </div>
+    </ng-container> 
+    -->
+  </ng-container>
+
+  <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
+    <div class="flex flex-row mt-4 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Axis</span>
+    </div>
+    <div class="grid grid-cols-2">
+      <div class="border-r-2 border-neutral/10 px-4"> <!-------------- X AXIS ------------------->
+        <app-input-text
+          *ngIf="viewToEdit.chartType !== 'radar'"
+          [id]="'chart-x-label'"
+          [(value)]="viewToEdit.options.XAxisLabel"
+          [placeholder]="'e.g. \'Time (days)\' '"
+          [required]="false"
+          [topLabel]="'X-Axis label'"
+        ></app-input-text>
+        <app-input-number
+          *ngIf="viewToEdit.chartType !== 'radar'"
+          [id]="'chart-x-ticks'"
+          [(value)]="viewToEdit.options.XAxisTickAmount"
+          [topLabel]="'X-Axis amount of ticks'"
+          [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the X-axis of the chart. It helps to improve readability.'"
+          [helperPosition]="'right'"
+        ></app-input-number>
+        <app-input-select
+          [id]="'chart-x-type'"
+          [(value)]="viewToEdit.options.XAxisType"
+          [options]="getXAxisDataTypes()"
+          [placeholder]="'Select X-Axis data type'"
+          [topLabel]="'X-Axis type of data'"
+          [required]="false"
+        ></app-input-select>
+
+        <div class="bg-base-300 rounded-xl p-4 mt-4">
+          <div class="flex flex-row justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
+            <span class="block font-semibold text-mg pl-1">Add categories</span>
+          </div>
+          <div class="flex flex-row gap-2 mb-2">
+            <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
+              {{cat}}
+              <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
+            </div>
+          </div>
+          <div class="flex flex-row gap-2">
+            <app-input-text
+              [id]="'chart-x-label'"
+              [(value)]="categoryToAdd"
+              [placeholder]="'Add a category'"
+              [required]="false"
+            ></app-input-text>
+            <button class="btn btn-secondary" (click)="addXAxisCategory()">Add</button>
+          </div>
+        </div>
+
+        <app-input-checkbox
+          [id]="'chart-x-grid'"
+          [(value)]="viewToEdit.options.XAxisGrid"
+          [color]="'primary'"
+          [label]="'Show grid on X-Axis'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <app-input-checkbox
+          *ngIf="viewToEdit.chartType !== 'radar' && viewToEdit.options.XAxisGrid"
+          [disabled]="strippedGridHorizontal"
+          [id]="'chart-stripped-x'"
+          [(value)]="strippedGridVertical"
+          [color]="'primary'"
+          [label]="'Show stripped grid (alternate grid-lines)'"
+          [labelPosition]="'right'"
+          [classList]="'ml-6 -mt-2'"
+          (valueChange)="changeStripedGrid($event, 'vertical')"
+        ></app-input-checkbox>
+        <span *ngIf="strippedGridHorizontal" class="text-warning">You can only have one stripped grid in chart</span>
+      </div>
+
+      <div class="px-4" *ngIf="viewToEdit.chartType !== 'radar'"> <!-------------- Y AXIS ------------------->
+        <app-input-text
+          [id]="'chart-y-label'"
+          [(value)]="viewToEdit.options.YAxisLabel"
+          [placeholder]="'e.g. \'XP Evolution\' '"
+          [required]="false"
+          [topLabel]="'Y-Axis label'"
+        ></app-input-text>
+        <app-input-number
+          [id]="'chart-y-ticks'"
+          [(value)]="viewToEdit.options.YAxisTickAmount"
+          [topLabel]="'Y-Axis amount of ticks'"
+          [helperText]="'Determine approximately the number of ticks (grid-lines) displayed on the Y-axis of the chart. It helps to improve readability.'"
+          [helperPosition]="'right'"
+          [placeholder]="'Select a number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-y-min'"
+          [(value)]="viewToEdit.options.YAxisMin"
+          [topLabel]="'Y-Axis minimum value'"
+          [placeholder]="'Select a minimum number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-y-max'"
+          [(value)]="viewToEdit.options.YAxisMax"
+          [topLabel]="'Y-Axis maximum value'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
+        <app-input-checkbox
+          [id]="'block-responsive'"
+          [(value)]="viewToEdit.options.YAxisReversed"
+          [color]="'primary'"
+          [label]="'Reverse Y-Axis values'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <span class="ml-6 -mt-4 text-sm">(Instead of being ordered from bottom to top change from top to bottom)</span>
+        <app-input-checkbox
+          [id]="'chart-y-grid'"
+          [(value)]="viewToEdit.options.YAxisGrid"
+          [color]="'primary'"
+          [label]="'Show grid on Y-Axis'"
+          [labelPosition]="'right'"
+          [classList]="'mt-4'"
+        ></app-input-checkbox>
+        <app-input-checkbox
+          *ngIf="viewToEdit.options.YAxisGrid"
+          [disabled]="strippedGridVertical"
+          [id]="'chart-stripped-y'"
+          [(value)]="strippedGridHorizontal"
+          [color]="'primary'"
+          [label]="'Show stripped grid (alternate grid-lines)'"
+          [labelPosition]="'right'"
+          [classList]="'ml-6 -mt-2'"
+          (valueChange)="changeStripedGrid($event, 'horizontal')"
+        ></app-input-checkbox>
+        <span *ngIf="strippedGridVertical" class="text-warning">You can only have one stripped grid in chart</span>
+      </div>
+      <div class="px-4" *ngIf="viewToEdit.chartType === 'radar'">
+        <app-input-checkbox
+          [id]="'chart-normalized'"
+          [(value)]="viewToEdit.options.normalized"
+          [color]="'primary'"
+          [label]="'Normalize data series'"
+          [labelPosition]="'right'"
+        ></app-input-checkbox>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Tooltips</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Small pop-up boxes that appear when you hover your mouse pointer over a data point. Tooltips are used to provide additional information about the data or element, helping users understand and interpret the chart more effectively.
+  </div>
+  <app-input-checkbox
+    [id]="'chart-tooltip'"
+    [(value)]="viewToEdit.options.tooltip"
+    [color]="'primary'"
+    [label]="'Add data tooltips to this chart'"
+    [labelPosition]="'right'"
+  ></app-input-checkbox>
+  <div *ngIf="viewToEdit.options.tooltip" class="bg-base-300 rounded-xl p-6 text-xs">
+    Make use of the points in the chart or write expressions if needed. <br>
+    To access points use this.x and this.y, which will access each point coordinates in the data series.<br><br>
+
+    Check the following example:<br>
+    For data series Serie1, with X-categories: 'Jan', 'Feb' and values:<br><br>
+
+    Serie1 = [10, 15]<br><br>
+
+    We can format the tooltips for X-axis to be: "The X value for " + this.x + " corresponds to Y value " + this.y + " in this series".<br><br>
+
+    Which would iterate through all data points in graph [ [10 , Jan] , [15 , Feb] , ... ]  and translate to:<br>
+    The X value for <strong>10</strong> corresponds to Y value <strong>Jan</strong>.<br>
+    The X value for <strong>15</strong> corresponds to Y value <strong>Feb</strong>.
+
+    <div class="flex flex-row mt-4">
+      <div class="grow border-r-2 border-neutral/10 pr-4">
+        <app-input-text
+          [id]="'chart-x-tooltip-format'"
+          [(value)]="viewToEdit.options.tooltipXFormatter"
+          [placeholder]="'e.g. \'X value:\' + this.x '"
+          [required]="false"
+          [topLabel]="'Format data tooltips for X values:'"
+        ></app-input-text>
+      </div>
+      <div class="grow pl-4">
+        <app-input-text
+          [id]="'chart-y-tooltip-format'"
+          [(value)]="viewToEdit.options.tooltipYFormatter"
+          [placeholder]="'e.g. \'Y value:\' + this.y '"
+          [required]="false"
+          [topLabel]="'Format data tooltips for Y values:'"
+        ></app-input-text>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 mt-4">
+    <div class="border-r-2 border-neutral/10 px-4">
+      <div class="flex flex-row mt-4 justify-start items-center gap-2">
+        <span class="block font-semibold text-mg pl-1">Title, Subtitle & Alignment</span>
+      </div>
+      <app-input-text
+        [id]="'chart-title'"
+        [(value)]="viewToEdit.options.title"
+        [placeholder]="'e.g. Leaderboard, Profile graph, ... '"
+        [topLabel]="'Title'"
+        ></app-input-text>
+        <app-input-text
+        [id]="'chart-subtitle'"
+        [(value)]="viewToEdit.options.subtitle"
+        [placeholder]="'e.g. Each student\'s leaderboard graph'"
+        [topLabel]="'Subtitle'"
+      ></app-input-text>
+      <app-input-select
+        [id]="'chart-align'"
+        [(value)]="viewToEdit.options.align"
+        [options]="getChartAlignmentOptions()"
+        [placeholder]="'Select alignment'"
+        [topLabel]="'Alignment of title & subtitle'"
+        [required]="false"
+      ></app-input-select>
+    </div>
+    <div class="px-4">
+      <div class="flex flex-row mt-4 justify-start items-center gap-2">
+        <span class="block font-semibold text-mg pl-1">Legend</span>
+      </div>
+      <app-input-checkbox
+        [id]="'chart-legend'"
+        [(value)]="viewToEdit.options.legend"
+        [color]="'primary'"
+        [label]="'Show legend in graph'"
+        [labelPosition]="'right'"
+      ></app-input-checkbox>
+      <div *ngIf="viewToEdit.options.legend" class="bg-base-300 rounded-xl p-4 text-xs">
+        <app-input-select
+          [id]="'chart-legend-position'"
+          [(value)]="viewToEdit.options.legendPosition"
+          [options]="getChartLegendPositionOptions()"
+          [placeholder]="'Select position'"
+          [topLabel]="'Choose position for legend (in regards of graph itself)'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
+    </div>
+  </div>
+
+  <ng-container *ngIf="viewToEdit.chartType === 'line' || viewToEdit.chartType === 'combo'">
+    <div class="flex flex-row mt-8 justify-start items-center gap-2">
+      <span class="block font-semibold text-mg pl-1">Data display</span>
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      <div class="border-r-2 border-neutral/10 p-4">
+        <div class="bg-base-300 rounded-xl p-4">
+          <app-input-select
+            [id]="'chart-lines'"
+            [(value)]="viewToEdit.options.strokeCurve"
+            [options]="getChartStrokeCurveOptions()"
+            [placeholder]="'Select stroke curve'"
+            [topLabel]="'Type of lines'"
+            [required]="false"
+            [search]="false"
+          ></app-input-select>
+        </div>
+      </div>
+      <div class="border-r-2 border-neutral/10 p-4">
+        <div class="bg-base-300 rounded-xl p-4">
+          <app-input-select
+            [id]="'chart-ends'"
+            [(value)]="viewToEdit.options.strokeLineCap"
+            [options]="getChartLineCapOptions()"
+            [placeholder]="'Select line cap'"
+            [topLabel]="'Type of start and end of line'"
+            [required]="false"
+            [search]="false"
+          ></app-input-select>
+        </div>
+      </div>
+      <div class="p-4">
+        <app-input-number
+          [id]="'chart-line-width'"
+          [(value)]="viewToEdit.options.strokeWidth"
+          [topLabel]="'Width of lines'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-marker-size'"
+          [(value)]="viewToEdit.options.markersSize"
+          [topLabel]="'Data points marker size'"
+          [placeholder]="'Select a maximum number'"
+        ></app-input-number>
+      </div>
+    </div>
+  </ng-container>
+
+  <div class="flex flex-row mt-8 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Extras</span>
+  </div>
+  
+  <!-- BAR CHART EXTRAS -->
+  <div *ngIf="viewToEdit.chartType === 'bar' || viewToEdit.chartType === 'combo'" class="grid grid-cols-2 gap-8">
+    <div>
+      <div class="flex flex-row mt-2 justify-start items-center gap-2">
+        <span class="block font-semibold text-md">Bars orientation</span>
+      </div>
+      <div class="flex flex-wrap">
+        <app-input-radio
+          [id]="'chart-orientation-vertical'"
+          [group]="'orientation'"
+          [optionValue]="'vertical'"
+          [(value)]="viewToEdit.options.orientation"
+          [color]="'primary'"
+          [classList]="'mr-8'"
+          [label]="'Vertical'">
+        </app-input-radio>
+        <app-input-radio
+          [id]="'chart-orientation-horizontal'"
+          [group]="'orientation'"
+          [optionValue]="'horizontal'"
+          [(value)]="viewToEdit.options.orientation"
+          [color]="'primary'"
+          [classList]="'mr-8'"
+          [label]="'Horizontal'">
+        </app-input-radio>
+      </div>
+    </div>
+    <app-input-number
+      [id]="'chart-bars-radius'"
+      [(value)]="viewToEdit.options.borderRadius"
+      [topLabel]="'Bars radius'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+  </div>
+
+  <!-- RADAR CHART EXTRAS -->
+  <div *ngIf="viewToEdit.chartType === 'radar'" class="grid grid-cols-2 gap-8">
+    <app-input-number
+      [id]="'chart-radar-points'"
+      [(value)]="viewToEdit.options.markersSize"
+      [topLabel]="'Data points marker size'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+    <app-input-number
+      [id]="'chart-radar-width'"
+      [(value)]="viewToEdit.options.strokeWidth"
+      [topLabel]="'Stroke width'"
+      [placeholder]="'Select a number'"
+    ></app-input-number>
+  </div>
+
+  <!-- PIE CHART EXTRAS -->
+  <ng-container *ngIf="viewToEdit.chartType === 'pie'">
+    <div class="grid grid-cols-2 mb-4">
+      <div class="border-r-2 border-neutral/10 px-4">
+        <app-input-number
+          [id]="'chart-pie-start-angle'"
+          [(value)]="viewToEdit.options.startAngle"
+          [topLabel]="'Custom start angle'"
+          [placeholder]="'Select a number (from 0 to 360)'"
+          [helperText]="'Custom angle from which the pie slices start. Default is 0.'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-pie-end-angle'"
+          [(value)]="viewToEdit.options.endAngle"
+          [topLabel]="'Custom end angle'"
+          [placeholder]="'Select a number (from 0 to 360)'"
+          [helperText]="'Custom angle from which the pie slices end. Default is 360.'"
+        ></app-input-number>
+      </div>
+      <div class="px-4">
+        <app-input-number
+          [id]="'chart-pie-x-offset'"
+          [(value)]="viewToEdit.options.offsetX"
+          [topLabel]="'Custom x-offset'"
+          [placeholder]="'Select a number'"
+          [helperText]="'Sets left offset to the entire pie chart area.'"
+        ></app-input-number>
+        <app-input-number
+          [id]="'chart-pie-y-offset'"
+          [(value)]="viewToEdit.options.offsetY"
+          [topLabel]="'Custom y-ofset'"
+          [placeholder]="'Select a number'"
+          [helperText]="'Sets top offset to the entire pie chart area.'"
+        ></app-input-number>
+      </div>
+    </div>
+    <app-input-checkbox
+      [id]="'chart-pie-expandOnClick'"
+      [(value)]="viewToEdit.options.expandOnClick"
+      [color]="'primary'"
+      [label]="'Expand visually slice when clicked'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+  </ng-container>
+
+  <!-- <div class="grid grid-cols-2"> -->
+    <app-input-checkbox
+      [id]="'chart-sparkline'"
+      [(value)]="viewToEdit.options.sparkline"
+      [color]="'primary'"
+      [label]="'Create spark-line of graph (hide everything but primary paths)'"
+      [labelPosition]="'right'"
+    ></app-input-checkbox>
+    <!-- TODO : toolbar actions
+    <div>
+      <app-input-checkbox
+        [id]="'chart-toolbar'"
+        [(value)]="viewToEdit.options.toolbar"
+        [color]="'primary'"
+        [label]="'Show toolbar with actions'"
+        [labelPosition]="'right'"
+      ></app-input-checkbox>
+      <div *ngIf="viewToEdit.options.toolbar" class="bg-base-300 rounded-xl p-4">
+        <app-input-select
+          [id]="'chart-toolbar-actions'"
+          [(value)]="viewToEdit.options.toolbarActions"
+          [options]="getChartLineCapOptions()"
+          [placeholder]="'Select action'"
+          [topLabel]="'Available actions'"
+          [required]="false"
+          [search]="false"
+        ></app-input-select>
+      </div>
+    </div> -->
+  <!-- </div> -->
+
+</ng-template>
+
+<ng-template #PROGRESS_EDITOR>
+  <app-input-select
+    [id]="'chart-type'"
+    [(value)]="viewToEdit.chartType"
+    [options]="getChartTypes()"
+    [placeholder]="'Select chart type'"
+    [topLabel]="'Type of Chart'"
+    [required]="true"
+    [classList]="'mb-4'">
+  </app-input-select>
+  
+  <app-input-select
+    [id]="'chart-progress-size'"
+    [(value)]="viewToEdit.options.size"
+    [options]="getProgressSizes()"
+    [placeholder]="'Select size'"
+    [topLabel]="'Dimensions'"
+    [classList]="'mb-4'">
+  </app-input-select>
+
+  <div class="grid grid-cols-2 gap-8 mb-4">
+    <app-input-color
+      [id]="'chart-progress-color'"
+      [(value)]="viewToEdit.options.progressColor"
+      [placeholder]="'Choose a Color'"
+      [topLabel]="'Progress Bar Color'"
+      [helperText]="'Choose color for displaying the progress bar.'"
+      [helperPosition]="'right'">
+    </app-input-color>
+    <app-input-color
+      [id]="'chart-progress-background'"
+      [(value)]="viewToEdit.options.trackColor"
+      [placeholder]="'Choose a Color'"
+      [topLabel]="'Background Color'"
+      [helperText]="'Choose color for displaying the progress bar\'s background.'"
+      [helperPosition]="'right'">
+    </app-input-color>
+  </div>
+
+  <div class="grid grid-cols-2 gap-8 mb-8">
+    <app-input-text
+      [id]="'chart-data'"
+      [(value)]="viewToEdit.data.value"
+      [placeholder]="'e.g. {xp.getUserExtraCreditXP(%user)}'"
+      [required]="true"
+      [topLabel]="'Chart Data'"
+      [helperText]="'Series of data to display in chart.'"
+    ></app-input-text>
+    <app-input-number
+      [id]="'chart-progress-max'"
+      [(value)]="viewToEdit.data.max"
+      [topLabel]="'Maximum value'"
+      [placeholder]="'Select a maximum number'"
+      [className]="'mt-1'"
+    ></app-input-number>
+  </div>
+
+  <div class="flex flex-row mt-4 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Labels</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Textual labels that are associated with individual progress bars on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
+  </div>
+  <div class="grid grid-cols-2 gap-8 mb-4">
+    <div>
+      <app-input-text
+        [id]="'chart-progress-label-left'"
+        [(value)]="viewToEdit.options.labelLeft"
+        [topLabel]="'Label Left'"
+      ></app-input-text>
+      <app-input-text
+        [id]="'chart-progress-label-middle'"
+        [(value)]="viewToEdit.options.labelMiddle"
+        [topLabel]="'Label Middle'"
+      ></app-input-text>
+    </div>
+    <div>
+      <app-input-text
+        [id]="'chart-progress-label-right'"
+        [(value)]="viewToEdit.options.labelRight"
+        [topLabel]="'Label Right'"
+      ></app-input-text>
+      <app-input-text
+        *ngIf="viewToEdit.options.size === 'md' || viewToEdit.options.size === 'lg'"
+        [id]="'chart-progress-label-inside'"
+        [(value)]="viewToEdit.options.labelInside"
+        [topLabel]="'Label Inside'"
+      ></app-input-text>
+    </div>
+  </div>
+
+  <div class="flex flex-row mt-8 justify-start items-center gap-2">
+    <span class="block font-semibold text-mg pl-1">Data Tooltips</span>
+  </div>
+  <div class="text-xs pl-1 pb-2">
+    Small pop-up boxes that appear when you hover your mouse pointer over a progress bar. Tooltips are used to provide additional information about the data, helping users understand and interpret the chart more effectively.
+  </div>
+  <div class="flex flex-wrap">
+    <app-input-radio
+      [id]="'chart-progress-datalabel-relative'"
+      [group]="'progress-datalabel'"
+      [optionValue]="'relative'"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Relative'"
+      [helperText]="'Uses percentages (%)'"
+      ></app-input-radio>
+      <app-input-radio
+      [id]="'chart-progress-datalabel-absolute'"
+      [group]="'progress-datalabel'"
+      [optionValue]="'absolute'"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Absolute'"
+      [helperText]="'Uses absolute values.'"
+    ></app-input-radio>
+    <app-input-radio
+      [id]="'chart-progress-datalabel-other'"
+      [group]="'progress-datalabel'"
+      [optionValue]="(viewToEdit.options.tooltip != 'relative' && viewToEdit.options.tooltip != 'absolute') ? viewToEdit.options.tooltip : null"
+      [(value)]="viewToEdit.options.tooltip"
+      [color]="'primary'"
+      [classList]="'mr-8'"
+      [label]="'Custom Tooltip'"
+    ></app-input-radio>
+  </div>
+  <div *ngIf="viewToEdit.options.tooltip != 'relative' && viewToEdit.options.tooltip != 'absolute'">
+    <div class="text-xs pl-1 pb-2 mt-2">
+      Write the message you want to display in the tooltip. 
+      Don't forget that if you use expressions you need to encapsulated them with curvy brackets: {{ '{' }} {{ '}' }}
+    </div>
+    <app-input-text
+      [id]="'chart-progress-datalabel-other'"
+      [(value)]="viewToEdit.options.tooltip"
+      [placeholder]="'e.g. {%userExtraCredit} XP'"
+    ></app-input-text>
+  </div>
 </ng-template>

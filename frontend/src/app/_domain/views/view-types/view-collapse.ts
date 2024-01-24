@@ -4,11 +4,13 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-
 import {ErrorService} from "../../../_services/error.service";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { ViewText } from "./view-text";
+import { ViewBlock } from "./view-block";
+import * as _ from "lodash"
+import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 
 export class ViewCollapse extends View {
   private _icon: CollapseIcon;
@@ -85,25 +87,25 @@ export class ViewCollapse extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    // if (exists(baseFakeId)) this.replaceWithFakeIds();
-    //
-    // if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-    //   const copy = copyObject(this);
-    //   copy.children = []; // Strip children
-    //
-    //   if (this.parentId !== null) { // Has parent
-    //     const parent = viewsAdded.get(this.parentId);
-    //     parent.addChildViewToViewTree(copy);
-    //
-    //   } else viewTree.push(copy); // Is root
-    //   viewsAdded.set(copy.id, copy);
-    // }
-    //
-    // // Build children into view tree
-    // for (const child of this.children) {
-    //   child.buildViewTree();
-    // }
+  buildViewTree() {
+    const viewForDatabase = ViewCollapse.toDatabase(this);
+
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
+        const parent = viewsAdded.get(this.parent.id);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
+      }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+
+    // Build children into view tree
+    this.header.buildViewTree();
+    this.content.buildViewTree();
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -121,16 +123,10 @@ export class ViewCollapse extends View {
     // this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    this.content.replaceWithFakeIds();
+    this.header.replaceWithFakeIds();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -145,15 +141,17 @@ export class ViewCollapse extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    if (this.header.findView(viewId)) return this.header;
+    if (this.content.findView(viewId)) return this.content;
+    
     return null;
+  }
+
+  replaceView(viewId: number, view: View) {
   }
 
   switchMode(mode: ViewMode) {
@@ -162,13 +160,21 @@ export class ViewCollapse extends View {
     this.content.switchMode(mode);
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    this.content.modifyAspect(old, newAspect);
+    this.header.modifyAspect(old, newAspect);
+  }
+
   /**
    * Gets a default collapse view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewCollapse { // TODO: refactor view editor
-    return null;
-    // return new ViewBlock(id, id, parentId, role, ViewMode.EDIT, [], null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.BLOCK_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewCollapse {
+    const defaultAspect = new Aspect(null, null);
+    return new ViewCollapse(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, CollapseIcon.ARROW,
+      [ViewText.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect), ViewBlock.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect)]);
   }
 
   /**
@@ -214,11 +220,11 @@ export class ViewCollapse extends View {
     return collapse;
   }
 
-  static toDatabase(obj: ViewCollapse): ViewCollapseDatabase {
+  static toDatabase(obj: ViewCollapse, component: boolean = false): ViewCollapseDatabase {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,
@@ -227,16 +233,17 @@ export class ViewCollapse extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       icon: obj.icon,
-      children: [buildViewTree(obj.header), buildViewTree(obj.content)]
+      children: component ? [buildComponent(obj.header), buildComponent(obj.content)]
+        : (groupedChildren.get(obj.id) ?? [])
     }
   }
 }
 
 export interface ViewCollapseDatabase extends ViewDatabase {
   icon?: string,
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum CollapseIcon {

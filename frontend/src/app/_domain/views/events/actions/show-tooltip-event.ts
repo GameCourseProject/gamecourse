@@ -6,8 +6,8 @@ export class ShowTooltipEvent extends Event {
   private _text: string;
   private _position: string;
 
-  constructor(type: EventType, text: string, position: string = 'top') {
-    super(type, EventAction.SHOW_TOOLTIP);
+  constructor(type: EventType, expression: string, text: string, position: string = 'top') {
+    super(type, EventAction.SHOW_TOOLTIP, expression);
     this.text = text.replace(/["']/g, '');
     this.position = position.replace(/["']/g, '');
   }

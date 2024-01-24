@@ -5,10 +5,12 @@ export abstract class Event {
 
   private _type: EventType;
   private _action: EventAction;
+  private _expression: string;
 
-  protected constructor(type: EventType, action: EventAction) {
+  protected constructor(type: EventType, action: EventAction, expression: string) {
     this.type = type;
     this.action = action;
+    this._expression = expression;
   }
 
 
@@ -26,6 +28,18 @@ export abstract class Event {
 
   set action(value: EventAction) {
     this._action = value;
+  }
+
+  get expression(): string {
+    return this._expression;
+  }
+
+  set expression(value: string) {
+    this._expression = value;
+  }
+
+  static toDatabase(obj: Event) {
+    return { type: obj.type, action: obj.expression };
   }
 
 

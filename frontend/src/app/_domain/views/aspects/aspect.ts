@@ -28,6 +28,10 @@ export class Aspect {
   static fromDatabase(obj: AspectDatabase): Aspect {
     return new Aspect(obj.viewerRole, obj.userRole);
   }
+
+  static toDatabase(obj: Aspect): AspectDatabase {
+    return { viewerRole: obj.viewerRole, userRole: obj.userRole };
+  }
 }
 
 export interface AspectDatabase {

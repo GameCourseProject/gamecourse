@@ -4,8 +4,8 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { copyObject, exists } from "src/app/_utils/misc/misc";
-import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewButton extends View {
   private _text: string;
@@ -60,18 +60,21 @@ export class ViewButton extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    if (exists(baseFakeId)) this.replaceWithFakeIds();
+  buildViewTree() {
+    const viewForDatabase = ViewButton.toDatabase(this);
 
-    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-      const copy = copyObject(this);
-      if (this.parent) { // Has parent
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
         const parent = viewsAdded.get(this.parent.id);
-        parent.addChildViewToViewTree(copy);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
       }
-      else viewTree.push(copy); // Is root
-        viewsAdded.set(copy.id, copy);
-     }
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
   }
 
   addChildViewToViewTree(view: View) { // TODO: refactor view editor
@@ -82,11 +85,8 @@ export class ViewButton extends View {
     // Doesn't have children, do nothing
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -94,22 +94,30 @@ export class ViewButton extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    return null;
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+    else return null;
+  }
+
+  replaceView(viewId: number, view: View) {
   }
 
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+  }
+
   /**
    * Gets a default button view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewButton { // TODO: refactor view editor
-    return null;
-    // return new ViewText(id, id, parentId, role, ViewMode.EDIT, "", null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.TEXT_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewButton {
+    return new ViewButton(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null),
+      "", null, null, null, null, null, null, null, null, [], []);
   }
 
 
@@ -156,7 +164,7 @@ export class ViewButton extends View {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,
@@ -165,7 +173,7 @@ export class ViewButton extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       text: obj.text,
       color: obj.color,
       icon: obj.icon

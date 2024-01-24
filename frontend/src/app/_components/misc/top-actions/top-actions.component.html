@@ -1,4 +1,4 @@
-<div class="relative -left-3 w-[calc(100%+0.75rem)] text-neutral/75 flex items-end mt-2"
+<div class="relative -left-3 w-[calc(100%+0.75rem)] text-neutral/75 flex mt-2 {{align === 'center' ? 'items-center' : 'items-end'}}"
      [ngClass]="{'justify-between': leftActions?.length > 0 && rightActions?.length > 0,
                  'justify-end': !leftActions || leftActions.length === 0,
                  'justify-start': !rightActions || rightActions.length === 0}">
@@ -8,7 +8,7 @@
 
     <!-- Actions -->
     <div class="hidden sm:block">
-      <button *ngFor="let action of leftActions.slice(0, 2)" class="btn btn-sm btn-ghost gap-2"
+      <button *ngFor="let action of leftActions.slice(0, 2)" class="btn btn-sm btn-ghost gap-2 {{action.disable ? 'hover:pointer-events-none text-base-content/30' : ''}}"
         (click)="btnClicked.emit(action.action)">
 
         <ng-icon *ngIf="action.icon" [name]="action.icon" size="1.5rem" color="fillCurrent"></ng-icon>

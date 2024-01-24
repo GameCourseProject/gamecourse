@@ -14,6 +14,7 @@ use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Dictionary\ProvidersLibrary;
 use Utils\Utils;
+use GameCourse\Views\Template\CoreTemplate;
 
 /**
  * This is the Module model, which implements the necessary methods
@@ -518,7 +519,20 @@ abstract class Module
      */
     protected function initTemplates()
     {
-        // TODO
+        $templatePath = MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Template.txt";
+
+        if (file_exists($templatePath)) {
+            $viewTree = json_decode(file_get_contents($templatePath), true);
+            $template = CoreTemplate::addTemplate($this->course->getId(), $viewTree, $this->getName(), 1, $this->id); // 1 is the category "Module"
+
+            $imagePath = MODULES_FOLDER . "/" . $this->id . "/" . "templates" . "/" . $this->id . "Screenshot.png";
+
+            if (file_exists($imagePath)) {
+                $type = pathinfo($imagePath, PATHINFO_EXTENSION);
+                $base64 = 'data:image/' . $type . ';base64,' . base64_encode(file_get_contents($imagePath));
+                $template->setImage($base64);
+            }
+        }
     }
 
     /**
@@ -646,6 +660,7 @@ abstract class Module
 
     protected function removeTemplates()
     {
+        Core::database()->delete(CoreTemplate::TABLE_TEMPLATE, ["course" => $this->course->getId(), "module" => $this->id]);
     }
 
     /**

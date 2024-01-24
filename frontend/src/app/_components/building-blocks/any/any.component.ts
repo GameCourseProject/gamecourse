@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -19,9 +19,11 @@ import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-toolti
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from 'src/app/_services/alert.service';
-import { ApiHttpService } from 'src/app/_services/api/api-http.service';
-import { buildViewTree } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component';
+import * as _ from "lodash"
+import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import { HistoryService } from 'src/app/_services/history.service';
+import { ViewEditorService } from 'src/app/_services/view-editor.service';
 
 @Component({
   selector: 'bb-any',
@@ -31,15 +33,19 @@ export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
 
+  @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
+
   courseID: number;
 
   classes: string;
   visible: boolean;
+  delete: boolean = false;
 
   constructor(
-    private api: ApiHttpService,
     private route: ActivatedRoute,
-    public selection: ViewSelectionService
+    public selection: ViewSelectionService,
+    private history: HistoryService,
+    public service: ViewEditorService
   ) { }
 
   ngOnInit(): void {
@@ -47,8 +53,8 @@ export class BBAnyComponent implements OnInit {
       this.courseID = parseInt(params.id);
 
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
-      this.visible = (this.view.mode == ViewMode.EDIT || this.view.mode == ViewMode.REARRANGE) ? true : (this.view.visibilityType === VisibilityType.VISIBLE ||
-        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean)));
+      this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     });
   }
 
@@ -131,6 +137,7 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('save-as-component');
   }
 
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -138,14 +145,51 @@ export class BBAnyComponent implements OnInit {
   editAction() {
     ModalService.openModal('component-editor');
   }
+
+  submitEditAction() {
+    this.componentEditor.saveView();
+
+    // Force rerender to show changes
+    // and recalculates visibility since it might have changed
+    this.visible = false;
+    this.selection.setRearrange(true);
+    setTimeout(() => {
+      this.selection.setRearrange(false);
+      this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
+    }, 100);
+
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
+  }
+
+  cancelEditAction() {
+    this.componentEditor.discardView();
+    ModalService.closeModal('save-as-component');
+  }
   
   saveAction() {
     ModalService.openModal('save-as-component');
   }
 
   deleteAction() {
-    if (this.view.parent)
-      this.view.parent.removeChildView(this.view.id);
+    this.service.delete(this.view);
+    this.selection.clear();
+    this.delete = true;
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
+  }
+
+  duplicateAction() {
+    this.service.duplicate(this.view);
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
 
 }

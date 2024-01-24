@@ -9,6 +9,8 @@ use GameCourse\Module\Module;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\Template\CoreTemplate;
+use GameCourse\Views\Template\CustomTemplate;
 
 /**
  * Main API controller that holds functions to process an API request,
@@ -219,13 +221,21 @@ class API
 //        return $page;
 //    }
 //
-//    public static function verifyTemplateExists(int $courseId, int $templateId): array
-//    {
-//        $course = self::verifyCourseExists($courseId);
-//        if (!Views::templateExists($courseId, null, $templateId))
-//            API::error('There is no template with id = ' . $templateId . ' in course \'' . $course->getName() . '\'');
-//        return Views::getTemplate($templateId);
-//    }
+    public static function verifyCoreTemplateExists(int $templateId): CoreTemplate
+    {
+        $template = CoreTemplate::getTemplateById($templateId);
+        if (!$template)
+            API::error('There is no template with ID = ' . $templateId . '.', 404);
+        return $template;
+    }
+
+    public static function verifyCustomTemplateExists(int $templateId): CustomTemplate
+    {
+        $template = CustomTemplate::getTemplateById($templateId);
+        if (!$template)
+            API::error('There is no template with ID = ' . $templateId . '.', 404);
+        return $template;
+    }
 //
 //    public static function verifySkillExists(int $courseId, int $skillId)
 //    {

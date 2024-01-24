@@ -19,7 +19,8 @@ import { AdaptationComponent } from "./settings/adaptation/adaptation.component"
 import { SectionsComponent } from "./settings/rules/sections.component";
 import { SectionRulesComponent } from "./settings/rules/section-rules/section-rules.component";
 import { RulesComponent } from "./settings/rules/section-rules/rules/rules.component";
-import {ViewsComponent} from "./settings/views/views/views.component";
+import { ViewsComponent } from "./settings/views/views/views.component";
+import { AutogameComponent } from './settings/autogame/autogame.component';
 
 const routes: Routes = [
   {
@@ -45,7 +46,7 @@ const routes: Routes = [
       },
       {
         path: 'autogame',
-        component: ComingSoonComponent
+        component: AutogameComponent
       },
       {
         path: 'rule-system',
@@ -84,7 +85,15 @@ const routes: Routes = [
         component: ViewsEditorComponent,
       },
       {
-        path: 'pages/editor/new-page',
+        path: 'pages/editor/new',
+        component: ViewsEditorComponent
+      },
+      {
+        path: 'pages/editor/template/:id',
+        component: ViewsEditorComponent
+      },
+      {
+        path: 'pages/editor/system-template/:id',
         component: ViewsEditorComponent
       },
       {

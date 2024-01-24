@@ -4,11 +4,9 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-
 import {buildView} from "../build-view/build-view";
-import { copyObject, exists } from "src/app/_utils/misc/misc";
-import { baseFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
-import { buildViewTree } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
+import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import * as _ from "lodash"
 
 export class ViewBlock extends View {
   private _direction: BlockDirection;
@@ -86,47 +84,44 @@ export class ViewBlock extends View {
     return null;
   }
 
-  buildViewTree() { // TODO: refactor view editor
-    if (exists(baseFakeId)) this.replaceWithFakeIds();
+  buildViewTree() {
+    const viewForDatabase = ViewBlock.toDatabase(this);
 
-    if (!viewsAdded.has(this.id)) { // View hasn't been added yet
-      const copy = copyObject(this);
-      copy.children = []; // Strip children
-  
-      if (this.parent) { // Has parent
+    if (!viewsAdded.has(this.id)) {
+      if (this.parent) {
         const parent = viewsAdded.get(this.parent.id);
-        parent.addChildViewToViewTree(copy);
+        const group = (parent as any).children.find((e) => e.includes(this.id));
+        const index = group.indexOf(this.id);
+        if (index != -1) {
+          group.splice(index, 1, viewForDatabase);
+        }
       }
-      else viewTree.push(copy); // Is root
-        viewsAdded.set(copy.id, copy);
-     }
-    
-    // // Build children into view tree
+      else viewTree.push(viewForDatabase); // Is root
+    }
+    viewsAdded.set(this.id, viewForDatabase);
+
+    // Build children into view tree
     for (const child of this.children) {
       child.buildViewTree();
     }
   }
 
-  addChildViewToViewTree(view: View) { // TODO: refactor view editor
+  addChildViewToViewTree(view: View) {
     view.parent = this;
     this.children.push(view);
   }
 
-  removeChildView(childViewId: number) { // TODO: refactor view editor
+  removeChildView(childViewId: number) {
     const index = this.children.findIndex(child => child.id === childViewId);
     this.children.splice(index, 1);
   }
 
-  replaceWithFakeIds(base?: number) { // TODO: refactor view editor
-    // // Replace IDs in children
-    // for (const child of this.children) {
-    //   child.replaceWithFakeIds(exists(base) ? base : null);
-    // }
-    //
-    // const baseId = exists(base) ? base : baseFakeId;
-    // this.id = View.calculateFakeId(baseId, this.id);
-    // this.viewId = View.calculateFakeId(baseId, this.viewId);
-    // this.parentId = View.calculateFakeId(baseId, this.parentId);
+  replaceWithFakeIds() {
+    this.id = getFakeId();
+    // Replace IDs in children
+    for (const child of this.children) {
+      child.replaceWithFakeIds();
+    }
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -141,15 +136,27 @@ export class ViewBlock extends View {
     return null;
   }
 
-  findView(viewId: number): View { // TODO: refactor view editor
-    // if (this.viewId === viewId) return this;
-    //
-    // // Look for view in children
-    // for (const child of this.children) {
-    //   const found = child.findView(viewId);
-    //   if (found) return child;
-    // }
+  findView(viewId: number): View {
+    if (this.id === viewId) return this;
+
+    // Look for view in children
+    for (const child of this.children) {
+      const found = child.findView(viewId);
+      if (found) return found;
+    }
     return null;
+  }
+
+  replaceView(viewId: number, view: View) {
+    // Look for view in children
+    let index = 0;
+    for (const child of this.children) {
+      if (child.id === viewId) {
+        this.children.splice(index, 1, view);
+      }
+      child.replaceView(viewId, view);
+      index += 1;
+    }
   }
 
   switchMode(mode: ViewMode) {
@@ -159,13 +166,20 @@ export class ViewBlock extends View {
     }
   }
 
+  modifyAspect(old: Aspect, newAspect: Aspect) {
+    if (_.isEqual(old, this.aspect)) {
+      this.aspect = newAspect;
+    }
+    for (let child of this.children) {
+      child.modifyAspect(old, newAspect);
+    }
+  }
+
   /**
    * Gets a default block view.
    */
-  static getDefault(id: number = null, parentId: number = null, role: string = null, cl: string = null): ViewBlock { // TODO: refactor view editor
-    return null;
-    // return new ViewBlock(id, id, parentId, role, ViewMode.EDIT, [], null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + this.BLOCK_CLASS + (!!cl ? ' ' + cl : ''));
+  static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
+    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
   }
 
   /**
@@ -219,7 +233,7 @@ export class ViewBlock extends View {
     return {
       id: obj.id,
       viewRoot: obj.viewRoot,
-      aspect: obj.aspect,
+      aspect: Aspect.toDatabase(obj.aspect),
       type: obj.type,
       cssId: obj.cssId,
       class: obj.classList,
@@ -228,11 +242,11 @@ export class ViewBlock extends View {
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
       variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events,
+      events: obj.events.map(event => Event.toDatabase(event)),
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,
-      children: obj.children.map(child => buildViewTree(child))
+      children: groupedChildren.get(obj.id) ?? []
     }
   }
 }
@@ -241,7 +255,7 @@ export interface ViewBlockDatabase extends ViewDatabase {
   direction: string,
   columns?: number,
   responsive?: boolean,
-  children?: ViewDatabase[] | ViewDatabase[][];
+  children?: ViewDatabase[] | (number | ViewDatabase)[][];
 }
 
 export enum BlockDirection {

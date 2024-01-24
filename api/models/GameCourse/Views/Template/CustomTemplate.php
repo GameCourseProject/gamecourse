@@ -45,6 +45,72 @@ class CustomTemplate extends Template
         return Course::getCourseById($this->getData("course"));
     }
 
+    public function getViewRoot(): int
+    {
+        return $this->getData("viewRoot");
+    }
+
+    /**
+     * Gets template data from the database.
+     *
+     * @example getData() --> gets all template data
+     * @example getData("field") --> gets template field
+     * @example getData("field1, field2") --> gets template fields
+     *
+     * @param string $field
+     * @return mixed
+     */
+    public function getData(string $field = "*")
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], $field);
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
+    }
+
+    /**
+     * Gets all template data (including the fields of shared templates)
+     *
+     * @return mixed
+     */
+    public function getDataWithShared()
+    {
+        $data = Core::database()->select($this::TABLE_TEMPLATE, ["id" => $this->id], "*");
+        $shared = Core::database()->select($this::TABLE_TEMPLATE_SHARED, ["id" => $this->id], "sharedBy, sharedTimestamp");
+        if ($shared) {
+            $data["isPublic"] = true;
+            $data["sharedBy"] = $shared["sharedBy"];
+            $data["sharedTimestamp"] = $shared["sharedTimestamp"];
+        }
+        else {
+            $data["isPublic"] = false;
+            $data["sharedBy"] = null;
+            $data["sharedTimestamp"] = null;
+        }
+        
+        return is_array($data) ? self::parse($data) : self::parse(null, $data, "*");
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->hasImage() ? API_URL . "/" . $this->getDataFolder(false) . "/screenshot.png" : null;
+    }
+
+    public function hasImage(): bool
+    {
+        return file_exists($this->getDataFolder() . "/screenshot.png");
+    }
+
+    /**
+     * Gets template data folder path.
+     * Option to retrieve full server path or the short version.
+     *
+     * @param bool $fullPath
+     * @return string
+     */
+    public function getDataFolder(bool $fullPath = true): string
+    {
+        if ($fullPath) return CUSTOM_TEMPLATES_DATA_FOLDER . "/" . $this->getId();
+        else return Utils::getDirectoryName(CUSTOM_TEMPLATES_DATA_FOLDER) . "/" . $this->getId();
+    }
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -99,8 +165,25 @@ class CustomTemplate extends Template
         // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_TEMPLATE, $fieldValues, ["id" => $this->id]);
+    }
 
-        $this->refreshUpdateTimestamp();
+    /**
+     * @throws Exception
+     */
+    public function setImage(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "screenshot.png");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteImage()
+    {
+        $path = $this->getDataFolder() . "/" . "screenshot.png";
+        if (file_exists($path)) {
+            Utils::deleteFile($this->getDataFolder(), "screenshot.png", true);
+        }
     }
 
 
@@ -118,7 +201,45 @@ class CustomTemplate extends Template
     public static function getTemplates(int $courseId): array
     {
         $templates = Core::database()->selectMultiple(self::TABLE_TEMPLATE, ["course" => $courseId], "*", "name");
-        foreach ($templates as &$template) { $template = self::parse($template); }
+        foreach ($templates as &$template) { 
+            $template = self::parse($template);
+            // Get image
+            $templateForImage = new CustomTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
+        return $templates;
+    }
+
+    /**
+     * Gets a template by its ID.
+     * Returns null if template doesn't exist.
+     *
+     * @param int $id
+     */
+    public static function getTemplateById(int $id): CustomTemplate
+    {
+        $template = new CustomTemplate($id);
+        if ($template->exists()) return $template;
+        else return null;
+    }
+
+
+    /**
+     * Gets shared templates.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function getSharedTemplates(): array
+    {
+        $table = self::TABLE_TEMPLATE_SHARED . " s JOIN " . self::TABLE_TEMPLATE . " c on s.id = c.id";
+        $templates = Core::database()->selectMultiple($table, [], "*", "s.sharedTimestamp");
+        foreach ($templates as &$template) { 
+            $template = self::parse($template);
+            // Get image
+            $templateForImage = new CustomTemplate($template["id"]);
+            $template["image"] = $templateForImage->getImage();
+        }
         return $templates;
     }
 
@@ -212,6 +333,7 @@ class CustomTemplate extends Template
             Logging::processLogs($logs, $views, $this->getCourse()->getId());
         }
 
+        $this->refreshUpdateTimestamp();
         return $this;
     }
 
@@ -229,7 +351,7 @@ class CustomTemplate extends Template
     {
         $template = self::getTemplateById($id);
         if ($template) {
-            parent::deleteTemplate($id, $keepLinked);
+            ViewHandler::deleteViewTree($id, $template->getViewRoot(), $keepLinked);
             Core::database()->delete(self::TABLE_TEMPLATE, ["id" => $id]);
         }
     }
@@ -264,7 +386,24 @@ class CustomTemplate extends Template
         return Core::database()->select(self::TABLE_TEMPLATE_SHARED, ["id" => $this->id], "sharedTimestamp");
     }
 
-    // TODO: share template
+    public static function shareTemplate(int $templateId, int $userId, string $description)
+    {
+        Core::database()->insert(self::TABLE_TEMPLATE_SHARED, [
+            "id" => $templateId,
+            "description" => $description,
+            "sharedBy" => $userId,
+            "sharedTimestamp" => date("Y-m-d H:i:s", time())
+        ]);
+    }
+
+    public static function stopShareTemplate(int $templateId, int $userId)
+    {
+        Core::database()->delete(self::TABLE_TEMPLATE_SHARED, [
+            "id" => $templateId,
+            "sharedBy" => $userId
+        ]);
+    }
+
 
 
     /*** ---------------------------------------------------- ***/

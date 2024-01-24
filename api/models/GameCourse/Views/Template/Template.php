@@ -67,21 +67,6 @@ abstract class Template
     /*** ---------------------------------------------------- ***/
 
     /**
-     * Gets a template by its ID.
-     * Returns null if template doesn't exist.
-     *
-     * @param int $id
-     * @return Template|null
-     */
-    public static function getTemplateById(int $id): ?Template
-    {
-        $templateClass = "\\" . get_called_class();
-        $template = new $templateClass($id);
-        if ($template->exists()) return $template;
-        else return null;
-    }
-
-    /**
      * Gets templates by a given view root.
      *
      * @param int $viewRoot
@@ -176,6 +161,33 @@ abstract class Template
         $defaultAspect = Aspect::getAspectBySpecs(0, null, null);
         $sortedAspects = [$defaultAspect->getData("id, viewerRole, userRole")];
         return ViewHandler::renderView($this->getViewRoot(), $sortedAspects, true);
+    }
+
+    /**
+     * Renders a template for editing.
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function renderTemplateForEditor()
+    {
+        $templateInfo = $this->getData("course, viewRoot");
+        $viewRoot = $templateInfo["viewRoot"];
+        $courseId = $templateInfo["course"];
+        return ViewHandler::buildViewComplete($viewRoot, $courseId);
+    }
+
+    /**
+     * Renders a template for editing.
+     *
+     * @param int $course
+     * @return array
+     * @throws Exception
+     */
+    public function renderTemplateForEditorGivenCourse(int $course)
+    {
+        $viewRoot = $this->getData("viewRoot");
+        return ViewHandler::buildViewComplete($viewRoot, $course);
     }
 
 

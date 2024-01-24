@@ -13,6 +13,8 @@ use GameCourse\Views\CreationMode;
 use GameCourse\Views\Component\CustomComponent;
 use GameCourse\Views\Component\CoreComponent;
 use GameCourse\Views\Category\Category;
+use GameCourse\Views\Template\CoreTemplate;
+use GameCourse\Views\Template\CustomTemplate;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -168,7 +170,7 @@ class PageController
      */
     public function createPage()
     {
-        API::requireValues("courseId", "name", "viewTree");
+        API::requireValues("courseId", "name", "viewTree", "image");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -177,8 +179,89 @@ class PageController
         
         $name = API::getValue("name");
         $viewTree = API::getValue("viewTree", "array");
+
+        $image = API::getValue("image");
         
-        Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $page->setImage($image);
+    }
+
+    /**
+     * Edits the view of a page in the DB
+     * @throws Exception
+     */
+    public function savePage()
+    {
+        API::requireValues("courseId", "pageId", "viewTree", "viewsDeleted");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $pageId = API::getValue("pageId", "int");
+        $page = Page::getPageById($pageId);
+        
+        $viewTree = API::getValue("viewTree", "array");
+        $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $page->setImage($image);
+        
+        // Translate tree into logs
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
+
+        $page->editPage($page->getName(), $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
+                $page->getPosition(), $translatedTree);
+    }
+
+    /**
+     * Edits the view of a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function saveTemplate()
+    {
+        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+         
+        $viewTree = API::getValue("viewTree", "array");
+        $viewIdsDeleted = API::getValue("viewsDeleted", "array");
+
+        $image = API::getValue("image");
+        if ($image) $template->setImage($image);
+        
+        // Translate tree into logs
+        $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
+        $template->editTemplate($template->getName(), $translatedTree);
+    }
+
+    /**
+     * Edits a template in the DB (only possible for Custom/Shared)
+     * @throws Exception
+     */
+    public function editTemplate()
+    {
+        API::requireValues("courseId", "templateId", "name");
+        
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $name = API::getValue("name");
+
+        $templateInfo = $template->editTemplate($name)->getDataWithShared();
+        API::response($templateInfo);
     }
 
     /**
@@ -207,8 +290,27 @@ class PageController
         $isPublic = API::getValue("isPublic", "bool");
 
         $pageInfo = $page->editPage($name, $isVisible, $isPublic, $visibleFrom, $visibleUntil, $position)->getData();
-
         API::response($pageInfo);
+    }
+
+    /**
+     * Updates page positions in the DB
+     * @return void
+     * @throws Exception
+     */
+    public function updatePagePositions(){
+        API::requireValues("courseId", "positions");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        $positions = API::getValue("positions", "array");
+
+        // set all to null to mantain the constraint
+        Page::clearPositions(array_map(function($el) {return $el["id"];}, $positions));
+        // set to new values
+        Page::setPositions($positions);
     }
 
     /**
@@ -292,31 +394,25 @@ class PageController
     }
 
     /**
-     * Gets all Core Components
+     * Gets all Core Components grouped by category
      *
      * @return void
      * @throws Exception
      */
     public function getCoreComponents(){
-        $coreComponents = [];
+        $fun = function($component) {
+            $pair = (object)[];
+            $pair->category = Category::getCategoryById($component["category"])->getName();
+            $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
+            return $pair;
+        };
 
-        foreach (CoreComponent::getComponents() as $component) {
-            $category = Category::getCategoryById($component["category"])->getName();
-            $view = ViewHandler::renderView($component["viewRoot"])[0];
-            $type = $view['type'];
-
-            if (!isset($coreComponents[$type][$category])) {
-                $coreComponents[$type][$category] = [];
-            }
-
-            $coreComponents[$type][$category][] = $view;
-        }
-        
+        $coreComponents = array_map($fun, CoreComponent::getComponents());
         API::response($coreComponents);
     }
 
     /**
-     * Gets all Custom Components
+     * Gets all Custom Components of a course
      *
      * @return void
      * @throws Exception
@@ -390,7 +486,7 @@ class PageController
      * @throws Exception
      */
     public function makeComponentShared(){
-        API::requireValues("componentId", "courseId", "userId", "categoryId", "description");
+        API::requireValues("componentId", "courseId", "userId", "description");
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -399,10 +495,9 @@ class PageController
 
         $userId = API::getValue("userId", "int");
         $componentId = API::getValue("componentId", "int");
-        $categoryId = API::getValue("categoryId", "int");
         $description = API::getValue("description", "string");
 
-        CustomComponent::shareComponent($componentId, $userId, $categoryId, $description);
+        CustomComponent::shareComponent($componentId, $userId, $description);
     }
 
     /**
@@ -434,12 +529,216 @@ class PageController
             $pair->id = $component["id"];
             $pair->user = $component["sharedBy"];
             $pair->view = ViewHandler::renderView($component["viewRoot"])[0];
-            $pair->timestamp = $component["sharedTimestamp"];
+            $pair->sharedTimestamp = $component["sharedTimestamp"];
             return $pair;
         };
         
         $customComponents = array_map($fun, CustomComponent::getSharedComponents());
         API::response($customComponents);
+    }
+
+    /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
+    public function getCoreTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+        API::response($template->getData());
+    }
+
+    /**
+     * Get template by its ID.
+     *
+     * @throws Exception
+     */
+    public function getCustomTemplateById()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+        API::response($template->getData());
+    }
+
+    /**
+     * Gets all Core Templates
+     * has an option to return the tree instead of just the viewRoot
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCoreTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->image = $template["image"];
+            return $pair;
+        };
+        
+        $coreTemplates = array_map($fun, CoreTemplate::getTemplates($courseId));
+        API::response($coreTemplates);
+    }
+
+    /**
+     * Gets all Custom Templates of a course
+     * has an option to return the tree instead of just the viewRoot
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getCustomTemplates(){
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+        
+        $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = false;
+            $pair->image = $template["image"];
+            return $pair;
+        };
+        
+        $customTemplates = array_map($fun, CustomTemplate::getTemplates($courseId));
+        API::response($customTemplates);
+    }
+
+    /**
+     * Saves a View as a Custom Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function createCustomTemplate(){
+        API::requireValues("courseId", "name", "viewTree");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $name = API::getValue("name");
+        $viewTree = API::getValue("viewTree", "array");
+        
+        $image = API::getValue("image");
+
+        $template = CustomTemplate::addTemplate($courseId, CreationMode::BY_VALUE, $name, $viewTree);
+        $template->setImage($image);
+
+        API::response($template->getData());
+    }
+
+    /**
+     * Deletes a Custom Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function deleteCustomTemplate(){
+        API::requireValues("courseId", "templateId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $templateId = API::getValue("templateId", "int");
+
+        $template = CustomTemplate::getTemplateById($templateId);
+        $template->deleteImage();
+        
+        CustomTemplate::deleteTemplate($template->getId());
+    }
+
+    /**
+     * Turns a Custom Template into a Shared Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeTemplateShared(){
+        API::requireValues("templateId", "courseId", "userId", "description");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $userId = API::getValue("userId", "int");
+        $templateId = API::getValue("templateId", "int");
+        $description = API::getValue("description", "string");
+
+        CustomTemplate::shareTemplate($templateId, $userId, $description);
+    }
+
+    /**
+     * Stops sharing a Template
+     *
+     * @return void
+     * 
+     * @throws Exception
+     */
+    public function makeTemplatePrivate(){
+        API::requireValues("templateId", "userId");
+
+        $userId = API::getValue("userId", "int");
+        $templateId = API::getValue("templateId", "int");
+
+        CustomTemplate::stopShareTemplate($templateId, $userId);
+    }
+
+    /**
+     * Gets all Shared Components
+     * has an option to return the tree instead of just the viewRoot
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getSharedTemplates(){
+        
+        $fun = function($template) {
+            $tree = API::getValue("tree", "bool");
+            $pair = (object)[];
+            $pair->id = $template["id"];
+            $pair->name = $template["name"];
+            $pair->view = $tree ? ViewHandler::renderView($template["viewRoot"])[0] : $template["viewRoot"];
+            $pair->creationTimestamp = $template["creationTimestamp"];
+            $pair->updateTimestamp = $template["updateTimestamp"];
+            $pair->isPublic = true;
+            $pair->user = $template["sharedBy"];
+            $pair->sharedTimestamp = $template["sharedTimestamp"];
+            $pair->image = $template["image"];
+            return $pair;
+        };
+        
+        $sharedTemplates = array_map($fun, CustomTemplate::getSharedTemplates());
+        API::response($sharedTemplates);
     }
 
 
@@ -501,6 +800,45 @@ class PageController
     }
 
     /**
+     * Renders a given template for editing.
+     *
+     * @param int $templateId
+     * @throws Exception
+     */
+    public function renderCustomTemplateInEditor()
+    {
+        API::requireValues("templateId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCustomTemplateExists($templateId);
+
+        $course = $template->getCourse();
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditor());
+    }
+
+    /**
+     * Renders a core template for previewing.
+     *
+     * @param int $templateId
+     * @throws Exception
+     */
+    public function renderCoreTemplateInEditor()
+    {
+        API::requireValues("templateId", "courseId");
+
+        $templateId = API::getValue("templateId", "int");
+        $template = API::verifyCoreTemplateExists($templateId);
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+        API::requireCoursePermission($course);
+
+        API::response($template->renderTemplateForEditorGivenCourse($courseId));
+    }
+
+    /**
      * Renders a given page with mock data.
      *
      * @param int $pageId
@@ -517,9 +855,11 @@ class PageController
         API::requireCoursePermission($course);
 
         $viewerId = Core::getLoggedUser()->getId();
-        $userId = API::getValue("userId", "int");
 
-        API::response($page->renderPage($viewerId, $userId, true));
+        $viewerRole = API::getValue("viewerRole", "string");
+        $userRole = API::getValue("userRole", "string");
+
+        API::response($page->renderPage($viewerId, null, ["viewerRole" => $viewerRole, "userRole" => $userRole]));
     }
 
     /**
@@ -531,35 +871,21 @@ class PageController
      */
     public function previewPage()
     {
-        API::requireValues("pageId", "userRole", "viewerRole");
+        API::requireValues("pageId");
 
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
         
         $course = $page->getCourse();
-        API::requireCoursePermission($course);
+        $courseId = $course->getId();
 
         $userRole = API::getValue("userRole", "string");
+        $userRoleId = $userRole ? Role::getRoleId($userRole, $courseId) : null;
+
         $viewerRole = API::getValue("viewerRole", "string");
+        $viewerRoleId = $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null;
 
-        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($course->getId(), $userRole, $viewerRole)));
-    }
-
-    /**
-     * Returns existing aspects in a page
-     *
-     * @param int $pageId
-     * @throws Exception
-     */
-    public function getPageAspects()
-    {
-        API::requireValues("pageId");
-
-        $pageId = API::getValue("pageId", "int");
-        $page = API::verifyPageExists($pageId);
-
-        $aspects = Aspect::getAspectsInViewTree($page->getViewRoot());
-        API::response($aspects);
+        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
     }
 
 

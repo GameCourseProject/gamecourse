@@ -1,4 +1,6 @@
-<div class="section">
+<!-- TODO: Prediction settings (Joana had a screenshot in her thesis...)
+  
+  <div class="section">
   <div class="divider">
     <div class="title"><span>Progress Report</span></div>
   </div>
@@ -66,41 +68,43 @@
 <!--        [data]="tables.reports.data"-->
 <!--        [actions]="tables.reports.actions"-->
 <!--        [loading]="tables.reports.loading"-->
-<!--        (btnClicked)="doBtnAction('reports', $event.action, $event.row)">-->
-<!--      </app-datatable>-->
+<!--        (btnClicked)="doBtnAction('reports', $event.action, $event.row)">--
+<!--      </app-datatable>--
     </ng-container>
 
     <ng-container *ngIf="tables.studentsReports.showing">
       <button style="margin-bottom: 20px" (click)="this.tables.reports.showing = true; this.tables.studentsReports.showing = false; this.buildReportsTable()">Go Back</button>
 <!--      <app-datatable-->
-<!--        [id]="'progress-reports-students-table'"-->
-<!--        [headers]="tables.studentsReports.headers"-->
-<!--        [data]="tables.studentsReports.data"-->
-<!--        [actions]="tables.studentsReports.actions"-->
-<!--        [loading]="tables.studentsReports.loading"-->
-<!--        (btnClicked)="doBtnAction('studentReports', $event.action, $event.row)">-->
-<!--      </app-datatable>-->
+<!--        [id]="'progress-reports-students-table'"--
+<!--        [headers]="tables.studentsReports.headers"--
+<!--        [data]="tables.studentsReports.data"--
+<!--        [actions]="tables.studentsReports.actions"--
+<!--        [loading]="tables.studentsReports.loading"--
+<!--        (btnClicked)="doBtnAction('studentReports', $event.action, $event.row)">--
+<!--      </app-datatable>--
     </ng-container>
   </div>
 </div>
 
-<!-- Loader -->
+<!-- Loader --
 <div *ngIf="loading" id="page-loading">
   <img src="../../../../../../../../../../assets/loader/loader.gif" alt="loader">
 </div>
 
 
-<!-- Student Progress Report Modal -->
+<!-- Student Progress Report Modal --
 <ng-container *ngIf="isStudentReportModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isStudentReportModalOpen"-->
-<!--    [id]="'student-progress-report'"-->
-<!--    [width]="'800px'"-->
-<!--    [templateRef]="studentReport"-->
-<!--    (closeBtnClicked)="isStudentReportModalOpen = false">-->
-<!--  </app-modal>-->
+<!--  <app-modal--
+<!--    [isOpen]="isStudentReportModalOpen"--
+<!--    [id]="'student-progress-report'"--
+<!--    [width]="'800px'"--
+<!--    [templateRef]="studentReport"--
+<!--    (closeBtnClicked)="isStudentReportModalOpen = false">--
+<!--  </app-modal>--
 </ng-container>
 
 <ng-template #studentReport>
   <iframe [id]="'student-report'" width="100%" height="800px" style="border: none"></iframe>
 </ng-template>
+
+ -->
