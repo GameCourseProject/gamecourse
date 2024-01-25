@@ -1276,6 +1276,19 @@ export class ApiHttpService {
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
   }
 
+  public getNotificationsByCourse(courseId: number): Observable<Notification[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getNotificationsByCourse');
+      qs.push('courseId', courseId);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
+  }
+
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);

@@ -1,1 +1,22 @@
-<!-- TODO -->
+<div class="w-full relative">
+    <!-- Header -->
+  <app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" [loading] = "loading.action" ></app-header>
+
+  <ng-container *ngIf="!loading.page">
+    
+    <ng-container *ngIf="!loading.table">
+      <app-table
+        [id] = "'notifications'"
+        [classList]="'mt-5'"
+        [headers] = "headers"
+        [data] = "data"
+        [options] = "tableOptions"
+        [loading] = "loading.table"
+      ></app-table>
+    </ng-container>
+
+  </ng-container>
+
+  <!-- Loader -->
+  <app-loader [loading] = "loading.page"></app-loader>
+</div>
