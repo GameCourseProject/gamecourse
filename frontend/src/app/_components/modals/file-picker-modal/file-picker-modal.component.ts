@@ -298,7 +298,8 @@ export class FilePickerModalComponent implements OnInit {
 
   // sees if there's a file selected
   isSelected(): boolean {
-    if (this.root) {
+    if (this.fileToUpload) return false;
+    else if (this.root) {
       for (let i = 0; i < this.root.contents.length; i++){
         if (this.root.contents[i].selected) return false;
       }
