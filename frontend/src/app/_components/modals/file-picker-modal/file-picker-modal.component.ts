@@ -123,12 +123,23 @@ export class FilePickerModalComponent implements OnInit {
       const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
 
       const currentFolder = this.path.split('/').slice(2).join('/');
-        
-      await this.api.uploadFileToCourse(courseID, this.file, currentFolder, this.fileToUpload.name)
-        .subscribe(async (value) => {
-          this.ngOnInit();
-          // TODO: refresh the browser to display the most recent files, instead of forcing close and reopen
-        })
+
+      await this.api.uploadFileToCourse(courseID, this.file, currentFolder, this.fileToUpload.name).toPromise();
+
+      const foldersToOpen = this.path.split('/').slice(3);
+      const newContents = await this.getFolderContents();
+      const oldPath = this.path;
+
+      // Refresh the contents of the directory
+      this.loading = true;
+      this.root.contents = newContents;
+      while (foldersToOpen.length > 0) {
+        const openNow = foldersToOpen.shift();
+        this.root.contents = await this.getFolderContents(this.root.contents.find(content => content.name == openNow));
+      }
+      this.path = oldPath;
+      this.loading = false;
+      console.log(this.root);
     }
   }
 
@@ -140,6 +151,17 @@ export class FilePickerModalComponent implements OnInit {
     this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
     this.reset();
   }
+
+  async delete(fileName: string) {
+    const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
+    const currentFolder = this.path.split('/').slice(2).join('/');
+
+    await this.api.deleteFileFromCourse(courseID, currentFolder, fileName, false).toPromise();
+
+    // Refresh the contents of the directory
+    this.root.contents = this.root.contents.filter(content => content.name !== fileName);
+  }
+
 
   /*** ---------------------------------------------- ***/
   /*** ----------------- Navigation ----------------- ***/
@@ -301,8 +323,7 @@ export class FilePickerModalComponent implements OnInit {
 
   // sees if there's a file selected
   isSelected(): boolean {
-    if (this.fileToUpload) return false;
-    else if (this.root) {
+    if (this.root) {
       for (let i = 0; i < this.root.contents.length; i++){
         if (this.root.contents[i].selected) return false;
       }

@@ -35,7 +35,7 @@
         </app-input-file>
       </div>
 
-      <div *ngIf="tab.name === 'browse' && tab.selected">
+      <div *ngIf="tab.name === 'browse' && tab.selected && root && !loading">
         <div class="w-full mt-4">
 
           <div class="flex justify-center">
@@ -50,23 +50,29 @@
             </div>
           </div>
 
-          <span *ngIf="root.contents.length === 0 && !loading" class="text-base-content text-opacity-50 justify-center flex mt-10">
+          <span *ngIf="root.contents.length === 0" class="text-base-content text-opacity-50 justify-center flex mt-10">
             Nothing to display.
           </span>
 
-          <div *ngIf="root.contents.length > 0 && !loading" class="mt-4">
+          <div *ngIf="root.contents.length > 0" class="mt-4">
             <div class="grid grid-cols-3 gap-4">
               <ng-container *ngFor="let content of root.contents, let i = index">
                 <div class="flex flex-col items-center whitespace-normal">
-                  <div class="btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
+                  <div class="group relative btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
                        (click)="toggleItems(root.contents, i)"
                        (dblclick)="content.type === ContentType.FOLDER ? getFolderContents(content) : submit()">
+
+                    <button *ngIf="content.type === ContentType.FILE"
+                            class="hidden group-hover:block absolute top-0 right-0 btn btn-error btn-sm py-1 px-2 rounded-full"
+                            (click)="delete(content.name)">
+                      <ng-icon name="jamTrashF"/>
+                    </button>
 
                     <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
 
                     <img *ngIf="content.type === ContentType.FILE && isImage(content)"
                          class="w-[3.75rem] h-[4rem]"
-                       [src]="content.previewPhoto.get('SafeUrl')" alt="image-file-preview" />
+                       [src]="content.previewPhoto?.get('SafeUrl')" alt="image-file-preview" />
 
                     <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
                            name="tabler-movie" size="4rem"></ng-icon>
