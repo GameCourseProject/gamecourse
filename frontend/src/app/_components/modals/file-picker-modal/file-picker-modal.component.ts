@@ -139,7 +139,6 @@ export class FilePickerModalComponent implements OnInit {
       }
       this.path = oldPath;
       this.loading = false;
-      console.log(this.root);
     }
   }
 
