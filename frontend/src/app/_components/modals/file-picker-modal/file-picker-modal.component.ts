@@ -48,7 +48,8 @@ export class FilePickerModalComponent implements OnInit {
   root: ContentItem;                                    // For further navigation (other folders inside the 'originalRoot')
 
   // Tabs for option to upload file or browse files in system
-  tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'upload', selected: true }, { name: 'browse', selected: false }];
+  tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'browse', selected: true }];
+  //tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'upload', selected: true }, { name: 'browse', selected: false }];
 
   constructor(
     private api: ApiHttpService,
@@ -115,27 +116,29 @@ export class FilePickerModalComponent implements OnInit {
     this.fileToUpload = files.item(0);
   }
 
-  async submit() {
+  async upload() {
     if (this.fileToUpload) {
       // Save file in server
       await ResourceManager.getBase64(this.fileToUpload).then(data => this.file = data);
       const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
-      this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUpload.name)
-        .subscribe(
-          path => {
-            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
-            this.reset();
-          })
 
-    } else {
-
-      let item = this.root.contents.find(content => content.selected);
-
-      const fileType: 'image' | 'video' | 'audio' = this.isImage(item) ? 'image' : this.isAudio(item) ? 'audio' : 'video';
-
-      this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
-      this.reset();
+      const currentFolder = this.path.split('/').slice(2).join('/');
+        
+      await this.api.uploadFileToCourse(courseID, this.file, currentFolder, this.fileToUpload.name)
+        .subscribe(async (value) => {
+          this.ngOnInit();
+          // TODO: refresh the browser to display the most recent files, instead of forcing close and reopen
+        })
     }
+  }
+
+  async submit() {
+    let item = this.root.contents.find(content => content.selected);
+
+    const fileType: 'image' | 'video' | 'audio' = this.isImage(item) ? 'image' : this.isAudio(item) ? 'audio' : 'video';
+
+    this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
+    this.reset();
   }
 
   /*** ---------------------------------------------- ***/
