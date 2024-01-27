@@ -36,7 +36,7 @@ export class FilePickerModalComponent implements OnInit {
 
   // UPLOAD FILE VARIABLES
   file: string | ArrayBuffer;
-  fileToUpload: File;
+  fileToUpload: File = null;
   //fileType: 'image' | 'video' | 'audio';
 
   // GENERAL VARIABLES
@@ -113,7 +113,12 @@ export class FilePickerModalComponent implements OnInit {
   /*** -------------------------------------------- ***/
 
   onFileSelected(files: FileList): void {
-    this.fileToUpload = files.item(0);
+    if (files.length <= 0) {
+      this.fileToUpload = null;
+    }
+    else {
+      this.fileToUpload = files.item(0);
+    }
   }
 
   async upload() {

@@ -42,6 +42,28 @@
       }
     }
 
+    .dropzone-active .btn-ghost {
+      &.btn-primary {
+        @apply bg-primary/20
+      }
+
+      &.btn-secondary {
+        @apply bg-secondary/20
+      }
+
+      &.btn-accent {
+        @apply bg-accent/20
+      }
+
+      &.btn-neutral {
+        @apply bg-neutral/20
+      }
+
+      &.btn-info, &.btn-success, &.btn-warning, &.btn-error {
+        background-color: transparent #{!important};
+      }
+    }
+
     #color-picker {
       .pcr-app {
         @apply w-52;

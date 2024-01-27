@@ -135,9 +135,10 @@
         [accept]="type.split(', ')"
         [helperPosition]="'right'"
         [helperText]="'File to upload'"
+        [required]="false"
         (valueChange)="onFileSelected($event)"
       ></app-input-file>
-      <button class="btn btn-primary" (click)="upload()">Upload</button>
+      <button class="btn btn-primary" (click)="upload()" [disabled]="!fileToUpload">Upload</button>
     </div>
 
   </div>
