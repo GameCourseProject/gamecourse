@@ -36,7 +36,7 @@ export class FilePickerModalComponent implements OnInit {
 
   // UPLOAD FILE VARIABLES
   file: string | ArrayBuffer;
-  fileToUpload: File;
+  fileToUpload: File = null;
   //fileType: 'image' | 'video' | 'audio';
 
   // GENERAL VARIABLES
@@ -48,7 +48,8 @@ export class FilePickerModalComponent implements OnInit {
   root: ContentItem;                                    // For further navigation (other folders inside the 'originalRoot')
 
   // Tabs for option to upload file or browse files in system
-  tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'upload', selected: true }, { name: 'browse', selected: false }];
+  tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'browse', selected: true }];
+  //tabs: { name: 'upload'| 'browse', selected: boolean }[] = [{ name: 'upload', selected: true }, { name: 'browse', selected: false }];
 
   constructor(
     private api: ApiHttpService,
@@ -112,31 +113,59 @@ export class FilePickerModalComponent implements OnInit {
   /*** -------------------------------------------- ***/
 
   onFileSelected(files: FileList): void {
-    this.fileToUpload = files.item(0);
+    if (files.length <= 0) {
+      this.fileToUpload = null;
+    }
+    else {
+      this.fileToUpload = files.item(0);
+    }
   }
 
-  async submit() {
+  async upload() {
     if (this.fileToUpload) {
       // Save file in server
       await ResourceManager.getBase64(this.fileToUpload).then(data => this.file = data);
       const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
-      this.api.uploadFileToCourse(courseID, this.file, this.whereToStore, this.fileToUpload.name)
-        .subscribe(
-          path => {
-            this.positiveBtnClicked.emit({path, type: this.fileToUpload.type.split('/')[0] as 'image' | 'video' | 'audio'});
-            this.reset();
-          })
 
-    } else {
+      const currentFolder = this.path.split('/').slice(2).join('/');
 
-      let item = this.root.contents.find(content => content.selected);
+      await this.api.uploadFileToCourse(courseID, this.file, currentFolder, this.fileToUpload.name).toPromise();
 
-      const fileType: 'image' | 'video' | 'audio' = this.isImage(item) ? 'image' : this.isAudio(item) ? 'audio' : 'video';
+      const foldersToOpen = this.path.split('/').slice(3);
+      const newContents = await this.getFolderContents();
+      const oldPath = this.path;
 
-      this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
-      this.reset();
+      // Refresh the contents of the directory
+      this.loading = true;
+      this.root.contents = newContents;
+      while (foldersToOpen.length > 0) {
+        const openNow = foldersToOpen.shift();
+        this.root.contents = await this.getFolderContents(this.root.contents.find(content => content.name == openNow));
+      }
+      this.path = oldPath;
+      this.loading = false;
     }
   }
+
+  async submit() {
+    let item = this.root.contents.find(content => content.selected);
+
+    const fileType: 'image' | 'video' | 'audio' = this.isImage(item) ? 'image' : this.isAudio(item) ? 'audio' : 'video';
+
+    this.positiveBtnClicked.emit({path: this.path + '/' + item.name, type: fileType});
+    this.reset();
+  }
+
+  async delete(fileName: string) {
+    const courseID = parseInt(this.courseFolder.split('/')[1].split('-')[0]);
+    const currentFolder = this.path.split('/').slice(2).join('/');
+
+    await this.api.deleteFileFromCourse(courseID, currentFolder, fileName, false).toPromise();
+
+    // Refresh the contents of the directory
+    this.root.contents = this.root.contents.filter(content => content.name !== fileName);
+  }
+
 
   /*** ---------------------------------------------- ***/
   /*** ----------------- Navigation ----------------- ***/
@@ -298,8 +327,7 @@ export class FilePickerModalComponent implements OnInit {
 
   // sees if there's a file selected
   isSelected(): boolean {
-    if (this.fileToUpload) return false;
-    else if (this.root) {
+    if (this.root) {
       for (let i = 0; i < this.root.contents.length; i++){
         if (this.root.contents[i].selected) return false;
       }

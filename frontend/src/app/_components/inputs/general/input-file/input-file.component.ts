@@ -78,8 +78,27 @@ export class InputFileComponent implements OnInit, AfterViewInit {
     this.valueChange.emit(this.files);
   }
 
+  onDrop(event) {
+    // Add file
+    let files;
+    if (this.multiple) {
+      files = this.getFiles();
+      files.push(event[0]);
+    }
+    else { files = [event[0]] }
+
+    // Create new filelist
+    const dt = new DataTransfer();
+    for (let file of files) {
+      dt.items.add(file);
+    }
+    this.files = dt.files;
+
+    this.valueChange.emit(this.files);
+  }
+
   getFiles(): File[] {
-    return Array.from(this.files);
+    return this.files ? Array.from(this.files) : [];
   }
 
   getFileTypes(): string {
@@ -117,6 +136,8 @@ export class InputFileComponent implements OnInit, AfterViewInit {
     // Set error
     if (this.required && this.files.length === 0)
       this.form.controls[this.id].setErrors({'required': true});
+
+    this.valueChange.emit(this.files);
   }
 
 

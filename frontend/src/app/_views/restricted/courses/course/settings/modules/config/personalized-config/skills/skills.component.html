@@ -131,7 +131,7 @@
             [(value)]="tierToManage.costType"
             [color]="'primary'"
             [label]="'Exponential'"
-            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base x 2 ^ #attempts'">
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base x 2 ^ #attempts w/ rating >= min.rating'">
           </app-input-radio>
         </div>
 
@@ -169,13 +169,13 @@
           </div>
 
           <!-- Min. Rating -->
-          <div class="w-full sm:w-1/3">
+          <div class="w-full sm:w-1/3 self-end">
             <app-input-number
               [id]="'tier-min-rating'"
               [form]="fTier"
               [(value)]="tierToManage.minRating"
               [placeholder]="'Min. rating'"
-              [disabled]="tierToManage.costType === 'fixed' || tierToManage.costType === 'exponential'"
+              [disabled]="tierToManage.costType === 'fixed'"
               [topLabel]="'Min. attempt rating'"
               [helperText]="'Min. skill rating to start incrementing cost'"
               [helperPosition]="'left'"
