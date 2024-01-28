@@ -16,11 +16,11 @@
                      {action: 'Create new Template', icon: 'jam-layout', color: 'primary', outline: true},
                      {action: 'Import / Export', icon: 'tabler-arrows-up-down', color: 'primary', outline: true,  dropdown: [
                       {action: Action.IMPORT + ' page(s) from PC', icon:'tabler-device-desktop'},
-                      {action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},
                       {action: Action.EXPORT + ' all pages', icon:'jam-upload'}
                      ]}]"
     (btnClicked)="doTopAction($event)">
   </app-top-actions>
+  <!--{action: Action.IMPORT + ' page from GameCourse', icon:'jam-download'},-->
 
   <!-- Search-->
   <div class="w-[40%] mx-auto my-5">

@@ -427,10 +427,15 @@ class TierTest extends TestCase
      */
     public function setCostType()
     {
-        // Variable
+        // Incremental
         $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
-        $tier->setCostType("variable");
-        $this->assertEquals("variable", $tier->getCostType());
+        $tier->setCostType("incremental");
+        $this->assertEquals("incremental", $tier->getCostType());
+
+        // Exponential
+        $tier = Tier::addTier($this->skillTreeId, "Tier", 100);
+        $tier->setCostType("exponential");
+        $this->assertEquals("exponential", $tier->getCostType());
 
         // Fixed
         $tier->setIncrement(10);

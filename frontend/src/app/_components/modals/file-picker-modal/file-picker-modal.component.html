@@ -1,7 +1,7 @@
 <app-modal
   [id]="'file-picker-' + id"
   [templateRef]="FILE_PICKER"
-  [header]="'Upload file'"
+  [header]="'Choose file'"
   [submitBtnText]="positiveBtnText"
   [closeBtnText]="negativeBtnText"
   [actionInProgress]="actionInProgress"
@@ -10,17 +10,20 @@
   [submitBtnDisabled]="isSelected()"
   (submitBtnClicked)="submit()"
   (onClose)="reset()"
+  [size]="'lg'"
 ></app-modal>
 
 <ng-template #FILE_PICKER>
-  <div class="w-full" style="height: 20rem !important;">
-      <div class="tabs justify-center">
+  <div class="grid grid-cols-[1fr_0.5fr]" style="height: 20rem !important;">
+    <!-- <button class="btn btn-primary w-full" (click)="openUpload()">Upload</button> -->
+
+<!--       <div class="tabs justify-center">
         <ng-container *ngFor="let tab of tabs, let i = index">
           <a class="tab tab-bordered {{tab.selected ? 'tab-active font-semibold' : ''}}" (click)="toggleItems(tabs, i)">{{tab.name.capitalize()}}</a>
         </ng-container>
-      </div>
+      </div> -->
 
-    <ng-container *ngFor="let tab of tabs">
+    <div *ngFor="let tab of tabs">
       <div *ngIf="tab.name === 'upload' && tab.selected" class="mt-4">
         <app-input-file
           [id]="'input-file'"
@@ -32,7 +35,7 @@
         </app-input-file>
       </div>
 
-      <div *ngIf="tab.name === 'browse' && tab.selected">
+      <div *ngIf="tab.name === 'browse' && tab.selected && root && !loading">
         <div class="w-full mt-4">
 
           <div class="flex justify-center">
@@ -47,23 +50,29 @@
             </div>
           </div>
 
-          <span *ngIf="root.contents.length === 0 && !loading" class="text-base-content text-opacity-50 justify-center flex mt-10">
+          <span *ngIf="root.contents.length === 0" class="text-base-content text-opacity-50 justify-center flex mt-10">
             Nothing to display.
           </span>
 
-          <div *ngIf="root.contents.length > 0 && !loading" class="mt-4">
+          <div *ngIf="root.contents.length > 0" class="mt-4">
             <div class="grid grid-cols-3 gap-4">
               <ng-container *ngFor="let content of root.contents, let i = index">
                 <div class="flex flex-col items-center whitespace-normal">
-                  <div class="btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
+                  <div class="group relative btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
                        (click)="toggleItems(root.contents, i)"
                        (dblclick)="content.type === ContentType.FOLDER ? getFolderContents(content) : submit()">
+
+                    <button *ngIf="content.type === ContentType.FILE"
+                            class="hidden group-hover:block absolute top-0 right-0 btn btn-error btn-sm py-1 px-2 rounded-full"
+                            (click)="delete(content.name)">
+                      <ng-icon name="jamTrashF"/>
+                    </button>
 
                     <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
 
                     <img *ngIf="content.type === ContentType.FILE && isImage(content)"
                          class="w-[3.75rem] h-[4rem]"
-                       [src]="content.previewPhoto.get('SafeUrl')" alt="image-file-preview" />
+                       [src]="content.previewPhoto?.get('SafeUrl')" alt="image-file-preview" />
 
                     <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
                            name="tabler-movie" size="4rem"></ng-icon>
@@ -116,7 +125,22 @@
 
         </div>
       </div>
-    </ng-container>
+    </div>
+
+    <!-- File -->
+    <div class="h-full flex flex-col gap-5">
+      <app-input-file
+        [id]="'input-file'"
+        [color]="'primary'"
+        [accept]="type.split(', ')"
+        [helperPosition]="'right'"
+        [helperText]="'File to upload'"
+        [required]="false"
+        (valueChange)="onFileSelected($event)"
+      ></app-input-file>
+      <button class="btn btn-primary" (click)="upload()" [disabled]="!fileToUpload">Upload</button>
+    </div>
+
   </div>
 
   <!-- Loader -->

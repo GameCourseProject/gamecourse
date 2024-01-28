@@ -112,14 +112,26 @@
           </app-input-radio>
 
           <app-input-radio
-            [id]="'cost-type-variable'"
+            [id]="'cost-type-incremental'"
             [group]="'cost-type'"
             [form]="fTier"
-            [optionValue]="'variable'"
+            [optionValue]="'incremental'"
             [(value)]="tierToManage.costType"
             [color]="'primary'"
-            [label]="'Variable'"
+            [classList]="'mr-8'"
+            [label]="'Incremental'"
             [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased by \'increment\' for each prior attempt with a rating higher than \'min. rating\'. Formula: base + increment x #attempts w/ rating >= min.rating'">
+          </app-input-radio>
+          
+          <app-input-radio
+            [id]="'cost-type-exponential'"
+            [group]="'cost-type'"
+            [form]="fTier"
+            [optionValue]="'exponential'"
+            [(value)]="tierToManage.costType"
+            [color]="'primary'"
+            [label]="'Exponential'"
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base x 2 ^ #attempts w/ rating >= min.rating'">
           </app-input-radio>
         </div>
 
@@ -147,7 +159,7 @@
               [form]="fTier"
               [(value)]="tierToManage.increment"
               [placeholder]="'Increment on each attempt'"
-              [disabled]="tierToManage.costType === 'fixed'"
+              [disabled]="tierToManage.costType === 'fixed' || tierToManage.costType === 'exponential'"
               [topLabel]="'Increment (' + VCName + ')'"
               [helperText]="'Cost increment on each attempt of skills in this tier'"
               [helperPosition]="'right'"
@@ -157,7 +169,7 @@
           </div>
 
           <!-- Min. Rating -->
-          <div class="w-full sm:w-1/3">
+          <div class="w-full sm:w-1/3 self-end">
             <app-input-number
               [id]="'tier-min-rating'"
               [form]="fTier"

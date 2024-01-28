@@ -204,7 +204,9 @@ export class SkillsComponent implements OnInit {
         row.splice(3, 0, {
           type: TableDataType.TEXT, content: {
             text: tier.costType.capitalize() + ': ' + tier.cost +
-              (tier.costType === 'variable' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')') : '')
+              (tier.costType === 'incremental' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')')
+                : tier.costType === 'exponential' ? (' x 2 ^ (#attempts (rating >= ' + tier.minRating + '))')
+                : '')
           }
         });
       }
@@ -727,7 +729,7 @@ export interface TierManageData {
   id?: number,
   name: string,
   reward: number,
-  costType: 'fixed' | 'variable',
+  costType: 'fixed' | 'incremental' | 'exponential',
   cost: number,
   increment: number,
   minRating: number

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS skill_tier(
 
 CREATE TABLE IF NOT EXISTS skill_tier_cost(
     tier                        int unsigned PRIMARY KEY,
-    costType                    ENUM ('fixed', 'variable') NOT NULL DEFAULT 'fixed',
+    costType                    ENUM ('fixed', 'incremental', 'exponential') NOT NULL DEFAULT 'fixed',
     cost                        int unsigned NOT NULL DEFAULT 0,
     increment                   int unsigned NOT NULL DEFAULT 0,
     minRating                   int unsigned NOT NULL DEFAULT 3, /* min. rating to start incrementing the cost */
