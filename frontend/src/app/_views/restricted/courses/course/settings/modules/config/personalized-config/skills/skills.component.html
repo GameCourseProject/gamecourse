@@ -363,7 +363,7 @@
           [placeholder]="'Write here the future page for this skill\'s description...'"
           [container]="'editor'"
           [courseFolder]="courseFolder + '/skills'"
-          [whereToStore]="'skills/' + (skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('_') : '')"
+          [subfolderToOpen]="skillToManage.name ? skillToManage.name.swapNonENChars().noWhiteSpace('') : null"
           [moduleId]="'skills'"
           [init]="skillToManage.page"
           (valueChange)="skillToManage.page = $event">

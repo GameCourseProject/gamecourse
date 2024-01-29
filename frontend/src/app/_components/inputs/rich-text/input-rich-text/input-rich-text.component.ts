@@ -39,7 +39,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   // Image upload & search
   @Input() courseFolder: string;              // Course data folder path (where to look for images)
-  @Input() whereToStore: string;              // Folder path of where to store images (relative to course folder)
+  @Input() subfolderToOpen?: string;          // Subfolder that should be open by default (although you can go to a less deep one)
 
   @Output() valueChange = new EventEmitter<string>();
 
