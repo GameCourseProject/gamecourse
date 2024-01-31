@@ -14,121 +14,65 @@
 ></app-modal>
 
 <ng-template #FILE_PICKER>
-  <div class="grid grid-cols-[1fr_0.5fr]" style="height: 20rem !important;">
-    <!-- <button class="btn btn-primary w-full" (click)="openUpload()">Upload</button> -->
+  <div class="flex flex-col md:flex-row w-full h-80 gap-5">
+    <div *ngIf="root && !loading" class="w-full mt-4">
 
-<!--       <div class="tabs justify-center">
-        <ng-container *ngFor="let tab of tabs, let i = index">
-          <a class="tab tab-bordered {{tab.selected ? 'tab-active font-semibold' : ''}}" (click)="toggleItems(tabs, i)">{{tab.name.capitalize()}}</a>
-        </ng-container>
-      </div> -->
-
-    <div *ngFor="let tab of tabs">
-      <div *ngIf="tab.name === 'upload' && tab.selected" class="mt-4">
-        <app-input-file
-          [id]="'input-file'"
-          [color]="'primary'"
-          [accept]="type.split(', ')"
-          [helperPosition]="'right'"
-          [helperText]="'File to import to the skill\'s description'"
-          (valueChange)="onFileSelected($event)">
-        </app-input-file>
+      <div class="flex justify-center">
+        <div class="btn btn-sm btn-ghost btn-circle tooltip ml-4" data-tip="Back" (click)="calculatePath()">
+          <ng-icon name="tabler-arrow-back-up" size="1.5rem" color="primary"></ng-icon>
+        </div>
+        <div class="btn btn-sm btn-ghost btn-circle tooltip ml-1" data-tip="Home" (click)="reset(true)">
+          <ng-icon name="feather-home" size="1.5rem" color="primary"></ng-icon>
+        </div>
+        <div class="border-2 rounded-box ml-1.5 whitespace-nowrap overflow-x-auto">
+          <span class="text-sm px-3">{{path}}</span>
+        </div>
       </div>
 
-      <div *ngIf="tab.name === 'browse' && tab.selected && root && !loading">
-        <div class="w-full mt-4">
+      <span *ngIf="root.contents.length === 0" class="text-base-content text-opacity-50 justify-center flex mt-10">
+        Nothing to display.
+      </span>
 
-          <div class="flex justify-center">
-            <div class="btn btn-sm btn-ghost btn-circle tooltip ml-4" data-tip="Back" (click)="calculatePath()">
-              <ng-icon name="tabler-arrow-back-up" size="1.5rem" color="primary"></ng-icon>
-            </div>
-            <div class="btn btn-sm btn-ghost btn-circle tooltip ml-1" data-tip="Home" (click)="reset(true)">
-              <ng-icon name="feather-home" size="1.5rem" color="primary"></ng-icon>
-            </div>
-            <div class="border-2 rounded-box ml-1.5 whitespace-nowrap overflow-x-auto">
-              <span class="text-sm px-3">{{path}}</span>
-            </div>
-          </div>
+      <div *ngIf="root.contents.length > 0" class="mt-4">
+        <div class="grid grid-cols-4 gap-4">
+          <ng-container *ngFor="let content of root.contents, let i = index">
+            <div class="flex flex-col items-center whitespace-normal">
+              <div class="group relative btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
+                    (click)="toggleItems(root.contents, i)"
+                    (dblclick)="content.type === ContentType.FOLDER ? getFolderContents(content) : submit()">
 
-          <span *ngIf="root.contents.length === 0" class="text-base-content text-opacity-50 justify-center flex mt-10">
-            Nothing to display.
-          </span>
+                <button *ngIf="content.type === ContentType.FILE"
+                        class="hidden group-hover:block absolute top-0 right-0 btn btn-error btn-sm py-1 px-2 rounded-full"
+                        (click)="delete(content.name)">
+                  <ng-icon name="jamTrashF"/>
+                </button>
 
-          <div *ngIf="root.contents.length > 0" class="mt-4">
-            <div class="grid grid-cols-3 gap-4">
-              <ng-container *ngFor="let content of root.contents, let i = index">
-                <div class="flex flex-col items-center whitespace-normal">
-                  <div class="group relative btn btn-ghost btn-lg {{content.type === ContentType.FILE && content.selected ? 'border border-5 border-base-content' : ''}}"
-                       (click)="toggleItems(root.contents, i)"
-                       (dblclick)="content.type === ContentType.FOLDER ? getFolderContents(content) : submit()">
+                <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
 
-                    <button *ngIf="content.type === ContentType.FILE"
-                            class="hidden group-hover:block absolute top-0 right-0 btn btn-error btn-sm py-1 px-2 rounded-full"
-                            (click)="delete(content.name)">
-                      <ng-icon name="jamTrashF"/>
-                    </button>
+                <img *ngIf="content.type === ContentType.FILE && isImage(content)"
+                      class="w-[3.75rem] h-[4rem]"
+                    [src]="content.previewPhoto?.get('SafeUrl')" alt="image-file-preview" />
 
-                    <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
+                <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
+                        name="tabler-movie" size="4rem"></ng-icon>
 
-                    <img *ngIf="content.type === ContentType.FILE && isImage(content)"
-                         class="w-[3.75rem] h-[4rem]"
-                       [src]="content.previewPhoto?.get('SafeUrl')" alt="image-file-preview" />
+                <ng-icon *ngIf="content.type === ContentType.FILE && isAudio(content)"
+                        name="feather-volume2" size="4rem"></ng-icon>
+              </div>
 
-                    <ng-icon *ngIf="content.type === ContentType.FILE && isVideo(content)"
-                           name="tabler-movie" size="4rem"></ng-icon>
+              <div class="justify-center">
+                <span class="whitespace-normal w-[5rem] font-semibold text-sm text-base-content mt-1">{{content.name}}</span>
+              </div>
 
-                    <ng-icon *ngIf="content.type === ContentType.FILE && isAudio(content)"
-                           name="feather-volume2" size="4rem"></ng-icon>
-                  </div>
-
-                  <div class="justify-center">
-                    <span class="whitespace-normal w-[5rem] font-semibold text-sm text-base-content mt-1">{{content.name}}</span>
-                  </div>
-
-                </div>
-              </ng-container>
-              <!--
-              flex items-start p-0 relative btn btn-ghost rounded-2xl shadow-lg bg-base-100 hover:bg-base-100
-                          border-base-200 border-2 hover:border-[3px] hover:border-primary hover:border-opacity-60 h-[8rem]
-
-
-              <div class="grid">
-                <ng-container *ngFor="let item of getFolderContents(content, path)">
-                  <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
-                       (click)="goInside(item)">
-                    <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
-                         [src]="getItemIcon(item)">
-                    <span>{{item.name}}</span>
-                  </div>
-                </ng-container>
-              </div>-->
-            </div>
-          </div>
-
-        <!--<div class="top_browser">
-          <div id="back" (click)="goOutside()"></div>
-          <div class="path">
-            <span id="browse-path">{{path}}</span>
-          </div>
-        </div>
-
-        <div class="grid">
-          <ng-container *ngFor="let item of getFolderContents(contents, path)">
-            <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
-                 (click)="goInside(item)">
-              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
-                   [src]="getItemIcon(item)">
-              <span>{{item.name}}</span>
             </div>
           </ng-container>
-        </div>-->
-
         </div>
       </div>
+
     </div>
 
     <!-- File -->
-    <div class="h-full flex flex-col gap-5">
+    <div class="md:w-96 w-full h-full flex flex-col gap-5">
       <app-input-file
         [id]="'input-file'"
         [color]="'primary'"
@@ -148,116 +92,4 @@
     <app-spinner *ngIf="loading" [size]="'md'" [color]="'primary'"></app-spinner>
   </div>
 
-  <!--<div>
-    <div class="wrapper">
-      <div class="tab">
-        <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
-        <button class="tablinks" [ngClass]="{'active': mode === 'browse'}" (click)="mode = 'browse'">Browse file</button>
-      </div>
-
-      <div class="tabcontent">
-        <ng-container *ngIf="mode === 'upload'">
-          <div class="full" style="margin-top: 20px">
-            <app-input-file
-              [id]="'input-file'"
-              [accept]="type.split(', ')"
-              (valueChange)="onFileSelected($event)">
-            </app-input-file>
-
-            <div class="name full">
-              <input type="text" id="name" placeholder="File name *" class="form__input" required [(ngModel)]="fileToUploadName">
-              <label for="name" class="form__label">Name</label>
-            </div>
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="mode === 'browse'">
-          <div class="top_browser">
-            <div id="back" (click)="goOutside()"></div>
-            <div class="path">
-              <span id="browse-path">{{path}}</span>
-            </div>
-          </div>
-
-          <div class="grid">
-            <ng-container *ngFor="let item of getFolderContents(contents, path)">
-              <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
-                   (click)="goInside(item)">
-                <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
-                     [src]="getItemIcon(item)">
-                <span>{{item.name}}</span>
-              </div>
-            </ng-container>
-          </div>
-        </ng-container>
-      </div>
-    </div>
-  </div>-->
-
 </ng-template>
-
-
-
-
-<!--<app-modal-->
-<!--  [isOpen]="isModalOpen"-->
-<!--  [id]="id"-->
-<!--  [classList]="'file-picker ' + classList"-->
-<!--  [templateRef]="filePickerModal"-->
-<!--  (closeBtnClicked)="isModalOpen = false; closeBtnClicked.emit()"-->
-<!--  [actionInProgress]="actionInProgress"-->
-<!--  [innerClickEvents]="innerClickEvents">-->
-<!--</app-modal>-->
-<!--<div>
-  <div class="wrapper">
-    <div class="tab">
-      <button class="tablinks" [ngClass]="{'active': mode === 'upload'}" (click)="mode = 'upload'">Upload file</button>
-      <button class="tablinks" [ngClass]="{'active': mode === 'browse'}" (click)="mode = 'browse'">Browse file</button>
-    </div>
-
-    <div class="tabcontent">
-      <ng-container *ngIf="mode === 'upload'">
-        <div class="full" style="margin-top: 20px">
-          <app-input-file
-            [id]="'input-file'"
-            [accept]="type.split(', ')"
-            (valueChange)="onFileSelected($event)">
-          </app-input-file>
-
-          <div class="name full">
-            <input type="text" id="name" placeholder="File name *" class="form__input" required [(ngModel)]="fileToUploadName">
-              <label for="name" class="form__label">Name</label>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="mode === 'browse'">
-        <div class="top_browser">
-          <div id="back" (click)="goOutside()"></div>
-          <div class="path">
-            <span id="browse-path">{{path}}</span>
-          </div>
-        </div>
-
-        <div class="grid">
-          <ng-container *ngFor="let item of getFolderContents(contents, path)">
-            <div class="square" [ngClass]="{'folder': item.type === ContentType.FOLDER, 'image': item.type === ContentType.FILE}"
-              (click)="goInside(item)">
-              <img style="width: 60px; height: 60px;" [ngClass]="{'selected': path + '/' + item.name === this.file}"
-                   [src]="getItemIcon(item)">
-              <span>{{item.name}}</span>
-            </div>
-          </ng-container>
-        </div>
-      </ng-container>
-    </div>
-  </div>
-
-  <button class="cancel_btn" (click)="isModalOpen = false; negativeBtnClicked.emit()">Cancel</button>
-  <button class="save_btn" [disabled]="!isReadyToSubmit()" (click)="isModalOpen = false; submit()">Select</button>
-
-  Loader
-  <div *ngIf="loading" id="page-loading">
-    <img src="assets/loader/loader.gif" alt="loader">
-  </div>
-</div>-->

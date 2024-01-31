@@ -1,8 +1,8 @@
-import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 
 import * as QuillNamespace from 'quill';
 const Quill: any = QuillNamespace;
-// import htmlEditButton from 'quill-html-edit-button';
+import {htmlEditButton} from "quill-html-edit-button";
 import imageResize from 'quill-image-resize';
 
 import {exists} from "../../../../_utils/misc/misc";
@@ -15,7 +15,9 @@ import {FilePickerModalComponent} from "../../../modals/file-picker-modal/file-p
 
 @Component({
   selector: 'app-input-rich-text',
-  templateUrl: './input-rich-text.component.html'
+  templateUrl: './input-rich-text.component.html',
+  styleUrls: ['./input-rich-text.component.scss'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class InputRichTextComponent implements OnInit, AfterViewInit {
 
@@ -37,7 +39,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
   // Image upload & search
   @Input() courseFolder: string;              // Course data folder path (where to look for images)
-  @Input() whereToStore: string;              // Folder path of where to store images (relative to course folder)
+  @Input() subfolderToOpen?: string;          // Subfolder that should be open by default (although you can go to a less deep one)
 
   @Output() valueChange = new EventEmitter<string>();
 
@@ -55,7 +57,9 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
     this.resourceManager = new ResourceManager(sanitizer);
   }
 
-  ngOnInit(){
+  ngOnInit() {
+    var icons = Quill.import('ui/icons');
+    icons['code-block'] = '<svg viewbox="0 -2 15 18">\n' + '\t<polyline class="ql-even ql-stroke" points="2.48 2.48 1 3.96 2.48 5.45"/>\n' + '\t<polyline class="ql-even ql-stroke" points="8.41 2.48 9.9 3.96 8.41 5.45"/>\n' + '\t<line class="ql-stroke" x1="6.19" y1="1" x2="4.71" y2="6.93"/>\n' + '\t<polyline class="ql-stroke" points="12.84 3 14 3 14 13 2 13 2 8.43"/>\n' + '</svg>';
   }
 
   ngAfterViewInit(): void {
@@ -95,14 +99,18 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
               [{ 'color': [] }, { 'background': [] }],
               [{ 'align': [] }],
               [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-              ['link', 'image', 'video', 'code-block']
+              ['link', 'image', 'video', 'blockquote', 'code-block']
             ],
             handlers: {
               'image': () => that.onImageUpload()
             },
           },
           imageResize: {},
-          // htmlEditButton: {},
+          htmlEditButton: {
+            msg: "Edit html",
+            okText: "save",
+            buttonHTML: '<svg viewBox="0 0 18 18"><polyline class="ql-even ql-stroke" points="5 7 3 9 5 11"></polyline><polyline class="ql-even ql-stroke" points="13 7 15 9 13 11"></polyline> <line class="ql-stroke" x1="10" x2="8" y1="5" y2="13"></line></svg>'
+          },
           clipboard: {
             matchVisual: false
           }
@@ -117,7 +125,7 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
 
     Quill.register({
       'modules/imageResize': imageResize,
-      // 'modules/htmlEditButton': htmlEditButton
+      'modules/htmlEditButton': htmlEditButton
     }, true);
 
     const container = $('#' + this.id)[0] as HTMLElement;

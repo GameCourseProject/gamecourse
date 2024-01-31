@@ -1,12 +1,9 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ResourceManager} from "../../../_utils/resources/resource-manager";
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {exists} from "../../../_utils/misc/misc";
-import {finalize} from "rxjs/operators";
-//import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
 import {ModalService} from "../../../_services/modal.service";
-import {Observable} from "rxjs";
-import {DomSanitizer} from "@angular/platform-browser";
+import { DomSanitizer } from "@angular/platform-browser";
+import * as _ from "lodash"
 
 @Component({
   selector: 'app-file-picker-modal',
@@ -17,7 +14,7 @@ export class FilePickerModalComponent implements OnInit {
   @Input() id: string;                                  // Modal id
   @Input() type: string;                                // File type to pick from
   @Input() courseFolder: string;                        // Course data folder path (where to look for images)
-  @Input() whereToStore: string;                        // Folder path of where to store images (relative to course folder)
+  @Input() subfolderToOpen?: string;                    // Subfolder that should be open by default (although you can go to a less deep one)
   @Input() classList?: string;                          // Classes to append
   @Input() moduleId?: string;                           // In case the file-picker its to open in a module config
 
@@ -76,6 +73,13 @@ export class FilePickerModalComponent implements OnInit {
       selected: false
     }
     this.root = this.originalRoot;
+
+    if (this.subfolderToOpen && this.root.contents) {
+      const subfolder = this.root.contents?.find(content => content.name == this.subfolderToOpen);
+      const updatedContents = await this.getFolderContents(subfolder);
+      this.root = { ...this.root, contents: updatedContents };
+    }
+
   }
 
   openModal() {
@@ -171,86 +175,10 @@ export class FilePickerModalComponent implements OnInit {
   /*** ----------------- Navigation ----------------- ***/
   /*** ---------------------------------------------- ***/
 
-  /*getFolderContents(folder: any, path: string): ContentItem[] {
-    console.log(path);
-    path = path.removeWord(this.courseFolder);
-    if (path[0] === '/') path = path.substr(1);
-
-    if (path === '')
-      return this.filterItems(folder.hasOwnProperty('contents') ? folder.contents : folder, this.type);
-
-    const split = path.split('/');
-    const f = folder.find(el => el.name === split[0]);
-    return this.getFolderContents(f.contents, split.length === 1 ? '' : split.slice(1).join('/'));
-  }
-
-  filterItems(items: ContentItem[], type: string): ContentItem[] {
-    let files = [];
-    if (type.containsWord('image')){
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type === ContentType.FILE && this.imageExtensions.includes(items[i].extension.toLowerCase())){
-          files.push(items[i]);
-        }
-      }
-    }
-      //files = files.concat(items.filter(item => item.type === ContentType.FILE && this.imageExtensions.includes(item.extension.toLowerCase())));
-
-    if (type.containsWord('video')){
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type === ContentType.FILE && this.videoExtensions.includes(items[i].extension.toLowerCase())){
-          files.push(items[i]);
-        }
-      }
-    }
-      //files = files.concat(items.filter(item => item.type === ContentType.FILE &&  this.videoExtensions.includes(item.extension.toLowerCase())));
-
-    if (type.containsWord('audio')){
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type === ContentType.FILE && this.audioExtensions.includes(items[i].extension.toLowerCase())){
-          files.push(items[i]);
-        }
-      }
-    }
-      //files = files.concat(items.filter(item => item.type === ContentType.FILE &&  this.audioExtensions.includes(item.extension.toLowerCase())));
-
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type === ContentType.FOLDER){
-        files.push(items[i]);
-      }
-    }
-    console.log(files);
-    return files;
-  }
-
-  goInside(item: ContentItem) {
-    if (item.type !== ContentType.FOLDER) {
-      this.selectItem(item);
-      return;
-    }
-    this.path += '/' + item.name;
-  }
-
-  goOutside() {
-    if (this.path === this.courseFolder) return;
-    const split = this.path.split('/');
-    this.path = split.slice(0, split.length - 1).join('/');
-  }
-
-  selectItem(item: ContentItem) {
-    this.file = this.path + '/' + item.name;
-    this.fileType = this.imageExtensions.includes(item.extension.toLowerCase()) ? 'image' :
-      this.videoExtensions.includes(item.extension.toLowerCase()) ? 'video' : 'audio';
-  }
-
-  isReadyToSubmit(): boolean {
-    return (exists(this.fileToUpload) && exists(this.fileToUpload.name) && !this.fileToUpload.name.isEmpty()) ||
-      exists(this.file);
-  }*/
-
   calculatePath(){
     this.loading = true;
 
-    if (this.root !== this.originalRoot){
+    if (this.root !== this.originalRoot) {
       // new path with last word removed
       const split = this.path.split('/');
       this.path = this.path.split('/').slice(0, split.length - 1).join('/');

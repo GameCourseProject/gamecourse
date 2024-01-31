@@ -205,7 +205,7 @@ export class SkillsComponent implements OnInit {
           type: TableDataType.TEXT, content: {
             text: tier.costType.capitalize() + ': ' + tier.cost +
               (tier.costType === 'incremental' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')')
-                : tier.costType === 'exponential' ? (' x 2 ^ (#attempts (rating >= ' + tier.minRating + '))')
+                : tier.costType === 'exponential' ? (' + ' + tier.increment + ' x 2 ^ (#attempts (rating >= ' + tier.minRating + '))')
                 : '')
           }
         });
@@ -313,10 +313,10 @@ export class SkillsComponent implements OnInit {
 
       if (action === 'value changed') {
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
-
-        if (col === 7) skillToActOn.isCollab = value;
-        else if (col === 8) skillToActOn.isExtra = value;
-        else if (col === 9) skillToActOn.isActive = value;
+        
+        if (col === 5) skillToActOn.isCollab = value;
+        else if (col === 6) skillToActOn.isExtra = value;
+        else if (col === 7) skillToActOn.isActive = value;
 
         await this.api.editSkill(this.courseID, clearEmptyValues(skillToActOn)).toPromise();
 

@@ -2,6 +2,7 @@
 namespace Utils;
 
 use Exception;
+use GameCourse\Core\Core;
 use Opis\Closure\SerializableClosure;
 
 /**
@@ -10,6 +11,9 @@ use Opis\Closure\SerializableClosure;
  */
 class Cache
 {
+
+    const TABLE_VIEWS_CACHE = "views_cache";
+
     /*** --------------------------------------------- ***/
     /*** ------------------ General ------------------ ***/
     /*** --------------------------------------------- ***/
@@ -82,6 +86,7 @@ class Cache
     //      there is no need to persist the cache after the request is over.
 
     private static $viewsCache = [];
+    private static $viewsCacheInDatabase = [];
 
     /**
      * Gets data from views cache.
@@ -91,7 +96,13 @@ class Cache
      */
     public static function getFromViewsCache(string $cacheId)
     {
-        return self::$viewsCache[$cacheId] ?? null;
+        if (self::$viewsCacheInDatabase[$cacheId] != null) {
+            return self::$viewsCacheInDatabase[$cacheId];
+        } else if (self::$viewsCache[$cacheId] != null) {
+            return self::$viewsCache[$cacheId];
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -104,6 +115,31 @@ class Cache
     public static function storeInViewsCache(string $cacheId, $data)
     {
         self::$viewsCache[$cacheId] = $data;
+    }
+
+    public static function storeViewsInDatabase() {
+        $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (cache_key, cache_value) VALUES ";
+
+        $values = [];
+
+        foreach (self::$viewsCache as $key => $value) {
+            $compressedKey = base64_encode(gzcompress($key));
+            $compressedValue = base64_encode(gzcompress($value));
+            $values[] = "('{$compressedKey}','{$compressedValue}')";
+        }
+
+        $insertQuery .= implode(", ", $values);
+
+        Core::database()->executeQuery($insertQuery);
+    }
+
+    public static function loadFromDatabase() {
+        $results = Core::database()->selectMultiple(self::TABLE_VIEWS_CACHE, [], "cache_key, cache_value");
+        foreach ($results as $res) {
+            $key = gzuncompress(base64_decode($res["cache_key"]));
+            $value = gzuncompress(base64_decode($res["cache_value"]));
+            self::$viewsCacheInDatabase[$key] = $value;
+        }
     }
 
 
