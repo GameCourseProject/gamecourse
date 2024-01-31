@@ -86,7 +86,7 @@ class EvaluateVisitor extends Visitor
         // Check if function result is in cache before calling it
         $cacheId = $this->getNodeCacheId($node);
         $cacheValue = Cache::getFromViewsCache($cacheId);
-        if ($cacheValue) return $cacheValue;
+        if ($cacheValue) return unserialize($cacheValue);
 
         if ($context) {
             $context = $context->accept($this);
@@ -115,7 +115,7 @@ class EvaluateVisitor extends Visitor
             $result = new ValueNode($collection, $result->getLibrary());
         }
 
-        Cache::storeInViewsCache($cacheId, $result);
+        Cache::storeInViewsCache($cacheId, serialize($result));
         return $result;
     }
 
