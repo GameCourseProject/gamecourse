@@ -373,7 +373,7 @@ def filter_preloaded_skill_logs(targets_ids):
             attempt_logs = logs[0: attempt_nr - 1]
             attempts = len([attempt_log for attempt_log in attempt_logs if
                             int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
-            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** attempts) if attempts > 0 else 0)
+            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** (attempts - 1)) if attempts > 0 else 0)
 
     global preloaded_logs
 
@@ -1923,7 +1923,7 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         else:
             attempt_logs = logs[0: attempt_nr - 1]
             attempts = len([attempt_log for attempt_log in attempt_logs if int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
-            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** attempts) if attempts > 0 else 0)
+            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** (attempts - 1)) if attempts > 0 else 0)
 
     def get_attempt_description(att):
         attempt_info = " (%s%s attempt)" % (att, "st" if att == 1 else "nd" if att == 2 else "rd" if att == 3 else "th")
