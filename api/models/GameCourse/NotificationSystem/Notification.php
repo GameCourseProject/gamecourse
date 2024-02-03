@@ -240,7 +240,7 @@ class Notification
             throw new Exception("Notification message can't be null neither empty");
 
         if (iconv_strlen($message) > 150)
-            throw new Exception("Notification message is too long: maximum of 50 characters.");
+            throw new Exception("Notification message is too long: maximum of 150 characters.");
     }
 
     /*** ---------------------------------------------------- ***/

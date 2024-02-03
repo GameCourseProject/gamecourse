@@ -1,20 +1,58 @@
 <div class="w-full relative">
-    <!-- Header -->
+  <!-- Header -->
   <app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" [loading] = "loading.action" ></app-header>
 
   <ng-container *ngIf="!loading.page">
-    
-    <ng-container *ngIf="!loading.table">
-      <app-table
-        [id] = "'notifications'"
-        [classList]="'mt-5'"
-        [headers] = "headers"
-        [data] = "data"
-        [options] = "tableOptions"
-        [loading] = "loading.table"
-      ></app-table>
-    </ng-container>
+    <!-- Announcements -->
+    <div class="card w-full bg-base-100 shadow-xl">
+      <form #f="ngForm" (ngSubmit)="sendNotification()" class="card-body">
 
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">Announcements</h2>
+          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+        Send a custom message to all students.
+        <app-input-textarea
+          [id]="'announcement'"
+          [maxLength]="150"
+          [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
+          [(value)]="notificationToSend"
+          [form]="f"
+          [placeholder]="'Write the message you want to send here'"
+          [label]="'Message'"
+          [required]="true"
+        ></app-input-textarea>
+
+        <button class="btn btn-primary btn-block mt-5" [disabled]="!f.valid" type="submit">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.action">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Send
+        </button>
+
+      </form>
+    </div>
+
+    <!-- History -->
+    <div class="card w-full bg-base-100 shadow-xl mt-5">
+      <div class="card-body">
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">History</h2>
+          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+        <app-table
+          *ngIf="!loading.table"
+          [id] = "'notifications'"
+          [classList]="'mt-5'"
+          [headers] = "headers"
+          [data] = "data"
+          [options] = "tableOptions"
+          [loading] = "loading.table"
+          [hasColumnFiltering]="false"
+        ></app-table>
+      </div>
+    </div>
   </ng-container>
 
   <!-- Loader -->

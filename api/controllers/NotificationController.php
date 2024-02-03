@@ -5,6 +5,7 @@ namespace API;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\NotificationSystem\Notification;
+use GameCourse\User\User;
 
 /**
  * This is the Notification controller, which holds API endpoints for
@@ -76,6 +77,7 @@ class NotificationController
         $notifications = Notification::getNotificationsByCourse($courseId);
         foreach ($notifications as &$notificationInfo){
             Notification::getNotificationById($notificationInfo["id"]);
+            $notificationInfo["user"] = User::getUserById($notificationInfo["user"])->getName();
         }
 
         API::response($notifications);
@@ -107,6 +109,29 @@ class NotificationController
 
         $notificationInfo = $notification->getData();
         API::response($notificationInfo);
+    }
+
+    /**
+     * Creates a new announcement in the system
+     * which is a notification for all students in the course
+     *
+     * @throws Exception
+     */
+    public function createAnnouncement()
+    {
+        API::requireValues("course", "message");
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course); // Not sure if it needs admin permission
+
+        $message = API::getValue("message");
+
+        // Add notifications to system
+        foreach($course->getStudents() as $student) {
+            $notification = Notification::addNotification($courseId, $student["id"], $message, false);
+        }
     }
 
     /**
