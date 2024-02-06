@@ -15,6 +15,7 @@ import { ViewsComponent } from "./settings/views/views/views.component";
 import { ViewsEditorComponent } from './settings/views/views-editor/views-editor.component';
 import { GlobalComponent } from "./settings/global/global.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
+import { HexadComponent } from './settings/hexad/hexad.component';
 import { PreferenceQuestionnaireComponent } from "./settings/adaptation/questionnaire/preference-questionnaire.component"
 
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
@@ -54,6 +55,7 @@ import { NotificationsComponent } from './settings/notifications/notifications.c
     ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent,
+    HexadComponent,
     AutogameComponent,
     PreferenceQuestionnaireComponent,
     ProfilingComponent,

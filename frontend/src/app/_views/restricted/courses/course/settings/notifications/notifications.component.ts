@@ -24,6 +24,8 @@ export class NotificationsComponent {
     notifications: Notification[] = [];
 
     notificationToSend: string = "";
+    predictions: boolean = false;
+    suggestions: boolean = false;
 
     @ViewChild('f', { static: false }) f: NgForm;
 

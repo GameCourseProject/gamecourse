@@ -16,6 +16,7 @@ import {
   SubmitParticipationPageComponent
 } from "./pages/modules/qr/submit-participation-page/submit-participation-page.component";
 import { AdaptationComponent } from "./settings/adaptation/adaptation.component";
+import { HexadComponent } from './settings/hexad/hexad.component';
 import { SectionsComponent } from "./settings/rules/sections.component";
 import { SectionRulesComponent } from "./settings/rules/section-rules/section-rules.component";
 import { RulesComponent } from "./settings/rules/section-rules/rules/rules.component";
@@ -27,6 +28,10 @@ const routes: Routes = [
   {
     path: 'main',
     component: MainComponent
+  },
+  {
+    path: 'hexad',
+    component: HexadComponent
   },
   {
     path: 'overview',
