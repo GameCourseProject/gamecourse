@@ -194,12 +194,6 @@ export class SidebarComponent implements OnInit {
         });
       }
 
-      navigation.push({
-        link: path + 'hexad',
-        name: 'Hexad Profile',
-        icon: 'feather-user'
-      })
-
       // Course pages
       navigation.push(
         {
