@@ -1279,6 +1279,21 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
+  public toggleModuleNotifications(courseID: number, moduleID: string, isEnabled: boolean): Observable<Notification> {
+    const data = {
+      course: courseID,
+      module: moduleID,
+      isEnabled: isEnabled
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'toggleModuleNotifications');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
   public getNotificationsByUser(userId: number): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);

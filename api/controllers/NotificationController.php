@@ -134,6 +134,21 @@ class NotificationController
         }
     }
 
+    public function toggleModuleNotifications()
+    {
+        API::requireValues("course", "module", "isEnabled");
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $moduleId = API::getValue("module");
+        $isEnabled = API::getValue("isEnabled", "bool");
+
+        Notification::setModuleNotifications($courseId, $moduleId, $isEnabled);
+    }
+
     /**
      * Edits notification in the system
      *

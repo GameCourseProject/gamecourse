@@ -242,4 +242,9 @@ class Leaderboard extends Module
         $this->removeTemplates();
         $this->removeProviders();
     }
+
+    public function getNotification($studentId)
+    {
+        return "Go check the leaderboard.";
+    }
 }

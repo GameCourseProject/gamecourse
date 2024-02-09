@@ -25,6 +25,8 @@ export class NotificationsComponent {
 
     notificationToSend: string = "";
 
+    leaderboard: boolean = false;
+
     @ViewChild('f', { static: false }) f: NgForm;
 
     constructor(
@@ -110,6 +112,14 @@ export class NotificationsComponent {
         // Reset form
         this.notificationToSend = '';
         this.f.resetForm();
+
+        this.loading.action = false;
+        AlertService.showAlert(AlertType.SUCCESS, 'Notifications sent');
+    }
+
+    async sendNotificationTest() {
+        this.loading.action = true;
+        await this.api.toggleModuleNotifications(this.course.id, "Leaderboard", this.leaderboard).toPromise();
 
         this.loading.action = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Notifications sent');
