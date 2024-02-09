@@ -30,6 +30,7 @@ import { SkillPageComponent } from './pages/modules/skills/skill-page/skill-page
 import {DragDropModule} from "@angular/cdk/drag-drop";
 import {RulesComponent} from "./settings/rules/section-rules/rules/rules.component";
 import { AutogameComponent } from './settings/autogame/autogame.component';
+import { NotificationsComponent } from './settings/notifications/notifications.component';
 
 
 @NgModule({
@@ -58,7 +59,8 @@ import { AutogameComponent } from './settings/autogame/autogame.component';
     ProfilingComponent,
     DataSourceStatusComponent,
     SubmitParticipationPageComponent,
-    SkillPageComponent
+    SkillPageComponent,
+    NotificationsComponent
   ],
     imports: [
         CommonModule,
