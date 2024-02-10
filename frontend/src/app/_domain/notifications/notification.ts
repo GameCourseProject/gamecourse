@@ -1,17 +1,22 @@
+import { Moment } from "moment";
+import { dateFromDatabase } from "src/app/_utils/misc/misc";
+
 export class Notification{
   private _id: number;
   private _course: number;
   private _user: number;
   private _message: string;
   private _isShowed: boolean;
+  private _dateCreated: Moment;
 
 
-  constructor(id: number, course: number, user: number, message: string, isShowed: boolean) {
+  constructor(id: number, course: number, user: number, message: string, isShowed: boolean, dateCreated: Moment) {
     this._id = id;
     this._course = course;
     this._user = user;
     this._message = message;
     this._isShowed = isShowed;
+    this._dateCreated = dateCreated;
   }
 
   get id(): number {
@@ -54,13 +59,22 @@ export class Notification{
     this._isShowed = value;
   }
 
+  get dateCreated(): Moment {
+    return this._dateCreated;
+  }
+
+  set dateCreated(value: Moment) {
+    this._dateCreated = value;
+  }
+
   static fromDatabase(obj: NotificationDatabase): Notification {
     return new Notification(
       obj.id,
       obj.course,
       obj.user,
       obj.message,
-      obj.isShowed
+      obj.isShowed == "0" ? false : true,
+      obj.dateCreated ? dateFromDatabase(obj.dateCreated) : null,
     );
   }
 }
@@ -69,6 +83,7 @@ interface NotificationDatabase {
   id: number,
   course: number,
   user: number,
-  message: string
-  isShowed: boolean
+  message: string,
+  isShowed: string,
+  dateCreated: string
 }

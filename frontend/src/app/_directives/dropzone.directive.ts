@@ -18,9 +18,6 @@ import { Directive, EventEmitter, HostBinding, HostListener, Input, Output } fro
 })
 export class DropZoneDirective {
 
-  // The directive emits a `fileDrop` event
-  // with the list of files dropped on the element
-  // as an JS array of `File` objects.
   @Output('appDropZone') fileDrop = new EventEmitter<Array<File>>();
 
   // Disable dropping on the body of the document. 
@@ -29,8 +26,6 @@ export class DropZoneDirective {
   // Set this input to false if you want the browser default behaviour.
   @Input() preventBodyDrop = true;
 
-  // The `dropzone-active` class is applied to the host
-  // element when a drag is currently over the target.
   @HostBinding('class.dropzone-active')
   active = false;
 
