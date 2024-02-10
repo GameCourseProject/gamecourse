@@ -24,7 +24,7 @@ def autogame_init(course):
     """
 
     query = "SELECT isRunning FROM autogame WHERE course = %s;"
-    is_running = gc_db.execute_query(query, course)[0][0]
+    is_running = gc_db.execute_query(query, (course,))[0][0]
 
     # Check AutoGame status
     if is_running:
@@ -95,7 +95,7 @@ def get_targets(course, all_targets=False, targets_list=None):
                     "LEFT JOIN course_user cu on ur.user = cu.id " \
                     "LEFT JOIN user u on ur.user = u.id " \
                     "WHERE ur.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
-            table = gc_db.execute_query(query, course)
+            table = gc_db.execute_query(query, (course,))
 
         else:
             # Running for targets w/ new data in course
@@ -105,7 +105,7 @@ def get_targets(course, all_targets=False, targets_list=None):
                     "LEFT JOIN course_user cu on ur.user = cu.id " \
                     "LEFT JOIN user u on ur.user = u.id " \
                     "WHERE at.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
-            table = gc_db.execute_query(query, course)
+            table = gc_db.execute_query(query, (course,))
 
             # Clear targets
             query = "DELETE FROM autogame_target WHERE course = %s;"

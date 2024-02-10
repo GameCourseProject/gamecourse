@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import config, re
 
-from decorators import rule_function, rule_effect, rule_effect_doc
+from decorators import rule_function, rule_effect
 from gamerules.connector import gamecourse_connector as connector
 
 
@@ -1015,9 +1015,9 @@ def has_wildcard_available(target, skill_tree_id, wildcard_tier):
 ### ------------------------------------------------------ ###
 
 ### Awarding items
+#Removed @rule_effect_doc
 
 @rule_effect
-@rule_effect_doc
 def award(target, award_type, description, reward, instance=None, unique=True, award_id=None):
     """
     :description: Awards a single prize to a specific target. NOTE: will not retract, but will not award twice if unique. Updates award if reward has changed.
