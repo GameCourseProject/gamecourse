@@ -1,0 +1,33 @@
+.ql-html-popupContainer {
+  @apply bg-base-100;
+}
+
+.ql-html-popupTitle {
+  @apply font-sans pb-4 not-italic font-semibold text-xl;
+}
+
+.ql-html-textArea {
+  @apply bg-base-200 text-sm font-normal rounded-md;
+}
+
+.ql-html-buttonGroup {
+  button {
+    @apply btn btn-primary;
+  }
+}
+
+.ql-editor {
+  p, ul, ol {
+    margin-bottom: 1.25em;
+  }
+  @for $i from 1 through 6 {
+    h#{$i} {
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+  }
+  img {
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+}

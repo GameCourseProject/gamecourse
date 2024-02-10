@@ -2330,7 +2330,7 @@ tags:
      * @test
      * @throws Exception
      */
-    public function getSkillCostForUserVariableCost()
+    public function getSkillCostForUserIncrementalCost()
     {
         // Given
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
@@ -2338,7 +2338,7 @@ tags:
 
         (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
         $tier = new Tier($this->tierId);
-        $tier->setCostType("variable");
+        $tier->setCostType("incremental");
         $tier->setCost(10);
         $tier->setIncrement(5);
 
@@ -2371,7 +2371,7 @@ tags:
      * @test
      * @throws Exception
      */
-    public function getSkillCostForUserVariableCostOnlyCostingRetries()
+    public function getSkillCostForUserIncrementalCostOnlyCostingRetries()
     {
         // Given
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
@@ -2379,7 +2379,7 @@ tags:
 
         (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
         $tier = new Tier($this->tierId);
-        $tier->setCostType("variable");
+        $tier->setCostType("incremental");
         $tier->setCost(0);
         $tier->setIncrement(5);
 
@@ -2412,7 +2412,7 @@ tags:
      * @test
      * @throws Exception
      */
-    public function getSkillCostForUserVariableCostNoAttempts()
+    public function getSkillCostForUserIncrementalCostNoAttempts()
     {
         // Given
         $skill = Skill::addSkill($this->tierId, "Skill", null, null, false, false, []);
@@ -2420,7 +2420,7 @@ tags:
 
         (new VirtualCurrency(new Course($this->courseId)))->setEnabled(true);
         $tier = new Tier($this->tierId);
-        $tier->setCostType("variable");
+        $tier->setCostType("incremental");
 
         // No cost
         $tier->setCost(0);

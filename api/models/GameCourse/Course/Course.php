@@ -1163,7 +1163,7 @@ class Course
      */
     public function deleteFile(string $from, string $filename, bool $deleteIfEmpty = true)
     {
-        Utils::deleteFile($from, $filename, $deleteIfEmpty);
+        Utils::deleteFile($this->getDataFolder() . "/$from", $filename, $deleteIfEmpty);
     }
 
 

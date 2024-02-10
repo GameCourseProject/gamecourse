@@ -14,11 +14,11 @@
     [id]="'rich-text-image-picker'"
     [type]="'image/*, video/*, audio/*'"
     [courseFolder]="courseFolder"
-    [whereToStore]="whereToStore"
+    [subfolderToOpen]="subfolderToOpen"
     [moduleId]="moduleId"
-    [positiveBtnText]="'Select'"
+    [positiveBtnText]="'Add'"
     (positiveBtnClicked)="addFile($event)"
-    [innerClickEvents]="false">
+    [innerClickEvents]="true">
   </app-file-picker-modal>
 
 </div>

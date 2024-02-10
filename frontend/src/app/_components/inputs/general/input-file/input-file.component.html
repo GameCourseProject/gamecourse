@@ -7,7 +7,7 @@
   </label>
 
   <!-- Dropzone -->
-  <div class="dropzone flex justify-center items-center w-full">
+  <div class="dropzone flex justify-center items-center w-full" (appDropZone)="onDrop($event)">
     <label [for]="id" class="flex flex-col justify-center items-center w-full rounded-lg border-2 border-dashed
            {{labelColors[color]}} btn btn-ghost {{InputGroupBtnColor[color]}} {{heights[size]}}"
            [ngClass]="{'!border-error text-error btn-error': form && form.submitted && inputFile.invalid}">
@@ -36,6 +36,7 @@
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputFile.invalid" class="error-messages">
     <span *ngIf="inputFile.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputFile.errors.invalidFileType && fileTypeErrorMessage !== null" class="label-text-alt">{{fileTypeErrorMessage}}</span>
   </label>
 
 </div>

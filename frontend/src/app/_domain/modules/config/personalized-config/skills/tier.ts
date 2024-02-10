@@ -3,7 +3,7 @@ export class Tier {
   private _skillTreeID: number;
   private _name: string;
   private _reward: number;
-  private _costType: 'fixed' | 'variable';
+  private _costType: 'fixed' | 'incremental' | 'exponential';
   private _cost: number;
   private _increment: number;
   private _minRating: number;
@@ -12,7 +12,7 @@ export class Tier {
 
   static readonly WILDCARD: string = "Wildcard";
 
-  constructor(id: number, skillTreeID: number, name: string, reward: number, costType: 'fixed' | 'variable', cost: number,
+  constructor(id: number, skillTreeID: number, name: string, reward: number, costType: 'fixed' | 'incremental' | 'exponential', cost: number,
               increment: number, minRating: number, position: number, isActive: boolean) {
     this._id = id;
     this._skillTreeID = skillTreeID;
@@ -58,11 +58,11 @@ export class Tier {
     this._reward = value;
   }
 
-  get costType(): "fixed" | "variable" {
+  get costType(): "fixed" | "incremental" | "exponential" {
     return this._costType;
   }
 
-  set costType(value: "fixed" | "variable") {
+  set costType(value: "fixed" | "incremental" | "exponential") {
     this._costType = value;
   }
 
@@ -151,7 +151,7 @@ interface TierDatabase {
   skillTree: number,
   name: string,
   reward: number,
-  costType: 'fixed' | 'variable',
+  costType: 'fixed' | 'incremental' | 'exponential',
   cost: number,
   increment: number,
   minRating: number,

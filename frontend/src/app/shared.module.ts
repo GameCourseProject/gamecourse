@@ -14,6 +14,7 @@ import { ScrollableDragDirective } from "./_directives/scrollable-drag.directive
 import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
 import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
 import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
+import { DropZoneDirective } from './_directives/dropzone.directive';
 
 // Components: layout
 import { NavbarComponent } from './_components/layout/navbar/navbar.component';
@@ -229,6 +230,7 @@ import {
   tablerRowInsertTop,
   tablerColumnInsertLeft,
   tablerColumnInsertRight,
+  tablerQuote
 } from "@ng-icons/tabler-icons";
 
 
@@ -243,6 +245,7 @@ import {
     GoToPageDirective,
     ShowTooltipDirective,
     TableDataCustomDirective,
+    DropZoneDirective,
 
     NavbarComponent,
     SidebarComponent,
@@ -527,6 +530,7 @@ import {
       tablerRowInsertTop,
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
+      tablerQuote
     }),
     DataTablesModule,
     NgApexchartsModule,

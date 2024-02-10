@@ -594,12 +594,26 @@ class Skill
         $copiedSkill->setActive($skillInfo["isActive"]);
 
         // Copy data folder
-        Utils::copyDirectory($this->getDataFolder() . "/", $copiedSkill->getDataFolder() . "/");
+        $this->copySkillDir($copyTo);
 
         // Copy rule
         $this->getRule()->mirrorRule($copiedSkill->getRule());
 
         return $copiedSkill;
+    }
+
+    /**
+     * Copies the directory of the given skill name to tke skills directory of the new course.
+     * <oldCourse>/skills/<skillname>/ to <newCourse>/skills/
+     *
+     * @throws Exception
+     */
+    public function copySkillDir(Tier $copyTo) {
+        $originalDir = $this->getDataFolder() . "/";
+        if (!file_exists($originalDir)) return;
+
+        $skillsModule = new Skills($copyTo->getCourse());
+        Utils::copyDirectory($this->getDataFolder() . "/", $skillsModule->getDataFolder() . "/");
     }
 
     /**
@@ -973,6 +987,9 @@ class Skill
             function ($item) use ($name, $tierInfo) {
                 return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
         }));
+
+        if ($tierInfo["costType"] === "exponential") return $tierInfo["cost"] + ($nrAttempts > 0 ? $tierInfo["increment"] * (2 ** ($nrAttempts - 1)) : 0);
+
         return $tierInfo["cost"] + $tierInfo["increment"] * $nrAttempts;
     }
 
@@ -1182,7 +1199,7 @@ class Skill
     {
         if (!$skillName) $skillName = $this->getName();
         $skillsModule = new Skills($this->getCourse());
-        return $skillsModule->getDataFolder($fullPath) . "/" . Utils::strip($skillName, "_");
+        return $skillsModule->getDataFolder($fullPath) . "/" . Utils::strip($skillName, "");
     }
 
     /**

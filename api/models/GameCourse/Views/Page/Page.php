@@ -8,6 +8,7 @@ use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
+use Utils\Cache;
 use Utils\CronJob;
 use Utils\Time;
 use Utils\Utils;
@@ -636,6 +637,8 @@ class Page
     {
         // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
+
+        Cache::loadFromDatabase();
 
         $pageInfo = $this->getData("course, viewRoot");
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);

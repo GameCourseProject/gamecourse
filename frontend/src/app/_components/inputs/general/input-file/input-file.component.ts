@@ -42,6 +42,7 @@ export class InputFileComponent implements OnInit, AfterViewInit {
 
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
+  @Input() fileTypeErrorMessage?: string = 'Wrong file type'          // Message for file type error
 
   @Output() valueChange = new EventEmitter<FileList>();
 
@@ -56,8 +57,42 @@ export class InputFileComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.updateValidators();
     if (this.form) this.form.addControl(this.inputFile);
   }
+
+  updateValidators() {
+    const validators = [
+      this.required ? this.fileValidator : null,
+      this.acceptValidator
+    ].filter(validator => validator !== null);
+    
+    this.inputFile.control.setValidators(validators);
+    this.inputFile.control.updateValueAndValidity();
+  }
+
+  // Custom validator for file input
+  fileValidator = (control) => {
+    if (this.files && this.files.length > 0) {
+      return null;  // Valid
+    } else {
+      return { required: true };  // Invalid
+    }
+  };
+
+  // Custom validator for accepted file types
+  acceptValidator = (control) => {
+    if (this.files && this.files.length > 0) {
+      const isValidType = Array.from(this.files).every(file => {
+        const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        return this.accept.includes(fileExtension);
+      });
+      
+      return isValidType ? null : { invalidFileType: true };
+    } else {
+      return null;  // No files, so it's considered valid for this case
+    }
+  };
 
   onFilesSelected(event) {
     this.files = event.target.files;
@@ -75,11 +110,32 @@ export class InputFileComponent implements OnInit, AfterViewInit {
       }
     }
 
+    this.updateValidators();
+    this.valueChange.emit(this.files);
+  }
+
+  onDrop(event) {
+    // Add file
+    let files;
+    if (this.multiple) {
+      files = this.getFiles();
+      files.push(event[0]);
+    }
+    else { files = [event[0]] }
+
+    // Create new filelist
+    const dt = new DataTransfer();
+    for (let file of files) {
+      dt.items.add(file);
+    }
+    this.files = dt.files;
+
+    this.updateValidators();
     this.valueChange.emit(this.files);
   }
 
   getFiles(): File[] {
-    return Array.from(this.files);
+    return this.files ? Array.from(this.files) : [];
   }
 
   getFileTypes(): string {
@@ -114,9 +170,7 @@ export class InputFileComponent implements OnInit, AfterViewInit {
     }
     this.files = dt.files;
 
-    // Set error
-    if (this.required && this.files.length === 0)
-      this.form.controls[this.id].setErrors({'required': true});
+    this.valueChange.emit(this.files);
   }
 
 
