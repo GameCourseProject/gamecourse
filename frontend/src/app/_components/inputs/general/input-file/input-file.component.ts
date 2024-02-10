@@ -56,8 +56,24 @@ export class InputFileComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.updateValidators();
     if (this.form) this.form.addControl(this.inputFile);
   }
+
+  updateValidators() {
+    const validators = this.required ? [this.fileValidator] : [];
+    this.inputFile.control.setValidators(validators);
+    this.inputFile.control.updateValueAndValidity();
+  }
+
+  // Custom validator for file input
+  fileValidator = (control) => {
+    if (this.files && this.files.length > 0) {
+      return null;  // Valid
+    } else {
+      return { required: true };  // Invalid
+    }
+  };
 
   onFilesSelected(event) {
     this.files = event.target.files;
@@ -93,6 +109,8 @@ export class InputFileComponent implements OnInit, AfterViewInit {
       dt.items.add(file);
     }
     this.files = dt.files;
+
+    this.updateValidators();  // Update validators after file changes
 
     this.valueChange.emit(this.files);
   }
