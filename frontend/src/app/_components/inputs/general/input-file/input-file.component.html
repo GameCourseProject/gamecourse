@@ -36,6 +36,7 @@
   <!-- Error Messages -->
   <label *ngIf="form && form.submitted && inputFile.invalid" class="error-messages">
     <span *ngIf="inputFile.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputFile.errors.invalidFileType && fileTypeErrorMessage !== null" class="label-text-alt">{{fileTypeErrorMessage}}</span>
   </label>
 
 </div>
