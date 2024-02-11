@@ -364,11 +364,11 @@ export class InputScheduleComponent implements OnInit {
 
   openEditor() {
     this.init();
-    ModalService.openModal('cron-editor');
+    ModalService.openModal('cron-editor-' + this.id);
   }
 
   closeEditor() {
-    ModalService.closeModal('cron-editor');
+    ModalService.closeModal('cron-editor-' + this.id);
   }
 
 }

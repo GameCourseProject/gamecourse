@@ -11,10 +11,12 @@ use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\NotificationSystem\Notification;
 use GameCourse\Role\Role;
 use GameCourse\Views\Dictionary\ProvidersLibrary;
 use Utils\Utils;
 use GameCourse\Views\Template\CoreTemplate;
+use Utils\CronJob;
 
 /**
  * This is the Module model, which implements the necessary methods
@@ -536,6 +538,17 @@ abstract class Module
     }
 
     /**
+     * Creates an entry for notification settings.
+     *
+     * @return void
+     */
+    protected function initNotifications()
+    {
+        Core::database()->insert(Notification::TABLE_NOTIFICATION_CONFIG, 
+            ["course" => $this->course->getId(), "module" => $this->id, "isEnabled" => "0", "frequency" => "00 08 * * MON"]);
+    }
+
+    /**
      * Sets events to listen to right from the start and their
      * callback functions.
      *
@@ -658,9 +671,27 @@ abstract class Module
         }
     }
 
+    /**
+     * Removes core templates of module from course.
+     *
+     * @return void
+     */
     protected function removeTemplates()
     {
         Core::database()->delete(CoreTemplate::TABLE_TEMPLATE, ["course" => $this->course->getId(), "module" => $this->id]);
+    }
+
+    /**
+     * Remove notifications settings of module from course.
+     *
+     * @return void
+     */
+    protected function removeNofitications()
+    {
+        Core::database()->delete(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->id]);
+
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
+        CronJob::removeCronJob($script, $this->course->getId(), $this->id);
     }
 
     /**
@@ -1322,5 +1353,15 @@ abstract class Module
     {
         $params = ["id", "name", "description", "type", "version", "minProjectVersion", "maxProjectVersion", "minAPIVersion", "maxAPIVersion"];
         Utils::trim($params, ...$values);
+    }
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $studentId
+     */
+    public function getNotification($studentId)
+    {
+        return null;
     }
 }

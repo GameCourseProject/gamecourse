@@ -3,9 +3,66 @@
   <app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" [loading] = "loading.action" ></app-header>
 
   <ng-container *ngIf="!loading.page">
+    <!-- Modules -->
+    <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl">
+      <form #fModules="ngForm" (ngSubmit)="saveModuleConfig()" class="card-body">
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">Modules</h2>
+        </div>
+        <ng-container *ngFor="let module of modulesToManage">
+          <div class="grid grid-cols-2 mb-2" id="module.id">
+            <app-input-toggle
+              [id]="module.id + 'Enabled'"
+              [form]="fModules"
+              [(value)]="module.isEnabled"
+              [classList]="'mt-2'"
+              [color]="'primary'"
+              [label]="module.name.capitalize() + ' notifications'"
+            ></app-input-toggle>
+            <app-input-schedule
+              [id]="module.id + 'Frequency'"
+              [form]="fModules"
+              [(value)]="module.frequency"
+              [disabled]="!module.isEnabled"
+              [leftLabel]="'Frequency'"
+            ></app-input-schedule>
+          </div>
+        </ng-container>
+        <button class="btn btn-primary btn-block mt-2" type="submit">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.action">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Save
+        </button>
+      </form>
+    </div>
+
+    <!-- Predictions -->
+<!--     <div class="card w-full bg-base-100 shadow-xl">
+      <form #f="ngForm" class="card-body">
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">Predictions</h2>
+          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+        Enables sending students a prediction of their final XP, based on their earned XP tendencies so far, 
+        and only to students belonging to clusters that may be motivated by this information.
+        Based on the Profiler module.<br>
+        The formula applied is the following:<br>
+        <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
+        <app-input-toggle
+          [id]="'predictions'"
+          [(value)]="predictions"
+          [classList]="'mt-2'"
+          [color]="'primary'"
+          [label]="'Enable prediction notifications'"
+        ></app-input-toggle>
+      </form>
+    </div> -->
+
     <!-- Announcements -->
-    <div class="card w-full bg-base-100 shadow-xl">
-      <form #f="ngForm" (ngSubmit)="sendNotification()" class="card-body">
+    <div class="card w-full bg-base-100 shadow-xl mt-5">
+      <form #fSend="ngForm" (ngSubmit)="sendNotification()" class="card-body">
 
         <div class="flex items-center">
           <h2 class="card-title mb-0">Announcements</h2>
@@ -17,13 +74,13 @@
           [maxLength]="150"
           [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
           [(value)]="notificationToSend"
-          [form]="f"
-          [placeholder]="'Write the message you want to send here'"
+          [form]="fSend"
+          [placeholder]="'Write the message you want to send here (maximum of 150 characters)'"
           [label]="'Message'"
           [required]="true"
         ></app-input-textarea>
 
-        <button class="btn btn-primary btn-block mt-5" [disabled]="!f.valid" type="submit">
+        <button class="btn btn-primary btn-block mt-5" [disabled]="!fSend.valid" type="submit">
           <!-- Spinner -->
           <ng-container *ngIf="loading.action">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
