@@ -77,7 +77,7 @@
       <span class="mb-[.8rem]">Every</span>
 
       <app-input-select
-        [id]="'minutes'"
+        [id]="'minutes-' + id"
         [form]="fMinutes"
         [(value)]="minutes"
         [options]="minuteOptions"
@@ -97,7 +97,7 @@
       <span class="mb-[.8rem]">Every</span>
 
       <app-input-select
-        [id]="'hours'"
+        [id]="'hours-' + id"
         [form]="fHourly"
         [(value)]="hours"
         [options]="hourOptions"
@@ -129,7 +129,7 @@
       <span class="mb-[.8rem]">Every</span>
 
       <app-input-select
-        [id]="'case1-nr-days'"
+        [id]="'case1-nr-days-' + id"
         [form]="fDaily"
         [(value)]="daily.days"
         [options]="dayOptions"
@@ -222,7 +222,7 @@
       <span class="mb-[.8rem]">Day</span>
 
       <app-input-select
-        [id]="'case1-nr-days'"
+        [id]="'case1-nr-days-' + id"
         [form]="fMonthly"
         [(value)]="monthly.days"
         [options]="dayOptions"
@@ -235,7 +235,7 @@
       <span class="mb-[.8rem]">of every</span>
 
       <app-input-select
-        [id]="'case1-nr-months'"
+        [id]="'case1-nr-months-' + id"
         [form]="fMonthly"
         [(value)]="monthly.months1"
         [options]="monthOptions"
@@ -270,7 +270,7 @@
     </app-input-radio>
 
     <app-input-select
-      [id]="'case2-order'"
+      [id]="'case2-order-' + id"
       [form]="fMonthly"
       [(value)]="monthly.order"
       [options]="orderOptions"
@@ -281,7 +281,7 @@
     </app-input-select>
 
     <app-input-select
-      [id]="'case2-weekday'"
+      [id]="'case2-weekday-' + id"
       [form]="fMonthly"
       [(value)]="monthly.weekday"
       [options]="weekdayOptions"
@@ -294,7 +294,7 @@
     <span class="mb-[.8rem]">of every</span>
 
     <app-input-select
-      [id]="'case2-nr-months'"
+      [id]="'case2-nr-months-' + id"
       [form]="fMonthly"
       [(value)]="monthly.months2"
       [options]="monthOptions"

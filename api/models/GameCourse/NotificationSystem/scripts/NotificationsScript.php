@@ -10,7 +10,6 @@ ini_set('display_errors', '1');
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
-use GameCourse\Module\ProgressReport\ProgressReport;
 use GameCourse\NotificationSystem\Notification;
 use Utils\CronJob;
 use Utils\Utils;

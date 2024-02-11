@@ -431,7 +431,9 @@ class Notification
             throw new Exception("Course with ID = " . $courseId . " does not have " 
                 . $moduleId . " enabled: can't change Notification settings related to it.");
 
-        Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, ["isEnabled" => $isEnabled, "frequency" => $frequency], ["course" => $courseId, "module" => $moduleId]);
+        Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, 
+            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency], 
+            ["course" => $courseId, "module" => $moduleId]);
 
         $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
         if ($isEnabled) {
