@@ -3,6 +3,7 @@ import { NgForm } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { TableDataType } from "src/app/_components/tables/table-data/table-data.component";
 import { Course } from "src/app/_domain/courses/course";
+import { Module } from "src/app/_domain/modules/module";
 import { Notification } from "src/app/_domain/notifications/notification";
 import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ApiHttpService } from "src/app/_services/api/api-http.service";
@@ -21,13 +22,14 @@ export class NotificationsComponent {
     refreshing: boolean = true;
 
     course: Course;
+    modules: Module[];
     notifications: Notification[] = [];
 
+    modulesToManage: ModuleNotificationManageData[] = [];
     notificationToSend: string = "";
 
-    leaderboard: boolean = false;
-
-    @ViewChild('f', { static: false }) f: NgForm;
+    @ViewChild('fSend', { static: false }) fSend: NgForm;
+    @ViewChild('fModules', { static: false }) fModules: NgForm;
 
     constructor(
         private api: ApiHttpService,
@@ -41,6 +43,8 @@ export class NotificationsComponent {
             await this.getNotifications(courseID);
             this.loading.page = false;
             this.buildTable();
+
+            await this.getModules(courseID);
         });
     }
 
@@ -50,6 +54,12 @@ export class NotificationsComponent {
 
     async getCourse(courseID: number): Promise<void> {
         this.course = await this.api.getCourseById(courseID).toPromise();
+    }
+
+    async getModules(courseID: number): Promise<void> {
+        this.modulesToManage = (await this.api.getModulesWithNotifications(courseID).toPromise())
+            .sort((a, b) => a.name.localeCompare(b.name));
+        console.log(this.modulesToManage);
     }
 
     async getNotifications(courseID: number): Promise<void> {
@@ -111,18 +121,24 @@ export class NotificationsComponent {
 
         // Reset form
         this.notificationToSend = '';
-        this.f.resetForm();
+        this.fSend.resetForm();
 
         this.loading.action = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Notifications sent');
     }
 
-    async sendNotificationTest() {
+    async saveModuleConfig() {
         this.loading.action = true;
-        await this.api.toggleModuleNotifications(this.course.id, "Leaderboard", this.leaderboard).toPromise();
+
+        await this.api.toggleModuleNotifications(this.course.id, this.modulesToManage).toPromise();
 
         this.loading.action = false;
-        AlertService.showAlert(AlertType.SUCCESS, 'Notifications sent');
+        AlertService.showAlert(AlertType.SUCCESS, 'Saved Module\'s notifications settings');
+    }
+
+    setModuleFrequency(module: ModuleNotificationManageData, value: any): void {
+        console.log(module.id);
+        module["frequency"] = value;
     }
 }
 
@@ -132,4 +148,11 @@ export interface NotificationManageData {
     user: string,
     message: string,
     isShowed: boolean
+}
+
+export interface ModuleNotificationManageData {
+    id: string,
+    name: string,
+    enabled: boolean,
+    frequency: string
 }

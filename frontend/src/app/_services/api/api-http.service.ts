@@ -75,7 +75,7 @@ import {CustomFunction} from "../../_components/inputs/code/input-code/input-cod
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
-import { NotificationManageData } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
+import { ModuleNotificationManageData, NotificationManageData } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
 
 @Injectable({
   providedIn: 'root'
@@ -1249,6 +1249,19 @@ export class ApiHttpService {
   }
   */
   
+  public getModulesWithNotifications(courseID: number): Observable<ModuleNotificationManageData[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getModulesWithNotifications');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+  
   public createNotification(notificationData: NotificationManageData): Observable<Notification> {
     const data = {
       course: notificationData.course,
@@ -1279,11 +1292,10 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public toggleModuleNotifications(courseID: number, moduleID: string, isEnabled: boolean): Observable<Notification> {
+  public toggleModuleNotifications(courseID: number, config: ModuleNotificationManageData[]): Observable<Notification> {
     const data = {
       course: courseID,
-      module: moduleID,
-      isEnabled: isEnabled
+      config: config,
     }
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);

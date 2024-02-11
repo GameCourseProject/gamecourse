@@ -28,7 +28,7 @@
 
 <!-- Modal -->
 <app-modal
-  [id]="'cron-editor'"
+  [id]="'cron-editor-' + id"
   [size]="'37rem'"
   [templateRef]="CRON_EDITOR"
   [submitBtnText]="'Save'"
@@ -181,7 +181,7 @@
     <div class="flex flex-wrap justify-between items-end font-semibold">
       <div class="w-1/2 sm:w-2/3 pr-2">
         <app-input-select-weekday
-          [id]="'weekdays'"
+          [id]="'weekdays-' + id"
           [form]="fWeekly"
           [(value)]="weekly.days"
           [placeholder]="'Select weekdays'"

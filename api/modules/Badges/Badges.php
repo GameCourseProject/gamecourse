@@ -1179,4 +1179,14 @@ class Badges extends Module
         $badgeAwards = $awardsModule->getUserAwardsByType($userId, AwardType::BADGE, $badgeId);
         return count($badgeAwards);
     }
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $studentId
+     */
+    public function getNotification($studentId)
+    {
+        return "Go check the badges.";
+    }
 }

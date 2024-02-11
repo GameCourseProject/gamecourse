@@ -4,6 +4,7 @@ namespace API;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use GameCourse\NotificationSystem\Notification;
 use GameCourse\User\User;
 
@@ -134,19 +135,52 @@ class NotificationController
         }
     }
 
+    /**
+     * Toggles notifications of modules in a course
+     *
+     * @throws Exception
+     */
     public function toggleModuleNotifications()
     {
-        API::requireValues("course", "module", "isEnabled");
+        API::requireValues("course", "config");
 
         $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
         
         API::requireCourseAdminPermission($course);
 
-        $moduleId = API::getValue("module");
-        $isEnabled = API::getValue("isEnabled", "bool");
+        $config = API::getValue("config", "array");
 
-        Notification::setModuleNotifications($courseId, $moduleId, $isEnabled);
+        foreach($config as $module) {
+            Notification::setModuleNotifications($courseId, $module["id"], $module["enabled"], $module["frequency"]);
+        }
+    }
+
+    /**
+     * Get Modules that are enabled in a course and have
+     * function to send notifications
+     *
+     * @throws Exception
+     */
+    public function getModulesWithNotifications()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        $filteredModules = [];
+
+        foreach ($course->getModules(true) as $module) {
+            $moduleInstance = (new Course($courseId))->getModuleById($module["id"]);
+            if (method_exists($moduleInstance, "getNotification")) {
+                $config = Notification::getModuleNotificationsConfig($courseId, $module["id"]);
+                $filteredModules[] = ["id" => $module["id"], "name" => $module["name"], 
+                    "enabled" => $config["isEnabled"], "frequency" => $config["frequency"]]; 
+            }
+        }
+
+        API::response($filteredModules);
     }
 
     /**

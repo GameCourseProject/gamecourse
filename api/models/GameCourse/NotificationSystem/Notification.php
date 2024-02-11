@@ -410,6 +410,11 @@ class Notification
         Utils::trim($params, ...$values);
     }
 
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Modules --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
     /**
      * Enables/disables notifications of a module in a course
      *
@@ -419,25 +424,39 @@ class Notification
      * @return void
      * @throws Exception
      */
-    public static function setModuleNotifications(int $courseId, string $moduleId, bool $enable)
+    public static function setModuleNotifications(int $courseId, string $moduleId, bool $enable, string $frequency)
     {
+        if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
+            throw new Exception("Course with ID = " . $courseId . " does not have " 
+                . $moduleId . " enabled: can't change Notification settings related to it.");
+
+        $entry = Core::database()->select(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId, "module" => $moduleId]);
+        if (!$entry) {
+            Core::database()->insert(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId, "module" => $moduleId, "isEnabled" => $enable, "frequency" => $frequency]);
+        } else {
+            Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, ["isEnabled" => $enable, "frequency" => $frequency], ["course" => $courseId, "module" => $moduleId]);
+        }
+
         $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
         if ($enable) {
-            if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
-                throw new Exception("Course with ID = " . $courseId . " does not have " 
-                    . $moduleId . " enabled: can't enable Notifications related to it.");
-
-            $expression = Core::database()->select(self::TABLE_NOTIFICATION_CONFIG, 
-                ["course" => $courseId, "module" => $moduleId], "frequency");
-
-            new CronJob($script, $expression, $courseId, $moduleId);
-
-            Core::database()->insert(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId, "module" => $moduleId, "isEnabled" => true]);
-
+            new CronJob($script, $frequency, $courseId, $moduleId);
         } else {
             CronJob::removeCronJob($script, $courseId, $moduleId);
-
-            Core::database()->delete(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId, "module" => $moduleId]);
         }
+    }
+
+    /**
+     * Gets configuration of a module's notifications
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    public static function getModuleNotificationsConfig(int $courseId, string $moduleId)
+    {
+        $found = Core::database()->select(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId, "module" => $moduleId]);
+        if ($found) return $found;
+        else return ["course" => $courseId, "module" => $moduleId, "isEnabled" => false, "frequency" => "*/10 * * * * "];
     }
 }
