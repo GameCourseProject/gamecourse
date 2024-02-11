@@ -1354,4 +1354,14 @@ abstract class Module
         $params = ["id", "name", "description", "type", "version", "minProjectVersion", "maxProjectVersion", "minAPIVersion", "maxAPIVersion"];
         Utils::trim($params, ...$values);
     }
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $studentId
+     */
+    public function getNotification($studentId)
+    {
+        return null;
+    }
 }
