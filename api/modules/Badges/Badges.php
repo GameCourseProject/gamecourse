@@ -85,6 +85,7 @@ class Badges extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initTemplates();
+        $this->initNotifications();
         $this->initRules();
         $this->initProviders();
 
@@ -189,6 +190,7 @@ class Badges extends Module
         $this->removeTemplates();
         $this->removeRules();
         $this->removeProviders();
+        $this->removeNofitications();
     }
 
 

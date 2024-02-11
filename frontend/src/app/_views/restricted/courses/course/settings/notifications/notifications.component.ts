@@ -22,7 +22,6 @@ export class NotificationsComponent {
     refreshing: boolean = true;
 
     course: Course;
-    modules: Module[];
     notifications: Notification[] = [];
 
     modulesToManage: ModuleNotificationManageData[] = [];
@@ -43,7 +42,6 @@ export class NotificationsComponent {
             await this.getNotifications(courseID);
             this.loading.page = false;
             this.buildTable();
-
             await this.getModules(courseID);
         });
     }
@@ -59,7 +57,6 @@ export class NotificationsComponent {
     async getModules(courseID: number): Promise<void> {
         this.modulesToManage = (await this.api.getModulesWithNotifications(courseID).toPromise())
             .sort((a, b) => a.name.localeCompare(b.name));
-        console.log(this.modulesToManage);
     }
 
     async getNotifications(courseID: number): Promise<void> {
@@ -153,6 +150,6 @@ export interface NotificationManageData {
 export interface ModuleNotificationManageData {
     id: string,
     name: string,
-    enabled: boolean,
+    isEnabled: boolean,
     frequency: string
 }

@@ -152,7 +152,7 @@ class NotificationController
         $config = API::getValue("config", "array");
 
         foreach($config as $module) {
-            Notification::setModuleNotifications($courseId, $module["id"], $module["enabled"], $module["frequency"]);
+            Notification::setModuleNotifications($courseId, $module["id"], $module["isEnabled"], $module["frequency"]);
         }
     }
 
@@ -169,18 +169,8 @@ class NotificationController
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
 
-        $filteredModules = [];
-
-        foreach ($course->getModules(true) as $module) {
-            $moduleInstance = (new Course($courseId))->getModuleById($module["id"]);
-            if (method_exists($moduleInstance, "getNotification")) {
-                $config = Notification::getModuleNotificationsConfig($courseId, $module["id"]);
-                $filteredModules[] = ["id" => $module["id"], "name" => $module["name"], 
-                    "enabled" => $config["isEnabled"], "frequency" => $config["frequency"]]; 
-            }
-        }
-
-        API::response($filteredModules);
+        API::requireCourseAdminPermission($course);
+        API::response(Notification::getModuleNotificationsConfig($courseId));
     }
 
     /**

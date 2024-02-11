@@ -4,7 +4,7 @@
 
   <ng-container *ngIf="!loading.page">
     <!-- Modules -->
-    <div class="card w-full bg-base-100 shadow-xl">
+    <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl">
       <form #fModules="ngForm" (ngSubmit)="saveModuleConfig()" class="card-body">
         <div class="flex items-center">
           <h2 class="card-title mb-0">Modules</h2>
@@ -14,7 +14,7 @@
             <app-input-toggle
               [id]="module.id + 'Enabled'"
               [form]="fModules"
-              [(value)]="module.enabled"
+              [(value)]="module.isEnabled"
               [classList]="'mt-2'"
               [color]="'primary'"
               [label]="module.name.capitalize() + ' notifications'"
@@ -23,7 +23,7 @@
               [id]="module.id + 'Frequency'"
               [form]="fModules"
               [(value)]="module.frequency"
-              [disabled]="!module.enabled"
+              [disabled]="!module.isEnabled"
               [leftLabel]="'Frequency'"
             ></app-input-schedule>
           </div>
