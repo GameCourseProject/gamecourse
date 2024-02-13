@@ -245,7 +245,12 @@ class Leaderboard extends Module
         $this->removeNofitications();
     }
 
-    public function getNotification($studentId)
+    /**
+     * Returns notifications to be sent to a user.
+     *
+     * @param int $userId
+     */
+    public function getNotification($userId)
     {
         return "Go check the leaderboard.";
     }

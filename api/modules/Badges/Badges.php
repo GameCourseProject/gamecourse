@@ -1183,12 +1183,27 @@ class Badges extends Module
     }
 
     /**
-     * Returns notifications to be sent to a student.
+     * Returns notifications to be sent to a user.
      *
-     * @param int $studentId
+     * @param int $userId
      */
-    public function getNotification($studentId)
+    public function getNotification($userId): ?string
     {
-        return "Go check the badges.";
+        foreach($this->getUserBadges($userId) as $badgesData) {
+            $badge = new Badge($badgesData["id"]);
+            $level = $badge->getLevels()[$badgesData["level"]];
+            $goal = $level["goal"];
+            $progress = count($this->getUserBadgeProgressionInfo($userId, $badge->getId()));
+
+            // Check if give notification
+            $instances = $goal - $progress;
+
+            // Threshold to limit notifications and avoid spamming
+            if (1 < $instances && $instances <= 2) {
+                return "You are " . $instances . " events away from achieving " . $badge->getName() . " badge! : "
+                          . $badge->getDescription() . " - " . $level["description"]; 
+            }
+        }
+        return null;
     }
 }

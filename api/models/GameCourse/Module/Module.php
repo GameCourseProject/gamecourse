@@ -1358,9 +1358,9 @@ abstract class Module
     /**
      * Returns notifications to be sent to a student.
      *
-     * @param int $studentId
+     * @param int $userId
      */
-    public function getNotification($studentId)
+    public function getNotification($userId)
     {
         return null;
     }
