@@ -242,7 +242,7 @@ class Leaderboard extends Module
         GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
         $this->removeProviders();
-        $this->removeNofitications();
+        $this->removeNotifications();
     }
 
     /**

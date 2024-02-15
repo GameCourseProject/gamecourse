@@ -686,7 +686,7 @@ abstract class Module
      *
      * @return void
      */
-    protected function removeNofitications()
+    protected function removeNotifications()
     {
         Core::database()->delete(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->id]);
 

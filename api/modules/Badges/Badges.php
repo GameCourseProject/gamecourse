@@ -21,6 +21,7 @@ use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
+use GameCourse\NotificationSystem\Notification;
 
 /**
  * This is the Badges module, which serves as a compartimentalized
@@ -190,7 +191,7 @@ class Badges extends Module
         $this->removeTemplates();
         $this->removeRules();
         $this->removeProviders();
-        $this->removeNofitications();
+        $this->removeNotifications();
     }
 
 
@@ -1191,17 +1192,29 @@ class Badges extends Module
     {
         foreach($this->getUserBadges($userId) as $badgesData) {
             $badge = new Badge($badgesData["id"]);
-            $level = $badge->getLevels()[$badgesData["level"]];
-            $goal = $level["goal"];
-            $progress = count($this->getUserBadgeProgressionInfo($userId, $badge->getId()));
 
-            // Check if give notification
-            $instances = $goal - $progress;
+            // Not in max level yet
+            if ($badgesData["level"] < $badgesData["nrLevels"]) {
+                $nextLevel = $badge->getLevels()[$badgesData["level"]];
+                $goal = $nextLevel["goal"];
+                $progress = count($this->getUserBadgeProgressionInfo($userId, $badge->getId()));
+    
+                // Check if give notification
+                $instances = $goal - $progress;
 
-            // Threshold to limit notifications and avoid spamming
-            if (1 < $instances && $instances <= 2) {
-                return "You are " . $instances . " events away from achieving " . $badge->getName() . " badge! : "
-                          . $badge->getDescription() . " - " . $level["description"]; 
+                // Threshold to limit notifications and avoid spamming
+                if (1 < $instances && $instances <= 2) {
+                    $notification = "You are " . $instances . " events away from achieving " . $badge->getName() . " badge! : "
+                              . $badge->getDescription() . " - " . $nextLevel["description"]; 
+                }
+
+                $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
+
+                if (!$alreadySent) {
+                    return $notification;
+                } else {
+                    return null;
+                }
             }
         }
         return null;
