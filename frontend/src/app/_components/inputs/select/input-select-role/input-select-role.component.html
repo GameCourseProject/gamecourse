@@ -1,0 +1,35 @@
+<app-input-select
+  *ngIf="!loading"
+  [id]="id"
+  [form]="form"
+  [(value)]="value"
+  [options]="roleNames"
+  [placeholder]="placeholder"
+
+  [multiple]="multiple"
+  [limit]="limit"
+  [search]="false"
+  [closeOnSelect]="closeOnSelect"
+  [hideSelectedOption]="hideSelectedOption"
+
+  [size]="size"
+  [color]="color"
+  [classList]="classList"
+  [disabled]="disabled"
+
+  [topLabel]="topLabel"
+  [leftLabel]="leftLabel"
+  [rightLabel]="rightLabel"
+
+  [btnText]="btnText"
+  [btnIcon]="btnIcon"
+
+  [helperText]="helperText"
+  [helperPosition]="helperPosition"
+
+  [required]="required"
+  [requiredErrorMessage]="requiredErrorMessage"
+
+  (valueChange)="valueChange.emit($event)"
+  (btnClicked)="btnClicked.emit($event)">
+</app-input-select>

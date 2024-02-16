@@ -690,7 +690,7 @@ abstract class Module
     {
         Core::database()->delete(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->id]);
 
-        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
         CronJob::removeCronJob($script, $this->course->getId(), $this->id);
     }
 

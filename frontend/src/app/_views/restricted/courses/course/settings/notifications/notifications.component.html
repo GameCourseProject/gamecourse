@@ -5,7 +5,7 @@
   <ng-container *ngIf="!loading.page">
     <!-- Modules -->
     <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl">
-      <form #fModules="ngForm" (ngSubmit)="saveModuleConfig()" class="card-body">
+      <form #fModules="ngForm" class="card-body">
         <div class="flex items-center">
           <h2 class="card-title mb-0">Modules</h2>
         </div>
@@ -65,10 +65,27 @@
       <form #fSend="ngForm" (ngSubmit)="sendNotification()" class="card-body">
 
         <div class="flex items-center">
-          <h2 class="card-title mb-0">Announcements</h2>
+          <h2 class="card-title mb-0">Custom Notification</h2>
           <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
         </div>
-        Send a custom message to all students.
+        Send a custom message to users.
+        <!-- Roles -->
+        <app-input-select-role
+          [courseId]="course.id"
+          [id]="'roles-receivers'"
+          [form]="fSend"
+          [(value)]="receiverRoles"
+          [placeholder]="'Select roles'"
+          [multiple]="true"
+          [closeOnSelect]="false"
+          [topLabel]="'Send to'"
+          [classList]="'mt-2'"
+          [required]="true"
+          [helperText]="'Users with at least one of these roles will receive the notification'"
+          [helperPosition]="'right'"
+        ></app-input-select-role>
+
+        <!-- Message -->
         <app-input-textarea
           [id]="'announcement'"
           [maxLength]="150"
@@ -78,17 +95,58 @@
           [placeholder]="'Write the message you want to send here (maximum of 150 characters)'"
           [label]="'Message'"
           [required]="true"
+          [classList]="'mt-2'"
         ></app-input-textarea>
 
-        <button class="btn btn-primary btn-block mt-5" [disabled]="!fSend.valid" type="submit">
-          <!-- Spinner -->
+        <div class="grid md:grid-cols-2 gap-4 mt-10">
+          <!-- Schedule -->
+          <app-input-schedule
+            [id]="'schedule'"
+            [form]="fSend"
+            [(value)]="schedule"
+          ></app-input-schedule>
+
+          <button class="btn btn-primary btn-block" [disabled]="!fSend.valid || !schedule" type="button" (click)="scheduleNotification()">
+            <ng-container *ngIf="loading.action">
+              <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+            </ng-container>
+            Schedule
+          </button>
+        </div>
+        <div class="flex flex-row justify-center items-center my-2 text-xl font-semibold">
+          or
+        </div>
+        <button class="btn btn-primary btn-block" [disabled]="!fSend.valid" type="button" (click)="sendNotification()">
+          <!-- Send Now -->
           <ng-container *ngIf="loading.action">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
           </ng-container>
-          Send
+          Send Now
         </button>
 
       </form>
+    </div>
+
+    <!-- Scheduled -->
+    <div class="card w-full bg-base-100 shadow-xl mt-5">
+      <div class="card-body">
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">Scheduled</h2>
+          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+        <app-table
+          *ngIf="!loading.table"
+          [id] = "'scheduled-notifications'"
+          [classList]="'mt-5'"
+          [headers] = "headersSchedule"
+          [data] = "dataSchedule"
+          [options] = "tableOptionsSchedule"
+          [loading] = "loading.table"
+          [hasColumnFiltering]="false"
+          (btnClicked)="doActionOnTable('scheduled', $event.type, $event.row, $event.col)"
+          (valueChanged)="doActionOnTable('scheduled', 'value changed', $event.row, $event.col, $event.value)"
+        ></app-table>
+      </div>
     </div>
 
     <!-- History -->

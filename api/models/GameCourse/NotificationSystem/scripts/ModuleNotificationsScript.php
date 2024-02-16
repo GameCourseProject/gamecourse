@@ -21,6 +21,7 @@ $module = Module::getModuleById($moduleId, $course);
 
 // Send notification to each course student
 $students = $course->getStudents(true);
+
 foreach ($students as $student) {
     $message = $module->getNotification($student["id"]);
 

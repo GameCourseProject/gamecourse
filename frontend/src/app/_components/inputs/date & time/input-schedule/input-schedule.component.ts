@@ -161,7 +161,7 @@ export class InputScheduleComponent implements OnInit {
 
       const expression = this.dataToExpression();
       this.valueChange.emit(expression);
-      this.readable = this.expressionToText(expression);
+      this.readable = cronExpressionToText(expression);
 
       if (this.tabActive !== 'Daily') this.initDailyData();
       if (this.tabActive !== 'Weekly') this.initWeeklyData();
@@ -249,14 +249,6 @@ export class InputScheduleComponent implements OnInit {
   }
 
   /**
-   * Returns a readable description from a Cron expression.
-   */
-  expressionToText(expression: string): string {
-    const options = {verbose: false, use24HourTimeFormat: true};
-    return cronstrue.toString(expression, options);
-  }
-
-  /**
    * Transforms a given expression into appropriate data.
    */
   expressionToData(expression: string) {
@@ -333,7 +325,7 @@ export class InputScheduleComponent implements OnInit {
       this.tabActive = 'Advanced';
     }
 
-    this.readable = this.expressionToText(expression);
+    this.readable = cronExpressionToText(expression);
 
     function textToDay(text: string): string {
       if (text === 'MON') return 'd-1';
@@ -371,6 +363,14 @@ export class InputScheduleComponent implements OnInit {
     ModalService.closeModal('cron-editor-' + this.id);
   }
 
+}
+
+/**
+ * Returns a readable description from a Cron expression.
+ */
+export function cronExpressionToText(expression: string): string {
+  const options = {verbose: false, use24HourTimeFormat: true};
+  return cronstrue.toString(expression, options);
 }
 
 interface DailyData {

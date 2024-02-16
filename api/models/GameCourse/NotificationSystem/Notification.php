@@ -21,6 +21,7 @@ class Notification
 {
     const TABLE_NOTIFICATION = "notification";
     const TABLE_NOTIFICATION_CONFIG = "notification_config";
+    const TABLE_NOTIFICATION_SCHEDULED = "notification_scheduled";
 
     protected $id;
 
@@ -183,6 +184,41 @@ class Notification
     }
 
     /**
+     * Schedules a notification to be sent later.
+     *
+     * @param int $courseId
+     * @param array $roles
+     * @param string $message
+     * @param string $frequency
+     * @return void
+     * @throws Exception
+     */
+    public static function scheduleNotification(int $courseId, array $roles, string $message, string $frequency)
+    {
+        $notificationId = Core::database()->insert(self::TABLE_NOTIFICATION_SCHEDULED, 
+            ["course" => $courseId, "roles" => implode(',', $roles), "message" => $message, "frequency" => $frequency]);
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ScheduledNotificationsScript.php";
+        new CronJob($script, $frequency, $notificationId);
+    }
+
+    /**
+     * Schedules a notification to be sent later.
+     *
+     * @param int $courseId
+     * @param array $roles
+     * @param string $message
+     * @param string $frequency
+     * @return void
+     * @throws Exception
+     */
+    public static function cancelScheduledNotification(int $notificationId)
+    {
+        $notificationId = Core::database()->delete(self::TABLE_NOTIFICATION_SCHEDULED, ["id" => $notificationId]);
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ScheduledNotificationsScript.php";
+        CronJob::removeCronJob($script, $notificationId);
+    }
+
+    /**
      * Gets notification data from the database.
      *
      * @example getData() --> gets all notification data
@@ -325,6 +361,15 @@ class Notification
         return $notifications;
     }
 
+    public static function getScheduledNotificationsByCourse(int $courseId): array
+    {
+        $table = self::TABLE_NOTIFICATION_SCHEDULED;
+        $where = ["course" => $courseId];
+        $notifications = Core::database()->selectMultiple($table, $where);
+
+        return $notifications;
+    }
+
     public static function isNotificationInDB(int $course, int $user, string $message): bool
     {
         $table = self::TABLE_NOTIFICATION;
@@ -435,7 +480,7 @@ class Notification
             ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency], 
             ["course" => $courseId, "module" => $moduleId]);
 
-        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
         if ($isEnabled) {
             new CronJob($script, $frequency, $courseId, $moduleId);
         } else {

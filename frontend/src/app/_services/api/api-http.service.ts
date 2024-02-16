@@ -75,7 +75,7 @@ import {CustomFunction} from "../../_components/inputs/code/input-code/input-cod
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
-import { ModuleNotificationManageData, NotificationManageData } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
+import { ModuleNotificationManageData, NotificationManageData, ScheduledNotification } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
 
 @Injectable({
   providedIn: 'root'
@@ -1278,18 +1278,46 @@ export class ApiHttpService {
       .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
   }
 
-  public createAnnouncement(courseID: number, message: string): Observable<Notification> {
+  public createNotificationForRoles(courseID: number, message: string, roleNames: string[]): Observable<Notification> {
     const data = {
       course: courseID,
       message: message,
+      roles: roleNames
     }
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
-      qs.push('request', 'createAnnouncement');
+      qs.push('request', 'createNotificationForRoles');
     };
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
+  }
+
+  public scheduleNotificationForRoles(courseID: number, message: string, roleNames: string[], schedule: string): Observable<Notification> {
+    const data = {
+      course: courseID,
+      message: message,
+      roles: roleNames,
+      schedule: schedule
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'scheduleNotificationForRoles');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
+  }
+
+  public cancelScheduledNotification(courseID: number, notificationID: number): Observable<void> {
+    const data = {
+      course: courseID,
+      notification: notificationID
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'cancelScheduledNotification');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
   }
 
   public toggleModuleNotifications(courseID: number, config: ModuleNotificationManageData[]): Observable<Notification> {
@@ -1302,8 +1330,7 @@ export class ApiHttpService {
       qs.push('request', 'toggleModuleNotifications');
     };
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
   }
 
   public getNotificationsByUser(userId: number): Observable<Notification[]> {
@@ -1330,6 +1357,18 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
+  }
+
+  public getScheduledNotificationsByCourse(courseID: number): Observable<ScheduledNotification[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getScheduledNotificationsByCourse');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions).pipe(map((res:any) => res['data']));
   }
 
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
