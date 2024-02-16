@@ -96,9 +96,9 @@ class Cache
      */
     public static function getFromViewsCache(string $cacheId)
     {
-        if (self::$viewsCacheInDatabase[$cacheId] != null) {
+        if (isset(self::$viewsCacheInDatabase[$cacheId])) {
             return self::$viewsCacheInDatabase[$cacheId];
-        } else if (self::$viewsCache[$cacheId] != null) {
+        } else if (isset(self::$viewsCache[$cacheId])) {
             return self::$viewsCache[$cacheId];
         } else {
             return null;
@@ -117,24 +117,43 @@ class Cache
         self::$viewsCache[$cacheId] = $data;
     }
 
-    public static function storeViewsInDatabase() {
-        $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (cache_key, cache_value) VALUES ";
+    public static function storeViewsInDatabase(int $pageId, int $userId = null) {
+        if($userId === null) {
+            $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (page_id, cache_key, cache_value) VALUES ";
+        } else {
+            $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (page_id, user_id, cache_key, cache_value) VALUES ";
+        }
 
         $values = [];
 
         foreach (self::$viewsCache as $key => $value) {
             $compressedKey = base64_encode(gzcompress($key));
             $compressedValue = base64_encode(gzcompress($value));
-            $values[] = "('{$compressedKey}','{$compressedValue}')";
+
+            if($userId === null) {
+                $values[] = "({$pageId},'{$compressedKey}','{$compressedValue}')";
+            } else {
+                $values[] = "({$pageId},{$userId},'{$compressedKey}','{$compressedValue}')";
+            }
         }
 
         $insertQuery .= implode(", ", $values);
 
         Core::database()->executeQuery($insertQuery);
+        self::$viewsCache = [];
+        Core::dictionary()->cleanViews();
     }
 
-    public static function loadFromDatabase() {
-        $results = Core::database()->selectMultiple(self::TABLE_VIEWS_CACHE, [], "cache_key, cache_value");
+    public static function loadFromDatabase(int $pageId, string $type, int $userId) {
+        if ($type === "individual") {
+            self::loadCache(["page_id" => $pageId, "user_id" => $userId]);
+        } else {
+            self::loadCache(["page_id" => $pageId]);
+        }
+    }
+
+    private static function loadCache(array $where) {
+        $results = Core::database()->selectMultiple(self::TABLE_VIEWS_CACHE, $where, "cache_key, cache_value");
         foreach ($results as $res) {
             $key = gzuncompress(base64_decode($res["cache_key"]));
             $value = gzuncompress(base64_decode($res["cache_value"]));

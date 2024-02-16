@@ -87,6 +87,9 @@ class Dictionary
         $this->visitor = $visitor;
     }
 
+    public function cleanViews() {
+        $this->views = [];
+    }
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Libraries ------------------ ***/
