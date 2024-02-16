@@ -411,12 +411,22 @@ CREATE TABLE notification(
      FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
 );
 
+CREATE TABLE notification_config(
+     course                      int unsigned NOT NULL,
+     module                      varchar(50) NOT NULL,
+     isEnabled                   boolean NOT NULL DEFAULT FALSE,
+     frequency                   varchar(50) DEFAULT '00 08 * * MON',
+
+     PRIMARY key(course, module),
+     FOREIGN key(course, module) REFERENCES course_module(course, module) ON DELETE CASCADE
+);
+
 /*** ---------------------------------------------------- ***/
 /*** ----------------- AutoGame tables ------------------ ***/
 /*** ---------------------------------------------------- ***/
 
 CREATE TABLE autogame(
-     course 	                    int unsigned NOT NULL PRIMARY KEY,
+     course 	                 int unsigned NOT NULL PRIMARY KEY,
      isEnabled                   boolean DEFAULT FALSE,
      startedRunning              TIMESTAMP NULL DEFAULT NULL,
      finishedRunning             TIMESTAMP NULL DEFAULT NULL,

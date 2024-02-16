@@ -215,7 +215,7 @@ export class FilePickerModalComponent implements OnInit {
     return null;
   }
 
-  reset(icon: boolean = false) {
+  async reset(icon: boolean = false) {
     if (!icon) ModalService.closeModal('file-picker-' + this.id);
 
     // makes everything unselected (removes borders)
@@ -228,6 +228,12 @@ export class FilePickerModalComponent implements OnInit {
 
     this.path = this.courseFolder;
     this.root = this.originalRoot;
+
+    if (this.subfolderToOpen && this.root.contents) {
+      const subfolder = this.root.contents?.find(content => content.name == this.subfolderToOpen);
+      const updatedContents = await this.getFolderContents(subfolder);
+      this.root = { ...this.root, contents: updatedContents };
+    }
   }
 
   /*** --------------------------------------------- ***/

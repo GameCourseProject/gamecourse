@@ -131,7 +131,7 @@
             [(value)]="tierToManage.costType"
             [color]="'primary'"
             [label]="'Exponential'"
-            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base x 2 ^ #attempts w/ rating >= min.rating'">
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base + (if first attempt: 0, else: increment x 2 ^ #attempts w/ rating >= min.rating - 1)'">
           </app-input-radio>
         </div>
 
@@ -159,7 +159,7 @@
               [form]="fTier"
               [(value)]="tierToManage.increment"
               [placeholder]="'Increment on each attempt'"
-              [disabled]="tierToManage.costType === 'fixed' || tierToManage.costType === 'exponential'"
+              [disabled]="tierToManage.costType === 'fixed'"
               [topLabel]="'Increment (' + VCName + ')'"
               [helperText]="'Cost increment on each attempt of skills in this tier'"
               [helperPosition]="'right'"
@@ -301,8 +301,9 @@
      [actionInProgress]="getSkillTreeInfo(skillTreeInView.id).loading.skills"
      (submitBtnClicked)="fSkill.onSubmit(null); skillMode === 'create' ? createSkill() : editSkill()"
      (extraBtnClicked)="skillPageMode = skillPageMode === 'preview' ? 'editor' : 'preview'"
-     (onClose)="resetSkillToManage()">
-  </app-modal>
+     (onClose)="resetSkillToManage()"
+     [static]="true"
+  ></app-modal>
 
   <ng-template #SKILL_MANAGE>
     <form #fSkill="ngForm">

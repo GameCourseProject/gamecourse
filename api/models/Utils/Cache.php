@@ -129,7 +129,7 @@ class Cache
         foreach (self::$viewsCache as $key => $value) {
             $compressedKey = base64_encode(gzcompress($key));
             $compressedValue = base64_encode(gzcompress($value));
-
+          
             if($userId === null) {
                 $values[] = "({$pageId},'{$compressedKey}','{$compressedValue}')";
             } else {
@@ -154,6 +154,7 @@ class Cache
 
     private static function loadCache(array $where) {
         $results = Core::database()->selectMultiple(self::TABLE_VIEWS_CACHE, $where, "cache_key, cache_value");
+      
         foreach ($results as $res) {
             $key = gzuncompress(base64_decode($res["cache_key"]));
             $value = gzuncompress(base64_decode($res["cache_value"]));

@@ -535,7 +535,7 @@ export class ViewsComponent implements OnInit {
       await this.getPages(this.course.id);
 
       this.loading.action = false;
-      ModalService.closeModal('page-import');
+      ModalService.closeModal('page-import-pc');
       AlertService.showAlert(AlertType.SUCCESS, nrPagesImported + ' Page' + (nrPagesImported != 1 ? 's' : '') + ' imported')
 
     } else AlertService.showAlert(AlertType.ERROR, 'Invalid form.');

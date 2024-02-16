@@ -75,6 +75,7 @@ import {CustomFunction} from "../../_components/inputs/code/input-code/input-cod
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
+import { ModuleNotificationManageData, NotificationManageData } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
 
 @Injectable({
   providedIn: 'root'
@@ -1220,21 +1221,6 @@ export class ApiHttpService {
   /*** ---------------------------------------------------------- ***/
 
   /* FOR FUTURE USE
-  public createNotification(notificationData: NotificationManageData): Observable<Notification> {
-    const data = {
-      course: notificationData.course,
-      user: notificationData.user,
-      message: notificationData.message,
-      isShowed: notificationData.isShowed
-    }
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
-      qs.push('request', 'createNotification');
-    };
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
-  }
   public editNotification(notificationData: NotificationManageData): Observable<Notification> {
     const data = {
       id: notificationData.id,
@@ -1262,12 +1248,82 @@ export class ApiHttpService {
       .pipe(map((res:any) => res));
   }
   */
+  
+  public getModulesWithNotifications(courseID: number): Observable<ModuleNotificationManageData[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getModulesWithNotifications');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+  
+  public createNotification(notificationData: NotificationManageData): Observable<Notification> {
+    const data = {
+      course: notificationData.course,
+      user: notificationData.user,
+      message: notificationData.message,
+      isShowed: notificationData.isShowed
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'createNotification');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
+  }
+
+  public createAnnouncement(courseID: number, message: string): Observable<Notification> {
+    const data = {
+      course: courseID,
+      message: message,
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'createAnnouncement');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public toggleModuleNotifications(courseID: number, config: ModuleNotificationManageData[]): Observable<Notification> {
+    const data = {
+      course: courseID,
+      config: config,
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'toggleModuleNotifications');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
 
   public getNotificationsByUser(userId: number): Observable<Notification[]> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
       qs.push('request', 'getNotificationsByUser');
       qs.push('userId', userId);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
+  }
+
+  public getNotificationsByCourse(courseID: number): Observable<Notification[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getNotificationsByCourse');
+      qs.push('courseId', courseID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

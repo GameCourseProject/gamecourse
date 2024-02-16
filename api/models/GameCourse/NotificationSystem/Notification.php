@@ -8,8 +8,10 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use phpDocumentor\Reflection\Types\Boolean;
 use Utils\Utils;
+use Utils\CronJob;
 
 /**
  * This is the Notification model, which implements the necessary methods
@@ -18,6 +20,7 @@ use Utils\Utils;
 class Notification
 {
     const TABLE_NOTIFICATION = "notification";
+    const TABLE_NOTIFICATION_CONFIG = "notification_config";
 
     protected $id;
 
@@ -240,7 +243,7 @@ class Notification
             throw new Exception("Notification message can't be null neither empty");
 
         if (iconv_strlen($message) > 150)
-            throw new Exception("Notification message is too long: maximum of 50 characters.");
+            throw new Exception("Notification message is too long: maximum of 150 characters.");
     }
 
     /*** ---------------------------------------------------- ***/
@@ -406,5 +409,60 @@ class Notification
     private static function trim(&...$values){
         $params = ["message"];
         Utils::trim($params, ...$values);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Modules --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Enables/disables notifications of a module in a course
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @param bool $enable
+     * @return void
+     * @throws Exception
+     */
+    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency)
+    {
+        if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
+            throw new Exception("Course with ID = " . $courseId . " does not have " 
+                . $moduleId . " enabled: can't change Notification settings related to it.");
+
+        Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, 
+            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency], 
+            ["course" => $courseId, "module" => $moduleId]);
+
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
+        if ($isEnabled) {
+            new CronJob($script, $frequency, $courseId, $moduleId);
+        } else {
+            CronJob::removeCronJob($script, $courseId, $moduleId);
+        }
+    }
+
+    /**
+     * Gets configuration of a module's notifications
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @return void
+     * @throws Exception
+     */
+    public static function getModuleNotificationsConfig(int $courseId)
+    {
+        $configs = Core::database()->selectMultiple(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId], "module, isEnabled, frequency");
+
+        foreach ($configs as &$module) {
+            $module["id"] = $module["module"];
+            unset($module["module"]);
+            
+            $module["name"] = (Module::getModuleById($module["id"], Course::getCourseById($courseId)))->getName();
+            $module["isEnabled"] = $module["isEnabled"] == "1" ? true : false;
+        }
+
+        return $configs;
     }
 }

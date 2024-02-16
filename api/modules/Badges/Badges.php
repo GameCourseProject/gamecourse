@@ -85,6 +85,7 @@ class Badges extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initTemplates();
+        $this->initNotifications();
         $this->initRules();
         $this->initProviders();
 
@@ -189,6 +190,7 @@ class Badges extends Module
         $this->removeTemplates();
         $this->removeRules();
         $this->removeProviders();
+        $this->removeNofitications();
     }
 
 
@@ -1178,5 +1180,15 @@ class Badges extends Module
         $awardsModule = new Awards($this->getCourse());
         $badgeAwards = $awardsModule->getUserAwardsByType($userId, AwardType::BADGE, $badgeId);
         return count($badgeAwards);
+    }
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $studentId
+     */
+    public function getNotification($studentId)
+    {
+        return "Go check the badges.";
     }
 }

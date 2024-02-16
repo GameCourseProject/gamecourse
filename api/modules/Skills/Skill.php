@@ -988,7 +988,7 @@ class Skill
                 return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
         }));
 
-        if ($tierInfo["costType"] === "exponential") return $tierInfo["cost"] * (2 ** $nrAttempts);
+        if ($tierInfo["costType"] === "exponential") return $tierInfo["cost"] + ($nrAttempts > 0 ? $tierInfo["increment"] * (2 ** ($nrAttempts - 1)) : 0);
 
         return $tierInfo["cost"] + $tierInfo["increment"] * $nrAttempts;
     }
