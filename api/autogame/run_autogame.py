@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, config, logging
+import os, sys, config, logging, subprocess
 
 from gamerules import *
 from gamerules.functions.utils import import_functions_from_rulepath
@@ -96,6 +96,13 @@ def log_end():
                  "TOTAL = " + str(len(list(students.keys()))) + "\n" +
                  targets_str)
 
+def update_view_cache(course, students):
+    targets = ','.join(map(str, students.keys()))
+    try:
+        subprocess.run(f"php /var/www/html/gamecourse/api/autogame/PageCacheScript.php {course} {targets}", check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        logging.error("Failed to update views cache")
+
 
 ### ------------------------------------------------------ ###
 ###	-------------- Main GameRules Interface -------------- ###
@@ -180,6 +187,7 @@ if __name__ == "__main__":
             # Save the end date
             finish_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             log_end()
+            update_view_cache(course, students)
 
     except Exception as e:
         error_msg = str(e)
