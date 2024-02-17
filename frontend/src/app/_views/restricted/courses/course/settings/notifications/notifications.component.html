@@ -3,8 +3,29 @@
   <app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" [loading] = "loading.action" ></app-header>
 
   <ng-container *ngIf="!loading.page">
+    <!-- Predictions -->
+    <div class="card w-full bg-base-100 shadow-xl">
+      <form #f="ngForm" class="card-body">
+        <div class="flex items-center">
+          <h2 class="card-title mb-0">Predictions</h2>
+          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        </div>
+        Enables sending students a prediction of their final XP, based on their earned XP tendencies so far, 
+        and only to students belonging to clusters that may be motivated by this information.
+        The formula applied is the following:<br>
+        <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
+        <app-input-toggle
+          [id]="'predictions'"
+          [(value)]="predictions"
+          [classList]="'mt-2'"
+          [color]="'primary'"
+          [label]="'Enable prediction notifications'"
+        ></app-input-toggle>
+      </form>
+    </div>
+
     <!-- Modules -->
-    <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl">
+    <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
       <form #fModules="ngForm" class="card-body">
         <div class="flex items-center">
           <h2 class="card-title mb-0">Modules</h2>
@@ -37,28 +58,6 @@
         </button>
       </form>
     </div>
-
-    <!-- Predictions -->
-<!--     <div class="card w-full bg-base-100 shadow-xl">
-      <form #f="ngForm" class="card-body">
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">Predictions</h2>
-          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-        </div>
-        Enables sending students a prediction of their final XP, based on their earned XP tendencies so far, 
-        and only to students belonging to clusters that may be motivated by this information.
-        Based on the Profiler module.<br>
-        The formula applied is the following:<br>
-        <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
-        <app-input-toggle
-          [id]="'predictions'"
-          [(value)]="predictions"
-          [classList]="'mt-2'"
-          [color]="'primary'"
-          [label]="'Enable prediction notifications'"
-        ></app-input-toggle>
-      </form>
-    </div> -->
 
     <!-- Announcements -->
     <div class="card w-full bg-base-100 shadow-xl mt-5">

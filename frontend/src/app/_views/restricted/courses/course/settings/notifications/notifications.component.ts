@@ -31,6 +31,7 @@ export class NotificationsComponent {
     notificationToSend: string = "";
     receiverRoles: string[] = [];
     schedule: string;
+    predictions: boolean;
 
     @ViewChild('fSend', { static: false }) fSend: NgForm;
     @ViewChild('fModules', { static: false }) fModules: NgForm;
