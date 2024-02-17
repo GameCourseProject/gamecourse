@@ -64,7 +64,6 @@ class Leaderboard extends Module
     public function init()
     {
         $this->initTemplates();
-        $this->initNotifications();
         // FIXME: Debug only
         $this->addAdaptationRolesToCourse(self::ADAPTATION_LEADERBOARD);
         // parent::initEvents();  // FIXME: Debug only
@@ -242,16 +241,6 @@ class Leaderboard extends Module
         GameElement::removeGameElement($this->course->getId(), self::ID);
         $this->removeTemplates();
         $this->removeProviders();
-        $this->removeNotifications();
     }
 
-    /**
-     * Returns notifications to be sent to a user.
-     *
-     * @param int $userId
-     */
-    public function getNotification($userId)
-    {
-        return "Go check the leaderboard.";
-    }
 }

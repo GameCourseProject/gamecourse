@@ -859,7 +859,7 @@ class XPLevels extends Module
             if ($level["minXP"] > 0 && $totalXP / $level["minXP"] >= 0.9) {
 
                 $notification = "You are so close to reaching Level " . ($level["id"] - 1) . " - " . $level["description"] 
-                        . "! Missing only " . ($level["minXP"] - $totalXP) . " XP.";
+                        . "! Only " . ($level["minXP"] - $totalXP) . " to go 🚀";
 
                 $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
 

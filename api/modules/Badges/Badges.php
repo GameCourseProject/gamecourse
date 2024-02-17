@@ -1204,7 +1204,7 @@ class Badges extends Module
 
                 // Threshold to limit notifications and avoid spamming
                 if (1 < $instances && $instances <= 2) {
-                    $notification = "You are " . $instances . " events away from achieving " . $badge->getName() . " badge! : "
+                    $notification = "You are " . $instances . " events away from achieving the " . $badge->getName() . " badge 🎖️ "
                               . $badge->getDescription() . " - " . $nextLevel["description"]; 
                 }
 
