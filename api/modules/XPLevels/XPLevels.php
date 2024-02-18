@@ -17,6 +17,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
+use GameCourse\NotificationSystem\Notification;
 use GameCourse\Views\Dictionary\ReturnType;
 
 /**
@@ -86,6 +87,7 @@ class XPLevels extends Module
 
         $this->initEvents();
         $this->initProviders();
+        $this->initNotifications();
     }
 
     public function initEvents()
@@ -380,6 +382,7 @@ class XPLevels extends Module
         $this->cleanDatabase();
         $this->removeEvents();
         $this->removeProviders();
+        $this->removeNotifications();
     }
 
 
@@ -841,4 +844,32 @@ class XPLevels extends Module
     /*** ---- Grade Verifications ---- ***/
 
     // TODO: refactor and improve (check old gamecourse 21/22)
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $userId
+     */
+    public function getNotification($userId)
+    {
+        $totalXP = $this->getUserXP($userId);
+        $levels = Level::getLevels($this->course->getId());
+
+        foreach($levels as $level) {
+            if ($level["minXP"] > 0 && $totalXP / $level["minXP"] >= 0.9) {
+
+                $notification = "You are so close to reaching Level " . ($level["id"] - 1) . " - " . $level["description"] 
+                        . "! Only " . ($level["minXP"] - $totalXP) . " to go 🚀";
+
+                $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
+
+                if (!$alreadySent) {
+                    return $notification;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
 }

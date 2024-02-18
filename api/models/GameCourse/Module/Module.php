@@ -686,11 +686,11 @@ abstract class Module
      *
      * @return void
      */
-    protected function removeNofitications()
+    protected function removeNotifications()
     {
         Core::database()->delete(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->id]);
 
-        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/NotificationsScript.php";
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
         CronJob::removeCronJob($script, $this->course->getId(), $this->id);
     }
 
@@ -1358,9 +1358,9 @@ abstract class Module
     /**
      * Returns notifications to be sent to a student.
      *
-     * @param int $studentId
+     * @param int $userId
      */
-    public function getNotification($studentId)
+    public function getNotification($userId)
     {
         return null;
     }

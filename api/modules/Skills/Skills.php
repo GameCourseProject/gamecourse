@@ -16,6 +16,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\NotificationSystem\Notification;
 
 /**
  * This is the Skills module, which serves as a compartimentalized
@@ -79,6 +80,7 @@ class Skills extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initRules();
+        $this->initNotifications();
 
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
@@ -116,6 +118,7 @@ class Skills extends Module
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
+        $this->removeNotifications();
     }
 
 
@@ -593,5 +596,77 @@ class Skills extends Module
     public static function setSkillTreeInView(int $skillTreeId, bool $status){
         $skillTree = new SkillTree($skillTreeId);
         $skillTree->setInView($status);
+    }
+
+    /*** ------------------------------- ***/
+
+
+    /**
+     * Returns notifications to be sent to a user.
+     *
+     * @param int $userId
+     */
+    public function getNotification($userId): ?string
+    {
+        $skillsTrees = SkillTree::getSkillTrees($this->course->getId());
+        $maxCount = 1; // Only recommend a skill if it unlocks more than 1
+        $bestSkill = null;
+
+        function in_array_by_id($id, $skills){
+            foreach ($skills as $skill) {
+                if ($skill["id"] == $id)
+                    return true;
+            }
+            return false;
+        }
+
+        foreach ($skillsTrees as $tree) {
+            $completedSkills = $this->getUserSkills($userId, $tree["id"]);
+            $allTreeSkills = (new SkillTree($tree["id"]))->getSkills(true);
+
+            // Find the skill that will unlock the most skills together with the already obtained ones
+            foreach ($allTreeSkills as $testSkill) {
+                if (!in_array_by_id($testSkill["id"], $completedSkills)) {
+
+                    $count = 0;
+                    foreach ($allTreeSkills as $unlockSkill) {
+
+                        if ($unlockSkill["id"] != $testSkill["id"] // skill to unlock is different from skill suggested
+                            && !in_array_by_id($unlockSkill["id"], $completedSkills) // not completed yet
+                            && count($unlockSkill["dependencies"]) > 0) { // has dependencies
+
+                            foreach ($unlockSkill["dependencies"] as $dependencySet) {
+                                // the test skill is in the dependency set
+                                if (in_array_by_id($testSkill["id"], $dependencySet)) {
+                                    // all skills of the set are fulfilled (either test or completed)
+                                    $fulfilledDependencies = array_filter($dependencySet, 
+                                        function ($dependencySkill) use ($completedSkills, $testSkill) {
+                                            return in_array_by_id($dependencySkill["id"], $completedSkills) || $dependencySkill["id"] == $testSkill["id"];
+                                        }
+                                    );
+                                    if (count($fulfilledDependencies) == count($dependencySet)) {
+                                        $count += 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ($count > $maxCount) {
+                        $maxCount = $count;
+                        $bestSkill = $testSkill;
+                    }
+                }
+            }
+        }
+
+        if ($bestSkill) {
+            $notification = "Completing the skill " . $bestSkill["name"] . " will open the door to " . $maxCount . " more skills 👀 Ready for the challenge?";
+            $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
+            if (!$alreadySent) {
+                return $notification;
+            }
+        }
+        return null;
     }
 }

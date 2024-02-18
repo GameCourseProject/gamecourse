@@ -421,6 +421,16 @@ CREATE TABLE notification_config(
      FOREIGN key(course, module) REFERENCES course_module(course, module) ON DELETE CASCADE
 );
 
+CREATE TABLE notification_scheduled(
+     id                          int unsigned PRIMARY KEY AUTO_INCREMENT,
+     course                      int unsigned NOT NULL,
+     roles                       TEXT NOT NULL,
+     message                     TEXT NOT NULL,
+     frequency                   varchar(50) NOT NULL,
+
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+);
+
 /*** ---------------------------------------------------- ***/
 /*** ----------------- AutoGame tables ------------------ ***/
 /*** ---------------------------------------------------- ***/
