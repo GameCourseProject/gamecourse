@@ -49,7 +49,7 @@
             ></app-input-schedule>
           </div>
         </ng-container>
-        <button class="btn btn-primary btn-block mt-2" type="submit">
+        <button class="btn btn-primary btn-block mt-2" (click)="saveModuleConfig()">
           <!-- Spinner -->
           <ng-container *ngIf="loading.action">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
