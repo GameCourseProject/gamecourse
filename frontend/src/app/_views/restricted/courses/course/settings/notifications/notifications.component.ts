@@ -24,6 +24,7 @@ export class NotificationsComponent {
     refreshing: boolean = true;
 
     course: Course;
+    suggestionsEnabled: boolean;
     notifications: Notification[] = [];
     scheduledNotifications: ScheduledNotification[] = [];
 
@@ -43,13 +44,20 @@ export class NotificationsComponent {
 
     ngOnInit(): void {
         this.route.parent.params.subscribe(async params => {
+            // Basics
             const courseID = parseInt(params.id);
             await this.getCourse(courseID);
+            await this.isSuggestionsEnabled(courseID);
+
+            // Notifications tables
             await this.getNotifications(courseID);
             await this.getScheduledNotifications(courseID);
             this.buildTable();
             this.buildTableSchedule();
+
+            // Modules to config
             await this.getModules(courseID);
+
             this.loading.page = false;
         });
     }
@@ -75,6 +83,10 @@ export class NotificationsComponent {
     async getScheduledNotifications(courseID: number): Promise<void> {
         const notifications = await this.api.getScheduledNotificationsByCourse(courseID).toPromise();
         this.scheduledNotifications = notifications.reverse();
+    }
+
+    async isSuggestionsEnabled(courseID: number) {
+        this.suggestionsEnabled = (await this.api.getCourseModuleById(courseID, ApiHttpService.SUGGESTIONS).toPromise()).enabled;
     }
 
 

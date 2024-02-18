@@ -107,6 +107,7 @@ export class ApiHttpService {
   static readonly QR: string = 'QR';
   static readonly SKILLS: string = 'Skills';
   static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
+  static readonly SUGGESTIONS: string = 'Suggestions';
   // FIXME: should be compartimentalized
 
 
