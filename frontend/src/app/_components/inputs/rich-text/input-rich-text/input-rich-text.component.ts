@@ -167,9 +167,10 @@ export class InputRichTextComponent implements OnInit, AfterViewInit {
     }
     else {
       const filename = file.path.split('/').slice(-1).join('/');
-
-      this.quill.insertText(range.index, filename, 'user');
-      this.quill.setSelection(range.index, filename.length);
+      if (range.length == 0) {
+        this.quill.insertText(range.index, filename, 'user');
+        this.quill.setSelection(range.index, filename.length);
+      }
       this.quill.theme.tooltip.edit('link', url);
       this.quill.theme.tooltip.save();
     }

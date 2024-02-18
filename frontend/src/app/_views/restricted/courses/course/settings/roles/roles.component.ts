@@ -117,7 +117,7 @@ export class RolesComponent implements OnInit {
 
   addRole(): void {
     if (this.f.valid) {
-      const newRole = new Role(null, this.roleToManage.name, this.roleToManage.landingPage, null);
+      const newRole = new Role(null, this.roleToManage.name, +this.roleToManage.landingPage, null);
       this.rolesHierarchySmart[newRole.name] = {role: newRole, parent: this.roleToManage.parent, children: []};
 
       if (!this.roleToManage.parent) { // no parent
@@ -137,7 +137,7 @@ export class RolesComponent implements OnInit {
   editRole() {
     if (this.f.valid) {
       this.roleToManage.itself.name = this.roleToManage.name;
-      this.roleToManage.itself.landingPage = this.roleToManage.landingPage;
+      this.roleToManage.itself.landingPage = +this.roleToManage.landingPage;
 
       ModalService.closeModal('manage');
       this.resetManage();
@@ -230,7 +230,7 @@ export class RolesComponent implements OnInit {
   initRoleToManage(role?: Role, parent?: Role): RoleManageData {
     const roleData: RoleManageData = {
       name: role?.name ?? null,
-      landingPage: role?.landingPage ?? null,
+      landingPage: role?.landingPage?.toString() ?? null,
       parent: parent ?? null,
       itself: role ?? null
     };
@@ -273,12 +273,16 @@ export class RolesComponent implements OnInit {
     return roleName === this.adaptationTitle;
   }
 
+  getPageTitle(pageValue): string {
+    return this.visiblePages.find(e => e.value == pageValue)?.text;
+  }
+
 }
 
 export interface RoleManageData {
   id?: number,
   name: string,
-  landingPage: number,
+  landingPage: string,
   parent: Role,
   itself: Role
 }
