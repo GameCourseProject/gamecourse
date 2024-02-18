@@ -428,7 +428,7 @@ CREATE TABLE notification_scheduled(
      message                     TEXT NOT NULL,
      frequency                   varchar(50) NOT NULL,
 
-     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
+     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/

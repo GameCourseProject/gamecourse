@@ -25,6 +25,8 @@ class Notification
 
     protected $id;
 
+    const LOGS_FOLDER = "notifications";
+
     const HEADERS = [ // headers for import/export functionality
         "course", "user", "message", "isShowed"
     ];
@@ -109,6 +111,38 @@ class Notification
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_NOTIFICATION, $fieldValues, ["id" => $this->id]);
 
+    }
+
+    /*** ------------------------------------------------------------ ***/
+    /*** -------------------------- Logging ------------------------- ***/
+    /*** ------------------------------------------------------------ ***/
+
+    /**
+     * Creates a new Notifications log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type)
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets Notifications logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $path = self::LOGS_FOLDER . "/" . "notifications_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
     }
 
     /*** ------------------------------------------------------------ ***/
@@ -202,20 +236,17 @@ class Notification
     }
 
     /**
-     * Schedules a notification to be sent later.
+     * Cancels a scheduled notification.
      *
-     * @param int $courseId
-     * @param array $roles
-     * @param string $message
-     * @param string $frequency
+     * @param int $notificationId
      * @return void
      * @throws Exception
      */
     public static function cancelScheduledNotification(int $notificationId)
     {
-        $notificationId = Core::database()->delete(self::TABLE_NOTIFICATION_SCHEDULED, ["id" => $notificationId]);
         $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ScheduledNotificationsScript.php";
         CronJob::removeCronJob($script, $notificationId);
+        Core::database()->delete(self::TABLE_NOTIFICATION_SCHEDULED, ["id" => $notificationId]);
     }
 
     /**
