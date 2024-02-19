@@ -31,7 +31,7 @@ import {DragDropModule} from "@angular/cdk/drag-drop";
 import {RulesComponent} from "./settings/rules/section-rules/rules/rules.component";
 import { AutogameComponent } from './settings/autogame/autogame.component';
 import { NotificationsComponent } from './settings/notifications/notifications.component';
-
+import { AvatarsComponent } from './settings/avatars/avatars.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +60,8 @@ import { NotificationsComponent } from './settings/notifications/notifications.c
     DataSourceStatusComponent,
     SubmitParticipationPageComponent,
     SkillPageComponent,
-    NotificationsComponent
+    NotificationsComponent,
+    AvatarsComponent
   ],
     imports: [
         CommonModule,

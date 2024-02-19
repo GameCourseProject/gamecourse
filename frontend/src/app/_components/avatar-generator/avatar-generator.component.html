@@ -1,0 +1,190 @@
+<div class="flex flex-wrap gap-10">
+  <div class="flex flex-col items-center gap-5">
+    <app-avatar #avatar
+                (avatarChanged)="prepareLink()"
+                [clothing]="clothing.name"
+                [clothingGraphic]="clothingGraphic.name"
+                [colors]="getColorsObject()"
+                [hairType]="hairType.name"
+                [eyebrowType]="eyebrowType.name"
+                [eyeType]="eyeType.name"
+                [noseType]="noseType.name"
+                [mouthType]="mouthType.name"
+                [facialHairType]="facialHairType.name"
+                [glassesType]="glassesType.name"
+                [shape]="shape"
+                [enableBackground]="enableBackground"
+                [enableFace]="enableFace"
+    >
+    </app-avatar>
+    <button *ngIf="displayDownload" class="btn btn-primary" (click)="doDownload('png')">
+      Download
+    </button>
+  </div>
+  <div>
+    <div class="flex flex-row gap-2">
+      <button class="btn btn-secondary gap-2" (click)="goCompletelyRandom()">
+        <ng-icon name="jam-shuffle" size="1.5rem" />
+        {{texts.everything}}
+      </button>
+      <button class="btn btn-secondary gap-2" (click)="getRandomColors()">
+        <ng-icon name="jam-shuffle" size="1.5rem" />
+        {{texts.allColors}}
+      </button>
+    </div>
+
+    <div *ngIf="enableBackground" class="prose mt-4 flex flex-row gap-2 items-center">
+      <h4>{{texts.background}}</h4>
+      <input type="color" [(ngModel)]="colors.background" class="w-8 h-8 bg-transparent"/>
+      <button class="btn btn-ghost btn-circle" (click)="colors.background = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+    </div>
+
+    <div>
+      <h3>{{texts.skin}}</h3>
+      <input type="color" [(ngModel)]="colors.skin"/>
+      <button (click)="colors.skin = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+    </div>
+
+    <div>
+      <h3>{{texts.hair}}</h3>
+      <div>
+        <div class="flex">
+          <div>
+            <input type="color" [(ngModel)]="colors.hair"/>
+            <button (click)="colors.hair = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+          </div>
+          <div>
+            <div><span class="iteration">{{texts.hairStyle}} {{hairType.index}}</span></div>
+            <button (click)="iterateOverHairTypes(false)" class="iterate"><</button>
+            <button (click)="iterateOverHairTypes(true)" class="iterate">></button>
+            <button (click)="getRandomHairStyle()"><ng-icon name="jam-shuffle"/></button>
+          </div>
+        </div>
+        <div *ngIf="hairType.name === HairTypes.FRIDA || hairType.name === HairTypes.FROANDBAND">
+          <h4>{{texts.accessory}}</h4>
+          <input type="color" [(ngModel)]="colors.accessory"/>
+          <button (click)="colors.accessory = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3>{{texts.clothes}}</h3>
+      <div>
+        <div class="flex">
+          <div>
+            <input type="color" [(ngModel)]="colors.clothes"/>
+            <button (click)="colors.clothes = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+          </div>
+          <div>
+            <div><span class="iteration">{{texts.clothing}} {{clothing.index}}</span></div>
+            <button (click)="iterateOverClothingTypes(false)" class="iterate"><</button>
+            <button (click)="iterateOverClothingTypes(true)" class="iterate">></button>
+            <button (click)="getRandomClothing()"><ng-icon name="jam-shuffle"/></button>
+          </div>
+        </div>
+        <ng-container *ngIf="clothing.name === ClothingTypes.GRAPHIC_SHIRT">
+          <h4>{{texts.print}}</h4>
+          <div class="flex">
+            <div>
+              <input type="color" [(ngModel)]="colors.graphic"/>
+              <button (click)="colors.graphic = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.print}} {{clothingGraphic.index}}</span></div>
+              <button (click)="iterateOverClothingGraphicTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverClothingGraphicTypes(true)" class="iterate">></button>
+              <button (click)="getRandomClothingGraphic()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <ng-container *ngIf="enableFace">
+      <div class="box">
+        <h3>{{texts.face}}</h3>
+        <div>
+          <h4>{{texts.eyebrows}}</h4>
+          <div class="flex">
+            <div>
+              <input type="color" [(ngModel)]="colors.eyebrows"/>
+              <button (click)="colors.eyebrows = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.eyebrows}} {{eyebrowType.index}}</span></div>
+              <button (click)="iterateOverEyebrowTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverEyebrowTypes(true)" class="iterate">></button>
+              <button (click)="getRandomEyebrowType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+          <h4>{{texts.eyes}}</h4>
+          <div class="flex">
+            <div>
+              <ng-container *ngIf="eyeType.name !== EyeTypes.CLOSED">
+                <input type="color" [(ngModel)]="colors.eyes"/>
+                <button (click)="colors.eyes = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+              </ng-container>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.eyes}} {{eyeType.index}}</span></div>
+              <button (click)="iterateOverEyeTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverEyeTypes(true)" class="iterate">></button>
+              <button (click)="getRandomEyeType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+          <h4>{{texts.nose}}</h4>
+          <div class="flex">
+            <div></div>
+            <div>
+              <div><span class="iteration">{{texts.nose}} {{noseType.index}}</span></div>
+              <button (click)="iterateOverNoseTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverNoseTypes(true)" class="iterate">></button>
+              <button (click)="getRandomNoseType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+          <h4>{{texts.mouth}}</h4>
+          <div class="flex">
+            <div>
+              <input type="color" [(ngModel)]="colors.mouth"/>
+              <button (click)="colors.mouth = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.mouth}} {{mouthType.index}}</span></div>
+              <button (click)="iterateOverMouthTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverMouthTypes(true)" class="iterate">></button>
+              <button (click)="getRandomMouthType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+          <h4>{{texts.facialHair}}</h4>
+          <div class="flex">
+            <div>
+              <input type="color" [(ngModel)]="colors.facialHair"/>
+              <button (click)="colors.facialHair = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.facialHair}} {{facialHairType.index}}</span></div>
+              <button (click)="iterateOverFacialHairTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverFacialHairTypes(true)" class="iterate">></button>
+              <button (click)="getRandomFacialHairType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+          <h4>{{texts.glasses}}</h4>
+          <div class="flex">
+            <div>
+              <input type="color" [(ngModel)]="colors.glasses"/>
+              <button (click)="colors.glasses = randomizeColor();"><ng-icon name="jam-shuffle"/></button>
+            </div>
+            <div>
+              <div><span class="iteration">{{texts.glasses}} {{glassesType.index}}</span></div>
+              <button (click)="iterateOverGlassesTypes(false)" class="iterate"><</button>
+              <button (click)="iterateOverGlassesTypes(true)" class="iterate">></button>
+              <button (click)="getRandomGlassesType()"><ng-icon name="jam-shuffle"/></button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

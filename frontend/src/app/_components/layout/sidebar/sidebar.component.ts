@@ -247,6 +247,11 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/notifications',
                 name: 'Notifications',
                 icon: 'tabler-bell'
+              },
+              {
+                link: path + 'settings/avatars',
+                name: 'Avatar',
+                icon: 'feather-user'
               }
             ]
           },

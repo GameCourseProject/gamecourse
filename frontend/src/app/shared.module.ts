@@ -69,6 +69,10 @@ import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-ca
 import { EventCardComponent } from './_components/cards/event-card/event-card.component';
 import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
+// Components: avatars
+import { AvatarComponent } from './_components/avatar-generator/avatar/avatar.component';
+import { AvatarGeneratorComponent } from './_components/avatar-generator/avatar-generator.component';
+
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
 
@@ -163,7 +167,8 @@ import {
   jamStopSign,
   jamTrashF,
   jamUpload,
-  jamBox
+  jamBox,
+  jamShuffle
 } from "@ng-icons/jam-icons";
 
 import {
@@ -296,6 +301,9 @@ import {
     EventCardComponent,
     DatalabelCardComponent,
 
+    AvatarComponent,
+    AvatarGeneratorComponent,
+
     AlertComponent,
 
     SpinnerComponent,
@@ -383,6 +391,9 @@ import {
     EventCardComponent,
     DatalabelCardComponent,
 
+    AvatarComponent,
+    AvatarGeneratorComponent,
+
     AlertComponent,
 
     SpinnerComponent,
@@ -468,6 +479,7 @@ import {
       jamTrashF,
       jamUpload,
       jamBox,
+      jamShuffle,
 
       tablerAlertTriangle,
       tablerArchive,

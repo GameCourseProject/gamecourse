@@ -22,6 +22,7 @@ import { RulesComponent } from "./settings/rules/section-rules/rules/rules.compo
 import { ViewsComponent } from "./settings/views/views/views.component";
 import { AutogameComponent } from './settings/autogame/autogame.component';
 import { NotificationsComponent } from './settings/notifications/notifications.component';
+import { AvatarsComponent } from './settings/avatars/avatars.component';
 
 const routes: Routes = [
   {
@@ -76,6 +77,10 @@ const routes: Routes = [
       {
         path: 'notifications',
         component: NotificationsComponent
+      },
+      {
+        path: 'avatars',
+        component: AvatarsComponent
       },
       {
         path: 'pages',
