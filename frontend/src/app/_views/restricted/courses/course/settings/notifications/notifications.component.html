@@ -157,13 +157,14 @@
         </div>
         <app-table
           *ngIf="!loading.table"
-          [id] = "'notifications'"
+          [id] = "'history'"
           [classList]="'mt-5'"
           [headers] = "headers"
           [data] = "data"
           [options] = "tableOptions"
           [loading] = "loading.table"
           [hasColumnFiltering]="false"
+          (btnClicked)="doActionOnTable('history', $event.type, $event.row, $event.col)"
         ></app-table>
       </div>
     </div>
@@ -172,3 +173,23 @@
   <!-- Loader -->
   <app-loader [loading] = "loading.page"></app-loader>
 </div>
+
+
+<!-- Notification Content Modal -->
+<app-modal
+  *ngIf="notificationToRead"
+  [id] = "'full-notification'"
+  [templateRef]="FULL_NOTIFICATION"
+  [header]="'Full Message'"
+  [size] = "'sm'"
+  [closeBtn] = "false"
+  [xButton] = "false"
+  [submitBtnText] = "'Close'"
+  (submitBtnClicked) = "closeFullNotificationModal()"
+></app-modal>
+
+<ng-template #FULL_NOTIFICATION>
+  <div class="prose">
+    {{notificationToRead}}
+  </div>
+</ng-template>

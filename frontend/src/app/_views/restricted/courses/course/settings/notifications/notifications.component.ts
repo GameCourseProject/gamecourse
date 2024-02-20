@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Host, HostListener, OnInit, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
 import { cronExpressionToText } from "src/app/_components/inputs/date & time/input-schedule/input-schedule.component";
@@ -14,7 +14,7 @@ import { ModalService } from "src/app/_services/modal.service";
     selector: 'app-notifications',
     templateUrl: './notifications.component.html'
 })
-export class NotificationsComponent {
+export class NotificationsComponent implements OnInit {
 
     loading = {
         page: true,
@@ -33,6 +33,8 @@ export class NotificationsComponent {
     receiverRoles: string[] = [];
     schedule: string;
     predictions: boolean;
+
+    notificationToRead: string;                 // To display fully in pop up
 
     @ViewChild('fSend', { static: false }) fSend: NgForm;
     @ViewChild('fModules', { static: false }) fModules: NgForm;
@@ -61,7 +63,7 @@ export class NotificationsComponent {
             this.loading.page = false;
         });
     }
-
+    
     /*** --------------------------------------------- ***/
     /*** -------------------- Init ------------------- ***/
     /*** --------------------------------------------- ***/
@@ -120,7 +122,14 @@ export class NotificationsComponent {
           table.push([
             {type: notif.dateCreated ? TableDataType.DATETIME : TableDataType.TEXT, content: notif.dateCreated ? {datetime: notif.dateCreated, datetimeFormat: "YYYY/MM/DD HH:mm"} : {text: "Never"}},
             {type: TableDataType.TEXT, content: {text: notif.user}},
-            {type: TableDataType.TEXT, content: {text: notif.message}},
+            {
+                type: TableDataType.BUTTON,
+                content: {
+                    buttonText: notif.message.length > 50 ? notif.message.substring(0, 50) + "(...)" : notif.message,
+                    classList: 'btn-ghost normal-case font-normal',
+                    searchBy: notif.message,
+                }
+            },
             {type: TableDataType.COLOR, content: {color: notif.isShowed ? '#36D399' : '#EF6060', colorLabel: notif.isShowed ? 'Yes' : 'No'}},
           ]);
         });
@@ -153,7 +162,14 @@ export class NotificationsComponent {
         this.scheduledNotifications.forEach(notif => {
           table.push([
             {type: TableDataType.TEXT, content: {text: notif.roles}},
-            {type: TableDataType.TEXT, content: {text: notif.message}},
+            {
+                type: TableDataType.BUTTON,
+                content: {
+                    buttonText: notif.message.length > 50 ? notif.message.substring(0, 50) + "(...)" : notif.message,
+                    classList: 'btn-ghost normal-case font-normal',
+                    searchBy: notif.message,
+                }
+            },
             {type: TableDataType.TEXT, content: {text: cronExpressionToText(notif.frequency)}},
             {type: TableDataType.ACTIONS, content: {actions: [/*Action.EDIT,*/ Action.DELETE]}},
           ]);
@@ -216,15 +232,25 @@ export class NotificationsComponent {
         if (table === 'scheduled') {
             const notificationToActOn = this.scheduledNotifications[row];
 
-            if (action === Action.DELETE) { 
-                await this.api.cancelScheduledNotification(this.course.id, +notificationToActOn.id).toPromise();
-
-                // Refresh table
-                await this.getScheduledNotifications(this.course.id);
-                this.buildTableSchedule();
-
-                AlertService.showAlert(AlertType.SUCCESS, "Canceled scheduled notification");
+            if (col === 3) {
+                if (action === Action.DELETE) { 
+                    await this.api.cancelScheduledNotification(this.course.id, +notificationToActOn.id).toPromise();
+    
+                    // Refresh table
+                    await this.getScheduledNotifications(this.course.id);
+                    this.buildTableSchedule();
+    
+                    AlertService.showAlert(AlertType.SUCCESS, "Canceled scheduled notification");
+                }
             }
+            else if (col === 1) {
+                this.notificationToRead = this.scheduledNotifications[row].message;
+                ModalService.openModal('full-notification');
+            }
+        }
+        else if (table === 'history') {
+            this.notificationToRead = this.notifications[row].message;
+            ModalService.openModal('full-notification');
         }
     }
 
@@ -235,6 +261,10 @@ export class NotificationsComponent {
 
     openScheduleModal() {
         ModalService.openModal('schedule');
+    }
+
+    closeFullNotificationModal() {
+        ModalService.closeModal('full-notification');
     }
 }
 
