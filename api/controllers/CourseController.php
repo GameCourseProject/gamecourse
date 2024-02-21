@@ -11,6 +11,8 @@ use GameCourse\Module\Skills\Skills;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\AutoGame\AutoGame;
+use GameCourse\Module\Awards\Awards;
 
 /**
  * This is the Course controller, which holds API endpoints for
@@ -882,5 +884,34 @@ class CourseController
 
         $nrCoursesImported = Course::importCourses($file, $replace);
         API::response($nrCoursesImported);
+    }
+
+    
+    /*** --------------------------------------------- ***/
+    /*** ---------------- DB Explorer ---------------- ***/
+    /*** --------------------------------------------- ***/
+
+    public function getParticipations()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response(AutoGame::getParticipations($courseId));
+    }
+
+    public function getAwards()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response((new Awards($course))->getCourseAwards());
     }
 }

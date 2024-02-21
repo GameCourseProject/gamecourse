@@ -130,6 +130,21 @@ class Awards extends Module
     /*** ---------- Awards ---------- ***/
 
     /**
+     * Gets awards for a given course.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getCourseAwards(): array
+    {
+        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, [
+            "course" => $this->course->getId(),
+        ], "*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
+    }
+
+    /**
      * Gets awards for a given user.
      *
      * @param int $userId

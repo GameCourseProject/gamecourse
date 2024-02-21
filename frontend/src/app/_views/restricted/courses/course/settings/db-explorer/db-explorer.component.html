@@ -1,0 +1,39 @@
+<!-- Header -->
+<app-header 
+    [title] = "'Database Explorer'"
+    [icon] = "'tabler-database'"
+    [loading] = "loading.action" 
+></app-header>
+<app-header 
+    [title] = "participations.selected ? 'Participations' : 'Awards'"
+    [subHeader] = "true"
+></app-header>
+<!-- Pages top actions -->
+<div class="-mt-14">
+    <app-top-actions
+        *ngIf="awardsEnabled"
+        [rightActions]="[{action: 'Participations', color: 'primary', outline: participations.selected ? false : true}, 
+                        {action: 'Awards', color: 'primary', outline: awards.selected ? false : true}]"
+        (btnClicked)="doTopAction($event)"
+    ></app-top-actions>
+</div>
+    
+<!-- Participations Table -->
+<app-table
+    *ngIf="participations.selected && !loading.table"
+    [id]="'participations'"
+    [headers]="participations.headers"
+    [data]="participations.table"
+    [loading]="loading.table"
+    [classList]="'mt-5'"
+></app-table>
+
+<!-- Awards Table -->
+<app-table
+    *ngIf="awards.selected && !loading.table"
+    [id]="'awards'"
+    [headers]="awards.headers"
+    [data]="awards.table"
+    [loading]="loading.table"
+    [classList]="'mt-5'"
+></app-table>

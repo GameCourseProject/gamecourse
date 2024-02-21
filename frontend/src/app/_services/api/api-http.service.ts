@@ -108,6 +108,7 @@ export class ApiHttpService {
   static readonly SKILLS: string = 'Skills';
   static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
   static readonly SUGGESTIONS: string = 'Suggestions';
+  static readonly AWARDS: string = 'Awards';
   // FIXME: should be compartimentalized
 
 
@@ -544,6 +545,35 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res) );
+  }
+
+
+  // Database Manipulation
+
+  public getParticipations(courseID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getParticipations');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getAwards(courseID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getAwards');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
   }
 
 

@@ -239,6 +239,11 @@ export class SidebarComponent implements OnInit {
                 icon: 'tabler-clipboard-list'
               },
               {
+                link: path + 'settings/db-explorer',
+                name: 'DB Explorer',
+                icon: 'tabler-database'
+              },
+              {
                 link: path + 'settings/modules',
                 name: 'Modules',
                 icon: 'tabler-plug'

@@ -231,7 +231,8 @@ import {
   tablerRowInsertTop,
   tablerColumnInsertLeft,
   tablerColumnInsertRight,
-  tablerQuote
+  tablerQuote,
+  tablerDatabase
 } from "@ng-icons/tabler-icons";
 
 
@@ -533,7 +534,8 @@ import {
       tablerRowInsertTop,
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
-      tablerQuote
+      tablerQuote,
+      tablerDatabase
     }),
     DataTablesModule,
     NgApexchartsModule,
