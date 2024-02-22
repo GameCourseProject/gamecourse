@@ -36,9 +36,7 @@ import {ContentItem} from "../../_components/modals/file-picker-modal/file-picke
 import {
   Credentials, GoogleSheetsConfig,
 } from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/googlesheets/googlesheets.component";
-import {
-  ProgressReportConfig
-} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/progress-report/progress-report.component";
+import { ProgressReportConfig } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
 import {
   ProfilingHistory,
   ProfilingNode

@@ -22,7 +22,6 @@ import { ConfigComponent } from './settings/modules/config/config/config.compone
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
-import { ProgressReportComponent } from './settings/modules/config/personalized-config/progress-report/progress-report.component';
 import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
 import { DataSourceStatusComponent } from "./settings/modules/config/data-source-status/data-source-status.component";
 import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-participation-page/submit-participation-page.component';
@@ -52,7 +51,6 @@ import { DBExplorerComponent } from './settings/db-explorer/db-explorer.componen
     SkillsComponent,
     GooglesheetsComponent,
     QrComponent,
-    ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent,
     AutogameComponent,

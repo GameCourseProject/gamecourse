@@ -16,15 +16,23 @@ import { ModalService } from "src/app/_services/modal.service";
 })
 export class NotificationsComponent implements OnInit {
 
+    /** -- COMMON VARIABLES -- **/
     loading = {
         page: true,
-        action: false,
-        table: true
+        table: true,
+        report: false,
+        modules: false,
+        schedule: false,
+        send: false
     }
     refreshing: boolean = true;
 
     course: Course;
+    isAdminOrTeacher: boolean = false;
+
+    /** -- ADMIN VARIABLES -- **/
     suggestionsEnabled: boolean;
+    progressReportEnabled: boolean;
     notifications: Notification[] = [];
     scheduledNotifications: ScheduledNotification[] = [];
 
@@ -33,11 +41,13 @@ export class NotificationsComponent implements OnInit {
     receiverRoles: string[] = [];
     schedule: string;
     predictions: boolean;
+    reportsConfig: ProgressReportConfig;
 
     notificationToRead: string;                 // To display fully in pop up
 
     @ViewChild('fSend', { static: false }) fSend: NgForm;
     @ViewChild('fModules', { static: false }) fModules: NgForm;
+    @ViewChild('fReport', { static: false }) fReport: NgForm;
 
     constructor(
         private api: ApiHttpService,
@@ -49,16 +59,24 @@ export class NotificationsComponent implements OnInit {
             // Basics
             const courseID = parseInt(params.id);
             await this.getCourse(courseID);
-            await this.isSuggestionsEnabled(courseID);
+            await this.getUser(courseID);
 
-            // Notifications tables
-            await this.getNotifications(courseID);
-            await this.getScheduledNotifications(courseID);
-            this.buildTable();
-            this.buildTableSchedule();
+            if (this.isAdminOrTeacher) {
+                await this.isSuggestionsEnabled(courseID);
+                await this.isProgressReportEnabled(courseID);
 
-            // Modules to config
-            await this.getModules(courseID);
+                if (this.progressReportEnabled) {
+                    await this.getProgressReportConfig(courseID);
+                }
+
+                // Notifications tables
+                await this.getNotifications(courseID);
+                await this.getScheduledNotifications(courseID);
+                this.buildTable();
+                this.buildTableSchedule();
+                // Modules to config
+                await this.getModules(courseID);
+            }
 
             this.loading.page = false;
         });
@@ -70,6 +88,12 @@ export class NotificationsComponent implements OnInit {
 
     async getCourse(courseID: number): Promise<void> {
         this.course = await this.api.getCourseById(courseID).toPromise();
+    }
+
+    async getUser(courseID: number): Promise<void> {
+        const user = await this.api.getLoggedUser().toPromise();
+
+        this.isAdminOrTeacher = user.isAdmin || await this.api.isTeacher(courseID, user.id).toPromise();
     }
 
     async getModules(courseID: number): Promise<void> {
@@ -89,6 +113,14 @@ export class NotificationsComponent implements OnInit {
 
     async isSuggestionsEnabled(courseID: number) {
         this.suggestionsEnabled = (await this.api.getCourseModuleById(courseID, ApiHttpService.SUGGESTIONS).toPromise()).enabled;
+    }
+
+    async isProgressReportEnabled(courseID: number) {
+        this.progressReportEnabled = (await this.api.getCourseModuleById(courseID, ApiHttpService.PROGRESS_REPORT).toPromise()).enabled;
+    }
+
+    async getProgressReportConfig(courseID: number) {
+        this.reportsConfig = await this.api.getProgressReportConfig(courseID).toPromise();
     }
 
 
@@ -178,7 +210,7 @@ export class NotificationsComponent implements OnInit {
     /*** --------------------------------------------- ***/
 
     async sendNotification() {
-        this.loading.action = true;
+        this.loading.send = true;
 
         await this.api.createNotificationForRoles(this.course.id, this.notificationToSend, this.receiverRoles).toPromise();
 
@@ -191,12 +223,12 @@ export class NotificationsComponent implements OnInit {
         this.receiverRoles = [];
         this.fSend.resetForm();
 
-        this.loading.action = false;
+        this.loading.send = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Notifications sent');
     }
 
     async scheduleNotification() {
-        this.loading.action = true;
+        this.loading.schedule = true;
 
         await this.api.scheduleNotificationForRoles(this.course.id, this.notificationToSend, this.receiverRoles, this.schedule).toPromise();
 
@@ -209,17 +241,26 @@ export class NotificationsComponent implements OnInit {
         this.receiverRoles = [];
         this.fSend.resetForm();
 
-        this.loading.action = false;
+        this.loading.schedule = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Notification scheduled');
     }
 
     async saveModuleConfig() {
-        this.loading.action = true;
+        this.loading.modules = true;
 
         await this.api.toggleModuleNotifications(this.course.id, this.modulesToManage).toPromise();
 
-        this.loading.action = false;
+        this.loading.modules = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Saved Module\'s notifications settings');
+    }
+
+    async saveProgressReportConfig() {
+        this.loading.report = true;
+
+        await this.api.saveProgressReportConfig(this.course.id, this.reportsConfig).toPromise();
+
+        this.loading.report = false;
+        AlertService.showAlert(AlertType.SUCCESS, 'Saved Progress Report settings');
     }
 
     async doActionOnTable(table: 'scheduled' | 'history', action: string, row: number, col: number, value?: any): Promise<void> {
@@ -283,4 +324,9 @@ export interface ScheduledNotification {
     roles: string,
     message: string,
     frequency: string
+}
+
+export interface ProgressReportConfig {
+  frequency: string,
+  isEnabled: boolean
 }

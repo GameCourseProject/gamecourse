@@ -113,6 +113,10 @@ const routes: Routes = [
     ]
   },
   {
+    path: 'notifications',
+    component: NotificationsComponent
+  },
+  {
     path: 'adaptation',
     component: AdaptationComponent
   },

@@ -45,7 +45,7 @@ class ProgressReportController
 
         $progressReport = API::getValue("progressReport");
         $progressReportModule = new ProgressReport($course);
-        $progressReportModule->saveProgressReportConfig($progressReport["endDate"], $progressReport["periodicityTime"], $progressReport["periodicityHours"], $progressReport["periodicityDay"], $progressReport["isEnabled"]);
+        $progressReportModule->saveProgressReportConfig($progressReport["frequency"], $progressReport["isEnabled"]);
     }
 
     public function getReports()
