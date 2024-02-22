@@ -141,7 +141,6 @@
           [data] = "dataSchedule"
           [options] = "tableOptionsSchedule"
           [loading] = "loading.table"
-          [hasColumnFiltering]="false"
           (btnClicked)="doActionOnTable('scheduled', $event.type, $event.row, $event.col)"
           (valueChanged)="doActionOnTable('scheduled', 'value changed', $event.row, $event.col, $event.value)"
         ></app-table>
@@ -163,7 +162,6 @@
           [data] = "data"
           [options] = "tableOptions"
           [loading] = "loading.table"
-          [hasColumnFiltering]="false"
           (btnClicked)="doActionOnTable('history', $event.type, $event.row, $event.col)"
         ></app-table>
       </div>

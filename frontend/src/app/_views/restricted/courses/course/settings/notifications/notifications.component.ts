@@ -109,9 +109,6 @@ export class NotificationsComponent implements OnInit {
         paging: true,
         info: false,
         order: [[ 0, 'desc' ]], // default order
-        columnDefs: [
-            { orderable: true, targets: [0] },
-        ]
     }
 
     buildTable(): void {
@@ -150,9 +147,6 @@ export class NotificationsComponent implements OnInit {
         paging: true,
         info: false,
         order: [[ 0, 'desc' ]], // default order
-        columnDefs: [
-            { orderable: true, targets: [0] },
-        ]
     }
 
     buildTableSchedule(): void {
