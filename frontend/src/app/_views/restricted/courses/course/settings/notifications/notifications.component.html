@@ -97,14 +97,14 @@
             [leftLabel]="'Frequency'"
           ></app-input-schedule>
         </div>
-        <app-input-text
+        <app-input-notification-text
           *ngIf="module.isEnabled"
           [id]="module.id + 'Format'"
           [form]="fModules"
           [(value)]="module.format"
           [topLabel]="'Text of the notification to be sent'"
           [required]="module.isEnabled"
-        ></app-input-text>
+        ></app-input-notification-text>
         <div *ngIf="!isLast" class="divider my-10"></div>
       </div>
       <div class="ml-auto mt-4">

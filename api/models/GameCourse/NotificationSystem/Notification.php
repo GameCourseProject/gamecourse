@@ -497,18 +497,20 @@ class Notification
      *
      * @param int $courseId
      * @param string $moduleId
-     * @param bool $enable
+     * @param bool $isEnabled
+     * @param string $frequency
+     * @param string $format
      * @return void
      * @throws Exception
      */
-    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency)
+    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency, string $format)
     {
         if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
             throw new Exception("Course with ID = " . $courseId . " does not have " 
                 . $moduleId . " enabled: can't change Notification settings related to it.");
 
         Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, 
-            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency], 
+            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency, "format" => $format],
             ["course" => $courseId, "module" => $moduleId]);
 
         $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
