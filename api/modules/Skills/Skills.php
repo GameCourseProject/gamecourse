@@ -605,6 +605,7 @@ class Skills extends Module
      * Returns notifications to be sent to a user.
      *
      * @param int $userId
+     * @throws Exception
      */
     public function getNotification($userId): ?string
     {
@@ -656,11 +657,10 @@ class Skills extends Module
         }
 
         if ($bestSkill) {
-            $notification = "Completing the skill " . $bestSkill["name"] . " will open the door to " . $maxCount . " more skills 👀 Ready for the challenge?";
-            $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
-            if (!$alreadySent) {
-                return $notification;
-            }
+            $params["bestSkill"] = $bestSkill["name"];
+            $params["numberOfSkillsItWillUnlock"] = $maxCount;
+            $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+            return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
         }
         return null;
     }

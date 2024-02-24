@@ -523,22 +523,43 @@ class Notification
      * Gets configuration of a module's notifications
      *
      * @param int $courseId
-     * @param string $moduleId
      * @return void
-     * @throws Exception
      */
-    public static function getModuleNotificationsConfig(int $courseId)
+    public static function getModuleNotificationsConfig(int $courseId): array
     {
-        $configs = Core::database()->selectMultiple(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId], "module, isEnabled, frequency");
+        $configs = Core::database()->selectMultiple(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId], "module, isEnabled, frequency, format");
 
         foreach ($configs as &$module) {
             $module["id"] = $module["module"];
             unset($module["module"]);
             
             $module["name"] = (Module::getModuleById($module["id"], Course::getCourseById($courseId)))->getName();
-            $module["isEnabled"] = $module["isEnabled"] == "1" ? true : false;
+            $module["isEnabled"] = $module["isEnabled"] == "1";
+        }
+        return $configs;
+    }
+
+    /**
+     * Passes the parameters into the text and checks if notification was already sent before
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $notification
+     * @param array $params
+     * @return string
+     * @throws Exception
+     */
+    public static function getFinalNotificationText(int $courseId, int $userId, string $notification, array $params): ?string {
+        foreach (array_keys($params) as $key) {
+            $notification = str_replace("%" . $key, $params[$key], $notification);
         }
 
-        return $configs;
+        // Check if notification is new
+        $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $courseId, "user" => $userId, "message" => $notification]);
+        if (!$alreadySent) {
+            return $notification;
+        }
+
+        return null;
     }
 }

@@ -22,7 +22,7 @@
         <h2 class="card-title mb-0">Predictions</h2>
         <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
       </div>
-      Enables sending students a prediction of their final XP, based on their earned XP tendencies so far, 
+      Enables sending students a prediction of their final XP, based on their earned XP tendencies so far,
       and only to students belonging to clusters that may be motivated by this information.
       The formula applied is the following:<br>
       <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
@@ -75,9 +75,11 @@
   <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
     <form #fModules="ngForm" class="card-body">
       <div class="flex items-center">
-        <h2 class="card-title mb-0">{{progressReportEnabled ? 'Other' : ''}} Modules</h2>
+        <h2 class="card-title">{{progressReportEnabled ? 'Other' : ''}} Modules</h2>
       </div>
-      <ng-container *ngFor="let module of modulesToManage">
+      Configure the frequency and text of notifications that are sent by {{progressReportEnabled ? 'other' : ''}} active modules.
+      <div *ngFor="let module of modulesToManage; last as isLast" class="mt-8">
+        <h2 class="card-title">{{module.name.capitalize()}}</h2>
         <div class="grid grid-cols-2 mb-2" id="module.id">
           <app-input-toggle
             [id]="module.id + 'Enabled'"
@@ -85,7 +87,7 @@
             [(value)]="module.isEnabled"
             [classList]="'mt-2'"
             [color]="'primary'"
-            [label]="module.name.capitalize() + ' Notifications'"
+            [label]="'Enable Notifications'"
           ></app-input-toggle>
           <app-input-schedule
             [id]="module.id + 'Frequency'"
@@ -95,8 +97,17 @@
             [leftLabel]="'Frequency'"
           ></app-input-schedule>
         </div>
-      </ng-container>
-      <div class="ml-auto mt-2">
+        <app-input-text
+          *ngIf="module.isEnabled"
+          [id]="module.id + 'Format'"
+          [form]="fModules"
+          [(value)]="module.format"
+          [topLabel]="'Text of the notification to be sent'"
+          [required]="module.isEnabled"
+        ></app-input-text>
+        <div *ngIf="!isLast" class="divider my-10"></div>
+      </div>
+      <div class="ml-auto mt-4">
         <button class="btn btn-primary btn-block" (click)="saveModuleConfig()">
           <!-- Spinner -->
           <ng-container *ngIf="loading.modules">

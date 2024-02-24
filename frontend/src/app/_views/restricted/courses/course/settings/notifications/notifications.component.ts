@@ -81,7 +81,7 @@ export class NotificationsComponent implements OnInit {
             this.loading.page = false;
         });
     }
-    
+
     /*** --------------------------------------------- ***/
     /*** -------------------- Init ------------------- ***/
     /*** --------------------------------------------- ***/
@@ -268,13 +268,13 @@ export class NotificationsComponent implements OnInit {
             const notificationToActOn = this.scheduledNotifications[row];
 
             if (col === 3) {
-                if (action === Action.DELETE) { 
+                if (action === Action.DELETE) {
                     await this.api.cancelScheduledNotification(this.course.id, +notificationToActOn.id).toPromise();
-    
+
                     // Refresh table
                     await this.getScheduledNotifications(this.course.id);
                     this.buildTableSchedule();
-    
+
                     AlertService.showAlert(AlertType.SUCCESS, "Canceled scheduled notification");
                 }
             }
@@ -315,7 +315,8 @@ export interface ModuleNotificationManageData {
     id: string,
     name: string,
     isEnabled: boolean,
-    frequency: string
+    frequency: string,
+    format: string
 }
 
 export interface ScheduledNotification {
