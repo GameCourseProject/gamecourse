@@ -67,6 +67,10 @@ class Skills extends Module
     const DATA_FOLDER = 'skills';
     const RULE_SECTION = "Skills";
 
+    const NOTIFICATIONS_DESCRIPTION = "If there's a skill that will unlock 2 or more other skills, suggests it to the user.";
+    const NOTIFICATIONS_FORMAT = "Completing the skill %bestSkill will open the door to %numberOfSkillsItWillUnlock more skills 👀 Ready for the challenge?";
+    const NOTIFICATIONS_VARIABLES = "bestSkill,numberOfSkillsItWillUnlock";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

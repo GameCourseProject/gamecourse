@@ -74,6 +74,10 @@ class Badges extends Module
         "B001" => ["Badges displayed in alphabetic order", [ "Regular", "Achiever" ]],
         "B002" => ["Badges displayed with achieved first", [ "Halfhearted", "Underachiever" ] ] ] ];
 
+    const NOTIFICATIONS_DESCRIPTION = "Lets the user know when he's close to leveling up a Badge.";
+    const NOTIFICATIONS_FORMAT = "You are %numberOfEventsLeft events away from achieving the %badgeName badge 🎖️ %badgeDescription - %nextLevelDescription";
+    const NOTIFICATIONS_VARIABLES = "numberOfEventsLeft,badgeName,badgeDescription,nextLevelDescription";
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/

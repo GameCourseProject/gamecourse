@@ -341,6 +341,15 @@ abstract class Module
         ]);
         $module = self::getModuleById($id, null);
         $module->setDependencies($dependencies);
+
+        if (defined($module::NOTIFICATIONS_DESCRIPTION) && defined($module::NOTIFICATIONS_VARIABLES !== null)) {
+            Core::database()->insert(self::TABLE_MODULE, [
+                "module" => $id,
+                "description" => $module::NOTIFICATIONS_DESCRIPTION,
+                "variables" => $module::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+
         return $module;
     }
 
@@ -544,8 +553,8 @@ abstract class Module
      */
     protected function initNotifications()
     {
-        Core::database()->insert(Notification::TABLE_NOTIFICATION_CONFIG, 
-            ["course" => $this->course->getId(), "module" => $this->id, "isEnabled" => "0", "frequency" => "00 08 * * MON"]);
+        Core::database()->insert(Notification::TABLE_NOTIFICATION_CONFIG,
+            ["course" => $this->course->getId(), "module" => $this->id, "isEnabled" => "0", "frequency" => "00 08 * * MON", "format" => $this::NOTIFICATIONS_FORMAT ?? ""]);
     }
 
     /**

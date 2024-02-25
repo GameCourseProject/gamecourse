@@ -80,7 +80,7 @@
       Configure the frequency and text of notifications that are sent by {{progressReportEnabled ? 'other' : ''}} active modules.
       <div *ngFor="let module of modulesToManage; last as isLast" class="mt-8">
         <h2 class="card-title">{{module.name.capitalize()}}</h2>
-        <div class="grid grid-cols-2 mb-2" id="module.id">
+        <div class="grid md:grid-cols-2 mb-2" id="module.id">
           <app-input-toggle
             [id]="module.id + 'Enabled'"
             [form]="fModules"
@@ -88,6 +88,8 @@
             [classList]="'mt-2'"
             [color]="'primary'"
             [label]="'Enable Notifications'"
+            [helperText]="module.description"
+            [helperPosition]="'right'"
           ></app-input-toggle>
           <app-input-schedule
             [id]="module.id + 'Frequency'"
@@ -102,13 +104,14 @@
           [id]="module.id + 'Format'"
           [form]="fModules"
           [(value)]="module.format"
-          [topLabel]="'Text of the notification to be sent'"
+          [label]="'Text of the notification to be sent'"
           [required]="module.isEnabled"
+          [itemsToSuggest]="module.variables"
         ></app-input-notification-text>
         <div *ngIf="!isLast" class="divider my-10"></div>
       </div>
       <div class="ml-auto mt-4">
-        <button class="btn btn-primary btn-block" (click)="saveModuleConfig()">
+        <button class="btn btn-primary btn-block" (click)="saveModuleConfig()" [disabled]="!fModules.valid">
           <!-- Spinner -->
           <ng-container *ngIf="loading.modules">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>

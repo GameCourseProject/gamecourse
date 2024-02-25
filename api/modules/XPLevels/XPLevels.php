@@ -61,6 +61,10 @@ class XPLevels extends Module
 
     const RESOURCES = [];
 
+    const NOTIFICATIONS_DESCRIPTION = "Sends a motivating message whenever a user has only 10% of the Level's XP missing to level up.";
+    const NOTIFICATIONS_FORMAT = "You are so close to reaching Level %levelNumber - %levelDescription! Only %XPLeft XP to go 🚀";
+    const NOTIFICATIONS_VARIABLES = "levelNumber,levelDescription,XPLeft";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

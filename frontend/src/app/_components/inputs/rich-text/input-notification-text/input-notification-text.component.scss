@@ -1,0 +1,19 @@
+:Host {
+  ::ng-deep mention-list {
+    .scrollable-menu {
+      @apply py-1 shadow bg-base-300 border-0 text-sm text-base-content #{!important};
+    }
+
+    .mention-menu > li {
+      cursor: pointer;
+    }
+
+    .mention-menu > li > a {
+      @apply text-base-content;
+    }
+
+    .mention-active > a {
+      @apply bg-base-content/5 text-base-content #{!important};
+    }
+  }
+}

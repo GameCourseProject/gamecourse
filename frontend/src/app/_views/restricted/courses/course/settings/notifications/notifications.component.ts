@@ -247,7 +247,6 @@ export class NotificationsComponent implements OnInit {
 
     async saveModuleConfig() {
         this.loading.modules = true;
-
         await this.api.toggleModuleNotifications(this.course.id, this.modulesToManage).toPromise();
 
         this.loading.modules = false;
@@ -305,26 +304,28 @@ export class NotificationsComponent implements OnInit {
 
 
 export interface NotificationManageData {
-    course: number,
-    user: string,
-    message: string,
-    isShowed: boolean
+  course: number,
+  user: string,
+  message: string,
+  isShowed: boolean
 }
 
 export interface ModuleNotificationManageData {
-    id: string,
-    name: string,
-    isEnabled: boolean,
-    frequency: string,
-    format: string
+  id: string,
+  name: string,
+  description: string,
+  variables: string[],
+  isEnabled: boolean,
+  frequency: string,
+  format: string
 }
 
 export interface ScheduledNotification {
-    id: string,
-    course: string,
-    roles: string,
-    message: string,
-    frequency: string
+  id: string,
+  course: string,
+  roles: string,
+  message: string,
+  frequency: string
 }
 
 export interface ProgressReportConfig {

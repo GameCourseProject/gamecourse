@@ -25,7 +25,7 @@ $students = $course->getStudents(true);
 foreach ($students as $student) {
     $message = $module->getNotification($student["id"]);
 
-    if ($message) {
+    if (isset($message) && $message != "") {
         Notification::addNotification($courseId, $student["id"], $message);
     }
 }

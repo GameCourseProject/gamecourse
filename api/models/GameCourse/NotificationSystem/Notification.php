@@ -21,6 +21,7 @@ class Notification
 {
     const TABLE_NOTIFICATION = "notification";
     const TABLE_NOTIFICATION_CONFIG = "notification_config";
+    const TABLE_NOTIFICATION_DESCRIPTIONS = "notification_module_description";
     const TABLE_NOTIFICATION_SCHEDULED = "notification_scheduled";
 
     protected $id;
@@ -529,7 +530,8 @@ class Notification
      */
     public static function getModuleNotificationsConfig(int $courseId): array
     {
-        $configs = Core::database()->selectMultiple(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId], "module, isEnabled, frequency, format");
+        $table = self::TABLE_NOTIFICATION_CONFIG . " c JOIN " . self::TABLE_NOTIFICATION_DESCRIPTIONS . " d on c.module=d.module";
+        $configs = Core::database()->selectMultiple($table, ["course" => $courseId], "c.module, isEnabled, frequency, format, description, variables");
 
         foreach ($configs as &$module) {
             $module["id"] = $module["module"];
@@ -537,6 +539,7 @@ class Notification
             
             $module["name"] = (Module::getModuleById($module["id"], Course::getCourseById($courseId)))->getName();
             $module["isEnabled"] = $module["isEnabled"] == "1";
+            $module["variables"] = explode(",", $module["variables"]);
         }
         return $configs;
     }

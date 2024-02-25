@@ -235,6 +235,7 @@ import {
   tablerQuote,
   tablerDatabase
 } from "@ng-icons/tabler-icons";
+import {MentionModule} from "angular-mentions";
 
 
 @NgModule({
@@ -542,7 +543,8 @@ import {
     }),
     DataTablesModule,
     NgApexchartsModule,
-    ScrollingModule
+    ScrollingModule,
+    MentionModule
   ]
 })
 export class SharedModule { }
