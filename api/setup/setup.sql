@@ -427,8 +427,17 @@ CREATE TABLE notification_scheduled(
      roles                       TEXT NOT NULL,
      message                     TEXT NOT NULL,
      frequency                   varchar(50) NOT NULL,
+     format                      TEXT NOT NULL,
 
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE notification_module_description(
+     module                      varchar(50) NOT NULL,
+     description                 TEXT,
+     variables                   TEXT,
+
+     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/
