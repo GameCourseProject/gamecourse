@@ -84,11 +84,20 @@ class Skills extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initRules();
-        $this->initNotifications();
 
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
 
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     /**

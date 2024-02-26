@@ -342,14 +342,6 @@ abstract class Module
         $module = self::getModuleById($id, null);
         $module->setDependencies($dependencies);
 
-        if (defined($module::NOTIFICATIONS_DESCRIPTION) && defined($module::NOTIFICATIONS_VARIABLES !== null)) {
-            Core::database()->insert(self::TABLE_MODULE, [
-                "module" => $id,
-                "description" => $module::NOTIFICATIONS_DESCRIPTION,
-                "variables" => $module::NOTIFICATIONS_VARIABLES
-            ]);
-        }
-
         return $module;
     }
 

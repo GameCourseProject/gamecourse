@@ -91,6 +91,16 @@ class XPLevels extends Module
 
         $this->initEvents();
         $this->initProviders();
+
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
         $this->initNotifications();
     }
 

@@ -90,7 +90,6 @@ class Badges extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initTemplates();
-        $this->initNotifications();
         $this->initRules();
         $this->initProviders();
 
@@ -102,6 +101,17 @@ class Badges extends Module
          $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         // initEvents(); // FIXME: Debug only
          GameElement::addGameElement($this->course->getId(), self::ID);
+
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     public function providers(): array
