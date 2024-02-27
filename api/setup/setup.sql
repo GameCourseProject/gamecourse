@@ -433,7 +433,7 @@ CREATE TABLE notification_scheduled(
 );
 
 CREATE TABLE notification_module_description(
-     module                      varchar(50) NOT NULL,
+     module                      varchar(50) PRIMARY KEY,
      description                 TEXT,
      variables                   TEXT,
 
