@@ -416,6 +416,7 @@ CREATE TABLE notification_config(
      module                      varchar(50) NOT NULL,
      isEnabled                   boolean NOT NULL DEFAULT FALSE,
      frequency                   varchar(50) DEFAULT '00 08 * * MON',
+     format                      TEXT NOT NULL,
 
      PRIMARY key(course, module),
      FOREIGN key(course, module) REFERENCES course_module(course, module) ON DELETE CASCADE
@@ -429,6 +430,14 @@ CREATE TABLE notification_scheduled(
      frequency                   varchar(50) NOT NULL,
 
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
+);
+
+CREATE TABLE notification_module_description(
+     module                      varchar(50) NOT NULL,
+     description                 TEXT,
+     variables                   TEXT,
+
+     FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
 /*** ---------------------------------------------------- ***/

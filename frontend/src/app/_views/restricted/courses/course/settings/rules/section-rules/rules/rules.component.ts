@@ -111,7 +111,10 @@ export class RulesComponent implements OnInit {
 
         this.isIncomplete();
         this.prepareCodeInputTabs();
-        this.openTutorial();
+        if (!localStorage.getItem('viewedRulesTutorial')) {
+          this.openTutorial();
+          localStorage.setItem('viewedRulesTutorial', 'true');
+        }
         this.loading.page = false;
       })
     })

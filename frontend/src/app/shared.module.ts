@@ -37,6 +37,7 @@ import { InputColorComponent } from './_components/inputs/color/input-color/inpu
 import { InputFileComponent } from './_components/inputs/general/input-file/input-file.component';
 import { InputCodeComponent } from './_components/inputs/code/input-code/input-code.component';
 import { InputRichTextComponent } from "./_components/inputs/rich-text/input-rich-text/input-rich-text.component";
+import { InputNotificationTextComponent} from "./_components/inputs/rich-text/input-notification-text/input-notification-text.component";
 import { InputCheckboxComponent } from './_components/inputs/checkbox & radio/input-checkbox/input-checkbox.component';
 import { InputRadioComponent } from './_components/inputs/checkbox & radio/input-radio/input-radio.component';
 import { InputToggleComponent } from './_components/inputs/toggle/input-toggle/input-toggle.component';
@@ -231,8 +232,10 @@ import {
   tablerRowInsertTop,
   tablerColumnInsertLeft,
   tablerColumnInsertRight,
-  tablerQuote
+  tablerQuote,
+  tablerDatabase
 } from "@ng-icons/tabler-icons";
+import {MentionModule} from "angular-mentions";
 
 
 @NgModule({
@@ -266,6 +269,7 @@ import {
     InputFileComponent,
     InputCodeComponent,
     InputRichTextComponent,
+    InputNotificationTextComponent,
     InputCheckboxComponent,
     InputRadioComponent,
     InputToggleComponent,
@@ -353,6 +357,7 @@ import {
     InputFileComponent,
     InputCodeComponent,
     InputRichTextComponent,
+    InputNotificationTextComponent,
     InputCheckboxComponent,
     InputRadioComponent,
     InputToggleComponent,
@@ -533,11 +538,13 @@ import {
       tablerRowInsertTop,
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
-      tablerQuote
+      tablerQuote,
+      tablerDatabase
     }),
     DataTablesModule,
     NgApexchartsModule,
-    ScrollingModule
+    ScrollingModule,
+    MentionModule
   ]
 })
 export class SharedModule { }

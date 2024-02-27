@@ -1,174 +1,258 @@
-<div class="w-full relative">
-  <!-- Header -->
-  <app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" [loading] = "loading.action" ></app-header>
+<!-- Header -->
+<app-header [title] = "'Notifications'" [icon] = "'tabler-bell'" ></app-header>
 
-  <ng-container *ngIf="!loading.page">
-    <!-- Predictions -->
-    <div *ngIf="suggestionsEnabled" class="card w-full bg-base-100 shadow-xl">
-      <form #f="ngForm" class="card-body">
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">Predictions</h2>
-          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-        </div>
-        Enables sending students a prediction of their final XP, based on their earned XP tendencies so far, 
-        and only to students belonging to clusters that may be motivated by this information.
-        The formula applied is the following:<br>
-        <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
+  <!-- Loader -->
+<app-loader [loading] = "loading.page"></app-loader>
+
+<ng-container *ngIf="!loading.page">
+  <!-- Admin Template -->
+  <ng-container *ngIf="isAdminOrTeacher" [ngTemplateOutlet]="ADMIN"></ng-container>
+
+  <!-- Non-Admin Template -->
+  <ng-container *ngIf="!isAdminOrTeacher" [ngTemplateOutlet]="NON_ADMIN"></ng-container>
+</ng-container>
+
+
+
+<ng-template #ADMIN>
+  <!-- Predictions -->
+<!--   <div *ngIf="suggestionsEnabled" class="card w-full bg-base-100 shadow-xl">
+    <form #f="ngForm" class="card-body">
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">Predictions</h2>
+        <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
+      Enables sending students a prediction of their final XP, based on their earned XP tendencies so far,
+      and only to students belonging to clusters that may be motivated by this information.
+      The formula applied is the following:<br>
+      <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
+      <app-input-toggle
+        [id]="'predictions'"
+        [(value)]="predictions"
+        [classList]="'mt-2'"
+        [color]="'primary'"
+        [label]="'Enable prediction notifications'"
+      ></app-input-toggle>
+    </form>
+  </div> -->
+
+  <!-- Progress Report -->
+  <div *ngIf="progressReportEnabled" class="card w-full bg-base-100 shadow-xl mt-5">
+    <form #fModules="ngForm" class="card-body" (ngSubmit)="saveProgressReportConfig()">
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">Progress Report</h2>
+      </div>
+      <div class="mb-3">Define when progress reports should be sent to students. These are sent by email.</div>
+      <div class="grid md:grid-cols-2 items-center">
         <app-input-toggle
-          [id]="'predictions'"
-          [(value)]="predictions"
-          [classList]="'mt-2'"
+          [id]="'progress-report-enabled'"
+          [form]="fReport"
+          [(value)]="reportsConfig.isEnabled"
+          [label]="'Enable Progress Report Emails'"
           [color]="'primary'"
-          [label]="'Enable prediction notifications'"
         ></app-input-toggle>
-      </form>
-    </div>
-
-    <!-- Modules -->
-    <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
-      <form #fModules="ngForm" class="card-body">
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">Modules</h2>
-        </div>
-        <ng-container *ngFor="let module of modulesToManage">
-          <div class="grid grid-cols-2 mb-2" id="module.id">
-            <app-input-toggle
-              [id]="module.id + 'Enabled'"
-              [form]="fModules"
-              [(value)]="module.isEnabled"
-              [classList]="'mt-2'"
-              [color]="'primary'"
-              [label]="module.name.capitalize() + ' Notifications'"
-            ></app-input-toggle>
-            <app-input-schedule
-              [id]="module.id + 'Frequency'"
-              [form]="fModules"
-              [(value)]="module.frequency"
-              [disabled]="!module.isEnabled"
-              [leftLabel]="'Frequency'"
-            ></app-input-schedule>
-          </div>
-        </ng-container>
-        <button class="btn btn-primary btn-block mt-2" (click)="saveModuleConfig()">
+        <!-- Schedule -->
+        <app-input-schedule
+          [id]="'progress-report-schedule'"
+          [form]="fReport"
+          [(value)]="reportsConfig.frequency"
+          [disabled]="!reportsConfig.isEnabled"
+        ></app-input-schedule>
+      </div>
+      <div class="mt-4 ml-auto">
+        <button class="btn btn-primary btn-block">
           <!-- Spinner -->
-          <ng-container *ngIf="loading.action">
+          <ng-container *ngIf="loading.report">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
           </ng-container>
           Save
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
+  </div>
 
-    <!-- Announcements -->
-    <div class="card w-full bg-base-100 shadow-xl mt-5">
-      <form #fSend="ngForm" (ngSubmit)="sendNotification()" class="card-body">
-
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">Custom Notification</h2>
-          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-        </div>
-        Send a custom message to users.
-        <!-- Roles -->
-        <app-input-select-role
-          [courseId]="course.id"
-          [id]="'roles-receivers'"
-          [form]="fSend"
-          [(value)]="receiverRoles"
-          [placeholder]="'Select roles'"
-          [multiple]="true"
-          [closeOnSelect]="false"
-          [topLabel]="'Send to'"
-          [classList]="'mt-2'"
-          [required]="true"
-          [helperText]="'Users with at least one of these roles will receive the notification'"
-          [helperPosition]="'right'"
-        ></app-input-select-role>
-
-        <!-- Message -->
-        <app-input-textarea
-          [id]="'announcement'"
-          [maxLength]="150"
-          [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
-          [(value)]="notificationToSend"
-          [form]="fSend"
-          [placeholder]="'Write the message you want to send here (maximum of 150 characters)'"
-          [label]="'Message'"
-          [required]="true"
-          [classList]="'mt-2'"
-        ></app-input-textarea>
-
-        <div class="grid md:grid-cols-2 gap-4 mt-10">
-          <!-- Schedule -->
+  <!-- Modules -->
+  <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
+    <form #fModules="ngForm" class="card-body">
+      <div class="flex items-center">
+        <h2 class="card-title">{{progressReportEnabled ? 'Other' : ''}} Modules</h2>
+      </div>
+      Configure the frequency and text of notifications that are sent by {{progressReportEnabled ? 'other' : ''}} active modules.
+      <div *ngFor="let module of modulesToManage; last as isLast" class="mt-8">
+        <h2 class="card-title">{{module.name.capitalize()}}</h2>
+        <div class="grid md:grid-cols-2 mb-2" id="module.id">
+          <app-input-toggle
+            [id]="module.id + 'Enabled'"
+            [form]="fModules"
+            [(value)]="module.isEnabled"
+            [classList]="'mt-2'"
+            [color]="'primary'"
+            [label]="'Enable Notifications'"
+            [helperText]="module.description"
+            [helperPosition]="'right'"
+          ></app-input-toggle>
           <app-input-schedule
-            [id]="'schedule'"
-            [form]="fSend"
-            [(value)]="schedule"
+            [id]="module.id + 'Frequency'"
+            [form]="fModules"
+            [(value)]="module.frequency"
+            [disabled]="!module.isEnabled"
+            [leftLabel]="'Frequency'"
           ></app-input-schedule>
-
-          <button class="btn btn-primary btn-block" [disabled]="!fSend.valid || !schedule" type="button" (click)="scheduleNotification()">
-            <ng-container *ngIf="loading.action">
-              <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-            </ng-container>
-            Schedule
-          </button>
         </div>
-        <div class="flex flex-row justify-center items-center my-2 text-xl font-semibold">
-          or
-        </div>
-        <button class="btn btn-primary btn-block" [disabled]="!fSend.valid" type="button" (click)="sendNotification()">
-          <!-- Send Now -->
-          <ng-container *ngIf="loading.action">
+        <app-input-notification-text
+          *ngIf="module.isEnabled"
+          [id]="module.id + 'Format'"
+          [form]="fModules"
+          [(value)]="module.format"
+          [label]="'Text of the notification to be sent'"
+          [required]="module.isEnabled"
+          [itemsToSuggest]="module.variables"
+        ></app-input-notification-text>
+        <div *ngIf="!isLast" class="divider my-10"></div>
+      </div>
+      <div class="ml-auto mt-4">
+        <button class="btn btn-primary btn-block" (click)="saveModuleConfig()" [disabled]="!fModules.valid">
+          <!-- Spinner -->
+          <ng-container *ngIf="loading.modules">
             <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
           </ng-container>
-          Send Now
+          Save
         </button>
-
-      </form>
-    </div>
-
-    <!-- Scheduled -->
-    <div class="card w-full bg-base-100 shadow-xl mt-5">
-      <div class="card-body">
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">Scheduled</h2>
-          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-        </div>
-        <app-table
-          *ngIf="!loading.table"
-          [id] = "'scheduled-notifications'"
-          [classList]="'mt-5'"
-          [headers] = "headersSchedule"
-          [data] = "dataSchedule"
-          [options] = "tableOptionsSchedule"
-          [loading] = "loading.table"
-          [hasColumnFiltering]="false"
-          (btnClicked)="doActionOnTable('scheduled', $event.type, $event.row, $event.col)"
-          (valueChanged)="doActionOnTable('scheduled', 'value changed', $event.row, $event.col, $event.value)"
-        ></app-table>
       </div>
-    </div>
+    </form>
+  </div>
 
-    <!-- History -->
-    <div class="card w-full bg-base-100 shadow-xl mt-5">
-      <div class="card-body">
-        <div class="flex items-center">
-          <h2 class="card-title mb-0">History</h2>
-          <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
-        </div>
-        <app-table
-          *ngIf="!loading.table"
-          [id] = "'notifications'"
-          [classList]="'mt-5'"
-          [headers] = "headers"
-          [data] = "data"
-          [options] = "tableOptions"
-          [loading] = "loading.table"
-          [hasColumnFiltering]="false"
-        ></app-table>
+  <!-- Announcements -->
+  <div class="card w-full bg-base-100 shadow-xl mt-5">
+    <form #fSend="ngForm" (ngSubmit)="sendNotification()" class="card-body">
+
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">Custom Notification</h2>
+        <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
       </div>
-    </div>
-  </ng-container>
+      Send a custom message to users.
+      <!-- Roles -->
+      <app-input-select-role
+        [courseId]="course.id"
+        [id]="'roles-receivers'"
+        [form]="fSend"
+        [(value)]="receiverRoles"
+        [placeholder]="'Select roles'"
+        [multiple]="true"
+        [closeOnSelect]="false"
+        [topLabel]="'Send to'"
+        [classList]="'mt-2'"
+        [required]="true"
+        [helperText]="'Users with at least one of these roles will receive the notification'"
+        [helperPosition]="'right'"
+      ></app-input-select-role>
 
-  <!-- Loader -->
-  <app-loader [loading] = "loading.page"></app-loader>
-</div>
+      <!-- Message -->
+      <app-input-textarea
+        [id]="'announcement'"
+        [maxLength]="150"
+        [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
+        [(value)]="notificationToSend"
+        [form]="fSend"
+        [placeholder]="'Write the message you want to send here (maximum of 150 characters)'"
+        [label]="'Message'"
+        [required]="true"
+        [classList]="'mt-2'"
+      ></app-input-textarea>
+
+      <div class="grid md:grid-cols-2 gap-4 mt-10">
+        <!-- Schedule -->
+        <app-input-schedule
+          [id]="'schedule'"
+          [form]="fSend"
+          [(value)]="schedule"
+        ></app-input-schedule>
+
+        <button class="btn btn-primary btn-block" [disabled]="!fSend.valid || !schedule" type="button" (click)="scheduleNotification()">
+          <ng-container *ngIf="loading.schedule">
+            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+          </ng-container>
+          Schedule
+        </button>
+      </div>
+      <div class="flex flex-row justify-center items-center my-2 text-xl font-semibold">
+        or
+      </div>
+      <button class="btn btn-primary btn-block" [disabled]="!fSend.valid" type="button" (click)="sendNotification()">
+        <!-- Send Now -->
+        <ng-container *ngIf="loading.send">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Send Now
+      </button>
+
+    </form>
+  </div>
+
+  <!-- Scheduled -->
+  <div class="card w-full bg-base-100 shadow-xl mt-5">
+    <div class="card-body">
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">Scheduled</h2>
+        <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
+      <app-table
+        *ngIf = "!loading.table"
+        [id] = "'scheduled-notifications'"
+        [classList]="'mt-5'"
+        [headers] = "headersSchedule"
+        [data] = "dataSchedule"
+        [options] = "tableOptionsSchedule"
+        [loading] = "loading.table"
+        (btnClicked) = "doActionOnTable('scheduled', $event.type, $event.row, $event.col)"
+        (valueChanged) = "doActionOnTable('scheduled', 'value changed', $event.row, $event.col, $event.value)"
+      ></app-table>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card w-full bg-base-100 shadow-xl mt-5">
+    <div class="card-body">
+      <div class="flex items-center">
+        <h2 class="card-title mb-0">History</h2>
+        <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+      </div>
+      <app-table
+        *ngIf="!loading.table"
+        [id] = "'history'"
+        [classList]="'mt-5'"
+        [headers] = "headers"
+        [data] = "data"
+        [options] = "tableOptions"
+        [loading] = "loading.table"
+        (btnClicked)="doActionOnTable('history', $event.type, $event.row, $event.col)"
+      ></app-table>
+    </div>
+  </div>
+</ng-template>
+
+
+
+<ng-template #NON_ADMIN>
+</ng-template>
+
+
+
+<!-- Notification Content Modal -->
+<app-modal
+  *ngIf="notificationToRead"
+  [id] = "'full-notification'"
+  [templateRef]="FULL_NOTIFICATION"
+  [header]="'Full Message'"
+  [size] = "'sm'"
+  [closeBtn] = "false"
+  [xButton] = "false"
+  [submitBtnText] = "'Close'"
+  (submitBtnClicked) = "closeFullNotificationModal()"
+></app-modal>
+
+<ng-template #FULL_NOTIFICATION>
+  <div class="prose">
+    {{notificationToRead}}
+  </div>
+</ng-template>

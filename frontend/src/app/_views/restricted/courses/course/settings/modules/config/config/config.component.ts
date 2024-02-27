@@ -18,7 +18,6 @@ import {TableDataType} from "../../../../../../../../_components/tables/table-da
 import {SkillsComponent} from "../personalized-config/skills/skills.component";
 import {QrComponent} from "../personalized-config/qr/qr.component";
 import {GooglesheetsComponent} from "../personalized-config/googlesheets/googlesheets.component";
-import {ProgressReportComponent} from "../personalized-config/progress-report/progress-report.component";
 import {ProfilingComponent} from "../personalized-config/profiling/profiling.component";
 import {dateFromDatabase} from "../../../../../../../../_utils/misc/misc";
 
@@ -371,7 +370,6 @@ export class ConfigComponent implements OnInit {
     if (this.personalizedConfig) {
       if (this.module.id === ApiHttpService.GOOGLESHEETS) return GooglesheetsComponent;
       if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;
-      if (this.module.id === ApiHttpService.PROGRESS_REPORT) return ProgressReportComponent;
       if (this.module.id === ApiHttpService.QR) return QrComponent;
       if (this.module.id === ApiHttpService.SKILLS) return SkillsComponent;
 

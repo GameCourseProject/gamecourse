@@ -218,7 +218,7 @@ class NotificationController
         $config = API::getValue("config", "array");
 
         foreach($config as $module) {
-            Notification::setModuleNotifications($courseId, $module["id"], $module["isEnabled"], $module["frequency"]);
+            Notification::setModuleNotifications($courseId, $module["id"], $module["isEnabled"], $module["frequency"], $module["format"]);
         }
     }
 

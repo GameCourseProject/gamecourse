@@ -20,6 +20,48 @@ class Category
         $this->id = $id;
     }
 
+    
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Setup ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Registers view categories available in the system.
+     * This is only performed once during system setup.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public static function setupViewCategories()
+    {
+        $categories = [
+            ["id" => 1, "name" => "Modules"],
+            ["id" => 2, "name" => "Components"],
+            ["id" => 3, "name" => "Titles"],
+            ["id" => 4, "name" => "Paragraphs"],
+            ["id" => 5, "name" => "Empty Block"],
+            ["id" => 6, "name" => "Solid"],
+            ["id" => 7, "name" => "Outlined"],
+            ["id" => 8, "name" => "With Icon"],
+            ["id" => 9, "name" => "Rounded"],
+            ["id" => 10, "name" => "Squared"],
+            ["id" => 11, "name" => "With Footers"],
+            ["id" => 12, "name" => "With Column Filtering"],
+        ]; // TODO: Add Charts categories
+
+        $sql = "INSERT INTO " . self::TABLE_CATEGORY . " (id, name) VALUES ";
+        $values = [];
+
+        foreach ($categories as $category) {
+            $values[] = "(" . $category["id"] . ", '" . $category["name"] . "')";
+        }
+
+        if (!empty($values)) {
+            $sql .= implode(", ", $values);
+            Core::database()->executeQuery($sql);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Getters --------------------- ***/

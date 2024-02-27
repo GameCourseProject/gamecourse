@@ -130,6 +130,21 @@ class Awards extends Module
     /*** ---------- Awards ---------- ***/
 
     /**
+     * Gets awards for a given course.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getCourseAwards(): array
+    {
+        $awards = Core::database()->selectMultiple(self::TABLE_AWARD, [
+            "course" => $this->course->getId(),
+        ], "*", "date");
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
+    }
+
+    /**
      * Gets awards for a given user.
      *
      * @param int $userId
@@ -283,6 +298,37 @@ class Awards extends Module
             "moduleInstance" => $moduleInstance,
             "reward" => $reward
         ]);
+    }
+
+    /**
+     * Removes an award from the database.
+     *
+     * @param int $awardId
+     * @return void
+     * @throws Exception
+     */
+    public static function removeAward(int $awardId)
+    {
+        Core::database()->delete(self::TABLE_AWARD, ["id" => $awardId]);
+    }
+
+    /*
+     * Updates an award in the database.
+     *
+     * @param int $awardId
+     * @return void
+     * @throws Exception
+     */
+    public static function updateAward(int $id, string $description, string $type,
+                                       int $reward, string $date, ?int $moduleInstance = null)
+    {
+        Core::database()->update(self::TABLE_AWARD, [
+            "description" => $description,
+            "type" => $type,
+            "moduleInstance" => $moduleInstance,
+            "reward" => $reward,
+            "date" => $date,
+        ], ["id" => $id]);
     }
 
 

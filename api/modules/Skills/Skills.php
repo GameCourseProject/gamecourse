@@ -67,6 +67,10 @@ class Skills extends Module
     const DATA_FOLDER = 'skills';
     const RULE_SECTION = "Skills";
 
+    const NOTIFICATIONS_DESCRIPTION = "If there's a skill that will unlock 2 or more other skills, suggests it to the user.";
+    const NOTIFICATIONS_FORMAT = "Completing the skill %bestSkill will open the door to %numberOfSkillsItWillUnlock more skills 👀 Ready for the challenge?";
+    const NOTIFICATIONS_VARIABLES = "bestSkill,numberOfSkillsItWillUnlock";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -80,11 +84,20 @@ class Skills extends Module
         $this->initDatabase();
         $this->createDataFolder();
         $this->initRules();
-        $this->initNotifications();
 
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
 
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     /**
@@ -605,6 +618,7 @@ class Skills extends Module
      * Returns notifications to be sent to a user.
      *
      * @param int $userId
+     * @throws Exception
      */
     public function getNotification($userId): ?string
     {
@@ -656,11 +670,10 @@ class Skills extends Module
         }
 
         if ($bestSkill) {
-            $notification = "Completing the skill " . $bestSkill["name"] . " will open the door to " . $maxCount . " more skills 👀 Ready for the challenge?";
-            $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
-            if (!$alreadySent) {
-                return $notification;
-            }
+            $params["bestSkill"] = $bestSkill["name"];
+            $params["numberOfSkillsItWillUnlock"] = $maxCount;
+            $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+            return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
         }
         return null;
     }

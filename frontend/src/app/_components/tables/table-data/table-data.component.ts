@@ -334,6 +334,7 @@ export function getValue(data: {type: TableDataType, content: any}): string {
   else if (data.type === TableDataType.DATETIME) return data.content['datetime']?.format(data.content['datetimeFormat'] ?? 'DD/MM/YYYY HH:mm') ?? 'Never';
   else if (data.type === TableDataType.COLOR) return data.content['colorLabel'] ?? data.content['colorLabel'] ?? '';
   else if (data.type === TableDataType.PILL) return data.content['pillText'] ?? '';
+  else if (data.type === TableDataType.BUTTON) return data.content['buttonText'] ?? '';
   else if (data.type === TableDataType.AVATAR) return data.content['avatarTitle'] + (' ' + data.content['avatarSubtitle'] ?? '');
   else if (data.type === TableDataType.CHECKBOX) return data.content['checkboxValue'].toString();
   else if (data.type === TableDataType.RADIO) return data.content['radioValue'].toString();
@@ -348,7 +349,7 @@ export function isFilterable(type: TableDataType, options, index): boolean {
     if (option.hasOwnProperty('filterable') && !option['filterable'] && option.hasOwnProperty('targets') && option['targets'].includes(index))
       return false;
   }
-  return type !== TableDataType.IMAGE && type !== TableDataType.BUTTON && type !== TableDataType.ACTIONS;
+  return type !== TableDataType.IMAGE && type !== TableDataType.ACTIONS;
 }
 
 export function isSelectable(type: TableDataType): boolean {
