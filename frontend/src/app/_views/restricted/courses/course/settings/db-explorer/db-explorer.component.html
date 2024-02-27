@@ -1,10 +1,10 @@
 <!-- Header -->
-<app-header 
+<app-header
     [title] = "'Database Explorer'"
     [icon] = "'tabler-database'"
-    [loading] = "loading.action" 
+    [loading] = "loading.action"
 ></app-header>
-<app-header 
+<app-header
     [title] = "participations.selected ? 'Participations' : 'Awards'"
     [subHeader] = "true"
 ></app-header>
@@ -12,12 +12,12 @@
 <div class="-mt-14">
     <app-top-actions
         *ngIf="awardsEnabled"
-        [rightActions]="[{action: 'Participations', color: 'primary', outline: participations.selected ? false : true}, 
+        [rightActions]="[{action: 'Participations', color: 'primary', outline: participations.selected ? false : true},
                         {action: 'Awards', color: 'primary', outline: awards.selected ? false : true}]"
         (btnClicked)="doTopAction($event)"
     ></app-top-actions>
 </div>
-    
+
 <!-- Participations Table -->
 <app-table
     *ngIf="participations.selected && !loading.table"
@@ -26,6 +26,8 @@
     [data]="participations.table"
     [loading]="loading.table"
     [classList]="'mt-5'"
+    [options]="tableOptions"
+    (btnClicked)="doActionOnTable('participations', $event.type, $event.row, $event.col)"
 ></app-table>
 
 <!-- Awards Table -->
@@ -36,4 +38,140 @@
     [data]="awards.table"
     [loading]="loading.table"
     [classList]="'mt-5'"
+    [options]="tableOptions"
+    (btnClicked)="doActionOnTable('awards', $event.type, $event.row, $event.col)"
 ></app-table>
+
+<!-- Confirmation Modals for Deletion -->
+<app-simple-modal
+  [id]="'confirm-participation-modal'"
+  [title]="'Delete'"
+  [text]="'Are you sure you want to delete this entry in the Participations table?'"
+  [submitBtnColor]="'error'"
+  [submitBtnText]="'Delete'"
+  [actionInProgress]="true"
+  (submitBtnClicked)="deleteParticipation()"
+></app-simple-modal>
+<app-simple-modal
+  [id]="'confirm-award-modal'"
+  [title]="'Delete'"
+  [text]="'Are you sure you want to delete this entry in the Awards table?'"
+  [submitBtnColor]="'error'"
+  [submitBtnText]="'Delete'"
+  [actionInProgress]="true"
+  (submitBtnClicked)="deleteAward()"
+></app-simple-modal>
+
+<!-- Modals for Editing -->
+<app-modal
+  *ngIf="participationToManage"
+   [id]="'edit-participation'"
+   [templateRef]="EDIT_PARTICIPATION"
+   [size]="'md'"
+   [header]="'Edit Participation'"
+   [actionInProgress] = "loading.action"
+   [submitBtnText] = "'Save'"
+   (submitBtnClicked)="fParticipation.onSubmit(null); editParticipation()"
+></app-modal>
+<ng-template #EDIT_PARTICIPATION>
+  <form #fParticipation="ngForm">
+    <div class="mb-4">
+      Participation with ID = {{participationToManage.id}} for User {{participationToManage.user}}
+    </div>
+    <app-input-text
+      [id]="'source'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.source"
+      [topLabel]="'Source'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-text
+      [id]="'description'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.description"
+      [topLabel]="'Description'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-text
+      [id]="'type'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.type"
+      [topLabel]="'Type'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-text
+      [id]="'post'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.post"
+      [topLabel]="'Post'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-datetime
+      [id]="'datetime'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.date"
+      [topLabel]="'Date'"
+      [required]="true"
+    ></app-input-datetime>
+    <app-input-number
+      [id]="'rating'"
+      [form]="fParticipation"
+      [(value)]="participationToManage.rating"
+      [topLabel]="'Rating'"
+      [required]="false"
+    ></app-input-number>
+  </form>
+</ng-template>
+
+<app-modal
+  *ngIf="awardToManage"
+   [id]="'edit-award'"
+   [templateRef]="EDIT_AWARD"
+   [size]="'md'"
+   [header]="'Edit Award'"
+   [actionInProgress] = "loading.action"
+   [submitBtnText] = "'Save'"
+   (submitBtnClicked)="editAward()"
+></app-modal>
+<ng-template #EDIT_AWARD>
+  <form #fAward="ngForm">
+    <div class="mb-4">
+      Award with ID = {{awardToManage.id}} for User {{awardToManage.user}}
+    </div>
+    <app-input-text
+      [id]="'description'"
+      [form]="fAward"
+      [(value)]="awardToManage.description"
+      [topLabel]="'Description'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-text
+      [id]="'type'"
+      [form]="fAward"
+      [(value)]="awardToManage.type"
+      [topLabel]="'Type'"
+      [required]="false"
+    ></app-input-text>
+    <app-input-number
+      [id]="'moduleInstance'"
+      [form]="fAward"
+      [(value)]="awardToManage.moduleInstance"
+      [topLabel]="'Module Instance'"
+      [required]="false"
+    ></app-input-number>
+    <app-input-number
+      [id]="'reward'"
+      [form]="fAward"
+      [(value)]="awardToManage.reward"
+      [topLabel]="'Reward'"
+      [required]="true"
+    ></app-input-number>
+    <app-input-datetime
+      [id]="'datetime'"
+      [form]="fAward"
+      [(value)]="awardToManage.date"
+      [topLabel]="'Date'"
+      [required]="true"
+    ></app-input-datetime>
+  </form>
+</ng-template>

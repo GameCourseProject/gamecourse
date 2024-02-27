@@ -300,6 +300,37 @@ class Awards extends Module
         ]);
     }
 
+    /**
+     * Removes an award from the database.
+     *
+     * @param int $awardId
+     * @return void
+     * @throws Exception
+     */
+    public static function removeAward(int $awardId)
+    {
+        Core::database()->delete(self::TABLE_AWARD, ["id" => $awardId]);
+    }
+
+    /*
+     * Updates an award in the database.
+     *
+     * @param int $awardId
+     * @return void
+     * @throws Exception
+     */
+    public static function updateAward(int $id, string $description, string $type,
+                                       int $reward, string $date, ?int $moduleInstance = null)
+    {
+        Core::database()->update(self::TABLE_AWARD, [
+            "description" => $description,
+            "type" => $type,
+            "moduleInstance" => $moduleInstance,
+            "reward" => $reward,
+            "date" => $date,
+        ], ["id" => $id]);
+    }
+
 
     /*** ---------- Rewards ---------- ***/
 
