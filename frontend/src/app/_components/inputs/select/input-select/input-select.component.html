@@ -26,13 +26,12 @@
     [multiple]="multiple"
     class="{{size}} {{InputSelectColor[color]}}"
     [(ngModel)]="value"
-    (ngModelChange)="valueChange.emit(Value)"
     [required]="required"
     [disabled]="disabled"
     #inputSelect="ngModel"
     [ngClass]="{'select-error': form && form.submitted && inputSelect.invalid,
-    'rounded-r': leftLabel, 'rounded-l': rightLabel || btnText || btnIcon}">
-  </select>
+    'rounded-r': leftLabel, 'rounded-l': rightLabel || btnText || btnIcon}"
+  ></select>
 </ng-template>
 
 

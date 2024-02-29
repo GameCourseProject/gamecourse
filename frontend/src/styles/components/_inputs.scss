@@ -83,76 +83,71 @@
 }
 
 .ss-main {
-  .ss-single-selected, .ss-multi-selected {
-    @apply select select-bordered text-base-content border-2 w-full input-md h-auto #{!important};
+  @apply select select-bordered text-base-content border-2 w-full input-md h-auto #{!important};
 
-    &.ss-open-below {
-      outline: 2px solid hsla(var(--bc) / 0.2);
-      outline-offset: 2px;
-    }
+  &.ss-open-below {
+    outline: 2px solid hsla(var(--bc) / 0.2);
+    outline-offset: 2px;
   }
 
-  .ss-multi-selected {
-    .ss-values {
-      @apply flex flex-wrap items-center text-base-content/75 #{!important};
+  .ss-values {
+    @apply flex flex-wrap items-center text-base-content/75 #{!important};
 
-      .ss-value {
-        @apply badge badge-outline #{!important};
+    .ss-value {
+      @apply badge badge-outline border-base-content/75 px-1 #{!important};
+
+      .ss-value-text {
+        @apply text-sm text-base-content/75 #{!important};
+      }
+      .ss-value-delete {
+        @apply border-l-0 -ml-1 ;
+        svg path {
+          @apply stroke-base-content/75 #{!important};
+        }
       }
     }
   }
 
-  .ss-value-text, .ss-value-delete {
-    @apply bg-transparent px-0 #{!important};
-
-    & > * {
-      @apply bg-transparent px-0 #{!important};
-    }
-  }
-
-  .ss-value-text span {
-    @apply pl-0 #{!important};
-  }
-
-  .placeholder span {
-    @apply h-4 #{!important};
+  .ss-placeholder {
+    @apply h-4 font-normal -ml-1 text-neutral/60 #{!important};
   }
 
   .ss-arrow, .ss-add {
     @apply hidden #{!important};
   }
 
-  .ss-deselect {
-    @apply text-xs mr-6 #{!important};
-  }
+}
 
-  &.rounded-r {
-    .ss-single-selected, .ss-multi-selected {
-      border-bottom-left-radius: 0 !important;
-      border-top-left-radius: 0 !important;
-    }
-  }
-
-  &.rounded-l {
-    .ss-single-selected, .ss-multi-selected {
-      border-bottom-right-radius: 0 !important;
-      border-top-right-radius: 0 !important;
-    }
-  }
+.ss-main:focus {
+  @apply shadow-none #{!important};
 }
 
 .ss-content {
-  &.ss-open {
-    @apply menu menu-compact shadow bg-base-100 text-sm text-base-content rounded-box border-neutral border-opacity-20 #{!important};
-  }
+  @apply shadow bg-base-100 text-sm text-base-content rounded-box border-neutral border-opacity-20 #{!important};
 
-  .ss-option:last-child {
-    @apply rounded-b-xl #{!important};
-  }
+  .ss-list {
+    @apply overflow-y-auto #{!important};
 
-  .ss-option:first-child,
-  .ss-option:nth-child(2) {
-    @apply rounded-t-xl #{!important};
+    .ss-option {
+      @apply text-base-content #{!important};
+    }
+
+    .ss-option:last-child {
+      @apply rounded-b-xl #{!important};
+    }
+
+    .ss-option:first-child,
+    .ss-option:nth-child(2) {
+      @apply rounded-t-xl #{!important};
+    }
+
+    .ss-option:hover, .ss-highlighted {
+      @apply bg-base-300 text-base-content #{!important};
+    }
+
+    .ss-selected {
+      @apply line-through text-base-content/50 bg-inherit hover:bg-inherit hover:text-base-content/50 #{!important};
+    }
   }
 
   .ss-search:not(.ss-hide) + .ss-list .ss-option:first-child,
@@ -160,11 +155,9 @@
     @apply rounded-none #{!important};
   }
 
-  .ss-option:hover {
-    @apply bg-base-300 text-base-content #{!important};
-  }
-
   .ss-search {
+    @apply w-full #{!important};
+
     input {
       @apply input input-bordered input-sm focus:shadow-sm #{!important};
     }
@@ -173,14 +166,13 @@
       @apply hidden;
     }
   }
-
-  .ss-list {
-    @apply overflow-y-auto #{!important};
-  }
 }
 
-select.select-primary + .ss-main .ss-single-selected,
-select.select-primary + .ss-main .ss-multi-selected {
+.ss-optgroup-label-text {
+  @apply text-base-content #{!important};
+}
+
+select.select-primary + .ss-main {
   @apply border-primary #{!important};
 
   &:focus, &.ss-open-below {
@@ -188,8 +180,7 @@ select.select-primary + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-secondary + .ss-main .ss-single-selected,
-select.select-secondary + .ss-main .ss-multi-selected {
+select.select-secondary + .ss-main {
   @apply border-secondary #{!important};
 
   &:focus, &.ss-open-below {
@@ -197,8 +188,7 @@ select.select-secondary + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-accent + .ss-main .ss-single-selected,
-select.select-accent + .ss-main .ss-multi-selected {
+select.select-accent + .ss-main {
   @apply border-accent #{!important};
 
   &:focus, &.ss-open-below {
@@ -206,8 +196,7 @@ select.select-accent + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-info + .ss-main .ss-single-selected,
-select.select-info + .ss-main .ss-multi-selected {
+select.select-info + .ss-main {
   @apply border-info #{!important};
 
   &:focus, &.ss-open-below {
@@ -215,8 +204,7 @@ select.select-info + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-success + .ss-main .ss-single-selected,
-select.select-success + .ss-main .ss-multi-selected {
+select.select-success + .ss-main {
   @apply border-success #{!important};
 
   &:focus, &.ss-open-below {
@@ -224,8 +212,7 @@ select.select-success + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-warning + .ss-main .ss-single-selected,
-select.select-warning + .ss-main .ss-multi-selected {
+select.select-warning + .ss-main {
   @apply border-warning #{!important};
 
   &:focus, &.ss-open-below {
@@ -233,8 +220,7 @@ select.select-warning + .ss-main .ss-multi-selected {
   }
 }
 
-select.select-error + .ss-main .ss-single-selected,
-select.select-error + .ss-main .ss-multi-selected {
+select.select-error + .ss-main {
   @apply border-error #{!important};
 
   &:focus, &.ss-open-below {
@@ -243,28 +229,15 @@ select.select-error + .ss-main .ss-multi-selected {
 }
 
 .ss-disabled {
-  @apply bg-transparent text-neutral/60 font-normal px-0 #{!important};
+  @apply input-disabled #{!important};
 
-  &.ss-option{
-    @apply bg-transparent px-3 #{!important};
-
-    &:not(.ss-option-selected) {
-      @apply text-error #{!important};
-    }
-
-    &.ss-option-selected {
-      @apply line-through text-neutral/30 hover:text-neutral/30 #{!important};
-
-      & > * {
-        @apply line-through;
-      }
-    }
+  .ss-placeholder {
+    @apply text-neutral/20 #{!important};
   }
 }
 
-select + .ss-main .ss-single-selected.ss-disabled,
-select + .ss-main .ss-multi-selected.ss-disabled {
-  @apply input-disabled #{!important};
+.ss-disabled:focus {
+  @apply outline-0 #{!important};
 }
 
 select:disabled + .ss-main .ss-disabled {
