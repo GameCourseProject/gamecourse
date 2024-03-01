@@ -122,7 +122,7 @@
             [label]="'Incremental'"
             [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased by \'increment\' for each prior attempt with a rating higher than \'min. rating\'. Formula: base + increment x #attempts w/ rating >= min.rating'">
           </app-input-radio>
-          
+
           <app-input-radio
             [id]="'cost-type-exponential'"
             [group]="'cost-type'"
@@ -131,7 +131,7 @@
             [(value)]="tierToManage.costType"
             [color]="'primary'"
             [label]="'Exponential'"
-            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base + (if first attempt: 0, else: increment x 2 ^ #attempts w/ rating >= min.rating - 1)'">
+            [helperText]="'Cost in ' + VCName + ' of skill attempts in this tier is increased exponentially for each prior attempt with a rating higher than \'min. rating\'. Formula: base on first attempt, increment x 2 ^ #attempts w/ rating >= min.rating - 1 on subsequent attempts'">
           </app-input-radio>
         </div>
 
