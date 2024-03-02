@@ -54,7 +54,7 @@
               "node_modules/nestable2/dist/jquery.nestable.min.css",
               "node_modules/quill/dist/quill.snow.css",
               "node_modules/datatables.net-dt/css/jquery.dataTables.min.css",
-              "node_modules/slim-select/dist/slimselect.min.css",
+              "node_modules/slim-select/dist/slimselect.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "src/styles/main.scss"
             ],
@@ -67,7 +67,7 @@
               "node_modules/quill/dist/quill.min.js",
               "node_modules/quill-image-resize/image-resize.min.js",
               "node_modules/datatables.net/js/jquery.dataTables.min.js",
-              "node_modules/slim-select/dist/slimselect.min.js",
+              "node_modules/slim-select/dist/slimselect.js",
               "node_modules/highcharts/highcharts.js",
               "node_modules/highcharts/modules/sankey.js",
               "node_modules/highcharts/modules/exporting.js",
@@ -92,6 +92,7 @@
               "prop-types",
               "quill",
               "quill-image-resize",
+              "quill-html-edit-button",
               "randexp",
               "react-copy-to-clipboard",
               "react-debounce-input",
@@ -99,7 +100,8 @@
               "redux-immutable",
               "traverse",
               "url-parse",
-              "xml-but-prettier"
+              "xml-but-prettier",
+              "slim-select"
             ]
           },
           "configurations": {
