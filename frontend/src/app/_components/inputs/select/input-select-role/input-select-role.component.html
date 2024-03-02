@@ -8,7 +8,7 @@
 
   [multiple]="multiple"
   [limit]="limit"
-  [search]="false"
+  [search]="search"
   [closeOnSelect]="closeOnSelect"
   [hideSelectedOption]="hideSelectedOption"
 
@@ -31,5 +31,5 @@
   [requiredErrorMessage]="requiredErrorMessage"
 
   (valueChange)="valueChange.emit($event)"
-  (btnClicked)="btnClicked.emit($event)">
-</app-input-select>
+  (btnClicked)="btnClicked.emit($event)"
+></app-input-select>

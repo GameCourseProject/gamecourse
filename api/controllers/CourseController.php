@@ -11,6 +11,8 @@ use GameCourse\Module\Skills\Skills;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\AutoGame\AutoGame;
+use GameCourse\Module\Awards\Awards;
 
 /**
  * This is the Course controller, which holds API endpoints for
@@ -882,5 +884,128 @@ class CourseController
 
         $nrCoursesImported = Course::importCourses($file, $replace);
         API::response($nrCoursesImported);
+    }
+
+    
+    /*** --------------------------------------------- ***/
+    /*** ---------------- DB Explorer ---------------- ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Returns participations in a course.
+     *
+     * @throws Exception
+     */
+    public function getParticipations()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $participations = AutoGame::getParticipations($courseId);
+        foreach ($participations as &$participation) {
+            $participation["user"] = User::getUserById($participation["user"])->getName();
+            $participation["evaluator"] = $participation["evaluator"] ? User::getUserById($participation["evaluator"])->getName() : "";
+        }
+        API::response($participations);
+    }
+
+    /**
+     * Returns awards in a course.
+     *
+     * @throws Exception
+     */
+    public function getAwards()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $awards = (new Awards($course))->getCourseAwards();
+        foreach ($awards as &$award) {
+            $award["user"] = User::getUserById($award["user"])->getName();
+        }
+        API::response($awards);
+    }
+
+    /**
+     * Deletes a participation in a course given its id.
+     *
+     * @throws Exception
+     */
+    public function deleteParticipation()
+    {
+        API::requireValues('courseId', 'participationId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $participationId = API::getValue("participationId", "int");
+        AutoGame::removeParticipation($participationId);
+    }
+
+    /**
+     * Deletes an award in a course given its id.
+     *
+     * @throws Exception
+     */
+    public function deleteAward()
+    {
+        API::requireValues('courseId', 'awardId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $awardId = API::getValue("awardId", "int");
+        Awards::removeAward($awardId);
+    }
+
+    /**
+     * Edits a participation in a course.
+     *
+     * @throws Exception
+     */
+    public function editParticipation()
+    {
+        API::requireValues('courseId', 'participation');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $participation = API::getValue("participation", "array");
+        AutoGame::updateParticipation($participation["id"], $participation["description"],
+            $participation["type"], $participation["date"], $participation["source"],
+            $participation["post"], $participation["rating"]);
+    }
+
+    /**
+     * Edits a participation in a course.
+     *
+     * @throws Exception
+     */
+    public function editAward()
+    {
+        API::requireValues('courseId', 'award');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $award = API::getValue("award", "array");
+        Awards::updateAward($award["id"], $award["description"], $award["type"],
+            $award["reward"], $award["date"], $award["moduleInstance"]);
     }
 }

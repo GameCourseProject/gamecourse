@@ -21,6 +21,7 @@ class Notification
 {
     const TABLE_NOTIFICATION = "notification";
     const TABLE_NOTIFICATION_CONFIG = "notification_config";
+    const TABLE_NOTIFICATION_DESCRIPTIONS = "notification_module_description";
     const TABLE_NOTIFICATION_SCHEDULED = "notification_scheduled";
 
     protected $id;
@@ -497,18 +498,20 @@ class Notification
      *
      * @param int $courseId
      * @param string $moduleId
-     * @param bool $enable
+     * @param bool $isEnabled
+     * @param string $frequency
+     * @param string $format
      * @return void
      * @throws Exception
      */
-    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency)
+    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency, string $format)
     {
         if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
             throw new Exception("Course with ID = " . $courseId . " does not have " 
                 . $moduleId . " enabled: can't change Notification settings related to it.");
 
         Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, 
-            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency], 
+            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency, "format" => $format],
             ["course" => $courseId, "module" => $moduleId]);
 
         $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
@@ -523,22 +526,45 @@ class Notification
      * Gets configuration of a module's notifications
      *
      * @param int $courseId
-     * @param string $moduleId
      * @return void
-     * @throws Exception
      */
-    public static function getModuleNotificationsConfig(int $courseId)
+    public static function getModuleNotificationsConfig(int $courseId): array
     {
-        $configs = Core::database()->selectMultiple(self::TABLE_NOTIFICATION_CONFIG, ["course" => $courseId], "module, isEnabled, frequency");
+        $table = self::TABLE_NOTIFICATION_CONFIG . " c JOIN " . self::TABLE_NOTIFICATION_DESCRIPTIONS . " d on c.module=d.module";
+        $configs = Core::database()->selectMultiple($table, ["course" => $courseId], "c.module, isEnabled, frequency, format, description, variables");
 
         foreach ($configs as &$module) {
             $module["id"] = $module["module"];
             unset($module["module"]);
             
             $module["name"] = (Module::getModuleById($module["id"], Course::getCourseById($courseId)))->getName();
-            $module["isEnabled"] = $module["isEnabled"] == "1" ? true : false;
+            $module["isEnabled"] = $module["isEnabled"] == "1";
+            $module["variables"] = explode(",", $module["variables"]);
+        }
+        return $configs;
+    }
+
+    /**
+     * Passes the parameters into the text and checks if notification was already sent before
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $notification
+     * @param array $params
+     * @return string
+     * @throws Exception
+     */
+    public static function getFinalNotificationText(int $courseId, int $userId, string $notification, array $params): ?string {
+        foreach (array_keys($params) as $key) {
+            $notification = str_replace("%" . $key, $params[$key], $notification);
         }
 
-        return $configs;
+        // Check if notification is new
+        $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $courseId, "user" => $userId, "message" => $notification]);
+        if (!$alreadySent) {
+            return $notification;
+        }
+
+        return null;
     }
 }

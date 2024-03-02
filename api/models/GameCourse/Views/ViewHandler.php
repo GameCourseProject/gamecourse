@@ -31,6 +31,7 @@ use GameCourse\User\User;
 use GameCourse\User\CourseUser;
 use GameCourse\Core\AuthService;
 use Faker\Factory;
+use GameCourse\Views\Category\Category;
 
 /**
  * This class is responsible for handling views.
@@ -64,9 +65,11 @@ class ViewHandler
         // Register view types available
         ViewType::setupViewTypes();
 
+        // Register view categories available
+        Category::setupViewCategories();
+
         // TODO: register core components
         // TODO: register page templates
-        // TODO: register editor categories
     }
 
 

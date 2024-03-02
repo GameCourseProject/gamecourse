@@ -89,8 +89,7 @@ class ProgressReport extends Module
         Event::listen(EventType::COURSE_DISABLED, function (int $courseId) {
             if ($courseId == $this->course->getId()) {
                 $config = $this->getProgressReportConfig();
-                $this->saveProgressReportConfig($config["endDate"], $config["periodicityTime"],  $config["periodicityHours"],
-                    $config["periodicityDay"], false);
+                $this->saveProgressReportConfig($config["frequency"], $config["isEnabled"], false);
             }
         }, self::ID);
     }
@@ -101,8 +100,7 @@ class ProgressReport extends Module
 
         // Copy config
         $config = $this->getProgressReportConfig();
-        $copiedModule->saveProgressReportConfig(null, $config["periodicityTime"], $config["periodicityHours"],
-            $config["periodicityDay"], false);
+        $copiedModule->saveProgressReportConfig($config["frequency"], $config["isEnabled"], false);
     }
 
     public function disable()
@@ -122,35 +120,7 @@ class ProgressReport extends Module
 
     public function isConfigurable(): bool
     {
-        return true;
-    }
-
-    public function getGeneralInputs(): array
-    {
-        return [
-            [
-                "name" => "Schedule",
-                "description" => "Define when progress reports should be sent to students.",
-                "contents" => [
-                    [
-                        "contentType" => "container",
-                        "classList" => "flex flex-wrap items-center",
-                        "contents" => [
-                            [
-                                "contentType" => "item",
-                                "width" => "1/2",
-                                "type" => InputType::SCHEDULE,
-                                "id" => "schedule",
-                                "value" => $this->getSchedule(),
-                                "options" => [
-                                    "required" => true,
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        return false;
     }
 
     /**
@@ -183,7 +153,7 @@ class ProgressReport extends Module
      */
     public function saveSchedule(string $expression)
     {
-      Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, ["frequency" => $expression,], ["course" => $this->getCourse()->getId()]);
+      Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, ["frequency" => $expression], ["course" => $this->getCourse()->getId()]);
 
       $expression = $this->getSchedule();
       $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
@@ -196,31 +166,23 @@ class ProgressReport extends Module
     {
         $config = Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
         return [
-            //"endDate" => $config["endDate"],
-            //"periodicityTime" => $config["periodicityTime"],
-            //"periodicityHours" => isset($config["periodicityHours"]) ? intval($config["periodicityHours"]) : null,
-            //"periodicityDay" => isset($config["periodicityDay"]) ? intval($config["periodicityDay"]) : null,
             "isEnabled" => boolval($config["isEnabled"]),
             "frequency" => $config["frequency"]
         ];
     }
 
-    public function saveProgressReportConfig(?string $endDate, ?string $periodicityTime, ?int $periodicityHours,
-                                             ?int $periodicityDay, ?bool $isEnabled)
+    public function saveProgressReportConfig(?string $frequency, ?bool $isEnabled)
     {
         Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, [
-            "endDate" => $endDate,
-            "periodicityTime" => $periodicityTime,
-            "periodicityHours" => $periodicityHours,
-            "periodicityDay" => $periodicityDay,
-            "isEnabled" => +$isEnabled
+          "isEnabled" => +$isEnabled,
+          "frequency" => $frequency
         ], ["course" => $this->course->getId()]);
 
+        $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
         if (!$isEnabled) { // disable progress report
-            CronJob::removeCronJob("ProgressReport", $this->course->getId());
-
+            CronJob::removeCronJob($script, $this->course->getId());
         } else { // enable progress report
-            new CronJob("ProgressReport", $this->course->getId(), $periodicityHours, $periodicityTime, $periodicityDay);
+            new CronJob($script, $frequency, $this->course->getId());
         }
     }
 

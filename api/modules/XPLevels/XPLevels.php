@@ -61,6 +61,10 @@ class XPLevels extends Module
 
     const RESOURCES = [];
 
+    const NOTIFICATIONS_DESCRIPTION = "Sends a motivating message whenever a user has only 10% of the Level's XP missing to level up.";
+    const NOTIFICATIONS_FORMAT = "You are so close to reaching Level %levelNumber - %levelDescription! Only %XPLeft XP to go 🚀";
+    const NOTIFICATIONS_VARIABLES = "levelNumber,levelDescription,XPLeft";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -87,6 +91,16 @@ class XPLevels extends Module
 
         $this->initEvents();
         $this->initProviders();
+
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
         $this->initNotifications();
     }
 
@@ -849,25 +863,20 @@ class XPLevels extends Module
      * Returns notifications to be sent to a student.
      *
      * @param int $userId
+     * @throws Exception
      */
-    public function getNotification($userId)
+    public function getNotification($userId): ?string
     {
         $totalXP = $this->getUserXP($userId);
         $levels = Level::getLevels($this->course->getId());
 
         foreach($levels as $level) {
             if ($level["minXP"] > 0 && $totalXP / $level["minXP"] < 1 && $totalXP / $level["minXP"] >= 0.9) {
-
-                $notification = "You are so close to reaching Level " . $level["number"] . " - " . $level["description"] 
-                        . "! Only " . ($level["minXP"] - $totalXP) . " to go 🚀";
-
-                $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $this->course->getId(), "user" => $userId, "message" => $notification]);
-
-                if (!$alreadySent) {
-                    return $notification;
-                } else {
-                    return null;
-                }
+                $params["levelNumber"] = $level["number"];
+                $params["levelDescription"] = $level["description"] ;
+                $params["XPLeft"] = $level["minXP"] - $totalXP;
+                $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+                return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
             }
         }
         return null;

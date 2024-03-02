@@ -203,9 +203,9 @@ export class SkillsComponent implements OnInit {
       if (this.VCEnabled) {
         row.splice(3, 0, {
           type: TableDataType.TEXT, content: {
-            text: tier.costType.capitalize() + ': ' + tier.cost +
-              (tier.costType === 'incremental' ? (' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')')
-                : tier.costType === 'exponential' ? (' + ' + tier.increment + ' x 2 ^ (#attempts (rating >= ' + tier.minRating + ') - 1)')
+            text: tier.costType.capitalize() +
+              (tier.costType === 'incremental' ? (': ' + tier.cost + ' + ' + tier.increment + ' x #attempts (rating >= ' + tier.minRating + ')')
+                : tier.costType === 'exponential' ? (': 1st attempt → ' + tier.cost + ', others → ' + tier.increment + ' x 2 ^ (#attempts - 1)')
                 : '')
           }
         });
@@ -313,7 +313,7 @@ export class SkillsComponent implements OnInit {
 
       if (action === 'value changed') {
         this.getSkillTreeInfo(this.skillTreeInView.id).loading.skills = true;
-        
+
         if (col === 5) skillToActOn.isCollab = value;
         else if (col === 6) skillToActOn.isExtra = value;
         else if (col === 7) skillToActOn.isActive = value;
@@ -652,9 +652,9 @@ export class SkillsComponent implements OnInit {
     });
   }
 
-  getDependencyOptions(): ({value: string, text: string, innerHTML: string} | {label: string, options: {value: string, text: string}[]})[] {
+  getDependencyOptions(): ({value: string, text: string, html: string} | {label: string, options: {value: string, text: string}[]})[] {
     const skillTreeInfo = this.getSkillTreeInfo(this.skillTreeInView.id);
-    const options: ({value: string, text: string, innerHTML: string} | {label: string, options: {value: string, text: string}[]})[] = [];
+    const options: ({value: string, text: string, html: string} | {label: string, options: {value: string, text: string}[]})[] = [];
 
     const skillTier = skillTreeInfo.tiers.find(tier => tier.id === parseInt(this.skillToManage.tierID.substring(3)));
     skillTreeInfo.tiers.forEach(tier => {
@@ -668,7 +668,7 @@ export class SkillsComponent implements OnInit {
     });
 
     if (addWildcardOption(skillTreeInfo.tiers, skillTreeInfo.skills))
-      options.unshift({value: 'id-0', text: Tier.WILDCARD, innerHTML: '<span class="text-secondary">' + Tier.WILDCARD + '</span>'})
+      options.unshift({value: 'id-0', text: Tier.WILDCARD, html: '<span class="text-secondary">' + Tier.WILDCARD + '</span>'})
 
     return options;
 

@@ -22,7 +22,6 @@ import { ConfigComponent } from './settings/modules/config/config/config.compone
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
 import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
-import { ProgressReportComponent } from './settings/modules/config/personalized-config/progress-report/progress-report.component';
 import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
 import { DataSourceStatusComponent } from "./settings/modules/config/data-source-status/data-source-status.component";
 import { SubmitParticipationPageComponent } from './pages/modules/qr/submit-participation-page/submit-participation-page.component';
@@ -32,6 +31,8 @@ import {RulesComponent} from "./settings/rules/section-rules/rules/rules.compone
 import { AutogameComponent } from './settings/autogame/autogame.component';
 import { NotificationsComponent } from './settings/notifications/notifications.component';
 import { AvatarsComponent } from './settings/avatars/avatars.component';
+import { DBExplorerComponent } from './settings/db-explorer/db-explorer.component';
+
 
 @NgModule({
   declarations: [
@@ -51,7 +52,6 @@ import { AvatarsComponent } from './settings/avatars/avatars.component';
     SkillsComponent,
     GooglesheetsComponent,
     QrComponent,
-    ProgressReportComponent,
     ProfilingComponent,
     AdaptationComponent,
     AutogameComponent,
@@ -61,7 +61,9 @@ import { AvatarsComponent } from './settings/avatars/avatars.component';
     SubmitParticipationPageComponent,
     SkillPageComponent,
     NotificationsComponent,
-    AvatarsComponent
+    AvatarsComponent,
+    NotificationsComponent,
+    DBExplorerComponent
   ],
     imports: [
         CommonModule,

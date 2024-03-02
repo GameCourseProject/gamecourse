@@ -10,9 +10,9 @@ import { ApiHttpService } from 'src/app/_services/api/api-http.service';
 export class InputSelectRoleComponent implements OnInit {
 
   @Input() courseId: number;
-    
+
   loading: boolean = true;
-  roleNames: { value: string, text: string, innerHTML: string, selected?: boolean }[];
+  roleNames: { value: string, text: string, html: string, selected?: boolean }[];
   rolesHierarchySmart: {[roleName: string]: {parent: Role, children: Role[]}};
 
   // Essentials
@@ -23,8 +23,9 @@ export class InputSelectRoleComponent implements OnInit {
 
   @Input() multiple?: boolean;                                        // Whether to allow multiple selects
   @Input() limit?: number;                                            // Multiple selection limit
+  @Input() search?: boolean = true;                                   // Allow to search options
   @Input() closeOnSelect?: boolean = true;                            // Whether to close upon selecting a value
-  @Input() hideSelectedOption?: boolean = true;                       // Hide selected options
+  @Input() hideSelectedOption?: boolean = false;                       // Hide selected options
 
   // Extras
   @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                   // Size  FIXME: not working
@@ -57,36 +58,36 @@ export class InputSelectRoleComponent implements OnInit {
     ) { }
 
     async ngOnInit() {
-        this.loading = true;
+      this.loading = true;
 
-        const that = this;
-        this.rolesHierarchySmart = {};
+      const that = this;
+      this.rolesHierarchySmart = {};
 
-        const rolesHierarchy = await this.api.getRoles(this.courseId, false, true).toPromise() as Role[];
-        const roles = getRolesByHierarchy(rolesHierarchy, [], null, 0);
-        
-        this.roleNames = roles.map(role => {
-            return {
-                value: role.name,
-                text: role.name,
-                innerHTML: '<span style="padding-left: ' + (15 * role.depth) + 'px;">' + role.name + '</span>'
-            };
-        });
+      const rolesHierarchy = await this.api.getRoles(this.courseId, false, true).toPromise() as Role[];
+      const roles = getRolesByHierarchy(rolesHierarchy, [], null, 0);
 
-        function getRolesByHierarchy(rolesHierarchy: Role[], roles: {name: string, depth: number}[], parent: Role, depth: number): {name: string, depth: number}[] {
-            for (const role of rolesHierarchy) {
-                roles.push({name: role.name, depth});
-                that.rolesHierarchySmart[role.name] = {parent, children: []};
-                if (parent) that.rolesHierarchySmart[parent.name].children.push(role);
+      this.roleNames = roles.map(role => {
+        return {
+            value: role.name,
+            text: role.name,
+            html: '<span style="padding-left: ' + (15 * role.depth) + 'px;">' + role.name + '</span>'
+        };
+      });
 
-                // Traverse children
-                if (role.children?.length > 0) {
-                roles = getRolesByHierarchy(role.children, roles, role, depth + 1);
-                }
+      function getRolesByHierarchy(rolesHierarchy: Role[], roles: {name: string, depth: number}[], parent: Role, depth: number): {name: string, depth: number}[] {
+        for (const role of rolesHierarchy) {
+            roles.push({name: role.name, depth});
+            that.rolesHierarchySmart[role.name] = {parent, children: []};
+            if (parent) that.rolesHierarchySmart[parent.name].children.push(role);
+
+            // Traverse children
+            if (role.children?.length > 0) {
+            roles = getRolesByHierarchy(role.children, roles, role, depth + 1);
             }
-            return roles;
         }
-        
-        this.loading = false;
+        return roles;
+      }
+
+      this.loading = false;
     }
 }

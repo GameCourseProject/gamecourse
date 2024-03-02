@@ -1,4 +1,14 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {NgForm, NgModel} from "@angular/forms";
 import {Observable} from "rxjs";
 
@@ -11,14 +21,14 @@ import SlimSelect from "slim-select";
   selector: 'app-input-select',
   templateUrl: './input-select.component.html'
 })
-export class InputSelectComponent implements OnInit, OnChanges {
+export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Essentials
   @Input() id: string;                                                              // Unique ID
   @Input() form: NgForm;                                                            // Form it's part of
   @Input() value: any;                                                              // Where to store the value
-  @Input() options?: ({value: string, text: string, innerHTML?: string} |           // Options to select from
-                      {label: string, options: {value: string, text: string, innerHTML?: string}[]}
+  @Input() options?: ({value: string, text: string, html?: string} |           // Options to select from
+                      {label: string, options: {value: string, text: string, html?: string}[]}
                      )[];
   @Input() placeholder: string;                                                     // Message to show by default
 
@@ -52,7 +62,7 @@ export class InputSelectComponent implements OnInit, OnChanges {
   @Input() requiredErrorMessage?: string = 'Required';                              // Message for required error
 
   // Methods
-  @Input() setData?: Observable<{value: any, text: string, innerHTML?: string,      // Set data on demand
+  @Input() setData?: Observable<{value: any, text: string, html?: string,      // Set data on demand
     selected: boolean}[]>;
 
   @Output() valueChange = new EventEmitter<any | any[]>();
@@ -71,7 +81,6 @@ export class InputSelectComponent implements OnInit, OnChanges {
     if (this.form) this.form.addControl(this.inputSelect);
     setTimeout(() => {
       this.initSelect();
-      if (this.setData) this.setData.subscribe(data => this.select.setData(data));
     }, 0);
   }
 
@@ -89,25 +98,25 @@ export class InputSelectComponent implements OnInit, OnChanges {
   }
 
   initSelect() {
+    if (!this.required) {
+      this.options.push({value: "", text: ""}) // Need an empty option for deselect
+    }
+
     const options = {
       select: '#' + this.id,
-      addToBody: true,
-      allowDeselect: !this.required,
-      searchPlaceholder: 'Search...',
-      showSearch: this.search,
-      hideSelectedOption: this.hideSelectedOption,
-      closeOnSelect: this.closeOnSelect,
       data: JSON.parse(JSON.stringify(this.options)), // NOTE: deep clone of options; needed to reset initial value
-      searchFilter: (option, search) => option.text.toFlat().includes(search.toFlat()),
-      onChange: info => { // Clear search on item selected
-        // Find select ID
-        const cls = this.select.slim.container.classList.toString();
-        const matches = cls.match(/ss-(\d+)/g);
-        const selectID = matches[0].substring(3);
-
-        // Clear search input
-        const searchInput = $('.ss-' + selectID + ' input[type=search]');
-        searchInput.val(null);
+      settings: {
+        showSearch: this.search,
+        allowDeselect: !this.required,
+        searchPlaceholder: 'Search...',
+        hideSelected: this.hideSelectedOption,
+        closeOnSelect: this.closeOnSelect,
+        placeholderText: this.placeholder,
+        maxSelected: this.limit,
+      },
+      events: {
+        searchFilter: (option, search) => option.text.toFlat().includes(search.toFlat()),
+        afterChange: () => this.valueChange.emit(this.Value)
       }
     }
 
@@ -122,17 +131,7 @@ export class InputSelectComponent implements OnInit, OnChanges {
       }
     }
 
-    if (this.placeholder) (options.data as any).unshift({placeholder: true, text: this.placeholder});
-    if (this.limit) options['limit'] = this.limit;
-    if (!this.multiple && !this.required) options['deselectLabel'] = '<span>❌</span>';
-
     this.select = new SlimSelect(options);
-
-    // Set deselect
-    if (!this.value || (Array.isArray(this.value) && this.value.length == 0)) {
-      const deselect = $('.ss-deselect')[0]
-      if (deselect) deselect.classList.add('!hidden');
-    }
   }
 
   get Value(): any {
@@ -167,4 +166,5 @@ export class InputSelectComponent implements OnInit, OnChanges {
     return InputGroupBtnColor;
   }
 
+  protected readonly onchange = onchange;
 }

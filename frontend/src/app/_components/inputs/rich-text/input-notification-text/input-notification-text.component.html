@@ -1,0 +1,48 @@
+<div class="form-control w-full {{classList}}">
+
+  <!-- Label -->
+  <label *ngIf="label" class="label cursor-pointer justify-start gap-2" [ngClass]="{'pl-0': helperText}">
+    <app-simple-helper *ngIf="helperText" [text]="helperText" [position]="helperPosition"></app-simple-helper>
+    <span class="label-text">{{label}} <span *ngIf="required" class="text-secondary">*</span></span>
+  </label>
+
+  <!-- Textarea -->
+  <div
+    id="{{id}}"
+    class="textarea textarea-bordered {{TextareaSize[size]}} {{TextareaColor[color]}} w-full h-fit"
+    [ngClass]="{'textarea-error': form && form.submitted && inputTextarea.invalid}"
+    [mentionConfig]="mentionConfig"
+    (itemSelected)="itemSelected($event)"
+    contenteditable="true"
+    #textElement
+    (input)="updateInput()"
+  >
+    {{value}}
+  </div>
+  <!-- Hidden input -->
+  <ng-container [ngTemplateOutlet]="FILE"></ng-container>
+
+  <!-- Error Messages -->
+  <label *ngIf="form && form.submitted && inputTextarea.invalid" class="error-messages">
+    <span *ngIf="inputTextarea.errors.pattern && patternErrorMessage !== null" class="label-text-alt">{{patternErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.required && requiredErrorMessage !== null" class="label-text-alt">{{requiredErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.minlength && minLengthErrorMessage !== null" class="label-text-alt">{{minLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.maxlength && maxLengthErrorMessage !== null" class="label-text-alt">{{maxLengthErrorMessage}}</span>
+    <span *ngIf="inputTextarea.errors.incorrect && incorrectErrorMessage !== null" class="label-text-alt">{{incorrectErrorMessage}}</span>
+  </label>
+
+</div>
+
+<ng-template #FILE>
+  <input
+    id="{{id}}"
+    name="{{id}}"
+    class="hidden"
+    [(ngModel)]="value"
+    [pattern]="pattern"
+    [required]="required"
+    [minlength]="minLength"
+    [maxlength]="maxLength"
+    #inputTextarea="ngModel"
+  />
+</ng-template>

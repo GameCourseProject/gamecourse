@@ -1,15 +1,15 @@
 <!-- Display version -->
-<ng-container *ngIf="view.mode === ViewMode.DISPLAY">
+<ng-container *ngIf="view?.mode === ViewMode.DISPLAY">
   <ng-container *ngIf="visible" [ngTemplateOutlet]="anyComponent"></ng-container>
 </ng-container>
 
 <!-- Preview version -->
-<ng-container *ngIf="view.mode === ViewMode.PREVIEW">
+<ng-container *ngIf="view?.mode === ViewMode.PREVIEW">
   <ng-container *ngIf="visible" [ngTemplateOutlet]="anyComponent"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
-<ng-container *ngIf="!delete && view.mode === ViewMode.EDIT">
+<ng-container *ngIf="!delete && view?.mode === ViewMode.EDIT">
   <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
@@ -32,7 +32,7 @@
 </ng-container>
 
 <!-- Rearrange version -->
-<ng-container *ngIf="view.mode === ViewMode.REARRANGE">
+<ng-container *ngIf="view?.mode === ViewMode.REARRANGE">
   <div class="relative outline-2 rounded-xl transition outline outline-primary hover:cursor-pointer">
     <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs z-40">
       {{view.type.capitalize()}}
