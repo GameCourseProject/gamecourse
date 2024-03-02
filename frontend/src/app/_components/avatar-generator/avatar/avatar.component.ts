@@ -40,6 +40,7 @@ export class AvatarComponent implements OnChanges {
   };
   @Input() public enableBackground: boolean = false;
   @Input() public enableFace: boolean = false;
+  @Input() public enableHead: boolean = true;
   @Input() public shape: 'round' | 'square' = 'round';
 
   @Output() private avatarChanged = new EventEmitter<boolean>();
@@ -67,20 +68,20 @@ export class AvatarComponent implements OnChanges {
       col = col.slice(1);
       usePound = true;
     }
-  
+
     let num = parseInt(col,16);
     let r = (num >> 16) + amt;
     if ( r > 255 ) r = 255;
     else if  (r < 0) r = 0;
-  
+
     let b = ((num >> 8) & 0x00FF) + amt;
     if ( b > 255 ) b = 255;
     else if  (b < 0) b = 0
-  
+
     let g = (num & 0x0000FF) + amt;
     if ( g > 255 ) g = 255;
     else if  ( g < 0 ) g = 0;
-  
+
     let string = "000000" + (g | (b << 8) | (r << 16)).toString(16);
     return (usePound?"#":"") + string.substr(string.length-6);
   }

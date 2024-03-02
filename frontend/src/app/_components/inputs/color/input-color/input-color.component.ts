@@ -75,7 +75,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   initPicker() {
     this.pickr = Pickr.create({
       el: '#' + this.id,
-      container: '#color-picker',
+      container: '#color-picker-' + this.id,
       theme: 'monolith',
       appClass: 'relative !top-0 !left-0 !shadow-none',
       useAsButton: true,
@@ -127,7 +127,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     this.show = true;
     this.pickr.show();
 
-    const picker = document.getElementById('color-picker');
+    const picker = document.getElementById('color-picker-' + this.id);
     picker.classList.remove('hidden');
   }
 
@@ -135,7 +135,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     this.show = false;
     this.pickr?.hide();
 
-    const picker = document.getElementById('color-picker');
+    const picker = document.getElementById('color-picker-' + this.id);
     picker.classList.add('hidden');
   }
 

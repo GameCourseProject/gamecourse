@@ -62,7 +62,6 @@ import { DBExplorerComponent } from './settings/db-explorer/db-explorer.componen
     SkillPageComponent,
     NotificationsComponent,
     AvatarsComponent,
-    NotificationsComponent,
     DBExplorerComponent
   ],
     imports: [

@@ -1,5 +1,10 @@
-<app-avatar-generator
-    [enableFace]="true"
-    [enableBackground]="true"
-    [displayDownload]="true"
-/>
+<!-- Header -->
+<div class="md:h-full md:overflow-hidden">
+  <app-header [title] = "'Your Avatar'" [icon] = "'feather-user'" ></app-header>
+
+  <app-avatar-generator
+      [enableFace]="true"
+      [enableBackground]="true"
+      [displayDownload]="true"
+  />
+</div>
