@@ -90,6 +90,13 @@
     outline-offset: 2px;
   }
 
+  .ss-deselect {
+    @apply mr-5 hover:cursor-pointer #{!important};
+    svg path {
+      @apply stroke-secondary #{!important};
+    }
+  }
+
   .ss-values {
     @apply flex flex-wrap items-center text-base-content/75 #{!important};
 

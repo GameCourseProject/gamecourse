@@ -293,9 +293,9 @@ export class SidebarComponent implements OnInit {
       else {
         navigation.push({
           category: 'User Settings',
-          children: [adaptation, notifications]
+          children: [adaptation]
         });
-      } 
+      }
 
       return navigation;
     }
