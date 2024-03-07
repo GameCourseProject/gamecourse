@@ -36,9 +36,7 @@ import {ContentItem} from "../../_components/modals/file-picker-modal/file-picke
 import {
   Credentials, GoogleSheetsConfig,
 } from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/googlesheets/googlesheets.component";
-import {
-  ProgressReportConfig
-} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/progress-report/progress-report.component";
+import { ProgressReportConfig } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
 import {
   ProfilingHistory,
   ProfilingNode
@@ -75,7 +73,11 @@ import {CustomFunction} from "../../_components/inputs/code/input-code/input-cod
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
-import { NotificationManageData } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
+import { ModuleNotificationManageData, NotificationManageData, ScheduledNotification } from 'src/app/_views/restricted/courses/course/settings/notifications/notifications.component';
+import {
+  EditableAwardData,
+  EditableParticipationData
+} from "../../_views/restricted/courses/course/settings/db-explorer/db-explorer.component";
 
 @Injectable({
   providedIn: 'root'
@@ -107,6 +109,8 @@ export class ApiHttpService {
   static readonly QR: string = 'QR';
   static readonly SKILLS: string = 'Skills';
   static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
+  static readonly SUGGESTIONS: string = 'Suggestions';
+  static readonly AWARDS: string = 'Awards';
   // FIXME: should be compartimentalized
 
 
@@ -538,6 +542,99 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.COURSE);
       qs.push('request', 'setVisible');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Database Manipulation
+
+  public getParticipations(courseID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getParticipations');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public getAwards(courseID: number): Observable<any> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'getAwards');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public deleteParticipation(courseID: number, participationID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      participationId: participationID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'deleteParticipation');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteAward(courseID: number, awardID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      awardId: awardID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'deleteAward');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editParticipation(courseID: number, participation: EditableParticipationData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      participation: participation
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'editParticipation');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editAward(courseID: number, award: EditableAwardData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      award: award
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.COURSE);
+      qs.push('request', 'editAward');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -1248,7 +1345,20 @@ export class ApiHttpService {
       .pipe(map((res:any) => res));
   }
   */
-  
+
+  public getModulesWithNotifications(courseID: number): Observable<ModuleNotificationManageData[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getModulesWithNotifications');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
   public createNotification(notificationData: NotificationManageData): Observable<Notification> {
     const data = {
       course: notificationData.course,
@@ -1265,18 +1375,59 @@ export class ApiHttpService {
       .pipe(map((res:any) => Notification.fromDatabase(res['data'])));
   }
 
-  public createAnnouncement(courseID: number, message: string): Observable<Notification> {
+  public createNotificationForRoles(courseID: number, message: string, roleNames: string[]): Observable<Notification> {
     const data = {
       course: courseID,
       message: message,
+      roles: roleNames
     }
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
-      qs.push('request', 'createAnnouncement');
+      qs.push('request', 'createNotificationForRoles');
     };
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
+  }
+
+  public scheduleNotificationForRoles(courseID: number, message: string, roleNames: string[], schedule: string): Observable<Notification> {
+    const data = {
+      course: courseID,
+      message: message,
+      roles: roleNames,
+      schedule: schedule
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'scheduleNotificationForRoles');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
+  }
+
+  public cancelScheduledNotification(courseID: number, notificationID: number): Observable<void> {
+    const data = {
+      course: courseID,
+      notification: notificationID
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'cancelScheduledNotification');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
+  }
+
+  public toggleModuleNotifications(courseID: number, config: ModuleNotificationManageData[]): Observable<Notification> {
+    const data = {
+      course: courseID,
+      config: config,
+    }
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'toggleModuleNotifications');
+    };
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions).pipe( map((res: any) => res) );
   }
 
   public getNotificationsByUser(userId: number): Observable<Notification[]> {
@@ -1303,6 +1454,18 @@ export class ApiHttpService {
 
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res:any) => res['data'].map(obj => Notification.fromDatabase(obj))));
+  }
+
+  public getScheduledNotificationsByCourse(courseID: number): Observable<ScheduledNotification[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.NOTIFICATION_SYSTEM);
+      qs.push('request', 'getScheduledNotificationsByCourse');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions).pipe(map((res:any) => res['data']));
   }
 
   public getNotifications(isShowed?: boolean): Observable<Notification[]> {
@@ -3072,9 +3235,9 @@ export class ApiHttpService {
       qs.push('request', 'renderCustomTemplateInEditor');
       qs.push('templateId', templateID);
     };
-    
+
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    
+
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => {
         return {
@@ -3093,9 +3256,9 @@ export class ApiHttpService {
       qs.push('templateId', templateID);
       qs.push('courseId', courseID);
     };
-    
+
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    
+
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => {
         return {
@@ -3276,9 +3439,9 @@ export class ApiHttpService {
       qs.push('request', 'renderPageInEditor');
       qs.push('pageId', pageID);
     };
-    
+
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    
+
     return this.get(url, ApiHttpService.httpOptions)
       .pipe(map((res: any) => {
         return {

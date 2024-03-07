@@ -242,4 +242,5 @@ class Leaderboard extends Module
         $this->removeTemplates();
         $this->removeProviders();
     }
+
 }

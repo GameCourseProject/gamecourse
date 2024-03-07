@@ -35,7 +35,7 @@
         <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
       </ng-container>
 
-      Update roles
+      Save
     </button>
   </div>
 
@@ -65,8 +65,10 @@
             </div>
 
           <!-- Role -->
-          <div class="dd-content" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name) || isAdaptationRole(role.name)}">
-            {{role.name}}
+          <div class="dd-content flex flex-row" [ngClass]="{'!border-primary !border-opacity-75 text-primary font-semibold': isDefaultRole(role.name) || isAdaptationRole(role.name)}">
+            <span>{{role.name}}</span>
+            <span class="ml-auto" *ngIf="getPageTitle(role.landingPage)">Landing Page: {{getPageTitle(role.landingPage)}}</span>
+            <span class="ml-auto font-normal italic text-base-content/30" *ngIf="!getPageTitle(role.landingPage)">No Landing Page Set</span>
           </div>
         </div>
 
@@ -80,7 +82,7 @@
             </button>
           </div>
 
-          <div *ngIf="!isAdaptationRole(role.name) && !isAdaptationTitle(role.name) && (visiblePages.length > 0 || !isDefaultRole(role.name))"
+          <div *ngIf="visiblePages.length > 0"
                class="tooltip align-middle" data-tip="Edit"
                (click)="mode = 'edit'; roleToManage = initRoleToManage(role); ModalService.openModal('manage')">
 
@@ -116,8 +118,8 @@
            [id]="'manage'"
            [templateRef]="MANAGE"
            [header]="mode?.capitalize() + ' role'"
-           [closeBtnText]="'Discard ' + (mode === 'add' ? 'role' : 'changes')"
-           [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' role' : 'Save'"
+           [closeBtnText]="'Discard'"
+           [submitBtnText]="mode === 'add' ? mode?.capitalize() + ' role' : 'Keep Changes'"
            [actionInProgress]="loading.action"
            (submitBtnClicked)="f.onSubmit(null); mode === 'add' ? addRole() : editRole()"
            (onClose)="resetManage()">

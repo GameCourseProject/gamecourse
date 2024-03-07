@@ -239,14 +239,14 @@ export class SidebarComponent implements OnInit {
                 icon: 'tabler-clipboard-list'
               },
               {
+                link: path + 'settings/db-explorer',
+                name: 'DB Explorer',
+                icon: 'tabler-database'
+              },
+              {
                 link: path + 'settings/modules',
                 name: 'Modules',
                 icon: 'tabler-plug'
-              },
-              {
-                link: path + 'settings/notifications',
-                name: 'Notifications',
-                icon: 'tabler-bell'
               }
             ]
           },
@@ -280,11 +280,22 @@ export class SidebarComponent implements OnInit {
         icon: 'tabler-puzzle'
       };
 
-      if (isAdminOrTeacher) navigation[3].children.splice(2, 0, adaptation);
-      else navigation.push({
-        category: 'User Interface',
-        children: [adaptation]
-      });
+      const notifications: Navigation = {
+        link: isAdminOrTeacher ? path + 'settings/notifications' : path + 'notifications',
+        name: 'Notifications',
+        icon: 'tabler-bell'
+      };
+
+      if (isAdminOrTeacher) {
+        navigation[2].children.splice(4, 0, notifications);
+        navigation[3].children.splice(2, 0, adaptation);
+      }
+      else {
+        navigation.push({
+          category: 'User Settings',
+          children: [adaptation]
+        });
+      }
 
       return navigation;
     }

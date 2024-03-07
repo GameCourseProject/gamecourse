@@ -336,7 +336,6 @@ export class CoursesComponent implements OnInit {
 
   async getRedirectLink(course: Course): Promise<string> {
     const link = '/courses/' + course.id;
-    if (this.user.isAdmin) return link + '/overview'; // admins go to overview page
 
     const userLandingPage = await this.api.getUserLandingPage(course.id, this.user.id).toPromise();
     const pageID = userLandingPage?.id || course.landingPage;

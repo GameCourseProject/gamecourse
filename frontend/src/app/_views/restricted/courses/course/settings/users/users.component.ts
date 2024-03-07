@@ -48,9 +48,9 @@ export class UsersComponent implements OnInit {
   authMethods: {value: any, text: string}[] = this.initAuthMethods();
 
   rolesHierarchySmart: {[roleName: string]: {parent: Role, children: Role[]}};
-  roleNames: {value: string, text: string, innerHTML: string, selected?: boolean}[];
+  roleNames: {value: string, text: string, html: string, selected?: boolean}[];
   previousSelected: string[];
-  setRoles: Subject<{value: string, text: string, innerHTML: string, selected: boolean}[]> = new Subject();
+  setRoles: Subject<{value: string, text: string, html: string, selected: boolean}[]> = new Subject();
 
   nonCourseUsers: {value: string, text: string}[];
   selection: {usersToAdd: string[], roleNames: string[]};
@@ -117,7 +117,7 @@ export class UsersComponent implements OnInit {
         return {
           value: role.name,
           text: role.name,
-          innerHTML: '<span style="padding-left: ' + (15 * role.depth) + 'px;">' + role.name + '</span>'
+          html: '<span style="padding-left: ' + (15 * role.depth) + 'px;">' + role.name + '</span>'
         };
       });
 
@@ -415,7 +415,7 @@ export class UsersComponent implements OnInit {
       option['selected'] = selectedRoleNames.includes(option.value);
       return option;
     });
-    this.setRoles.next(this.roleNames as {value: any, text: string, innerHTML: string, selected: boolean}[]);
+    this.setRoles.next(this.roleNames as {value: any, text: string, html: string, selected: boolean}[]);
     this.previousSelected = selectedRoleNames;
   }
 

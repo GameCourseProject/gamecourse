@@ -64,27 +64,27 @@
                     </div>
 
                     <div>
-                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' || !section.isActive ? null : 'Edit'">
-                        <button class="{{section.name === 'Graveyard' || !section.isActive ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
-                                (click)="section.name !== 'Graveyard' && section.isActive ? prepareManagement('edit section', section) : ''">
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Edit'">
+                        <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                                (click)="section.name !== 'Graveyard' ? prepareManagement('edit section', section) : ''">
                           <ng-icon name="jam-pencil-f" size="1.5rem"
-                                   class="{{section.name === 'Graveyard' || !section.isActive ? 'text-gray-300' : 'text-warning'}}"></ng-icon>
+                                   class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-warning'}}"></ng-icon>
                         </button>
                       </div>
 
-                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' || !section.isActive ? null : 'Delete'">
-                        <button class="{{section.name === 'Graveyard' || !section.isActive ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
-                                (click)="section.name !== 'Graveyard' && section.isActive ? prepareManagement('remove section', section) : ''">
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Delete'">
+                        <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                                (click)="section.name !== 'Graveyard' ? prepareManagement('remove section', section) : ''">
                           <ng-icon name="jam-trash-f" size="1.5rem"
-                                   class="{{section.name === 'Graveyard' || !section.isActive ? 'text-gray-300' : 'text-error'}}"></ng-icon>
+                                   class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-error'}}"></ng-icon>
                         </button>
                       </div>
 
-                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="!section.isActive ? null : 'See more details'">
-                        <button class="{{!section.isActive ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
-                                (click)="section.isActive ? prepareManagement('see section', section) : ''">
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="'See more details'">
+                        <button class="btn btn-sm btn-ghost btn-circle"
+                                (click)="prepareManagement('see section', section)">
                           <ng-icon name="feather-arrow-right-circle" size="1.5rem"
-                                   class="{{section.isActive ? 'text-primary' : 'text-gray-300'}}"></ng-icon>
+                                   class="text-primary"></ng-icon>
                         </button>
                       </div>
                     </div>

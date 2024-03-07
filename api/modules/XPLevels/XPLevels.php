@@ -17,6 +17,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Module\Streaks\Streaks;
+use GameCourse\NotificationSystem\Notification;
 use GameCourse\Views\Dictionary\ReturnType;
 
 /**
@@ -60,6 +61,10 @@ class XPLevels extends Module
 
     const RESOURCES = [];
 
+    const NOTIFICATIONS_DESCRIPTION = "Sends a motivating message whenever a user has only 10% of the Level's XP missing to level up.";
+    const NOTIFICATIONS_FORMAT = "You are so close to reaching Level %levelNumber - %levelDescription! Only %XPLeft XP to go 🚀";
+    const NOTIFICATIONS_VARIABLES = "levelNumber,levelDescription,XPLeft";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -86,6 +91,17 @@ class XPLevels extends Module
 
         $this->initEvents();
         $this->initProviders();
+
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     public function initEvents()
@@ -380,6 +396,7 @@ class XPLevels extends Module
         $this->cleanDatabase();
         $this->removeEvents();
         $this->removeProviders();
+        $this->removeNotifications();
     }
 
 
@@ -841,4 +858,27 @@ class XPLevels extends Module
     /*** ---- Grade Verifications ---- ***/
 
     // TODO: refactor and improve (check old gamecourse 21/22)
+
+    /**
+     * Returns notifications to be sent to a student.
+     *
+     * @param int $userId
+     * @throws Exception
+     */
+    public function getNotification($userId): ?string
+    {
+        $totalXP = $this->getUserXP($userId);
+        $levels = Level::getLevels($this->course->getId());
+
+        foreach($levels as $level) {
+            if ($level["minXP"] > 0 && $totalXP / $level["minXP"] < 1 && $totalXP / $level["minXP"] >= 0.9) {
+                $params["levelNumber"] = $level["number"];
+                $params["levelDescription"] = $level["description"] ;
+                $params["XPLeft"] = $level["minXP"] - $totalXP;
+                $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+                return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
+            }
+        }
+        return null;
+    }
 }

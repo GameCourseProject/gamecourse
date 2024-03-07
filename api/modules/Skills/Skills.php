@@ -16,6 +16,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\NotificationSystem\Notification;
 
 /**
  * This is the Skills module, which serves as a compartimentalized
@@ -66,6 +67,10 @@ class Skills extends Module
     const DATA_FOLDER = 'skills';
     const RULE_SECTION = "Skills";
 
+    const NOTIFICATIONS_DESCRIPTION = "If there's a skill that will unlock 2 or more other skills, suggests it to the user.";
+    const NOTIFICATIONS_FORMAT = "Completing the skill %bestSkill will open the door to %numberOfSkillsItWillUnlock more skills 👀 Ready for the challenge?";
+    const NOTIFICATIONS_VARIABLES = "bestSkill,numberOfSkillsItWillUnlock";
+
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
@@ -83,6 +88,16 @@ class Skills extends Module
         // Init config
         Core::database()->insert(self::TABLE_SKILL_CONFIG, ["course" => $this->course->getId()]);
 
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     /**
@@ -116,6 +131,7 @@ class Skills extends Module
         $this->cleanDatabase();
         $this->removeDataFolder();
         $this->removeRules();
+        $this->removeNotifications();
     }
 
 
@@ -593,5 +609,80 @@ class Skills extends Module
     public static function setSkillTreeInView(int $skillTreeId, bool $status){
         $skillTree = new SkillTree($skillTreeId);
         $skillTree->setInView($status);
+    }
+
+    /*** ------------------------------- ***/
+
+
+    /**
+     * Returns notifications to be sent to a user.
+     *
+     * @param int $userId
+     * @throws Exception
+     */
+    public function getNotification($userId): ?string
+    {
+        $skillsTrees = SkillTree::getSkillTrees($this->course->getId());
+        $maxCount = 1; // Only recommend a skill if it unlocks more than 1
+        $bestSkill = null;
+
+        foreach ($skillsTrees as $tree) {
+            $completedSkills = $this->getUserSkills($userId, $tree["id"]);
+            
+            if (count($completedSkills) > 0) {
+                $allTreeSkills = (new SkillTree($tree["id"]))->getSkills(true);
+                
+                // Find the skill that will unlock the most skills together with the already obtained ones
+                foreach ($allTreeSkills as $testSkill) {
+                    if (!$this->in_array_by_id($testSkill["id"], $completedSkills)) {
+    
+                        $count = 0;
+                        foreach ($allTreeSkills as $unlockSkill) {
+    
+                            if ($unlockSkill["id"] != $testSkill["id"] // skill to unlock is different from skill suggested
+                                && !$this->in_array_by_id($unlockSkill["id"], $completedSkills) // not completed yet
+                                && count($unlockSkill["dependencies"]) > 0) { // has dependencies
+    
+                                foreach ($unlockSkill["dependencies"] as $dependencySet) {
+                                    // the test skill is in the dependency set
+                                    if ($this->in_array_by_id($testSkill["id"], $dependencySet)) {
+                                        // all skills of the set are fulfilled (either test or completed)
+                                        $fulfilledDependencies = array_filter($dependencySet, 
+                                            function ($dependencySkill) use ($completedSkills, $testSkill) {
+                                                return $this->in_array_by_id($dependencySkill["id"], $completedSkills) || $dependencySkill["id"] == $testSkill["id"];
+                                            }
+                                        );
+                                        if (count($fulfilledDependencies) == count($dependencySet)) {
+                                            $count += 1;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ($count > $maxCount) {
+                            $maxCount = $count;
+                            $bestSkill = $testSkill;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($bestSkill) {
+            $params["bestSkill"] = $bestSkill["name"];
+            $params["numberOfSkillsItWillUnlock"] = $maxCount;
+            $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+            return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
+        }
+        return null;
+    }
+    // Auxiliary function
+    function in_array_by_id($id, $skills){
+        foreach ($skills as $skill) {
+            if ($skill["id"] == $id)
+                return true;
+        }
+        return false;
     }
 }

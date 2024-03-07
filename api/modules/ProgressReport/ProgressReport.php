@@ -89,8 +89,7 @@ class ProgressReport extends Module
         Event::listen(EventType::COURSE_DISABLED, function (int $courseId) {
             if ($courseId == $this->course->getId()) {
                 $config = $this->getProgressReportConfig();
-                $this->saveProgressReportConfig($config["endDate"], $config["periodicityTime"],  $config["periodicityHours"],
-                    $config["periodicityDay"], false);
+                $this->saveProgressReportConfig($config["frequency"], $config["isEnabled"], false);
             }
         }, self::ID);
     }
@@ -101,8 +100,7 @@ class ProgressReport extends Module
 
         // Copy config
         $config = $this->getProgressReportConfig();
-        $copiedModule->saveProgressReportConfig(null, $config["periodicityTime"], $config["periodicityHours"],
-            $config["periodicityDay"], false);
+        $copiedModule->saveProgressReportConfig($config["frequency"], $config["isEnabled"], false);
     }
 
     public function disable()
@@ -122,35 +120,7 @@ class ProgressReport extends Module
 
     public function isConfigurable(): bool
     {
-        return true;
-    }
-
-    public function getGeneralInputs(): array
-    {
-        return [
-            [
-                "name" => "Schedule",
-                "description" => "Define when progress reports should be sent to students.",
-                "contents" => [
-                    [
-                        "contentType" => "container",
-                        "classList" => "flex flex-wrap items-center",
-                        "contents" => [
-                            [
-                                "contentType" => "item",
-                                "width" => "1/2",
-                                "type" => InputType::SCHEDULE,
-                                "id" => "schedule",
-                                "value" => $this->getSchedule(),
-                                "options" => [
-                                    "required" => true,
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        return false;
     }
 
     /**
@@ -183,7 +153,7 @@ class ProgressReport extends Module
      */
     public function saveSchedule(string $expression)
     {
-      Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, ["frequency" => $expression,], ["course" => $this->getCourse()->getId()]);
+      Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, ["frequency" => $expression], ["course" => $this->getCourse()->getId()]);
 
       $expression = $this->getSchedule();
       $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
@@ -196,31 +166,23 @@ class ProgressReport extends Module
     {
         $config = Core::database()->select(self::TABLE_PROGRESS_REPORT_CONFIG, ["course" => $this->course->getId()]);
         return [
-            //"endDate" => $config["endDate"],
-            //"periodicityTime" => $config["periodicityTime"],
-            //"periodicityHours" => isset($config["periodicityHours"]) ? intval($config["periodicityHours"]) : null,
-            //"periodicityDay" => isset($config["periodicityDay"]) ? intval($config["periodicityDay"]) : null,
             "isEnabled" => boolval($config["isEnabled"]),
             "frequency" => $config["frequency"]
         ];
     }
 
-    public function saveProgressReportConfig(?string $endDate, ?string $periodicityTime, ?int $periodicityHours,
-                                             ?int $periodicityDay, ?bool $isEnabled)
+    public function saveProgressReportConfig(?string $frequency, ?bool $isEnabled)
     {
         Core::database()->update(self::TABLE_PROGRESS_REPORT_CONFIG, [
-            "endDate" => $endDate,
-            "periodicityTime" => $periodicityTime,
-            "periodicityHours" => $periodicityHours,
-            "periodicityDay" => $periodicityDay,
-            "isEnabled" => +$isEnabled
+          "isEnabled" => +$isEnabled,
+          "frequency" => $frequency
         ], ["course" => $this->course->getId()]);
 
+        $script = MODULES_FOLDER . "/" . self::ID . "/scripts/ProgressReportScript.php";
         if (!$isEnabled) { // disable progress report
-            CronJob::removeCronJob("ProgressReport", $this->course->getId());
-
+            CronJob::removeCronJob($script, $this->course->getId());
         } else { // enable progress report
-            new CronJob("ProgressReport", $this->course->getId(), $periodicityHours, $periodicityTime, $periodicityDay);
+            new CronJob($script, $frequency, $this->course->getId());
         }
     }
 
@@ -335,7 +297,7 @@ class ProgressReport extends Module
                                       <tr>
                                         <td style="padding-right: 0px;padding-left: 0px;" align="center">
                                           <a href="' . URL . '" target="_blank">
-                                            <img align="center" border="0" src="' . URL . '/assets/logo/logo_horz.jpg" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
+                                            <img align="center" border="0" src="' . URL . 'assets/logo/logo_horz.png" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
                                           </a>
                                         </td>
                                       </tr>
@@ -867,8 +829,8 @@ class ProgressReport extends Module
         $timeLeft = self::datediff(date_create($currentDate), date_create($config["endDate"]), $isWeekly ? "weeks" : "days");
 
         // FIXME: charts don't exist anymore; always download image and save to user_data
-        $pieChartURL = "https://quickchart.io/chart/render/zm-f7746c74-abbb-4250-a0c2-11451cb8f7d6"; // editor: https://quickchart.io/chart-maker/edit/zm-7f2783e0-a82c-41b0-920b-9ce72210fd0a
-        $areaChartURL = "https://quickchart.io/chart/render/zm-a1ad2eb1-9680-4fc1-9e83-008080e79c6b"; // editor: https://quickchart.io/chart-maker/edit/zm-72a28b6b-b495-4c9d-a4e8-ce3e5ce5b013
+        $pieChartURL = "https://quickchart.io/chart/render/sf-8b2ff281-9678-4524-baf3-f193833d505b"; // editor: https://quickchart.io/chart-maker/edit/sf-8b2ff281-9678-4524-baf3-f193833d505b
+        $areaChartURL = "https://quickchart.io/chart/render/sf-5aabe708-710b-4f23-91d3-021c274ff3d1"; // editor: https://quickchart.io/chart-maker/edit/sf-5aabe708-710b-4f23-91d3-021c274ff3d1
 
         if ($this->course->getModuleById(VirtualCurrency::ID)->isEnabled())
             $tokensName = Core::database()->select(VirtualCurrency::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "name");

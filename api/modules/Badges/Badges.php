@@ -21,6 +21,7 @@ use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
+use GameCourse\NotificationSystem\Notification;
 
 /**
  * This is the Badges module, which serves as a compartimentalized
@@ -73,6 +74,10 @@ class Badges extends Module
         "B001" => ["Badges displayed in alphabetic order", [ "Regular", "Achiever" ]],
         "B002" => ["Badges displayed with achieved first", [ "Halfhearted", "Underachiever" ] ] ] ];
 
+    const NOTIFICATIONS_DESCRIPTION = "Lets the user know when he's close to leveling up a Badge.";
+    const NOTIFICATIONS_FORMAT = "You are %numberOfEventsLeft events away from achieving the %badgeName badge 🎖️ %badgeDescription - %nextLevelDescription";
+    const NOTIFICATIONS_VARIABLES = "numberOfEventsLeft,badgeName,badgeDescription,nextLevelDescription";
+
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/
     /*** ----------------------------------------------- ***/
@@ -96,6 +101,17 @@ class Badges extends Module
          $this->addAdaptationRolesToCourse(self::ADAPTATION_BADGES);
         // initEvents(); // FIXME: Debug only
          GameElement::addGameElement($this->course->getId(), self::ID);
+
+        // Add notifications metadata
+        $response = Core::database()->select(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, ["module" => $this->getId()]);
+        if (!$response) {
+            Core::database()->insert(Notification::TABLE_NOTIFICATION_DESCRIPTIONS, [
+                "module" => $this->getId(),
+                "description" => self::NOTIFICATIONS_DESCRIPTION,
+                "variables" => self::NOTIFICATIONS_VARIABLES
+            ]);
+        }
+        $this->initNotifications();
     }
 
     public function providers(): array
@@ -189,6 +205,7 @@ class Badges extends Module
         $this->removeTemplates();
         $this->removeRules();
         $this->removeProviders();
+        $this->removeNotifications();
     }
 
 
@@ -1178,5 +1195,39 @@ class Badges extends Module
         $awardsModule = new Awards($this->getCourse());
         $badgeAwards = $awardsModule->getUserAwardsByType($userId, AwardType::BADGE, $badgeId);
         return count($badgeAwards);
+    }
+
+    /**
+     * Returns notifications to be sent to a user.
+     *
+     * @param int $userId
+     * @throws Exception
+     */
+    public function getNotification($userId): ?string
+    {
+        foreach($this->getUserBadges($userId) as $badgesData) {
+            $badge = new Badge($badgesData["id"]);
+
+            // Not in max level yet
+            if ($badgesData["level"] < $badgesData["nrLevels"]) {
+                $nextLevel = $badge->getLevels()[$badgesData["level"]];
+                $goal = $nextLevel["goal"];
+                $progress = count($this->getUserBadgeProgressionInfo($userId, $badge->getId()));
+    
+                // Condition to give notification
+                $instances = $goal - $progress;
+
+                // Threshold to limit notifications and avoid spamming
+                if (1 < $instances && $instances <= 2) {
+                    $params["numberOfEventsLeft"] = $instances;
+                    $params["badgeName"] = $badge->getName();
+                    $params["badgeDescription"] = $badge->getDescription();
+                    $params["nextLevelDescription"] = $nextLevel["description"];
+                    $format = Core::database()->select(Notification::TABLE_NOTIFICATION_CONFIG, ["course" => $this->course->getId(), "module" => $this->getId()])["format"];
+                    return Notification::getFinalNotificationText($this->course->getId(), $userId, $format, $params);
+                }
+            }
+        }
+        return null;
     }
 }

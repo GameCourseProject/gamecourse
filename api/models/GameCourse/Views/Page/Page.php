@@ -635,12 +635,12 @@ class Page
      */
     public function renderPage(int $viewerId, int $userId = null, array $mockedData = null): array
     {
+        $pageInfo = $this->getData("course, viewRoot, type");
+        if (isset($pageInfo["type"])) Cache::loadFromDatabase($this->id, $pageInfo["type"], $userId);
+
         // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
 
-        Cache::loadFromDatabase();
-
-        $pageInfo = $this->getData("course, viewRoot");
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
 
         if ($mockedData) {

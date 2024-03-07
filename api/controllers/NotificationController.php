@@ -4,6 +4,7 @@ namespace API;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use GameCourse\NotificationSystem\Notification;
 use GameCourse\User\User;
 
@@ -83,6 +84,27 @@ class NotificationController
         API::response($notifications);
     }
 
+    /**
+     * Gets schedules notifications by its course ID
+     *
+     * @param int $userId
+     *
+     * @throws Exception
+     */
+    public function getScheduledNotificationsByCourse()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $notifications = Notification::getScheduledNotificationsByCourse($courseId);
+
+        API::response($notifications);
+    }
+
 
     /**
      * Creates a new notification in the system
@@ -112,14 +134,14 @@ class NotificationController
     }
 
     /**
-     * Creates a new announcement in the system
-     * which is a notification for all students in the course
+     * Creates a new notification in the system
+     * for all users with one of the roles
      *
      * @throws Exception
      */
-    public function createAnnouncement()
+    public function createNotificationForRoles()
     {
-        API::requireValues("course", "message");
+        API::requireValues("course", "message", "roles");
 
         $courseId = API::getValue("course", "int");
         $course = API::verifyCourseExists($courseId);
@@ -127,11 +149,94 @@ class NotificationController
         API::requireCourseAdminPermission($course); // Not sure if it needs admin permission
 
         $message = API::getValue("message");
+        $roleNames = API::getValue("roles");
 
         // Add notifications to system
-        foreach($course->getStudents() as $student) {
-            $notification = Notification::addNotification($courseId, $student["id"], $message, false);
+        foreach($roleNames as $role) {
+            foreach($course->getCourseUsersWithRole(true, $role) as $user) {
+                Notification::addNotification($courseId, $user["id"], $message, false);
+            }
         }
+    }
+
+    /**
+     * Creates a new notification in the system
+     * for all users with one of the roles
+     *
+     * @throws Exception
+     */
+    public function scheduleNotificationForRoles()
+    {
+        API::requireValues("course", "message", "roles", "schedule");
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course); // Not sure if it needs admin permission
+
+        $message = API::getValue("message");
+        $roleNames = API::getValue("roles");
+        $schedule = API::getValue("schedule");
+
+        Notification::scheduleNotification($courseId, $roleNames, $message, $schedule);
+    }
+
+    /**
+     * Creates a new notification in the system
+     * for all users with one of the roles
+     *
+     * @throws Exception
+     */
+    public function cancelScheduledNotification()
+    {
+        API::requireValues("course", "notification");
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $notificationId = API::getValue("notification", "int");
+
+        Notification::cancelScheduledNotification($notificationId);
+    }
+
+    /**
+     * Toggles notifications of modules in a course
+     *
+     * @throws Exception
+     */
+    public function toggleModuleNotifications()
+    {
+        API::requireValues("course", "config");
+
+        $courseId = API::getValue("course", "int");
+        $course = API::verifyCourseExists($courseId);
+        
+        API::requireCourseAdminPermission($course);
+
+        $config = API::getValue("config", "array");
+
+        foreach($config as $module) {
+            Notification::setModuleNotifications($courseId, $module["id"], $module["isEnabled"], $module["frequency"], $module["format"]);
+        }
+    }
+
+    /**
+     * Get Modules that are enabled in a course and have
+     * function to send notifications
+     *
+     * @throws Exception
+     */
+    public function getModulesWithNotifications()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::response(Notification::getModuleNotificationsConfig($courseId));
     }
 
     /**

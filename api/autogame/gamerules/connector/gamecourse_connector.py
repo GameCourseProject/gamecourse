@@ -24,7 +24,7 @@ def autogame_init(course):
     """
 
     query = "SELECT isRunning FROM autogame WHERE course = %s;"
-    is_running = gc_db.execute_query(query, course)[0][0]
+    is_running = gc_db.execute_query(query, (course,))[0][0]
 
     # Check AutoGame status
     if is_running:
@@ -95,7 +95,7 @@ def get_targets(course, all_targets=False, targets_list=None):
                     "LEFT JOIN course_user cu on ur.user = cu.id " \
                     "LEFT JOIN user u on ur.user = u.id " \
                     "WHERE ur.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
-            table = gc_db.execute_query(query, course)
+            table = gc_db.execute_query(query, (course,))
 
         else:
             # Running for targets w/ new data in course
@@ -105,7 +105,7 @@ def get_targets(course, all_targets=False, targets_list=None):
                     "LEFT JOIN course_user cu on ur.user = cu.id " \
                     "LEFT JOIN user u on ur.user = u.id " \
                     "WHERE at.course = %s AND cu.isActive = 1 AND r.name = 'Student';"
-            table = gc_db.execute_query(query, course)
+            table = gc_db.execute_query(query, (course,))
 
             # Clear targets
             query = "DELETE FROM autogame_target WHERE course = %s;"
@@ -373,7 +373,10 @@ def filter_preloaded_skill_logs(targets_ids):
             attempt_logs = logs[0: attempt_nr - 1]
             attempts = len([attempt_log for attempt_log in attempt_logs if
                             int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
-            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** (attempts - 1)) if attempts > 0 else 0)
+            if attempts > 0:
+                return tier_cost_info["increment"] * (2 ** (attempts - 1))
+            else:
+             return tier_cost_info["cost"]
 
     global preloaded_logs
 
@@ -1923,7 +1926,10 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         else:
             attempt_logs = logs[0: attempt_nr - 1]
             attempts = len([attempt_log for attempt_log in attempt_logs if int(attempt_log[config.LOG_RATING_COL]) >= tier_cost_info["minRating"]])
-            return tier_cost_info["cost"] + (tier_cost_info["increment"] * (2 ** (attempts - 1)) if attempts > 0 else 0)
+            if attempts > 0:
+                return tier_cost_info["increment"] * (2 ** (attempts - 1))
+            else:
+             return tier_cost_info["cost"]
 
     def get_attempt_description(att):
         attempt_info = " (%s%s attempt)" % (att, "st" if att == 1 else "nd" if att == 2 else "rd" if att == 3 else "th")

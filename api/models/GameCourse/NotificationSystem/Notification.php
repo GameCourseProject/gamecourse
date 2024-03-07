@@ -8,8 +8,10 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Module;
 use phpDocumentor\Reflection\Types\Boolean;
 use Utils\Utils;
+use Utils\CronJob;
 
 /**
  * This is the Notification model, which implements the necessary methods
@@ -18,8 +20,13 @@ use Utils\Utils;
 class Notification
 {
     const TABLE_NOTIFICATION = "notification";
+    const TABLE_NOTIFICATION_CONFIG = "notification_config";
+    const TABLE_NOTIFICATION_DESCRIPTIONS = "notification_module_description";
+    const TABLE_NOTIFICATION_SCHEDULED = "notification_scheduled";
 
     protected $id;
+
+    const LOGS_FOLDER = "notifications";
 
     const HEADERS = [ // headers for import/export functionality
         "course", "user", "message", "isShowed"
@@ -108,6 +115,38 @@ class Notification
     }
 
     /*** ------------------------------------------------------------ ***/
+    /*** -------------------------- Logging ------------------------- ***/
+    /*** ------------------------------------------------------------ ***/
+
+    /**
+     * Creates a new Notifications log on a given course.
+     *
+     * @param int $courseId
+     * @param string $message
+     * @param string $type
+     * @return void
+     */
+    public static function log(int $courseId, string $message, string $type)
+    {
+        $logsFile = self::getLogsFile($courseId, false);
+        Utils::addLog($logsFile, $message, $type);
+    }
+
+    /**
+     * Gets Notifications logs file for a given course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
+    private static function getLogsFile(int $courseId, bool $fullPath = true): string
+    {
+        $path = self::LOGS_FOLDER . "/" . "notifications_$courseId.txt";
+        if ($fullPath) return LOGS_FOLDER . "/" . $path;
+        else return $path;
+    }
+
+    /*** ------------------------------------------------------------ ***/
     /*** ----------------- Notification Manipulation ---------------- ***/
     /*** ------------------------------------------------------------ ***/
 
@@ -177,6 +216,38 @@ class Notification
         Core::database()->delete(self::TABLE_NOTIFICATION, ["id" => $notificationId]);
         // Event::trigger(EventType::NOTIFICATION_REMOVED, $notificationId);
 
+    }
+
+    /**
+     * Schedules a notification to be sent later.
+     *
+     * @param int $courseId
+     * @param array $roles
+     * @param string $message
+     * @param string $frequency
+     * @return void
+     * @throws Exception
+     */
+    public static function scheduleNotification(int $courseId, array $roles, string $message, string $frequency)
+    {
+        $notificationId = Core::database()->insert(self::TABLE_NOTIFICATION_SCHEDULED, 
+            ["course" => $courseId, "roles" => implode(',', $roles), "message" => $message, "frequency" => $frequency]);
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ScheduledNotificationsScript.php";
+        new CronJob($script, $frequency, $notificationId);
+    }
+
+    /**
+     * Cancels a scheduled notification.
+     *
+     * @param int $notificationId
+     * @return void
+     * @throws Exception
+     */
+    public static function cancelScheduledNotification(int $notificationId)
+    {
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ScheduledNotificationsScript.php";
+        CronJob::removeCronJob($script, $notificationId);
+        Core::database()->delete(self::TABLE_NOTIFICATION_SCHEDULED, ["id" => $notificationId]);
     }
 
     /**
@@ -322,6 +393,15 @@ class Notification
         return $notifications;
     }
 
+    public static function getScheduledNotificationsByCourse(int $courseId): array
+    {
+        $table = self::TABLE_NOTIFICATION_SCHEDULED;
+        $where = ["course" => $courseId];
+        $notifications = Core::database()->selectMultiple($table, $where);
+
+        return $notifications;
+    }
+
     public static function isNotificationInDB(int $course, int $user, string $message): bool
     {
         $table = self::TABLE_NOTIFICATION;
@@ -406,5 +486,85 @@ class Notification
     private static function trim(&...$values){
         $params = ["message"];
         Utils::trim($params, ...$values);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Modules --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Enables/disables notifications of a module in a course
+     *
+     * @param int $courseId
+     * @param string $moduleId
+     * @param bool $isEnabled
+     * @param string $frequency
+     * @param string $format
+     * @return void
+     * @throws Exception
+     */
+    public static function setModuleNotifications(int $courseId, string $moduleId, bool $isEnabled, string $frequency, string $format)
+    {
+        if (!(new Course($courseId))->getModuleById($moduleId)->isEnabled())
+            throw new Exception("Course with ID = " . $courseId . " does not have " 
+                . $moduleId . " enabled: can't change Notification settings related to it.");
+
+        Core::database()->update(self::TABLE_NOTIFICATION_CONFIG, 
+            ["isEnabled" => $isEnabled ? "1" : "0", "frequency" => $frequency, "format" => $format],
+            ["course" => $courseId, "module" => $moduleId]);
+
+        $script = ROOT_PATH . "models/GameCourse/NotificationSystem/scripts/ModuleNotificationsScript.php";
+        if ($isEnabled) {
+            new CronJob($script, $frequency, $courseId, $moduleId);
+        } else {
+            CronJob::removeCronJob($script, $courseId, $moduleId);
+        }
+    }
+
+    /**
+     * Gets configuration of a module's notifications
+     *
+     * @param int $courseId
+     * @return void
+     */
+    public static function getModuleNotificationsConfig(int $courseId): array
+    {
+        $table = self::TABLE_NOTIFICATION_CONFIG . " c JOIN " . self::TABLE_NOTIFICATION_DESCRIPTIONS . " d on c.module=d.module";
+        $configs = Core::database()->selectMultiple($table, ["course" => $courseId], "c.module, isEnabled, frequency, format, description, variables");
+
+        foreach ($configs as &$module) {
+            $module["id"] = $module["module"];
+            unset($module["module"]);
+            
+            $module["name"] = (Module::getModuleById($module["id"], Course::getCourseById($courseId)))->getName();
+            $module["isEnabled"] = $module["isEnabled"] == "1";
+            $module["variables"] = explode(",", $module["variables"]);
+        }
+        return $configs;
+    }
+
+    /**
+     * Passes the parameters into the text and checks if notification was already sent before
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param string $notification
+     * @param array $params
+     * @return string
+     * @throws Exception
+     */
+    public static function getFinalNotificationText(int $courseId, int $userId, string $notification, array $params): ?string {
+        foreach (array_keys($params) as $key) {
+            $notification = str_replace("%" . $key, $params[$key], $notification);
+        }
+
+        // Check if notification is new
+        $alreadySent = Core::database()->select(Notification::TABLE_NOTIFICATION, ["course" => $courseId, "user" => $userId, "message" => $notification]);
+        if (!$alreadySent) {
+            return $notification;
+        }
+
+        return null;
     }
 }
