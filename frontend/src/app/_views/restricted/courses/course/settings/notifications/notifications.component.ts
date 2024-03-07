@@ -31,7 +31,6 @@ export class NotificationsComponent implements OnInit {
     isAdminOrTeacher: boolean = false;
 
     /** -- ADMIN VARIABLES -- **/
-    suggestionsEnabled: boolean;
     progressReportEnabled: boolean;
     notifications: Notification[] = [];
     scheduledNotifications: ScheduledNotification[] = [];
@@ -62,7 +61,6 @@ export class NotificationsComponent implements OnInit {
             await this.getUser(courseID);
 
             if (this.isAdminOrTeacher) {
-                await this.isSuggestionsEnabled(courseID);
                 await this.isProgressReportEnabled(courseID);
 
                 if (this.progressReportEnabled) {
@@ -109,10 +107,6 @@ export class NotificationsComponent implements OnInit {
     async getScheduledNotifications(courseID: number): Promise<void> {
         const notifications = await this.api.getScheduledNotificationsByCourse(courseID).toPromise();
         this.scheduledNotifications = notifications.reverse();
-    }
-
-    async isSuggestionsEnabled(courseID: number) {
-        this.suggestionsEnabled = (await this.api.getCourseModuleById(courseID, ApiHttpService.SUGGESTIONS).toPromise()).enabled;
     }
 
     async isProgressReportEnabled(courseID: number) {
