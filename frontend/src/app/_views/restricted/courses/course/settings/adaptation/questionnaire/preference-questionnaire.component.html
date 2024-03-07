@@ -18,8 +18,8 @@
     <!-- Question 1 -->
     <div class="w-full flex flex-wrap mb-3">
       <span class="font-semibold w-full">
-        Have you noticed any changes regarding the <strong><i>{{gameElement.module}}</i></strong> element between the
-        beginning of the semester and this last week?
+        Have you noticed any changes regarding the <strong><i>{{gameElement.module}}</i></strong> element after
+        the 2nd week of the course?
         <span class="text-secondary ml-1">*</span>
       </span>
       <div class="md:w-1/6">
@@ -72,7 +72,7 @@
         [id]="'scale-preferences'"
         [placeholder]="'1 - hate it ; 10 - love it'"
         [form] = "q"
-        [topLabel]="'On a scale from 1 to 10, what did you think of said changes?'"
+        [topLabel]="'On a scale from 1 to 10, how happy are you with said changes, from week 3 onwards?'"
         [required]="true"
         [(value)]="questionnaireToManage.q3"
         [minValue]="1"

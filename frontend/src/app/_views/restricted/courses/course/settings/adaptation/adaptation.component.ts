@@ -285,16 +285,17 @@ export class AdaptationComponent implements OnInit {
   /** -- ADMIN ACTIONS -- **/
   async toggleActive(){
     this.loading.action = true;
+    let newState;
 
     if ((this.gameElementToManage.isActive).toString() === 'true' || (this.gameElementToManage.isActive).toString() === 'false'){
-      this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
+      newState = !this.gameElementToManage.isActive;
     }
     else if ((this.gameElementToManage.isActive).toString() === '0' || (this.gameElementToManage.isActive).toString() === '1'){
-      this.gameElementToManage.isActive = (this.gameElementToManage.isActive).toString() !== '1';
+      newState = (this.gameElementToManage.isActive).toString() !== '1';
     }
 
     const gameElement = await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
-      this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
+      newState, this.gameElementToManage.notify).toPromise();
 
     const index = this.availableGameElements.findIndex(element => (element.id).toString() === (gameElement.id).toString());
     this.availableGameElements.removeAtIndex(index);
@@ -304,7 +305,7 @@ export class AdaptationComponent implements OnInit {
     this.loading.action = false;
     this.resetGameElementManage();
     ModalService.closeModal('manage-game-element');
-    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
+    AlertService.showAlert(AlertType.SUCCESS, 'Adaptation for game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
 
   }
 
@@ -360,7 +361,7 @@ export class AdaptationComponent implements OnInit {
   async preparePreferences(gameElement: string){
     this.activeButton = null;
 
-    if (gameElement !== "undefined"){
+    if (gameElement && gameElement !== ""){
       await this.getChildren(gameElement);
       await this.getPreviousPreference(gameElement);
     }

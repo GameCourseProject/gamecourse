@@ -38,6 +38,8 @@
    [header] = "adminMode?.capitalize() + ' ' + gameElementToManage.module + '?'"
    [submitBtnText]="adminMode?.capitalize()"
    [actionInProgress]="loading.action"
+   [submitBtnDisabled]="loading.action"
+   [closeBtn]="!loading.action"
    (submitBtnClicked)="f.onSubmit(null); toggleActive()"
    (onClose)="resetGameElementManage(); buildTable(tableType[0])">
 </app-modal>
@@ -53,7 +55,7 @@
         <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">closed</strong>
         to customization.
       </span>
-      <div *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">
+      <div *ngIf="(this.gameElementToManage.isActive).toString() === '0' || this.gameElementToManage.isActive === false">
         <!-- Notification -->
         <div class="sm:pr-7 w-full">
           <app-input-checkbox
