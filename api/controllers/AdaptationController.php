@@ -130,7 +130,7 @@ class AdaptationController
      * @throws Exception
      */
     public function submitGameElementQuestionnaire(){
-        API::requireValues('course', 'user', 'q1', 'element', 'q2', 'q3');
+        API::requireValues('course', 'user', 'q1', 'element', 'q2', 'q3', 'q4');
 
         $courseId = API::getValue('course', "int");
         $course = API::verifyCourseExists($courseId);
@@ -140,9 +140,10 @@ class AdaptationController
         API::verifyCourseUserExists($course, $userId);
 
         if ($user->isAStudent()){
-            $q1 = API::getValue('q1', "bool");
+            $q1 = API::getValue('q1');
             $q2 = API::getValue('q2') ?? null;
             $q3 = API::getValue('q3', "int") ?? null;
+            $q4 = API::getValue('q4', "int") ?? null;
             $element = API::getValue('element');
 
             $module = Module::getModuleById($element, $course);
@@ -151,7 +152,7 @@ class AdaptationController
             $gameElement = GameElement::getGameElementByModule($courseId, $element);
             $gameElementId = $gameElement->getId();
 
-            GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $gameElementId);
+            GameElement::submitGameElementQuestionnaire($courseId, $userId, $q1, $q2, $q3, $q4, $gameElementId);
 
         } else { throw new Exception('Unable to perform this action. User not a student'); }
 

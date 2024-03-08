@@ -38,6 +38,8 @@
    [header] = "adminMode?.capitalize() + ' ' + gameElementToManage.module + '?'"
    [submitBtnText]="adminMode?.capitalize()"
    [actionInProgress]="loading.action"
+   [submitBtnDisabled]="loading.action"
+   [closeBtn]="!loading.action"
    (submitBtnClicked)="f.onSubmit(null); toggleActive()"
    (onClose)="resetGameElementManage(); buildTable(tableType[0])">
 </app-modal>
@@ -53,7 +55,7 @@
         <strong *ngIf="(this.gameElementToManage.isActive).toString() !== '0' && this.gameElementToManage.isActive !== false">closed</strong>
         to customization.
       </span>
-      <div *ngIf="(this.gameElementToManage.isActive).toString() !== '1' && this.gameElementToManage.isActive !== true">
+      <div *ngIf="(this.gameElementToManage.isActive).toString() === '0' || this.gameElementToManage.isActive === false">
         <!-- Notification -->
         <div class="sm:pr-7 w-full">
           <app-input-checkbox
@@ -137,6 +139,22 @@
         [dataLabels]="true"
         [XAxisGrid]="true"
         [highlight]="statistics.q3.highlights"
+      ></app-bar-chart>
+    </div>
+
+    <div class="w-full" *ngIf="version === '2.0' && !refreshing">
+      <span class="w-full"><strong>{{statistics.q4.title}} </strong> {{statistics.q4.subtitle}}</span>
+      <app-bar-chart
+        [id]="'question4'"
+        [classList]="'justify-center px-10 scale-90'"
+        [series]="statistics.q4.series"
+        [XAxisCategories]="statistics.q4.categories"
+        [XAxisLabel]="'Number of students'"
+        [YAxisLabel]="'Level of enjoyment'"
+        [orientation]="'horizontal'"
+        [dataLabels]="true"
+        [XAxisGrid]="true"
+        [highlight]="statistics.q4.highlights"
       ></app-bar-chart>
     </div>
   </div>
