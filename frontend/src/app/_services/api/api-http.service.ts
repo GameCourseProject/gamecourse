@@ -933,7 +933,8 @@ export class ApiHttpService {
       q1: questionnaireData.q1,
       element: questionnaireData.element,
       q2: questionnaireData.q2,
-      q3: questionnaireData.q3
+      q3: questionnaireData.q3,
+      q4: questionnaireData.q4
     }
 
     const params = (qs: QueryStringParameters) => {

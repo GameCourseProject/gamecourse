@@ -141,6 +141,22 @@
         [highlight]="statistics.q3.highlights"
       ></app-bar-chart>
     </div>
+
+    <div class="w-full" *ngIf="version === '2.0' && !refreshing">
+      <span class="w-full"><strong>{{statistics.q4.title}} </strong> {{statistics.q4.subtitle}}</span>
+      <app-bar-chart
+        [id]="'question4'"
+        [classList]="'justify-center px-10 scale-90'"
+        [series]="statistics.q4.series"
+        [XAxisCategories]="statistics.q4.categories"
+        [XAxisLabel]="'Number of students'"
+        [YAxisLabel]="'Level of enjoyment'"
+        [orientation]="'horizontal'"
+        [dataLabels]="true"
+        [XAxisGrid]="true"
+        [highlight]="statistics.q4.highlights"
+      ></app-bar-chart>
+    </div>
   </div>
 
   <div *ngIf="nrAnswers === 0">

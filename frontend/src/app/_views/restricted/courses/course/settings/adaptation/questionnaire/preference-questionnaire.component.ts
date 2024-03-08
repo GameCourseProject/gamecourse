@@ -31,6 +31,15 @@ export class PreferenceQuestionnaireComponent implements OnInit{
 
   questionnaireToManage: QuestionnaireManageData;
 
+  version: string = "2.0" // FIXME: Hardcoded the questionnaire formats (didn't want to lose data from last year)
+
+  weekOptions = [
+    {value: "Never", text: "Never"},
+    {value: "At the 3rd week", text:"At the 3rd week"},
+    {value: "At the 4th week", text: "At the 4th week"},
+    {value: "Both at 3rd and 4th weeks", text: "Both at 3rd and 4th weeks"}
+  ]
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute
@@ -39,12 +48,17 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   ngOnInit(): void {
     this.route.parent.params.subscribe();
     this.questionnaireToManage = this.initQuestionnaireToManage();
+    this.version = this.course.year === "2023-2024" ? "1.0" : "2.0";
   }
 
   async submitQuestionnaire(){
-    if ((this.questionnaireToManage.q1 === true && this.questionnaireToManage.q2 && this.questionnaireToManage.q3) ||
-      this.questionnaireToManage.q1 === false)
-    {
+    if (
+      (this.questionnaireToManage.q1 === "0" || this.questionnaireToManage.q1 === "Never") ||
+      (this.questionnaireToManage.q1 === "1" && this.questionnaireToManage.q2 && this.questionnaireToManage.q3) || // version 1
+      (this.questionnaireToManage.q1 === "At the 3rd week" && this.questionnaireToManage.q2 && this.questionnaireToManage.q3) || // version 2
+      (this.questionnaireToManage.q1 === "At the 4th week" && this.questionnaireToManage.q2 && this.questionnaireToManage.q4) || // version 2
+      (this.questionnaireToManage.q1 === "Both at 3rd and 4th weeks" && this.questionnaireToManage.q2 && this.questionnaireToManage.q3 && this.questionnaireToManage.q4) // version 2
+    ) {
       this.questionnaireToManage.element = this.gameElement.module;
       await this.api.submitGameElementQuestionnaire(clearEmptyValues(this.questionnaireToManage)).toPromise();
 
@@ -67,6 +81,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
       q1: null,
       q2: null,
       q3: null,
+      q4: null,
       element: "",
       isAnswered: false
     };
@@ -83,9 +98,10 @@ export class PreferenceQuestionnaireComponent implements OnInit{
 export interface QuestionnaireManageData{
   course?: number,
   user?: number,
-  q1?: boolean,
+  q1?: string,
   q2?: string,
   q3?: number,
+  q4?: number,
   element?: string,
   isAnswered?: boolean
 }

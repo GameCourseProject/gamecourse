@@ -16,7 +16,7 @@
     </div>
 
     <!-- Question 1 -->
-    <div class="w-full flex flex-wrap mb-3">
+    <div class="w-full flex flex-wrap mb-3" *ngIf="version === '1.0'">
       <span class="font-semibold w-full">
         Have you noticed any changes regarding the <strong><i>{{gameElement.module}}</i></strong> element after
         the 2nd week of the course?
@@ -50,8 +50,25 @@
       </div>
     </div>
 
+    <div class="w-full flex flex-wrap mb-3" *ngIf="version === '2.0'">
+      <span class="font-semibold w-full">
+        When have you noticed changes regarding the <strong><i>{{gameElement.module}}</i></strong> element since
+        the beginning of the course?
+        <span class="text-secondary ml-1">*</span>
+      </span>
+      <div class="w-full">
+        <app-input-select
+          [id]="'notice-changes'"
+          [form] = "q"
+          [classList]="'mt-2'"
+          [(value)]="questionnaireToManage.q1"
+          [options]="weekOptions"
+        ></app-input-select>
+      </div>
+    </div>
+
     <!-- Question 2 -->
-    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap mb-4">
+    <div *ngIf="questionnaireToManage.q1 && questionnaireToManage.q1 != 'Never'" class="w-full flex flex-wrap mb-4">
       <app-input-textarea
         class="w-full"
         [id] = "'changes-description'"
@@ -66,19 +83,50 @@
     </div>
 
     <!-- Question 3 -->
-    <div *ngIf="questionnaireToManage.q1" class="w-full flex flex-wrap">
+    <div *ngIf="version === '1.0' && questionnaireToManage.q1" class="w-full flex flex-wrap">
       <app-input-number
         class="w-full"
         [id]="'scale-preferences'"
         [placeholder]="'1 - hate it ; 10 - love it'"
         [form] = "q"
-        [topLabel]="'On a scale from 1 to 10, how happy are you with said changes, from week 3 onwards?'"
+        [topLabel]="'On a scale from 1 to 10, what did you think of said changes?'"
         [required]="true"
         [(value)]="questionnaireToManage.q3"
         [minValue]="1"
         [maxValue]="10">
       </app-input-number>
     </div>
+
+    <div *ngIf="version === '2.0' && (questionnaireToManage.q1 === 'At the 3rd week' || questionnaireToManage.q1 === 'Both at 3rd and 4th weeks')"
+         class="w-full flex flex-wrap">
+      <app-input-number
+        class="w-full"
+        [id]="'scale-preferences-week3'"
+        [placeholder]="'1 - hate it ; 10 - love it'"
+        [form] = "q"
+        [topLabel]="'On a scale from 1 to 10, how much did you enjoy the version you observed at the 3rd week?'"
+        [required]="true"
+        [(value)]="questionnaireToManage.q3"
+        [minValue]="1"
+        [maxValue]="10">
+      </app-input-number>
+    </div>
+
+    <div *ngIf="version === '2.0' && (questionnaireToManage.q1 === 'At the 4th week' || questionnaireToManage.q1 === 'Both at 3rd and 4th weeks')"
+         class="w-full flex flex-wrap">
+      <app-input-number
+        class="w-full"
+        [id]="'scale-preferences-week4'"
+        [placeholder]="'1 - hate it ; 10 - love it'"
+        [form] = "q"
+        [topLabel]="'On a scale from 1 to 10, how much did you enjoy the version you observed at the 4th week?'"
+        [required]="true"
+        [(value)]="questionnaireToManage.q4"
+        [minValue]="1"
+        [maxValue]="10">
+      </app-input-number>
+    </div>
+
   </form>
 </ng-template>
 
