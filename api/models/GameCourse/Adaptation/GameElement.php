@@ -279,7 +279,7 @@ class GameElement
         if ($nrStudents == 0) $nrStudents = 1;
 
         // Version 1 of the questionnaire
-        if ($course->getYear() === '2023-2024') {
+        if ($course->getYear() === '2022-2023') {
             $entriesTrue = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
             $entriesFalse = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
             $response["question1"]["false"] = $entriesTrue;

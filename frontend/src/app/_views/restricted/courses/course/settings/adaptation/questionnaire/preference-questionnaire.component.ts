@@ -48,7 +48,7 @@ export class PreferenceQuestionnaireComponent implements OnInit{
   ngOnInit(): void {
     this.route.parent.params.subscribe();
     this.questionnaireToManage = this.initQuestionnaireToManage();
-    this.version = this.course.year === "2023-2024" ? "1.0" : "2.0";
+    this.version = this.course.year === "2022-2023" ? "1.0" : "2.0";
   }
 
   async submitQuestionnaire(){
