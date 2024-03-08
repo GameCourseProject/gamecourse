@@ -581,7 +581,7 @@ class GameElementTest extends TestCase
 
         $this->assertEquals([
             "LB001" => "Shows entire leaderboard",
-            "LB002" => "Leaderboard is snapped and shows 5 people above and below you"], $leaderboardChildren);
+            "LB002" => "Leaderboard is snapped and shows 3 people above and 3 people below you"], $leaderboardChildren);
         $this->assertEquals([
             "P001" => "Profile displays graphs comparing yourself vs. everyone else",
             "P002" => "Profile displays graphs comparing yourself vs. people with similar progress as you",

@@ -180,9 +180,10 @@ CREATE TABLE adaptation_questionnaire_answers(
     id          int unsigned AUTO_INCREMENT PRIMARY KEY,
     course      int unsigned NOT NULL,
     user        int unsigned NOT NULL,
-    question1   boolean NOT NULL DEFAULT FALSE,
+    question1   varchar(250) NOT NULL DEFAULT '0',
     question2   varchar(250),   /* default here is null */
     question3   int unsigned,   /* default here is 0 */
+    question4   int unsigned,   /* default here is 0 */
     element     int unsigned NOT NULL,
     date        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

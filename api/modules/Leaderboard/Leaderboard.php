@@ -52,7 +52,7 @@ class Leaderboard extends Module
     // Structure is: [ Game_element => [ "VersionA" => [ description, profiling_adaptation_role_connection ] ] ]
     const ADAPTATION_LEADERBOARD = [ "Leaderboard" =>
         ["LB001" => ["Shows entire leaderboard", [ "Regular", "Achiever" ]],
-         "LB002" => ["Leaderboard is snapped and shows 5 people above and below you", [ "Halfhearted", "Underachiever" ]]]];
+         "LB002" => ["Leaderboard is snapped and shows 3 people above and 3 people below you", [ "Halfhearted", "Underachiever" ]]]];
 
     /*** ----------------------------------------------- ***/
     /*** -------------------- Setup -------------------- ***/

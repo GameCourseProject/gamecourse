@@ -37,6 +37,7 @@ export class AdaptationComponent implements OnInit {
   readonly tableType: string[] = ['overall', 'question2'];
 
   /** -- ADMIN VARIABLES -- **/
+  version: string = "2.0"; // FIXME: Hardcoded the questionnaire formats (didn't want to lose data from last year)
   nrAnswers: number = 0;
   nrStudents: number = 0;
   gameElementToManage: GameElementManageData = this.initGameElementToManage();
@@ -44,8 +45,8 @@ export class AdaptationComponent implements OnInit {
 
   statistics = {
     q1: { series: null,
-          colors: ["#C53B55", "#65E59F"],
-          labels: ["Yes", "No"],
+          colors: ["#717171", "#61BE88", "#71c0ee", "#f86fbf"],
+          labels: ["Never", "At the 3rd week", "At the 4th week", "Both at 3rd and 4th weeks"],
           title: "Question 1:",
           subtitle: "Percentage of students that noticed differences in their interface."
     },
@@ -77,7 +78,24 @@ export class AdaptationComponent implements OnInit {
             { color: "#DF1D3D", value: "1"}
           ],
           title: "Question 3:",
-          subtitle: "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
+          subtitle: "How many students thought about this game element at the 3rd week per enjoyment level (1-lowest, 10-highest)."
+    },
+    q4: { series: [{ name: "Nº of students", data: null}],
+          categories: [ "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"],
+          highlights: [
+            { color: "#61BE88", value: "10"},
+            { color: "#8BC972", value: "9" },
+            { color: "#AED257", value: "8" },
+            { color: "#D6D83F", value: "7" },
+            { color: "#F9DF1D", value: "6" },
+            { color: "#FFC92A", value: "5" },
+            { color: "#FBAD37", value: "4" },
+            { color: "#F88A3B", value: "3" },
+            { color: "#EE603B", value: "2" },
+            { color: "#DF1D3D", value: "1"}
+          ],
+          title: "Question 4:",
+          subtitle: "How many students thought about this game element at the 4th week per enjoyment level (1-lowest, 10-highest)."
     }
   }
 
@@ -108,7 +126,19 @@ export class AdaptationComponent implements OnInit {
       await this.getCourse(courseID);
 
       await this.getGameElements(courseID);
+
+      this.version = this.course.year === "2022-2023" ? "1.0" : "2.0";
       this.loading.page = false;
+
+      if (this.version === "1.0") {
+        this.statistics.q1 = { series: null,
+          colors: ["#C53B55", "#65E59F"],
+          labels: ["Yes", "No"],
+          title: "Question 1:",
+          subtitle: "Percentage of students that noticed differences in their interface."
+        }
+        this.statistics.q3.subtitle = "How many students thought about this game element per enjoyment level (1-lowest, 10-highest)."
+      }
 
       await this.buildTable(this.tableType[0]);
 
@@ -156,6 +186,7 @@ export class AdaptationComponent implements OnInit {
           q1: null,
           q2: null,
           q3: null,
+          q4: null,
           element: this.availableGameElements[i].module,
           isAnswered: await this.api.isQuestionnaireAnswered(this.course.id, this.user.id, this.availableGameElements[i].id).toPromise()
         }
@@ -285,16 +316,17 @@ export class AdaptationComponent implements OnInit {
   /** -- ADMIN ACTIONS -- **/
   async toggleActive(){
     this.loading.action = true;
+    let newState;
 
     if ((this.gameElementToManage.isActive).toString() === 'true' || (this.gameElementToManage.isActive).toString() === 'false'){
-      this.gameElementToManage.isActive = !this.gameElementToManage.isActive;
+      newState = !this.gameElementToManage.isActive;
     }
     else if ((this.gameElementToManage.isActive).toString() === '0' || (this.gameElementToManage.isActive).toString() === '1'){
-      this.gameElementToManage.isActive = (this.gameElementToManage.isActive).toString() !== '1';
+      newState = (this.gameElementToManage.isActive).toString() !== '1';
     }
 
     const gameElement = await this.api.setGameElementActive(this.course.id, this.gameElementToManage.module,
-      this.gameElementToManage.isActive, this.gameElementToManage.notify).toPromise();
+      newState, this.gameElementToManage.notify).toPromise();
 
     const index = this.availableGameElements.findIndex(element => (element.id).toString() === (gameElement.id).toString());
     this.availableGameElements.removeAtIndex(index);
@@ -304,7 +336,7 @@ export class AdaptationComponent implements OnInit {
     this.loading.action = false;
     this.resetGameElementManage();
     ModalService.closeModal('manage-game-element');
-    AlertService.showAlert(AlertType.SUCCESS, 'Game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
+    AlertService.showAlert(AlertType.SUCCESS, 'Adaptation for game element \'' + gameElement.module + '\' ' + this.adminMode + 'd');
 
   }
 
@@ -360,7 +392,7 @@ export class AdaptationComponent implements OnInit {
   async preparePreferences(gameElement: string){
     this.activeButton = null;
 
-    if (gameElement !== "undefined"){
+    if (gameElement && gameElement !== ""){
       await this.getChildren(gameElement);
       await this.getPreviousPreference(gameElement);
     }
@@ -431,6 +463,8 @@ export class AdaptationComponent implements OnInit {
     this.statistics.q2.data = Object.values(statistics["question2"]);
     // Question 3 data
     this.statistics.q3.series[0].data = ((Object.values(statistics["question3"])).map(element => {return parseInt(<string>element);})).reverse();
+    // Question 4 data
+    if (this.version === "2.0") this.statistics.q4.series[0].data = ((Object.values(statistics["question4"])).map(element => {return parseInt(<string>element);})).reverse();
 
     await this.buildTable(this.tableType[1]);
   }
@@ -496,9 +530,10 @@ export interface GameElementManageData {
 export interface QuestionnaireManageData{
   course?: number,
   user?: number,
-  q1?: boolean,
+  q1?: string,
   q2?: string,
   q3?: number,
+  q4?: number,
   element?: string,
   isAnswered?: boolean
 }
