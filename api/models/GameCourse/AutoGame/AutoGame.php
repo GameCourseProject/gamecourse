@@ -403,7 +403,7 @@ abstract class AutoGame
     public static function getLogs(int $courseId): string
     {
         $logsFile = self::getLogsFile($courseId, false);
-        return Utils::getLogs($logsFile);
+        return Utils::getFinalLogs($logsFile, 5000);
     }
 
     /**
