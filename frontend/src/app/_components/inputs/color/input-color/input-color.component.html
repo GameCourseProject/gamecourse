@@ -51,7 +51,7 @@
       <ng-icon [name]="'tabler-check'" size="1.5rem"></ng-icon>
     </button>
 
-    <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
+    <div class="dropdown {{position == 'top' ? 'dropdown-top' : 'dropdown-end'}}" (clickedOutside)="this.closePicker()">
       <!-- Color Picker Button -->
       <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}} btn-{{size}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>

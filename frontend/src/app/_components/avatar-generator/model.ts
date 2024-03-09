@@ -131,22 +131,28 @@ export interface Colors {
   glasses?: string;
 }
 
-export interface Texts {
-  everything: string;
-  face: string;
-  allColors: string;
-  background: string;
-  skin: string;
-  hair: string;
-  hairStyle: string;
-  eyebrows: string;
-  eyes: string;
-  nose: string;
-  mouth: string;
-  facialHair: string;
-  accessory: string;
-  clothes: string;
-  clothing: string;
-  print: string;
-  glasses: string;
-}
+export const SkinTones = [
+  "#ffe0bd", "#ffcd94", "#eac086", "#ffad60", "#c2854a", "#b06f38", "#6b431d",
+  "#f2efee", "#efe6dd", "#ebd3c5", "#d7b6a5", "#9f7967", "#86604c",
+  "#523b2d", "#D3B2A3", "#B49F96", "#958C89", "#A28578", "#745F56", "#2E2622", "#211c16",
+  "#ffd9e0", "#ffbecb", "#ffb1c1", "#ff9c9c", "#d98181", "#723f3f", "#562424",
+]
+
+export const HairColors = [
+  "#fff8e7", "#fddcb1", "#fccc87", "#ffb366", "#e89e5d", "#d2853d", "#ba6b2d",
+  "#8B4513", "#A52A2A", "#CD853F", "#8B5A2B", "#A36D40", "#B8860B", "#D2B48C",
+  "#333333", "#404040", "#4d4d4d", "#595959", "#666666", "#737373", "#808080",
+  "#ff9999", "#ff6666", "#ff3333", "#ff0000", "#cc0000", "#990000", "#660000",
+];
+
+export const BackgroundColors = [
+  '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C',
+  '#F06292', '#EC407A', '#E91E63', '#D81B60', '#C2185B', '#AD1457', '#880E4F',
+  '#BA68C8', '#AB47BC', '#9C27B0', '#8E24AA', '#7B1FA2', '#6A1B9A', '#4A148C',
+  '#7986CB', '#5C6BC0', '#3F51B5', '#3949AB', '#303F9F', '#283593', '#1A237E',
+  '#64B5F6', '#42A5F5', '#2196F3', '#1E88E5', '#1976D2', '#1565C0', '#0D47A1',
+  '#4DB6AC', '#26A69A', '#009688', '#00897B', '#00796B', '#00695C', '#004D40',
+  '#81C784', '#66BB6A', '#4CAF50', '#43A047', '#388E3C', '#2E7D32', '#1B5E20',
+  '#FFD54F', '#FFCA28', '#FFC107', '#FFB300', '#FFA000', '#FF8F00', '#FF6F00',
+];
+

@@ -29,13 +29,15 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add
   @Input() disabled?: boolean;                                        // Make it disabled
-  @Input() colors?: string[];                                          // Custom swatches of colors
+  @Input() colors?: string[];                                         // Custom swatches of colors
 
   @Input() topLabel?: string;                                         // Top label text
   @Input() leftLabel?: string;                                        // Text on prepended label
 
   @Input() helperText?: string;                                       // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';      // Helper position
+
+  @Input() position?: 'top' | 'end';                                  // Position of the picker
 
   // Validity
   @Input() pattern?: string = this.COLOR_PATTERN;                     // The pattern to be applied
@@ -84,9 +86,9 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       lockOpacity: true,
       comparison: false,
       components: {
-        preview: this.colors == null,
+        preview: true,
         opacity: false,
-        hue: this.colors == null,
+        hue: true,
       },
       swatches: this.colors ?? [
         '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C',

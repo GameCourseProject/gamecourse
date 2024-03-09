@@ -4,6 +4,9 @@ import {
   ClothingGraphicTypes,
   ClothingTypes,
   Colors,
+  SkinTones,
+  HairColors,
+  BackgroundColors,
   EyebrowTypes,
   EyeTypes,
   FacialHairTypes,
@@ -59,6 +62,11 @@ export class AvatarGeneratorComponent implements OnInit {
   glassesTypesArray: GlassesTypes[] = Object.keys(GlassesTypes) as GlassesTypes[];
   clothingTypesArray: ClothingTypes[] = Object.keys(ClothingTypes) as ClothingTypes[];
   clothingGraphicTypesArray: ClothingGraphicTypes[] = Object.keys(ClothingGraphicTypes) as ClothingGraphicTypes[];
+
+  protected readonly ClothingTypes = ClothingTypes;
+  protected readonly SkinTones = SkinTones;
+  protected readonly HairColors = HairColors;
+  protected readonly BackgroundColors = BackgroundColors;
 
   private url: string;
   constructor() {
@@ -133,10 +141,6 @@ export class AvatarGeneratorComponent implements OnInit {
 
   public selectEyeType(eyes: EyeTypes): void {
     this.selectedEye = eyes;
-  }
-
-  public selectNoseType(nose: NoseTypes): void {
-    this.selectedNose = nose;
   }
 
   public selectMouthType(mouth: MouthTypes): void {
@@ -222,5 +226,4 @@ export class AvatarGeneratorComponent implements OnInit {
     return "#000000".replace(/0/g,()=> (~~(Math.random()*16)).toString(16));
   }
 
-  protected readonly ClothingTypes = ClothingTypes;
 }
