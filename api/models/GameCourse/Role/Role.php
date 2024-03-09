@@ -162,25 +162,33 @@ class Role
             $course->setRolesHierarchy($hierarchy);
         }
 
+        $somethingChanged = false;
         // Add parent
-        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
-
+        if (!in_array($parent, $rolesNames)) {
+            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+            $somethingChanged = true;
+        }
         // Add children
         foreach ($children as $child){
-            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-        }
-
-        // Update roles hierarchy
-        $hierarchy = $course->getRolesHierarchy();
-
-        foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
-            if ($value["name"] == self::ADAPTATION_ROLE){
-                $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
-                    "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
-                break;
+            if (!in_array($child, $rolesNames)) {
+                self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+                $somethingChanged = true;
             }
         }
-        $course->setRolesHierarchy($hierarchy);
+
+        if ($somethingChanged) {
+            // Update roles hierarchy
+            $hierarchy = $course->getRolesHierarchy();
+
+            foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
+                if ($value["name"] == self::ADAPTATION_ROLE){
+                    $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
+                        "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
+                    break;
+                }
+            }
+            $course->setRolesHierarchy($hierarchy);
+        }
     }
 
     /**

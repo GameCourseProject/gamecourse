@@ -74,11 +74,13 @@ class Profiling extends Module
         Core::database()->insert(self::TABLE_PROFILING_CONFIG, ["course" => $this->course->getId()]);
 
         // Add main profiling role
-        $this->course->addRole(self::PROFILING_ROLE, null, null, self::ID);
-        $hierarchy = $this->course->getRolesHierarchy();
-        $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
-        $hierarchy[$studentIndex]["children"][] = ["name" => self::PROFILING_ROLE];
-        $this->course->setRolesHierarchy($hierarchy);
+        if (!$this->course->hasRole(self::PROFILING_ROLE)) {
+            $this->course->addRole(self::PROFILING_ROLE, null, null, self::ID);
+            $hierarchy = $this->course->getRolesHierarchy();
+            $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
+            $hierarchy[$studentIndex]["children"][] = ["name" => self::PROFILING_ROLE];
+            $this->course->setRolesHierarchy($hierarchy);
+        }
 
         // Create cluster roles
         $hierarchy = $this->course->getRolesHierarchy();
