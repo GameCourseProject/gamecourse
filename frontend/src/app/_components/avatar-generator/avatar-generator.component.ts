@@ -29,15 +29,17 @@ export class AvatarGeneratorComponent implements OnInit {
   @Output() private svgUrl = new EventEmitter<string>();
   @ViewChild('avatar', {read: ElementRef}) avatar: ElementRef;
 
-  public selectedHair: HairTypes;
-  public selectedEyebrow: EyebrowTypes;
-  public selectedEye: EyeTypes;
-  public selectedMouth: MouthTypes;
-  public selectedFacialHair: FacialHairTypes;
-  public selectedGlasses: GlassesTypes;
-  public selectedNose: NoseTypes;
-  public selectedClothing: ClothingTypes;
-  public selectedClothingGraphic: ClothingGraphicTypes;
+  public selected: {
+    hair: HairTypes;
+    eyebrow: EyebrowTypes;
+    eye: EyeTypes;
+    mouth: MouthTypes;
+    facialHair: FacialHairTypes;
+    glasses: GlassesTypes;
+    nose: NoseTypes;
+    clothing: ClothingTypes;
+    clothingGraphic: ClothingGraphicTypes;
+  }
 
   public colors: Colors = {
     hair: '',
@@ -64,6 +66,7 @@ export class AvatarGeneratorComponent implements OnInit {
   clothingGraphicTypesArray: ClothingGraphicTypes[] = Object.keys(ClothingGraphicTypes) as ClothingGraphicTypes[];
 
   protected readonly ClothingTypes = ClothingTypes;
+  protected readonly HairTypes = HairTypes;
   protected readonly SkinTones = SkinTones;
   protected readonly HairColors = HairColors;
   protected readonly BackgroundColors = BackgroundColors;
@@ -73,7 +76,20 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.selected = {
+      hair: null,
+      eyebrow: null,
+      eye: null,
+      mouth: null,
+      facialHair: null,
+      glasses: null,
+      nose: null,
+      clothing: null,
+      clothingGraphic: null,
+    }
     this.goCompletelyRandom();
+    console.log(this.selected);
+    console.log(this.colors);
   }
 
   public goCompletelyRandom(): void {
@@ -96,71 +112,71 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   public getRandomHairStyle(): void {
-    this.selectedHair = this.getRandomStyle(this.hairTypesArray, HairTypes).name;
+    this.selected.hair = this.getRandomStyle(this.hairTypesArray, HairTypes).name;
   }
 
   public getRandomEyebrowType(): void {
-    this.selectedEyebrow = this.getRandomStyle(this.eyebrowTypesArray, EyebrowTypes).name;
+    this.selected.eyebrow = this.getRandomStyle(this.eyebrowTypesArray, EyebrowTypes).name;
   }
 
   public getRandomEyeType(): void {
-    this.selectedEye = this.getRandomStyle(this.eyeTypesArray, EyeTypes).name;
+    this.selected.eye = this.getRandomStyle(this.eyeTypesArray, EyeTypes).name;
   }
 
   public getRandomNoseType(): void {
-    this.selectedNose = this.getRandomStyle(this.noseTypesArray, NoseTypes).name;
+    this.selected.nose = this.getRandomStyle(this.noseTypesArray, NoseTypes).name;
   }
 
   public getRandomMouthType(): void {
-    this.selectedMouth = this.getRandomStyle(this.mouthTypesArray, MouthTypes).name;
+    this.selected.mouth = this.getRandomStyle(this.mouthTypesArray, MouthTypes).name;
   }
 
   public getRandomFacialHairType(): void {
-    this.selectedFacialHair = this.getRandomStyle(this.facialHairTypesArray, FacialHairTypes).name;
+    this.selected.facialHair = this.getRandomStyle(this.facialHairTypesArray, FacialHairTypes).name;
   }
 
   public getRandomGlassesType(): void {
-    this.selectedGlasses = this.getRandomStyle(this.glassesTypesArray, GlassesTypes).name;
+    this.selected.glasses = this.getRandomStyle(this.glassesTypesArray, GlassesTypes).name;
   }
 
   public getRandomClothing(): void {
-    this.selectedClothing = this.getRandomStyle(this.clothingTypesArray, ClothingTypes).name;
+    this.selected.clothing = this.getRandomStyle(this.clothingTypesArray, ClothingTypes).name;
   }
 
   public getRandomClothingGraphic(): void {
-    this.selectedClothingGraphic = this.getRandomStyle(this.clothingGraphicTypesArray, ClothingGraphicTypes).name;
+    this.selected.clothingGraphic = this.getRandomStyle(this.clothingGraphicTypesArray, ClothingGraphicTypes).name;
   }
 
   public selectHairType(hair: HairTypes): void {
-    this.selectedHair = hair;
+    this.selected.hair = hair;
   }
 
   public selectEyebrowType(eyebrow: EyebrowTypes): void {
-    this.selectedEyebrow = eyebrow;
+    this.selected.eyebrow = eyebrow;
   }
 
   public selectEyeType(eyes: EyeTypes): void {
-    this.selectedEye = eyes;
+    this.selected.eye = eyes;
   }
 
   public selectMouthType(mouth: MouthTypes): void {
-    this.selectedMouth = mouth;
+    this.selected.mouth = mouth;
   }
 
   public selectFacialHairType(hair: FacialHairTypes): void {
-    this.selectedFacialHair = hair;
+    this.selected.facialHair = hair;
   }
 
   public selectGlassesType(glasses: GlassesTypes): void {
-    this.selectedGlasses = glasses;
+    this.selected.glasses = glasses;
   }
 
   public selectClothingType(clothes: ClothingTypes): void {
-    this.selectedClothing = clothes;
+    this.selected.clothing = clothes;
   }
 
   public selectClothingGraphicType(graphic: ClothingGraphicTypes): void {
-    this.selectedClothingGraphic = graphic;
+    this.selected.clothingGraphic = graphic;
   }
 
   private getRandomStyle(typesArray: Array<any>, enumm: typeof HairTypes | typeof ClothingTypes | typeof ClothingGraphicTypes | typeof EyebrowTypes | typeof EyeTypes | typeof NoseTypes | typeof MouthTypes | typeof FacialHairTypes | typeof GlassesTypes): { name: any, index: number } {

@@ -1,17 +1,17 @@
-<div class="md:h-full md:grid grid-cols-[1fr_3fr] flex flex-col gap-10">
+<div *ngIf="selected" class="md:h-full md:grid grid-cols-[1fr_3fr] flex flex-col gap-10">
   <div class="flex flex-col items-center gap-5 mt-2">
     <app-avatar #avatar
                 (avatarChanged)="prepareLink()"
-                [clothing]="selectedClothing"
-                [clothingGraphic]="selectedClothingGraphic"
+                [clothing]="selected.clothing"
+                [clothingGraphic]="selected.clothingGraphic"
                 [colors]="getColorsObject()"
-                [hairType]="selectedHair"
-                [eyebrowType]="selectedEyebrow"
-                [eyeType]="selectedEye"
-                [noseType]="selectedNose"
-                [mouthType]="selectedMouth"
-                [facialHairType]="selectedFacialHair"
-                [glassesType]="selectedGlasses"
+                [hairType]="selected.hair"
+                [eyebrowType]="selected.eyebrow"
+                [eyeType]="selected.eye"
+                [noseType]="selected.nose"
+                [mouthType]="selected.mouth"
+                [facialHairType]="selected.facialHair"
+                [glassesType]="selected.glasses"
                 [shape]="shape"
                 [enableBackground]="enableBackground"
                 [enableFace]="enableFace"
@@ -80,7 +80,7 @@
               [group] = "'nose'"
               [optionValue] = "'NONE'"
               [label]="'No'"
-              [(value)]="selectedNose"
+              [(value)]="selected.nose"
               [color]="'primary'"
             ></app-input-radio>
             <app-input-radio
@@ -88,7 +88,7 @@
               [group] = "'nose'"
               [optionValue] = "'DEFAULT'"
               [label]="'Yes'"
-              [(value)]="selectedNose"
+              [(value)]="selected.nose"
               [color]="'primary'"
             ></app-input-radio>
           </div>
@@ -96,7 +96,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-4 mt-4">
+    <div class="flex flex-col gap-4 mt-4 pb-36">
       <!-- Hair -->
       <div class="card bg-base-100 shadow-xl w-full">
         <div class="card-body flex flex-col">
@@ -113,7 +113,7 @@
             </div>
           <div class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let hair of hairTypesArray"
-                    class="w-full bg-base-300 rounded-md {{hair === selectedHair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{hair === selected.hair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectHairType(hair)">
               <app-avatar
                 [hairType]="hair"
@@ -123,6 +123,18 @@
               >
               </app-avatar>
             </button>
+          </div>
+          <!-- Accessory -->
+          <div *ngIf="selected.hair === HairTypes.FRIDA || selected.hair === HairTypes.FROANDBAND" class="divider"></div>
+          <div *ngIf="selected.hair === HairTypes.FRIDA || selected.hair === HairTypes.FROANDBAND" class="flex flew-row gap-2 items-center">
+              <div class="card-title pb-2">Accessory</div>
+                <div class="ml-auto flex flex-row gap-2 items-center">
+                    <app-input-color
+                            [id]="'graphic-color'"
+                            [(value)]="colors.accessory"
+                    ></app-input-color>
+                    <button class="btn btn-ghost btn-circle" (click)="colors.accessory = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
           </div>
         </div>
       </div>
@@ -142,7 +154,7 @@
             </div>
           <div class="grid md:grid-cols-6 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let eyes of eyeTypesArray"
-                    class="w-full bg-base-300 rounded-md {{eyes === selectedEye ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{eyes === selected.eye ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectEyeType(eyes)">
               <app-avatar
                 [eyeType]="eyes"
@@ -172,7 +184,7 @@
           </div>
           <div class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let eyebrow of eyebrowTypesArray"
-                    class="w-full bg-base-300 rounded-md {{eyebrow === selectedEyebrow ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{eyebrow === selected.eyebrow ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectEyebrowType(eyebrow)">
               <app-avatar
                 [eyebrowType]="eyebrow"
@@ -201,7 +213,7 @@
           </div>
           <div class="grid md:grid-cols-6 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let mouth of mouthTypesArray"
-                    class="w-full bg-base-300 rounded-md {{mouth === selectedMouth ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{mouth === selected.mouth ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectMouthType(mouth)">
               <app-avatar
                 [mouthType]="mouth"
@@ -232,7 +244,7 @@
             </div>
             <div class="grid grid-cols-3 gap-2 mt-4">
               <button *ngFor="let hair of facialHairTypesArray"
-                      class="w-full bg-base-300 rounded-md {{hair === selectedFacialHair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                      class="w-full bg-base-300 rounded-md {{hair === selected.facialHair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                       (click)="selectFacialHairType(hair)">
                 <app-avatar
                   [facialHairType]="hair"
@@ -260,7 +272,7 @@
             </div>
             <div class="grid grid-cols-3 gap-2 mt-4">
               <button *ngFor="let glasses of glassesTypesArray"
-                      class="w-full bg-base-300 rounded-md {{glasses === selectedGlasses ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                      class="w-full bg-base-300 rounded-md {{glasses === selected.glasses ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                       (click)="selectGlassesType(glasses)">
                 <app-avatar
                   [glassesType]="glasses"
@@ -290,7 +302,7 @@
           </div>
           <div class="grid md:grid-cols-5 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let clothes of clothingTypesArray"
-                    class="w-full bg-base-300 rounded-md {{clothes === selectedClothing ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{clothes === selected.clothing ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectClothingType(clothes)">
               <app-avatar
                 [clothing]="clothes"
@@ -302,8 +314,8 @@
             </button>
           </div>
           <!-- Print -->
-          <div *ngIf="selectedClothing === ClothingTypes.GRAPHIC_SHIRT" class="divider"></div>
-          <div *ngIf="selectedClothing === ClothingTypes.GRAPHIC_SHIRT" class="flex flew-row gap-2 items-center">
+          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="divider"></div>
+          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="flex flew-row gap-2 items-center">
             <div class="card-title pb-2">Print</div>
             <div class="ml-auto flex flex-row gap-2 items-center">
               <app-input-color
@@ -313,12 +325,12 @@
               <button class="btn btn-ghost btn-circle" (click)="colors.graphic = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
             </div>
           </div>
-          <div *ngIf="selectedClothing === ClothingTypes.GRAPHIC_SHIRT" class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
+          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let graphic of clothingGraphicTypesArray"
-                    class="w-full bg-base-300 rounded-md {{graphic === selectedClothingGraphic ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{graphic === selected.clothingGraphic ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectClothingGraphicType(graphic)">
               <app-avatar
-                [clothing]="selectedClothing"
+                [clothing]="selected.clothing"
                 [clothingGraphic]="graphic"
                 [enableFace]="true"
                 [enableHead]="false"
