@@ -531,6 +531,22 @@ class Role
         return !empty(Core::database()->select(self::TABLE_ROLE, $where));
     }
 
+    /**
+     * Copies the roles from one course to another.
+     *
+     * @param Course $from
+     * @param Course $to
+     * @throws Exception
+     */
+    public static function copyRoles(Course $from, Course $to)
+    {
+        $rolesToCopy = $from->getRoles(false);
+        foreach($rolesToCopy as $role) {
+            // FIXME: Landing page -> probably do it by name, since the page is going to be a different (copied) one
+            self::addRoleToCourse($to->getId(), $role["name"], null, null, $role["module"]);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ------------------- User related ------------------- ***/

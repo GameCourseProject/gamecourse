@@ -446,7 +446,7 @@ class Course
 
         // Copy roles
         $course->setRolesHierarchy($courseToCopy->getRolesHierarchy());
-        $course->setRoles($courseToCopy->getRoles());
+        Role::copyRoles($courseToCopy, $course);
 
         // Make user a teacher
         $courseUser = $course->getCourseUserById(Core::getLoggedUser()->getId());
