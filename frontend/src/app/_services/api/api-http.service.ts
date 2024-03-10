@@ -3693,7 +3693,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])));
   }
 
-  public getAutogameStatus(courseID: number): Observable<DataSourceStatus> {
+  public getAutoGameStatus(courseID: number): Observable<DataSourceStatus> {
     const data = {
       "courseId": courseID,
     }
@@ -3711,6 +3711,37 @@ export class ApiHttpService {
         return res['data'];
       }) );
   }
+
+  public runAutoGameNow(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNow');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
+  public runAutoGameNowForAllTargets(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNowForAllTargets');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/

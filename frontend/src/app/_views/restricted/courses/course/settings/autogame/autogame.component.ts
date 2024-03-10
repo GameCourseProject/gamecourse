@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from "@angular/router";
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute} from "@angular/router";
 
-import { Moment } from 'moment';
-import { TableDataType } from 'src/app/_components/tables/table-data/table-data.component';
-import { ApiHttpService } from 'src/app/_services/api/api-http.service';
+import {Moment} from 'moment';
+import {TableDataType} from 'src/app/_components/tables/table-data/table-data.component';
+import {ApiHttpService} from 'src/app/_services/api/api-http.service';
+import {AlertService, AlertType} from "../../../../../../_services/alert.service";
 
 @Component({
   selector: 'app-autogame',
@@ -39,7 +40,7 @@ export class AutogameComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   async getStatusInfo() {
-    this.status = await this.api.getAutogameStatus(this.courseID).toPromise();
+    this.status = await this.api.getAutoGameStatus(this.courseID).toPromise();
   }
 
 
@@ -91,6 +92,24 @@ export class AutogameComponent implements OnInit {
 
       this.loading.action = false;
     }
+  }
+
+  async runAutoGameNow() {
+    this.loading.action = true;
+    await this.api.runAutoGameNow(this.courseID).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, "AutoGame started running");
+    await this.getStatusInfo();
+    this.buildTable();
+    this.loading.action = false;
+  }
+
+  async runAutoGameNowForAllTargets() {
+    this.loading.action = true;
+    await this.api.runAutoGameNowForAllTargets(this.courseID).toPromise();
+    AlertService.showAlert(AlertType.SUCCESS, "AutoGame started running");
+    await this.getStatusInfo();
+    this.buildTable();
+    this.loading.action = false;
   }
 
 }
