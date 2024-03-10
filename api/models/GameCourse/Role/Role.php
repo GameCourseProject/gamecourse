@@ -533,6 +533,7 @@ class Role
 
     /**
      * Copies the roles from one course to another.
+     * Including their module.
      *
      * @param Course $from
      * @param Course $to
@@ -542,7 +543,6 @@ class Role
     {
         $rolesToCopy = $from->getRoles(false);
         foreach($rolesToCopy as $role) {
-            // FIXME: Landing page -> probably do it by name, since the page is going to be a different (copied) one
             self::addRoleToCourse($to->getId(), $role["name"], null, null, $role["module"]);
         }
     }

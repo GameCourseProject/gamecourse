@@ -16,7 +16,9 @@ use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
 use GameCourse\Views\Component\CustomComponent;
+use GameCourse\Views\CreationMode;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 use Utils\Cache;
 use Utils\CronJob;
 use Utils\Utils;
@@ -485,8 +487,27 @@ class Course
             }
         }
 
-        // TODO: copy views
-        // TODO: copy default landing page, roles landingPages
+        // Copy Pages
+        $pagesToCopy = array_values(Page::getPages($courseToCopy->getId()));
+        foreach ($pagesToCopy as $pageInfo) {
+            $viewTree = ViewHandler::buildView($pageInfo["viewRoot"], null, true);
+            $newPage = Page::addPage($course->getId(), CreationMode::BY_VALUE, $pageInfo["name"], $viewTree);
+            $newPage->setVisible($pageInfo["isVisible"]);
+        }
+        // TODO: copy templates and components?
+
+        // Copy Roles' Landing Pages
+        $rolesToCopy = $courseToCopy->getRoles(false);
+        foreach ($rolesToCopy as $role) {
+            $newRoleId = Role::getRoleId($role["name"], $course->getId());
+            if (isset($role["landingPage"])) {
+                $name = Page::getPageById($role["landingPage"])->getName();
+                $newPage = Page::getPageByName($course->getId(), $name);
+                if (isset($newPage)) {
+                    Core::database()->update(Role::TABLE_ROLE, ["landingPage" => $newPage->getId()], ["id" => $newRoleId]);
+                }
+            }
+        }
 
         // Copy AutoGame info
         AutoGame::copyAutoGameInfo($course->getId(), $courseToCopy->getId());
