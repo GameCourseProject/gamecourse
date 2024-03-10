@@ -96,7 +96,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   templateToAdd: any;                                      // Template that will be added, after user selects by value or by reference in the modal
 
   // ADD TEMPLATE OPTIONS
-  duplicateOptions: {name: string, char: string}[] = [     
+  duplicateOptions: {name: string, char: string}[] = [
     {name: "By reference", char: "ref"},
     {name: "By value", char: "value"}
   ];
@@ -115,7 +115,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.history.clear();
-    this._subscription = this.service.selectedChange.subscribe((value) => { 
+    this._subscription = this.service.selectedChange.subscribe((value) => {
       this.view = null;
       setTimeout(() => {
         this.view = value;
@@ -127,12 +127,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       await this.getLoggedUser();
       await this.getComponents();
       await this.getTemplates();
-      
+
       this.route.params.subscribe(async childParams => {
         const segmentForTemplate = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
         this.selection.setRearrange(false);
-        
+
         if (segment === 'new') {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
@@ -255,9 +255,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.viewsByAspect = data["viewTreeByAspect"];
     initGroupedChildren(data["viewTree"]);
     this.view = this.service.viewsByAspect[0].view;
-    
+
     if (this.editable) this.view.switchMode(ViewMode.EDIT);
-    
+
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.service.selectedAspect = this.aspects[0];
     this.aspectToSelect = this.service.selectedAspect;
@@ -558,7 +558,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async closeEditor() {
-    console.log(this.service.viewsByAspect);
     if (this.history.hasUndo()) {
       ModalService.openModal("exit-management");
     }
@@ -566,7 +565,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.closeConfirmed();
     }
   }
-  
+
   async closeConfirmed() {
     await this.router.navigate(['pages'], { relativeTo: this.route.parent });
   }
@@ -600,7 +599,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
     this.resetMenus();
   }
-  
+
   addTemplateToPage(item: View) {
     // Add child to the selected block
     if (this.selection.get()?.type === ViewType.BLOCK) {
@@ -627,9 +626,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   async savePage() {
     const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
 
-    console.log(buildedTree);
-    console.log(groupedChildren);
-    
     let image;
     try {
       image = await this.takeScreenshot();
@@ -640,12 +636,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
   }
-  
+
   async saveChanges() {
     const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
-
-    console.log(this.service.viewsByAspect);
-    console.log(buildedTree);
 
     let image;
     try {
@@ -679,7 +672,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   selectAspect(aspect: Aspect) {
     this.aspectToSelect = aspect;
   }
-  
+
   switchToAspect() {
     this.saveAspects();
     this.service.selectedAspect = this.aspectToSelect;
@@ -701,7 +694,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   submitAspects() {
     this.saveAspects();
-    console.log(this.service.viewsByAspect);
     ModalService.closeModal('manage-versions');
   }
 
@@ -723,7 +715,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     const deleted = this.aspectsToEdit.splice(aspectIdx, 1);
     this.service.aspectsToDelete.push(deleted[0]);
   }
-  
+
   // Components -----------------------------------------------------
 
   async saveComponent() {
@@ -734,7 +726,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     if (component instanceof ViewBlock) {
       component.children = [];
     }
-    else if (component instanceof ViewCollapse) { 
+    else if (component instanceof ViewCollapse) {
       if (component.header instanceof ViewBlock) {
         component.header.children = [];
       }
@@ -751,7 +743,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.setOptions();
     this.newComponentName = "";
   }
-  
+
   async shareComponent() {
     if (this.componentSettings.id) {
       await this.api.shareComponent(this.componentSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
@@ -761,7 +753,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.setOptions();
     }
   }
-  
+
   async makePrivateComponent() {
     if (this.componentSettings.id) {
       await this.api.makePrivateComponent(this.componentSettings.id, this.user.id).toPromise();
@@ -771,7 +763,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.setOptions();
     }
   }
-  
+
   async deleteComponent() {
     if (this.componentSettings.id) {
       await this.api.deleteCustomComponent(this.componentSettings.id, this.course.id).toPromise();
@@ -795,7 +787,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
   }
-  
+
   async shareTemplate() {
     if (this.templateSettings.id) {
       await this.api.shareTemplate(this.templateSettings.id, this.course.id, this.user.id, "").toPromise(); // FIXME description
@@ -805,7 +797,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.setOptions();
     }
   }
-  
+
   async makePrivateTemplate() {
     if (this.templateSettings.id) {
       await this.api.makePrivateTemplate(this.templateSettings.id, this.user.id).toPromise();
@@ -815,7 +807,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.setOptions();
     }
   }
-  
+
   async deleteTemplate() {
     if (this.templateSettings.id) {
       await this.api.deleteCustomTemplate(this.templateSettings.id, this.course.id).toPromise();
@@ -920,7 +912,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   getSelectedCategories() {
     return (this.activeSubMenu.items as CategoryList[]).filter((item) => item.isSelected);
   }
-  
+
   getSelectedCategoriesItems() {
     return this.getSelectedCategories().flatMap((category) => category.list);
   }
@@ -959,7 +951,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   isAspectSelected(aspect: Aspect) {
     return aspect === this.aspectToSelect;
   }
-  
+
 }
 
 export interface Option {
