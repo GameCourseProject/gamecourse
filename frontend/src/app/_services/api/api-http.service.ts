@@ -2045,6 +2045,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res ) );
   }
 
+  public importDataFromDataSource(courseID: number, moduleID: string): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'importDataFromDataSource');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res ) );
+  }
+
   // TODO: refactor
   public toggleItemParam(courseID: number, moduleID: string, itemID: number, param: string): Observable<void> {
     const data = {
