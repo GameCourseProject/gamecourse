@@ -162,25 +162,33 @@ class Role
             $course->setRolesHierarchy($hierarchy);
         }
 
+        $somethingChanged = false;
         // Add parent
-        self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
-
+        if (!in_array($parent, $rolesNames)) {
+            self::addRoleToCourse($courseId, $parent, null, null, $moduleId);
+            $somethingChanged = true;
+        }
         // Add children
         foreach ($children as $child){
-            self::addRoleToCourse($courseId, $child, null, null, $moduleId);
-        }
-
-        // Update roles hierarchy
-        $hierarchy = $course->getRolesHierarchy();
-
-        foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
-            if ($value["name"] == self::ADAPTATION_ROLE){
-                $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
-                    "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
-                break;
+            if (!in_array($child, $rolesNames)) {
+                self::addRoleToCourse($courseId, $child, null, null, $moduleId);
+                $somethingChanged = true;
             }
         }
-        $course->setRolesHierarchy($hierarchy);
+
+        if ($somethingChanged) {
+            // Update roles hierarchy
+            $hierarchy = $course->getRolesHierarchy();
+
+            foreach ($hierarchy[$studentIndex]["children"] as $key => $value) {
+                if ($value["name"] == self::ADAPTATION_ROLE){
+                    $hierarchy[$studentIndex]["children"][$key]["children"][] = ["name" => $parent,
+                        "children" => array_map(function ($child) {return ["name" => $child]; }, $children)];
+                    break;
+                }
+            }
+            $course->setRolesHierarchy($hierarchy);
+        }
     }
 
     /**
@@ -521,6 +529,22 @@ class Role
         if ($roleName) $where["name"] = $roleName;
         if ($roleId) $where["id"] = $roleId;
         return !empty(Core::database()->select(self::TABLE_ROLE, $where));
+    }
+
+    /**
+     * Copies the roles from one course to another.
+     * Including their module.
+     *
+     * @param Course $from
+     * @param Course $to
+     * @throws Exception
+     */
+    public static function copyRoles(Course $from, Course $to)
+    {
+        $rolesToCopy = $from->getRoles(false);
+        foreach($rolesToCopy as $role) {
+            self::addRoleToCourse($to->getId(), $role["name"], null, null, $role["module"]);
+        }
     }
 
 
