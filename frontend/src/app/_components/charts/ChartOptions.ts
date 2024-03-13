@@ -130,6 +130,9 @@ export function xaxis(type: 'category' | 'datetime' | 'numeric', categories: (st
         fontSize: '14px',
         cssClass: 'font-semibold'
       }
+    },
+    tooltip: {
+      enabled: false
     }
   };
 }
@@ -147,6 +150,9 @@ export function yaxis(reversed: boolean, tickAmount: number, min: number, max: n
         fontSize: '14px',
         cssClass: 'font-semibold'
       }
+    },
+    tooltip: {
+      enabled: false
     }
   };
 }
