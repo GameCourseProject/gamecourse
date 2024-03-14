@@ -3,13 +3,12 @@
 namespace GameCourse\NotificationSystem;
 
 use DateTime;
-use Event\Event;
-use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
-use phpDocumentor\Reflection\Types\Boolean;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
+use GameCourse\Views\ViewType\ViewType;
 use Utils\Utils;
 use Utils\CronJob;
 
@@ -164,6 +163,15 @@ class Notification
      */
     public static function addNotification(int $courseId, int $userId, string $message, bool $isShowed = false) : Notification
     {
+        // Translate Expression Language
+        $viewType = ViewType::getViewTypeById("text");
+        $view = ["text" => $message];
+        $viewType->compile($view);
+        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $userId, "user" => $userId]);
+        Core::dictionary()->setVisitor($visitor);
+        $viewType->evaluate($view, $visitor);
+        $message = $view["text"];
+
         self::trim($message);
         self::validateNotification($message, $isShowed);
 
@@ -177,7 +185,6 @@ class Notification
             "dateCreated" => $dateCreated->format("Y-m-d H:i:s")
         ]);
 
-        // Event::trigger(EventType::NOTIFICATION_ADDED, $id);
         return new Notification($id);
     }
 
