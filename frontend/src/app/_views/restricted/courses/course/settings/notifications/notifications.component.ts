@@ -109,6 +109,7 @@ export class NotificationsComponent implements OnInit {
         this.scheduledNotifications = notifications.reverse();
     }
 
+    // TODO: Improve so that Progress Report is done with rest of modules, reduce backend calls
     async isProgressReportEnabled(courseID: number) {
         this.progressReportEnabled = (await this.api.getCourseModuleById(courseID, ApiHttpService.PROGRESS_REPORT).toPromise()).enabled;
     }
@@ -181,7 +182,7 @@ export class NotificationsComponent implements OnInit {
 
         this.scheduledNotifications.forEach(notif => {
           table.push([
-            {type: TableDataType.TEXT, content: {text: notif.roles}},
+            {type: TableDataType.TEXT, content: {text: notif.roles.split(",").join(", ")}},
             {
                 type: TableDataType.BUTTON,
                 content: {
@@ -242,18 +243,10 @@ export class NotificationsComponent implements OnInit {
     async saveModuleConfig() {
         this.loading.modules = true;
         await this.api.toggleModuleNotifications(this.course.id, this.modulesToManage).toPromise();
+        await this.api.saveProgressReportConfig(this.course.id, this.reportsConfig).toPromise(); // TODO: Improve so that Progress Report is done with rest of modules, reduce backend calls
 
         this.loading.modules = false;
         AlertService.showAlert(AlertType.SUCCESS, 'Saved Module\'s notifications settings');
-    }
-
-    async saveProgressReportConfig() {
-        this.loading.report = true;
-
-        await this.api.saveProgressReportConfig(this.course.id, this.reportsConfig).toPromise();
-
-        this.loading.report = false;
-        AlertService.showAlert(AlertType.SUCCESS, 'Saved Progress Report settings');
     }
 
     async doActionOnTable(table: 'scheduled' | 'history', action: string, row: number, col: number, value?: any): Promise<void> {
