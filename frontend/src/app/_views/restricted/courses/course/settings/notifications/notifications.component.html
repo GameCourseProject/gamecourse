@@ -15,92 +15,58 @@
 
 
 <ng-template #ADMIN>
-  <!-- Predictions -->
-<!--   <div class="card w-full bg-base-100 shadow-xl">
-    <form #f="ngForm" class="card-body">
+  <!-- Modules -->
+  <div *ngIf="modulesToManage.length > 0 || progressReportEnabled" class="card w-full bg-base-100 shadow-xl mt-5">
+    <form #fModules="ngForm" class="card-body">
       <div class="flex items-center">
-        <h2 class="card-title mb-0">Predictions</h2>
-        <app-spinner *ngIf="loading.table" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+        <h2 class="card-title">Modules</h2>
       </div>
-      Enables sending students a prediction of their final XP, based on their earned XP tendencies so far,
-      and only to students belonging to clusters that may be motivated by this information.
-      The formula applied is the following:<br>
-      <div class="btn btn-outline btn-primary italic w-fit capitalize ml-auto mr-auto mt-2">prediction = total XP + avg × time left</div>
-      <app-input-toggle
-        [id]="'predictions'"
-        [(value)]="predictions"
-        [classList]="'mt-2'"
-        [color]="'primary'"
-        [label]="'Enable prediction notifications'"
-      ></app-input-toggle>
-    </form>
-  </div> -->
-
-  <!-- Progress Report -->
-  <div *ngIf="progressReportEnabled" class="card w-full bg-base-100 shadow-xl mt-5">
-    <form #fModules="ngForm" class="card-body" (ngSubmit)="saveProgressReportConfig()">
-      <div class="flex items-center">
-        <h2 class="card-title mb-0">Progress Report</h2>
-      </div>
-      <div class="mb-3">Define when progress reports should be sent to students. These are sent by email.</div>
-      <div class="grid md:grid-cols-2 items-center">
+      <span class="mb-4">Configure the frequency and text of notifications that are sent by active modules.</span>
+      <!-- Progress Report -->
+      <div class="flex flex-col md:flex-row md:items-center" *ngIf="progressReportEnabled">
         <app-input-toggle
           [id]="'progress-report-enabled'"
           [form]="fReport"
           [(value)]="reportsConfig.isEnabled"
-          [label]="'Enable Progress Report Emails'"
+          [label]="'Progress Report'"
           [color]="'primary'"
+          [helperText]="'Define when progress reports should be sent to students. These are sent by email.'"
+          [helperPosition]="'right'"
         ></app-input-toggle>
-        <!-- Schedule -->
-        <app-input-schedule
-          [id]="'progress-report-schedule'"
-          [form]="fReport"
-          [(value)]="reportsConfig.frequency"
-          [disabled]="!reportsConfig.isEnabled"
-        ></app-input-schedule>
+        <div class="ml-auto flex items-center">
+          <app-input-schedule
+            [id]="'progress-report-schedule'"
+            [form]="fReport"
+            [(value)]="reportsConfig.frequency"
+            [disabled]="!reportsConfig.isEnabled"
+            [leftLabel]="'Frequency'"
+          ></app-input-schedule>
+        </div>
       </div>
-      <div class="mt-4 ml-auto">
-        <button class="btn btn-primary btn-block">
-          <!-- Spinner -->
-          <ng-container *ngIf="loading.report">
-            <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
-          </ng-container>
-          Save
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Modules -->
-  <div *ngIf="modulesToManage.length > 0" class="card w-full bg-base-100 shadow-xl mt-5">
-    <form #fModules="ngForm" class="card-body">
-      <div class="flex items-center">
-        <h2 class="card-title">{{progressReportEnabled ? 'Other' : ''}} Modules</h2>
-      </div>
-      Configure the frequency and text of notifications that are sent by {{progressReportEnabled ? 'other' : ''}} active modules.
-      <div *ngFor="let module of modulesToManage; last as isLast" class="mt-8">
-        <h2 class="card-title">{{module.name.capitalize()}}</h2>
-        <div class="grid md:grid-cols-2 mb-2" id="module.id">
+      <div *ngIf="modulesToManage.length > 0 && progressReportEnabled" class="divider"></div>
+      <!-- Others -->
+      <div *ngFor="let module of modulesToManage; last as isLast">
+        <div class="flex flex-col md:flex-row md:items-center" id="module.id">
           <app-input-toggle
             [id]="module.id + 'Enabled'"
             [form]="fModules"
             [(value)]="module.isEnabled"
-            [classList]="'mt-2'"
             [color]="'primary'"
-            [label]="'Enable Notifications'"
+            [label]="module.name"
             [helperText]="module.description"
             [helperPosition]="'right'"
           ></app-input-toggle>
-          <app-input-schedule
-            [id]="module.id + 'Frequency'"
-            [form]="fModules"
-            [(value)]="module.frequency"
-            [disabled]="!module.isEnabled"
-            [leftLabel]="'Frequency'"
-          ></app-input-schedule>
+          <div class="ml-auto flex items-center">
+            <app-input-schedule
+              [id]="module.id + 'Frequency'"
+              [form]="fModules"
+              [(value)]="module.frequency"
+              [disabled]="!module.isEnabled"
+              [leftLabel]="'Frequency'"
+            ></app-input-schedule>
+          </div>
         </div>
         <app-input-notification-text
-          *ngIf="module.isEnabled"
           [id]="module.id + 'Format'"
           [form]="fModules"
           [(value)]="module.format"
@@ -108,7 +74,7 @@
           [required]="module.isEnabled"
           [itemsToSuggest]="module.variables"
         ></app-input-notification-text>
-        <div *ngIf="!isLast" class="divider my-10"></div>
+        <div *ngIf="!isLast" class="divider"></div>
       </div>
       <div class="ml-auto mt-4">
         <button class="btn btn-primary btn-block" (click)="saveModuleConfig()" [disabled]="!fModules.valid">
@@ -122,7 +88,7 @@
     </form>
   </div>
 
-  <!-- Announcements -->
+  <!-- Custom Messages -->
   <div class="card w-full bg-base-100 shadow-xl mt-5">
     <form #fSend="ngForm" (ngSubmit)="sendNotification()" class="card-body">
 
