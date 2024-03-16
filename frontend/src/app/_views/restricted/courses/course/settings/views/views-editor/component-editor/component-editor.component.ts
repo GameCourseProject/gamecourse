@@ -248,7 +248,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   updateView(to: View, from: ViewManageData): View {
-    to.classList = from.classList;
     to.type = from.type;
     to.visibilityType = from.visibilityType;
     to.visibilityCondition = from.visibilityCondition;
@@ -256,6 +255,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     to.classList = from.classList;
     to.styles = from.style;
     to.events = from.events;
+    to.variables = from.variables;
     to.loopData = from.loopData;
 
     if (to instanceof ViewButton) {
