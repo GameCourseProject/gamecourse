@@ -32,7 +32,7 @@ class AutoGameController
         API::response(AutoGame::getLastRun($courseId));
     }
 
-        /**
+    /**
      * @throws Exception
      */
     public function getStatus()
@@ -53,5 +53,27 @@ class AutoGameController
             "isRunning" => boolval($autogame["isRunning"]),
             "logs" => AutoGame::getLogs($courseId)
         ]);
+    }
+
+    public function runNow()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        AutoGame::run($courseId);
+    }
+
+    public function runNowForAllTargets()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        AutoGame::run($courseId, true);
     }
 }

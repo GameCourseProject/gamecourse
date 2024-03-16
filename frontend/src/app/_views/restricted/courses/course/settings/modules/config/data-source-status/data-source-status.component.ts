@@ -118,6 +118,26 @@ export class DataSourceStatusComponent implements OnInit {
     this.loading.action = false;
   }
 
+  async importNow() {
+    this.loading.action = true;
+
+    await this.api.importDataFromDataSource(this.courseID, this.module.id).toPromise();
+    await this.getStatusInfo();
+    this.buildTable();
+
+    AlertService.showAlert(AlertType.SUCCESS, 'Importing data from ' + this.module.name);
+    this.loading.action = false;
+  }
+
+  async doTopAction(action: string) {
+    if (action == "Disable Schedule" || action == "Enable Schedule") {
+      await this.changeStatus();
+    }
+    else if (action == "Import Now") {
+      await this.importNow();
+    }
+  }
+
 }
 
 export type DataSourceStatus = {

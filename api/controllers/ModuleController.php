@@ -146,6 +146,24 @@ class ModuleController
     /**
      * @throws Exception
      */
+    public function importDataFromDataSource()
+    {
+        API::requireValues("courseId", "moduleId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $moduleId = API::getValue("moduleId");
+        $module = API::verifyModuleExists($moduleId, $course);
+
+        $module->importData();
+    }
+
+    /**
+     * @throws Exception
+     */
     public function importItems()
     {
         API::requireValues("courseId", "moduleId", "listName", "file", "replace");

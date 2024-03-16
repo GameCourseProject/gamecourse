@@ -2045,6 +2045,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res ) );
   }
 
+  public importDataFromDataSource(courseID: number, moduleID: string): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'importDataFromDataSource');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res ) );
+  }
+
   // TODO: refactor
   public toggleItemParam(courseID: number, moduleID: string, itemID: number, param: string): Observable<void> {
     const data = {
@@ -3693,7 +3709,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])));
   }
 
-  public getAutogameStatus(courseID: number): Observable<DataSourceStatus> {
+  public getAutoGameStatus(courseID: number): Observable<DataSourceStatus> {
     const data = {
       "courseId": courseID,
     }
@@ -3711,6 +3727,37 @@ export class ApiHttpService {
         return res['data'];
       }) );
   }
+
+  public runAutoGameNow(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNow');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
+  public runAutoGameNowForAllTargets(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNowForAllTargets');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/

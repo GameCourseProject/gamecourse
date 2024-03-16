@@ -8,7 +8,7 @@
 
 <ng-template #GENERIC_EDITOR>
 <div class="overflow-x-hidden">
-  
+
   <app-input-select
     *ngIf="viewToEdit.type !== ViewType.ROW && view.parent"
     [id]="'type'"
@@ -53,7 +53,7 @@
           </div>
         </div>
       </div>
-    
+
       <div class="grow">
         <app-input-color
           [id]="'button-color'"
@@ -249,12 +249,12 @@
   <div class="flex flex-row gap-10">
     <div class="mt-2">
       <div class="flex flex-row justify-start items-center gap-2">
-        <app-simple-helper 
-        [position]="'right'" 
+        <app-simple-helper
+        [position]="'right'"
         [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'"></app-simple-helper>
         <span class="block font-semibold text-md">Auxiliary Variables</span>
       </div>
-      
+
       <!-- Variables -->
       <div class="flex flex-col gap-2 mb-2 grow-0">
         <!-- Existing -->
@@ -267,11 +267,11 @@
 
       <!-- Data Iteration -->
       <app-input-text
-        [id]="'design-id'"
+        [id]="'data-iter'"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Data Iteration'"
         [helperText]="'Determines how many times this component will be repeated.
-          \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this 
+          \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this
           course. If there are 3 skill trees in the course, the text will be repeated 3 times.'"
         [helperPosition]="'right'"
         [placeholder]="'e.g. { skillTrees.trees }'"
@@ -293,8 +293,8 @@
   <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
 
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
-      <app-simple-helper 
-        [position]="'right'" 
+      <app-simple-helper
+        [position]="'right'"
         [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
       <span class="block font-semibold text-md">Events</span>
     </div>
@@ -367,7 +367,7 @@
         [required]="false">
       </app-input-text>
     </div>
-    
+
     <!-- Interface Design -->
     <div class="flex flex-row mt-2 justify-start items-center gap-2">
       <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
@@ -470,7 +470,7 @@
         </app-input-checkbox>
       </div>
     </div>
-    
+
   </ng-container> <!----------------------------->
 
   <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
@@ -488,11 +488,11 @@
 <!--------------------------------------------------->
 <ng-template #TABLE_EDITOR>
   <div class="flex flex-row">
-    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Overall' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Overall' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
             (click)="tableSelectedTab = 'Overall'">Overall</button>
-    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Rows' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Rows' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
             (click)="tableSelectedTab = 'Rows'">Rows</button>
-    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Cells' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}" 
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Cells' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
             (click)="tableSelectedTab = 'Cells'">Cells</button>
   </div>
   <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
@@ -544,7 +544,7 @@
         </div>
         <span>Header</span>
         <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center gap-3">
-          <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;" 
+          <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;"
                 class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
                 (click)="selectCell(cell)">
               {{$any(cell).text ?? "Cell"}}
@@ -554,14 +554,14 @@
         <div class="divider"></div>
         <span>Body</span>
         <div *ngFor="let row of this.viewToEdit.bodyRows; index as i" class="flex flex-row items-center gap-3">
-          <div *ngFor="let cell of this.viewToEdit.bodyRows[i].children;" 
+          <div *ngFor="let cell of this.viewToEdit.bodyRows[i].children;"
                 class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
                 (click)="selectCell(cell)">
             Cell
           </div>
         </div>
         <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.bodyRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
-      
+
         <!-- Cell editor -->
         <div *ngIf="cellToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
           <div class="prose">
@@ -665,7 +665,7 @@
         </div>
         <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
       </div>
-    </ng-container> 
+    </ng-container>
     -->
   </ng-container>
 
@@ -966,7 +966,7 @@
   <div class="flex flex-row mt-8 justify-start items-center gap-2">
     <span class="block font-semibold text-mg pl-1">Extras</span>
   </div>
-  
+
   <!-- BAR CHART EXTRAS -->
   <div *ngIf="viewToEdit.chartType === 'bar' || viewToEdit.chartType === 'combo'" class="grid grid-cols-2 gap-8">
     <div>
@@ -1106,7 +1106,7 @@
     [required]="true"
     [classList]="'mb-4'">
   </app-input-select>
-  
+
   <app-input-select
     [id]="'chart-progress-size'"
     [(value)]="viewToEdit.options.size"
@@ -1226,7 +1226,7 @@
   </div>
   <div *ngIf="viewToEdit.options.tooltip != 'relative' && viewToEdit.options.tooltip != 'absolute'">
     <div class="text-xs pl-1 pb-2 mt-2">
-      Write the message you want to display in the tooltip. 
+      Write the message you want to display in the tooltip.
       Don't forget that if you use expressions you need to encapsulated them with curvy brackets: {{ '{' }} {{ '}' }}
     </div>
     <app-input-text

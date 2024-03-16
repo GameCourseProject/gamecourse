@@ -75,7 +75,7 @@ export class ViewEditorService {
       this.deleteAspect(deleted);
     }
     this.aspectsToDelete = [];
-    
+
     // Modify roles of existing aspects
     for (let changed of this.aspectsToChange) {
       if (changed.old.viewerRole === "new" || changed.old.userRole === "new") continue;
@@ -119,7 +119,7 @@ export class ViewEditorService {
     newItem.switchMode(ViewMode.EDIT);
 
     if (mode === "value") newItem.replaceWithFakeIds();
-    
+
     // Add to a view
     if (to) {
       for (let el of toAdd) {
@@ -147,7 +147,7 @@ export class ViewEditorService {
    */
   delete(item: View) {
     const viewsWithThis = this.viewsByAspect.filter((e) => e.view.findView(item.id));
-    
+
     const lowerInHierarchy = viewsWithThis.filter((e) =>
       (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
       || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
@@ -172,19 +172,19 @@ export class ViewEditorService {
 
     if (item.parent) {
       let entry = groupedChildren.get(item.parent.id);
-      for (let group of entry) {
-        const index = group.indexOf(item.id);
-        if (index >= 0) {
-          group.splice(index, 1);
+      entry.forEach((group, groupIndex) => {
+        const itemIndex = group.indexOf(item.id);
+        if (itemIndex >= 0) {
+          group.splice(itemIndex, 1);
           if (group.length <= 0) {
-            entry.splice(entry.indexOf([]), 1);
+            entry.splice(groupIndex, 1);
             groupedChildren.set(item.parent.id, entry);
           }
           else {
             groupedChildren.set(item.parent.id, entry);
           }
         }
-      }
+      })
     }
     else {
       // this is the root
@@ -196,12 +196,6 @@ export class ViewEditorService {
    * Duplicates a view
    */
   duplicate(item: View) {
-    let duplicated = _.cloneDeep(item);
-    duplicated.id = getFakeId();
-    duplicated.uniqueId = Math.round(Date.now() * Math.random());
-
-    if (item.parent) {
-      item.parent.addChildViewToViewTree(duplicated);
-    }
+    this.add(item, item.parent, "value")
   }
 }

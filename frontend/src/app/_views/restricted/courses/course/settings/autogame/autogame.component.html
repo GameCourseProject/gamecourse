@@ -1,7 +1,7 @@
 <div class="w-full relative">
 
   <!-- Header -->
-  <app-header [title]="'Autogame'" [icon]="'tabler-prompt'" [loading]="loading.action"></app-header>
+  <app-header [title]="'AutoGame'" [icon]="'tabler-prompt'" [loading]="loading.action"></app-header>
 
     <div class="card w-full bg-base-100 shadow-xl">
 
@@ -18,7 +18,7 @@
 
         <!-- Card description -->
         <p class="text-[0.95rem] text-justify text-base-content/75 mt-2">
-            Check whether Autogame is currently running and when it last imported new data, as well as its running logs.
+            Check whether AutoGame is currently running and when it last imported new data, as well as its running logs.
         </p>
         </div>
 
@@ -36,6 +36,12 @@
             [loading]="loading.table"
             (btnClicked)="doActionOnTable($event.type)">
         </app-table>
+
+        <!-- Run Now Buttons -->
+        <div class="flex flex-row ml-auto mt-5 gap-3">
+          <button class="btn btn-neutral" (click)="runAutoGameNowForAllTargets()">Run Now for All targets</button>
+          <button class="btn btn-neutral" (click)="runAutoGameNow()">Run Now</button>
+        </div>
 
         <!-- Logs -->
         <app-logs-viewer *ngIf="!status.logs.isEmpty()" [logs]="status.logs" class="mt-5"></app-logs-viewer>

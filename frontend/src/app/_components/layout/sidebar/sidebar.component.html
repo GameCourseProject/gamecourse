@@ -39,15 +39,8 @@
     </ul>
 
   <!-- Docs -->
-  <div *ngIf="isCourseAdmin" class="relative flex flex-col min-w-0 break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3 mt-4">
-    <img class="w-1/2 mx-auto" src="https://demos.creative-tim.com/argon-dashboard-tailwind/assets/img/illustrations/icon-documentation.svg" alt="docs illustration">
-    <div class="flex-auto w-full p-4 pt-0 text-center">
-      <div class="transition-all duration-200 ease-nav-brand prose">
-        <h6 class="mb-0 font-semibold">Need help?</h6>
-        <p class="my-0 leading-tight text-xs">Please check our docs</p>
-      </div>
-    </div>
-    <button class="btn btn-primary btn-sm normal-case" [routerLink]="'/docs'">Documentation</button>
+  <div *ngIf="isCourseAdmin" class="relative flex flex-col px-4 w-full break-words bg-transparent border-0 shadow-none rounded-2xl bg-clip-border mx-3 mt-4">
+    <button class="btn btn-primary btn-sm w-full normal-case" [routerLink]="'/docs'">Documentation</button>
   </div>
 
 </aside>

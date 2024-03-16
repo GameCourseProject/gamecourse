@@ -1645,27 +1645,6 @@ def award_badge(target, name, lvl, logs, progress=None):
         awards_given = get_awards(target, name + "%", award_type, badge_id)
         nr_awards_given = len(awards_given)
 
-        # Notification
-        if progress is not None and progress > 0 and lvl < len(table_badge):
-            goal = int(table_badge[lvl][5])
-            badge_description = table_badge[lvl][6].decode()  # e.g. Show up for theoretical lectures!
-            level_description = table_badge[lvl][7].decode()  # e.g. be there for 50% of lectures
-
-            # Check if give notification
-            instances = goal - progress
-
-            # Threshold to limit notifications and avoid spamming
-            if 1 < instances <= 2:
-                message = "You are " + str(instances) + " events away from achieving '" + name + "' badge! : " \
-                          + badge_description + " - " + level_description
-
-                query = "SELECT COUNT(*) FROM notification WHERE course = %s AND user = %s AND message = %s;"
-                already_sent = int(gc_db.execute_query(query, (config.COURSE, target, message))[0][0]) > 0
-
-                if not already_sent:
-                    query = "INSERT INTO notification (course, user, message, isShowed) VALUES (%s, %s, %s,%s);"
-                    gc_db.execute_query(query, (config.COURSE, target, message, 0), "commit")
-
         # Lvl is zero and there are no awards to be removed
         # Simply return right away
         if lvl == 0 and nr_awards_given == 0:
