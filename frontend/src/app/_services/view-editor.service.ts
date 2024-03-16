@@ -196,12 +196,6 @@ export class ViewEditorService {
    * Duplicates a view
    */
   duplicate(item: View) {
-    let duplicated = _.cloneDeep(item);
-    duplicated.id = getFakeId();
-    duplicated.uniqueId = Math.round(Date.now() * Math.random());
-
-    if (item.parent) {
-      item.parent.addChildViewToViewTree(duplicated);
-    }
+    this.add(item, item.parent, "value")
   }
 }
