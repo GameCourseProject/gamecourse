@@ -239,6 +239,73 @@
     </div>
   </ng-container>
 
+  <!-- Table Layout Settings -->
+  <ng-container *ngIf="viewToEdit.type === ViewType.TABLE">
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <span class="block font-semibold text-md">Layout Settings</span>
+    </div>
+    <div class="flex flex-wrap gap-x-5">
+      <app-input-checkbox
+        [id]="'table-footers'"
+        [(value)]="viewToEdit.footers"
+        [color]="'primary'"
+        [label]="'Add footers'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-searching'"
+        [(value)]="viewToEdit.searching"
+        [color]="'primary'"
+        [label]="'Allow overall searching'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-filtering'"
+        [(value)]="viewToEdit.columnFiltering"
+        [color]="'primary'"
+        [label]="'Allow column filtering'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-paging'"
+        [(value)]="viewToEdit.paging"
+        [color]="'primary'"
+        [label]="'Show number of pages'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-info'"
+        [(value)]="viewToEdit.info"
+        [color]="'primary'"
+        [label]="'Show nº of entries per page'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-lengthChange'"
+        [(value)]="viewToEdit.lengthChange"
+        [color]="'primary'"
+        [label]="'Allow customization of nº entries per page'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-ordering'"
+        [(value)]="viewToEdit.ordering"
+        [color]="'primary'"
+        [label]="'Allow ordering customization'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+    </div>
+    <app-input-text
+      [id]="'table-orderingBy'"
+      [(value)]="viewToEdit.orderingBy"
+      [topLabel]="'Default Column Ordering'"
+      [helperPosition]="'right'"
+      [helperText]="'The way the table is ordered by default. Must be DESC or ASC followed by : column index'"
+      [placeholder]="'e.g. ASC: 0'"
+      [classList]="'mt-2'"
+    ></app-input-text>
+  </ng-container>
+
   <!--------------------------------------------------->
   <!--------------------- GENERAL --------------------->
   <!--------------------------------------------------->
@@ -409,65 +476,6 @@
           <bb-any *ngIf="show" [view]="viewToPreview"></bb-any>
           <app-spinner *ngIf="!show" [size]="'lg'"></app-spinner>
         </div>
-      </div>
-    </div>
-
-    <!-- Table Layout Settings -->
-    <div *ngIf="viewToEdit.type === ViewType.TABLE">
-      <div class="flex flex-row mt-2 justify-start items-center gap-2">
-        <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
-        <span class="block font-semibold text-lg">Table Layout Settings</span>
-      </div>
-      <div class="flex flex-wrap gap-x-5">
-        <app-input-checkbox
-          [id]="'table-footers'"
-          [(value)]="viewToEdit.footers"
-          [color]="'primary'"
-          [label]="'Add footers'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-searching'"
-          [(value)]="viewToEdit.searching"
-          [color]="'primary'"
-          [label]="'Allow overall searching'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-filtering'"
-          [(value)]="viewToEdit.columnFiltering"
-          [color]="'primary'"
-          [label]="'Allow column filtering'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-paging'"
-          [(value)]="viewToEdit.paging"
-          [color]="'primary'"
-          [label]="'Show number of pages'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-info'"
-          [(value)]="viewToEdit.info"
-          [color]="'primary'"
-          [label]="'Show number of entries/page'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-lengthChange'"
-          [(value)]="viewToEdit.lengthChange"
-          [color]="'primary'"
-          [label]="'Allow customization of nº entries/page'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-ordering'"
-          [(value)]="viewToEdit.ordering"
-          [color]="'primary'"
-          [label]="'Allow ordering customization'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
       </div>
     </div>
 
