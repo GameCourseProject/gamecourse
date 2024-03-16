@@ -23,7 +23,7 @@ export class BBChartComponent implements OnInit {
   ngOnInit(): void {
     this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
     this.classes = 'bb-chart bb-' + this.view.chartType + '-chart';
-    this.seriesToPreview = [{ data: [] }];
+    this.seriesToPreview = typeof this.view.data == 'object' ? this.view.data : [{ data: [] }];
   }
 
   get ChartType(): typeof ChartType {

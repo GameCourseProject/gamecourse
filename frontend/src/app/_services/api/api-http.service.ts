@@ -3029,7 +3029,11 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+      .pipe(map((res: any) => res['data'].map((e) => {
+        const view = buildView(e.view, true);
+        view.mode = ViewMode.PREVIEW;
+        return {...e, view: view}
+      })));
   }
 
   public getSharedComponents(): Observable<{id: number, sharedTimestamp: string, user: number, view: View}[]> {
@@ -3040,7 +3044,11 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true), sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}})));
+      .pipe(map((res: any) => res['data'].map((e) => {
+        const view = buildView(e.view, true);
+        view.mode = ViewMode.PREVIEW;
+        return {...e, view: view, sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}
+      })));
   }
 
   public shareComponent(componentID: number, courseID: number, userID: number, description: string): Observable<void> {
