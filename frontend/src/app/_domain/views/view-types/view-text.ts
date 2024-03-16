@@ -95,7 +95,7 @@ export class ViewText extends View {
   switchMode(mode: ViewMode) {
     this.mode = mode;
   }
-  
+
   modifyAspect(old: Aspect, newAspect: Aspect) {
     if (_.isEqual(old, this.aspect)) {
       this.aspect = newAspect;
@@ -147,7 +147,7 @@ export class ViewText extends View {
       parsedObj.events
     );
   }
-  
+
   static toDatabase(obj: ViewText): ViewTextDatabase {
     return {
       id: obj.id,

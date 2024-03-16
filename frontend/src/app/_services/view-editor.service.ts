@@ -75,7 +75,7 @@ export class ViewEditorService {
       this.deleteAspect(deleted);
     }
     this.aspectsToDelete = [];
-    
+
     // Modify roles of existing aspects
     for (let changed of this.aspectsToChange) {
       if (changed.old.viewerRole === "new" || changed.old.userRole === "new") continue;
@@ -119,7 +119,7 @@ export class ViewEditorService {
     newItem.switchMode(ViewMode.EDIT);
 
     if (mode === "value") newItem.replaceWithFakeIds();
-    
+
     // Add to a view
     if (to) {
       for (let el of toAdd) {
@@ -147,7 +147,7 @@ export class ViewEditorService {
    */
   delete(item: View) {
     const viewsWithThis = this.viewsByAspect.filter((e) => e.view.findView(item.id));
-    
+
     const lowerInHierarchy = viewsWithThis.filter((e) =>
       (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
       || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))

@@ -39,7 +39,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   show: boolean = true;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
-  
+
   viewToEdit: ViewManageData;
   viewToPreview: View;
 
@@ -64,7 +64,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   ) { }
 
   async ngOnInit() {
-    this.route.parent.params.subscribe(async params => { 
+    this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCustomFunctions(courseID);
       this.prepareAdditionalTools();
@@ -153,6 +153,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       style: this.view.styles,
       events: this.view.events ?? [],
       variables: this.view.variables ?? [],
+      loopData: this.view.loopData
     };
 
     if (this.view instanceof ViewButton) {
@@ -255,7 +256,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     to.classList = from.classList;
     to.styles = from.style;
     to.events = from.events;
-    
+
     if (to instanceof ViewButton) {
       to.text = from.text;
       to.color = from.color;
@@ -310,7 +311,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   getComponentTypes() {
     return Object.values(ViewType).filter(e => e !== ViewType.ROW).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
-  
+
   getCollapseIconOptions() {
     return Object.values(CollapseIcon).map((value) => { return ({ value: value, text: value.capitalize() }) });
   }
@@ -318,7 +319,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   getIconSizeOptions() {
     return [{ value: "1.3rem", text: "Small"}, { value: "1.8rem", text: "Medium"}, { value: "2.5rem", text: "Large"}, { value: "4rem", text: "Extra-Large"}]
   }
-  
+
   getIcons() {
     return [
       "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",
@@ -352,7 +353,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   getChartLineCapOptions() {
     return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
-  
+
   getProgressSizes() {
     return [{ value: "xs", text: "Extra Small" }, { value: "sm", text: "Small" }, { value: "md", text: "Medium" }, { value: "lg", text: "Large" }]
   }
@@ -376,16 +377,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.updateView(this.view, this.viewToEdit);
       this.view.switchMode(ViewMode.EDIT);
     }
-    
+
     // For aspects --------------------------------------
     const viewsWithThis = this.service.viewsByAspect.filter((e) => !_.isEqual(this.service.selectedAspect, e.aspect) && e.view?.findView(this.view.id));
-    
+
     if (viewsWithThis.length > 0) {
       const lowerInHierarchy = viewsWithThis.filter((e) =>
         (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.viewerRole, this.service.selectedAspect.viewerRole))
         || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.userRole, this.service.selectedAspect.userRole))
       );
-      
+
       // this view isn't used in any other version "above"
       if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
         console.log("above all");
@@ -394,7 +395,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
         if (changedType) {
           viewsDeleted.push(oldId);
           this.view.id = getFakeId();
-          
+
           let entry = groupedChildren.get(this.view.parent.id);
           if (entry) {
             const group = entry.find((e) => e.includes(oldId));
@@ -404,7 +405,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
           }
         }
         // else no need to create a new id
-        
+
         // propagate the changes to the views lower in hierarchy
         for (let el of lowerInHierarchy) {
           const view = el.view.findView(oldId);
@@ -495,27 +496,27 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   deleteAuxVar(index: number) {
     this.viewToEdit.variables.splice(index, 1);
   }
-  
+
   addEvent(event: { type: EventType; expression: string }) {
     this.viewToEdit.events.push(buildEvent(event.type, event.expression));
   }
-  
+
   updateEvent(event: { type: EventType; expression: string }, index: number) {
     this.viewToEdit.events.splice(index, 1, buildEvent(event.type, event.expression));
   }
-  
+
   deleteEvent(index: number) {
     this.viewToEdit.events.splice(index, 1);
   }
-  
+
   addDataLabel(event: { serie: string; format: string }) {
     this.viewToEdit.options.dataLabelsOnSeries.push(event);
   }
-  
+
   updateDataLabel(event: { serie: string; format: string }, index: number) {
     this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1, event);
   }
-  
+
   deleteDataLabel(index: number) {
     this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1);
   }
@@ -594,7 +595,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else {
       this.cellToEdit = cell;
-    } 
+    }
   }
   selectRow(row: ViewRow) {
     if (this.rowToEdit === row) {
@@ -602,7 +603,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else {
       this.rowToEdit = row;
-    } 
+    }
   }
   addColumn(index: number) {
     if (this.viewToEdit.headerRows[0]) {
