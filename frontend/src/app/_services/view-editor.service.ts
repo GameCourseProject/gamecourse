@@ -172,19 +172,19 @@ export class ViewEditorService {
 
     if (item.parent) {
       let entry = groupedChildren.get(item.parent.id);
-      for (let group of entry) {
-        const index = group.indexOf(item.id);
-        if (index >= 0) {
-          group.splice(index, 1);
+      entry.forEach((group, groupIndex) => {
+        const itemIndex = group.indexOf(item.id);
+        if (itemIndex >= 0) {
+          group.splice(itemIndex, 1);
           if (group.length <= 0) {
-            entry.splice(entry.indexOf([]), 1);
+            entry.splice(groupIndex, 1);
             groupedChildren.set(item.parent.id, entry);
           }
           else {
             groupedChildren.set(item.parent.id, entry);
           }
         }
-      }
+      })
     }
     else {
       // this is the root

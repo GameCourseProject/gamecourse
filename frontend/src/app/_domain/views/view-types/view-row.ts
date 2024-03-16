@@ -132,6 +132,15 @@ export class ViewRow extends View {
   }
 
   replaceView(viewId: number, view: View) {
+    // Look for view in children
+    let index = 0;
+    for (const child of this.children) {
+      if (child.id === viewId) {
+        this.children.splice(index, 1, view);
+      }
+      child.replaceView(viewId, view);
+      index += 1;
+    }
   }
 
   switchMode(mode: ViewMode) {

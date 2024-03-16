@@ -390,7 +390,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
       // this view isn't used in any other version "above"
       if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
-        console.log("above all");
         // if the type changed need to delete the old one and create a new in backend
         const oldId = this.view.id;
         if (changedType) {
@@ -453,7 +452,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       let entry = groupedChildren.get(this.view.parent.id);
       if (entry) {
         const group = entry.find((e) => e.includes(oldId));
-        const index = group.findIndex((e) => e === oldId);
+        const index = group.indexOf(oldId);
         group.splice(index, 1, this.view.id);
         groupedChildren.set(this.view.parent.id, entry);
       }

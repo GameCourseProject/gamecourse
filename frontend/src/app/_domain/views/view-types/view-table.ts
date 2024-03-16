@@ -271,6 +271,12 @@ export class ViewTable extends View {
   }
 
   replaceView(viewId: number, view: View) {
+    this.headerRows.forEach((row) => {
+      row.replaceView(viewId, view);
+    })
+    this.bodyRows.forEach((row) => {
+      row.replaceView(viewId, view);
+    })
   }
 
   switchMode(mode: ViewMode) {
