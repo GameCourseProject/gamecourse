@@ -21,7 +21,7 @@
   ></app-input-select>
 
   <!--------------------- Chart options ---------------------->
-  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+  <ng-container *ngIf="viewToEdit.options && viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
   <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType === 'progress'" [ngTemplateOutlet]="PROGRESS_EDITOR"></ng-container>
 
   <!--------------------- Button options --------------------->
@@ -626,16 +626,15 @@
 
   <div class="flex flex-row gap-10 mt-2">
     <div class="w-1/2 shrink-0">
-      <div class="flex flex-row my-2 justify-start items-center gap-2">
-        <app-simple-helper [position]="'right'" [text]="'Series of data to display in chart.'"></app-simple-helper>
-        <span class="block font-semibold text-mg">Chart Data</span>
-      </div>
-      <app-input-text
+      <app-input-textarea
         [id]="'chart-data'"
         [(value)]="viewToEdit.data"
         [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
-        [required]="true">
-      </app-input-text>
+        [required]="true"
+        [label]="'Chart Data'"
+        [helperText]="'Series of data to display in chart.'"
+        [helperPosition]="'right'"
+      ></app-input-textarea>
     </div>
     <div class="grow">
       <app-input-color
@@ -1144,17 +1143,17 @@
   </div>
 
   <div class="grid grid-cols-2 gap-8 mb-8">
-    <app-input-text
+    <app-input-textarea
       [id]="'chart-data'"
-      [(value)]="viewToEdit.data.value"
+      [(value)]="viewToEdit.progressData.value"
       [placeholder]="'e.g. {xp.getUserExtraCreditXP(%user)}'"
       [required]="true"
-      [topLabel]="'Chart Data'"
+      [label]="'Chart Data'"
       [helperText]="'Series of data to display in chart.'"
-    ></app-input-text>
+    ></app-input-textarea>
     <app-input-number
       [id]="'chart-progress-max'"
-      [(value)]="viewToEdit.data.max"
+      [(value)]="viewToEdit.progressData.max"
       [topLabel]="'Maximum value'"
       [placeholder]="'Select a maximum number'"
       [className]="'mt-1'"
