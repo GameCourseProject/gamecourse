@@ -256,6 +256,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     to.classList = from.classList;
     to.styles = from.style;
     to.events = from.events;
+    to.loopData = from.loopData;
 
     if (to instanceof ViewButton) {
       to.text = from.text;
