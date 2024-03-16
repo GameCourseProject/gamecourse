@@ -1144,12 +1144,13 @@
 
   <div class="grid grid-cols-2 gap-8 mb-8">
     <app-input-textarea
-      [id]="'chart-data'"
+      [id]="'chart-progress-value'"
       [(value)]="viewToEdit.progressData.value"
       [placeholder]="'e.g. {xp.getUserExtraCreditXP(%user)}'"
       [required]="true"
       [label]="'Chart Data'"
       [helperText]="'Series of data to display in chart.'"
+      [helperPosition]="'right'"
     ></app-input-textarea>
     <app-input-number
       [id]="'chart-progress-max'"

@@ -195,6 +195,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       if (viewToEdit.chartType != ChartType.PROGRESS) {
         if (typeof this.view.data == 'object') viewToEdit.data = JSON.stringify(this.view.data);
         else viewToEdit.data = this.view.data;
+        viewToEdit.progressData = {value: "", max: null};
       }
       else {
         viewToEdit.progressData = this.view.data;
@@ -204,8 +205,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
     else { // needed in case user changes type to chart
-      viewToEdit.options = {colors: [], datalabels: []}
-      viewToEdit.chartType = ChartType.LINE
+      viewToEdit.options = {colors: [], datalabels: []};
+      viewToEdit.chartType = ChartType.LINE;
+      viewToEdit.progressData = {value: "", max: null};
     }
 
     if (this.view instanceof ViewTable) {
@@ -315,8 +317,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else if (to instanceof ViewChart) {
       to.chartType = from.chartType;
-      to.data = from.data;
       to.options = from.options;
+      to.data = null;
+      if (to.chartType === ChartType.PROGRESS) to.data = from.progressData
+      else to.data = from.data;
     }
     return to;
   }
