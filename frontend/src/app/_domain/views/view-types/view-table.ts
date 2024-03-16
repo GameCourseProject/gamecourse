@@ -192,7 +192,7 @@ export class ViewTable extends View {
       else viewTree.push(viewForDatabase); // Is root
     }
     viewsAdded.set(this.id, viewForDatabase);
-    
+
     // Build children into view tree
     for (const child of this.headerRows) {
       child.buildViewTree();
@@ -261,16 +261,22 @@ export class ViewTable extends View {
     // Look for view in children
     for (const headerRow of this.headerRows) {
       const found = headerRow.findView(viewId);
-      if (found) return headerRow;
+      if (found) return found;
     }
     for (const row of this.bodyRows) {
       const found = row.findView(viewId);
-      if (found) return row;
+      if (found) return found;
     }
     return null;
   }
 
   replaceView(viewId: number, view: View) {
+    this.headerRows.forEach((row) => {
+      row.replaceView(viewId, view);
+    })
+    this.bodyRows.forEach((row) => {
+      row.replaceView(viewId, view);
+    })
   }
 
   switchMode(mode: ViewMode) {
@@ -382,13 +388,13 @@ export class ViewTable extends View {
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewTable {
     const defaultAspect = new Aspect(null, null);
-    
+
     const header = ViewRow.getDefault(getFakeId(), null, viewRoot, aspect ?? defaultAspect, RowType.HEADER);
     header.children = [ViewText.getDefault(header, viewRoot, getFakeId(), aspect ?? defaultAspect, "Header")]
-    
+
     const row = ViewRow.getDefault(getFakeId(), null, viewRoot, aspect ?? defaultAspect, RowType.BODY);
     row.children = [ViewText.getDefault(row, viewRoot, getFakeId(), aspect ?? defaultAspect, "Cell")]
-    
+
     const table = new ViewTable(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, false, false, false, false, false, false, false, null,
       [header, row]);
     table.headerRows[0].parent = table;

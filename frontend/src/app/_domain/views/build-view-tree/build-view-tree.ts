@@ -47,12 +47,12 @@ export function addToGroupedChildren(view: View, parentId: number) {
     group.push([view.id]);
     groupedChildren.set(parentId, group);
   }
-  if (view instanceof ViewBlock) { 
+  if (view instanceof ViewBlock) {
     for (let child of view.children) {
       addToGroupedChildren(child, view.id);
     }
   }
-  else if (view instanceof ViewTable) { 
+  else if (view instanceof ViewTable) {
     for (let child of view.headerRows) {
       addToGroupedChildren(child, view.id);
     }
@@ -60,12 +60,12 @@ export function addToGroupedChildren(view: View, parentId: number) {
       addToGroupedChildren(child, view.id);
     }
   }
-  else if (view instanceof ViewRow) { 
+  else if (view instanceof ViewRow) {
     for (let child of view.children) {
       addToGroupedChildren(child, view.id);
     }
   }
-  else if (view instanceof ViewCollapse) { 
+  else if (view instanceof ViewCollapse) {
     addToGroupedChildren(view.header, view.id);
     addToGroupedChildren(view.content, view.id);
   }
@@ -85,12 +85,12 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
   for (const view of viewsOfAspects) {
     if (view) view.buildViewTree();
   }
-  
-  // Clean up unexistent ids
+
+  // Clean up nonexistent ids
   // This is specially useful if an aspect was deleted, since while building the tree
-  // it wont find a matching view for the ids
-  recursiveRemoveUnexistent(viewTree[0]);
-  function recursiveRemoveUnexistent(view: any) {
+  // it won't find a matching view for the ids
+  recursiveRemoveNonexistent(viewTree[0]);
+  function recursiveRemoveNonexistent(view: any) {
     if ('children' in view) {
       for (let group of view.children) {
         for (let child of group) {
@@ -98,7 +98,7 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
             viewsDeleted.push(child);
           }
           else {
-            recursiveRemoveUnexistent(child);
+            recursiveRemoveNonexistent(child);
           }
         }
         view.children.splice(view.children.indexOf(group), 1, group.filter(e => typeof e !== "number"));
