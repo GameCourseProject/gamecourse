@@ -52,6 +52,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   rowToEdit?: ViewRow = null;
 
   categoryToAdd?: string = "";
+  labelToAdd?: string = "";
 
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
@@ -574,6 +575,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   removeXAxisCategory(index: number) {
     this.viewToEdit.options.XAxisCategories.splice(index, 1);
+  }
+
+  addPieChartLabel() {
+    if (this.viewToEdit.options.labels) {
+      this.viewToEdit.options.labels.push(this.labelToAdd);
+    }
+    else {
+      this.viewToEdit.options.labels = [this.labelToAdd];
+    }
+    this.labelToAdd = "";
+  }
+
+  removePieChartLabel(index: number) {
+    this.viewToEdit.options.labels.splice(index, 1);
   }
 
   // Exclusives for tables ---------------------

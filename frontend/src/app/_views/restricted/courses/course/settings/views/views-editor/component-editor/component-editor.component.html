@@ -624,30 +624,50 @@
     </app-input-text>
   </div>
 
-  <div class="flex flex-row gap-10 mt-2">
-    <div class="w-1/2 shrink-0">
-      <app-input-textarea
-        [id]="'chart-data'"
-        [(value)]="viewToEdit.data"
-        [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
-        [required]="true"
-        [label]="'Chart Data'"
-        [helperText]="'Series of data to display in chart.'"
-        [helperPosition]="'right'"
-      ></app-input-textarea>
-    </div>
-    <div class="grow">
-      <app-input-color
-        [id]="'chart-colors'"
-        [(value)]="viewToEdit.color"
-        [(values)]="viewToEdit.options.colors"
-        [placeholder]="'Chart Colors'"
-        [topLabel]="'Chart Colors'"
-        [helperText]="'Choose colors for each set of the data series.'"
-        [helperPosition]="'right'"
-        [multiple]="true">
-      </app-input-color>
-    </div>
+  <div class="md:grid grid-cols-2 gap-x-10 mt-2">
+    <app-input-textarea
+      [id]="'chart-data'"
+      [(value)]="viewToEdit.data"
+      [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
+      [required]="true"
+      [label]="'Chart Data'"
+      [helperText]="'Series of data to display in chart.'"
+      [helperPosition]="'right'"
+      [size]="'sm'"
+    ></app-input-textarea>
+    <app-input-color
+      [id]="'chart-colors'"
+      [(value)]="viewToEdit.color"
+      [(values)]="viewToEdit.options.colors"
+      [placeholder]="'Chart Colors'"
+      [topLabel]="'Chart Colors'"
+      [helperText]="'Choose colors for each set of the data series.'"
+      [helperPosition]="'right'"
+      [multiple]="true">
+    </app-input-color>
+    <ng-container *ngIf="viewToEdit.chartType == 'pie'">
+      <div class="bg-base-300 rounded-xl p-4 mt-4">
+        <div class="flex flex-row justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Labels for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
+          <span class="block font-semibold text-mg pl-1">Add Labels</span>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-2">
+          <div *ngFor="let label of this.viewToEdit.options.labels; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm items-center">
+            {{label}}
+            <ng-icon (click)="removePieChartLabel(i)" class="ml-2 hover:cursor-pointer" name="feather-x" />
+          </div>
+        </div>
+        <div class="flex flex-row gap-2">
+          <app-input-text
+            [id]="'chart-pie-label'"
+            [(value)]="labelToAdd"
+            [placeholder]="'Add a label'"
+            [required]="false"
+          ></app-input-text>
+          <button class="btn btn-secondary" (click)="addPieChartLabel()">Add</button>
+        </div>
+      </div>
+    </ng-container>
   </div>
 
   <!-- TODO: Options for datalabels. Only certain series, and formatting.
@@ -715,7 +735,7 @@
           <div class="flex flex-wrap gap-2 mb-2">
             <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
               {{cat}}
-              <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
+              <ng-icon (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer" name="feather-x" />
             </div>
           </div>
           <div class="flex flex-row gap-2">
