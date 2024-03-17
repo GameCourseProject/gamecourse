@@ -650,6 +650,7 @@
     </div>
   </div>
 
+  <!-- TODO: Options for datalabels. Only certain series, and formatting.
   <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
     <div class="flex flex-row mt-4 justify-start items-center gap-2">
       <span class="block font-semibold text-mg pl-1">Data Labels</span>
@@ -664,7 +665,6 @@
       [label]="'Add data labels to this chart'"
       [labelPosition]="'right'"
     ></app-input-checkbox>
-    <!-- TODO: Options for datalabels. Only certain series, and formatting.
     <ng-container *ngIf="viewToEdit.options.dataLabels">
       <div class="flex flex-col gap-2 mb-2 grow-0">
         <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
@@ -673,8 +673,8 @@
         <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
       </div>
     </ng-container>
-    -->
   </ng-container>
+  -->
 
   <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
     <div class="flex flex-row mt-4 justify-start items-center gap-2">
@@ -712,7 +712,7 @@
             <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
             <span class="block font-semibold text-mg pl-1">Add categories</span>
           </div>
-          <div class="flex flex-row gap-2 mb-2">
+          <div class="flex flex-wrap gap-2 mb-2">
             <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
               {{cat}}
               <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
@@ -835,26 +835,23 @@
     [labelPosition]="'right'"
   ></app-input-checkbox>
   <div *ngIf="viewToEdit.options.tooltip" class="bg-base-300 rounded-xl p-6 text-xs">
-    Make use of the points in the chart or write expressions if needed. <br>
-    To access points use this.x and this.y, which will access each point coordinates in the data series.<br><br>
+    By default the tooltips only display the values, however you can make the information clearer by formating it. <br>
+    To access the values use (?value)<br><br>
 
-    Check the following example:<br>
+    <b>e.g:</b><br>
     For data series Serie1, with X-categories: 'Jan', 'Feb' and values:<br><br>
 
     Serie1 = [10, 15]<br><br>
 
-    We can format the tooltips for X-axis to be: "The X value for " + this.x + " corresponds to Y value " + this.y + " in this series".<br><br>
-
-    Which would iterate through all data points in graph [ [10 , Jan] , [15 , Feb] , ... ]  and translate to:<br>
-    The X value for <strong>10</strong> corresponds to Y value <strong>Jan</strong>.<br>
-    The X value for <strong>15</strong> corresponds to Y value <strong>Feb</strong>.
+    We can format the tooltips for X-axis to be: "Month: (?value)"<br>
+    And the tooltips for Y-axis to be: "The value is (?value)"
 
     <div class="flex flex-row mt-4">
       <div class="grow border-r-2 border-neutral/10 pr-4">
         <app-input-text
           [id]="'chart-x-tooltip-format'"
           [(value)]="viewToEdit.options.tooltipXFormatter"
-          [placeholder]="'e.g. \'X value:\' + this.x '"
+          [placeholder]="'e.g. X value: (?value)'"
           [required]="false"
           [topLabel]="'Format data tooltips for X values:'"
         ></app-input-text>
@@ -863,7 +860,7 @@
         <app-input-text
           [id]="'chart-y-tooltip-format'"
           [(value)]="viewToEdit.options.tooltipYFormatter"
-          [placeholder]="'e.g. \'Y value:\' + this.y '"
+          [placeholder]="'e.g. Y value: (?value)'"
           [required]="false"
           [topLabel]="'Format data tooltips for Y values:'"
         ></app-input-text>
@@ -1035,6 +1032,7 @@
           [topLabel]="'Custom start angle'"
           [placeholder]="'Select a number (from 0 to 360)'"
           [helperText]="'Custom angle from which the pie slices start. Default is 0.'"
+          [helperPosition]="'right'"
         ></app-input-number>
         <app-input-number
           [id]="'chart-pie-end-angle'"
@@ -1042,6 +1040,7 @@
           [topLabel]="'Custom end angle'"
           [placeholder]="'Select a number (from 0 to 360)'"
           [helperText]="'Custom angle from which the pie slices end. Default is 360.'"
+          [helperPosition]="'right'"
         ></app-input-number>
       </div>
       <div class="px-4">
@@ -1051,6 +1050,7 @@
           [topLabel]="'Custom x-offset'"
           [placeholder]="'Select a number'"
           [helperText]="'Sets left offset to the entire pie chart area.'"
+          [helperPosition]="'right'"
         ></app-input-number>
         <app-input-number
           [id]="'chart-pie-y-offset'"
@@ -1058,6 +1058,7 @@
           [topLabel]="'Custom y-ofset'"
           [placeholder]="'Select a number'"
           [helperText]="'Sets top offset to the entire pie chart area.'"
+          [helperPosition]="'right'"
         ></app-input-number>
       </div>
     </div>

@@ -192,6 +192,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.chartType = this.view.chartType;
       viewToEdit.options = this.view.options;
 
+      // By default, if the tooltip isn't set then it shows up...
+      if (viewToEdit.options.tooltip == undefined) viewToEdit.options.tooltip = true;
+
       if (viewToEdit.chartType != ChartType.PROGRESS) {
         if (typeof this.view.data == 'object') viewToEdit.data = JSON.stringify(this.view.data);
         else viewToEdit.data = this.view.data;
@@ -205,7 +208,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
     else { // needed in case user changes type to chart
-      viewToEdit.options = {colors: [], datalabels: []};
+      viewToEdit.options = {colors: [], datalabels: [], tooltip: true};
       viewToEdit.chartType = ChartType.LINE;
       viewToEdit.progressData = {value: "", max: null};
     }
@@ -318,9 +321,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     else if (to instanceof ViewChart) {
       to.chartType = from.chartType;
       to.options = from.options;
-      to.data = null;
-      if (to.chartType === ChartType.PROGRESS) to.data = from.progressData
-      else to.data = from.data;
+
+      if (to.chartType === ChartType.PROGRESS) to.data = from.progressData;
+      else to.data = JSON.parse(from.data);
     }
     return to;
   }
