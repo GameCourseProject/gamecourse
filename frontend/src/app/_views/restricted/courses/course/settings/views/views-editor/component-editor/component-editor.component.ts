@@ -349,7 +349,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return [
       "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",
       "tabler-coin", "jam-layout", "tabler-bulb", "tabler-checks", "feather-repeat",
-      "tabler-users", "tabler-trophy"
+      "tabler-users", "tabler-trophy", "tabler-puzzle", "tabler-bell", "tabler-plug",
+      "tabler-database", "tabler-clipboard-list", "tabler-color-swatch", "feather-info",
+      "feather-file", "feather-home", "feather-sun", "feather-moon", "feather-sliders",
+      "feather-alert-triangle"
     ]
   }
 
