@@ -1,0 +1,609 @@
+[
+    [1, 
+        [
+            [{
+                "type": "icon",
+                "icon": "tabler-award",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-user-circle",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-list-numbers",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-flame",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-coin",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "jam-layout",
+                "size": "1.8rem"
+            }]
+        ]
+    ],
+    [2, 
+        [
+            [{
+                "type": "icon",
+                "icon": "tabler-bulb",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-checks",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-repeat",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-users",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-trophy",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-puzzle",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-bell",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-plug",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-database",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-clipboard-list",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "tabler-color-swatch",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-info",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-file",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-home",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-sun",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-moon",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-sliders",
+                "size": "1.8rem"
+            }],
+            [{
+                "type": "icon",
+                "icon": "feather-alert-triangle",
+                "size": "1.8rem"
+            }]
+        ]
+    ],
+    [3, 
+        [
+            [{
+                "type": "text",
+                "class": "font-bold uppercase",
+                "style": "font-size: 1.5rem",
+                "text": "Big Title Caps"
+            }],
+            [{
+                "type": "text",
+                "class": "font-bold",
+                "style": "font-size: 1.5rem",
+                "text": "Big Title"
+            }]
+        ]
+    ],
+    [4,
+        [
+            [{
+                "type": "text",
+                "text": "This is a default paragraph. It has multiple lines and it looks like this."
+            }],
+            [{
+                "class": "font-bold",
+                "type": "text",
+                "text": "This is a bold paragraph. It has multiple lines and it looks like this."
+            }]
+        ]
+    ],
+    [5,
+        [
+            [{
+                "type": "block",
+                "class": "card card-body bg-base-100 shadow-xl"
+            }],
+            [{
+                "type": "block",
+                "class": "card card-body bg-base-100 shadow-xl",
+                "direction": "horizontal"
+            }],
+            [{
+                "type": "block",
+                "class": "card card-body bg-base-100 shadow-xl border-base-300 border-2 p-6"
+            }]
+        ]
+    ],
+    [6,
+        [
+            [{
+                "type": "button",
+                "class": "btn btn-info",
+                "text": "Info"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-success",
+                "text": "Success"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-warning",
+                "text": "Warning"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-error",
+                "text": "Error"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-ghost",
+                "color": "#9575cd",
+                "text": "Colored"
+            }]
+        ]
+    ],
+    [7,
+        [
+            [{
+                "type": "button",
+                "class": "btn btn-outline btn-info",
+                "text": "Info"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-outline btn-success",
+                "text": "Success"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-outline btn-warning",
+                "text": "Warning"
+            }],
+            [{
+                "type": "button",
+                "class": "btn btn-outline btn-error",
+                "text": "Error"
+            }]
+        ]
+    ],
+    [8,
+        [
+            [{
+                "type": "button",
+                "class": "btn btn-primary",
+                "text": "Button",
+                "icon": "tabler-award"
+            }]
+        ]
+    ],
+    [9,
+        [
+            [{
+                "type": "image",
+                "class": "w-28 rounded-full",
+                "src": "https://tecnico.ulisboa.pt/files/2015/03/campus_alameda.jpg"
+            }]
+        ]
+    ],
+    [10,
+        [
+            [{
+                "type": "image",
+                "class": "w-28",
+                "src": "https://tecnico.ulisboa.pt/files/2015/03/campus_alameda.jpg"
+            }]
+        ]
+    ],
+    [8,
+        [
+            [{
+                "type": "collapse",
+                "class": "border-base-300 bg-base-200 border-2 rounded-xl",
+                "icon": "arrow",
+                "children": [
+                    [
+                        {
+                            "type": "text",
+                            "text": "Click on arrow to open"
+                        }
+                    ],
+                    [
+                        {
+                            "type": "block"
+                        }
+                    ]
+                ]
+            }],
+            [{
+                "type": "collapse",
+                "class": "border-base-300 bg-base-200 border-2 rounded-xl",
+                "icon": "plus",
+                "children": [
+                    [
+                        {
+                            "type": "text",
+                            "text": "Click on plus to open"
+                        }
+                    ],
+                    [
+                        {
+                            "type": "block"
+                        }
+                    ]
+                ]
+            }]
+        ]
+    ],
+    [11,
+        [
+            [{
+                "type": "table",
+                "footers": "1",
+                "searching": "0",
+                "columnFiltering": "0",
+                "paging": "0",
+                "lengthChange": "0",
+                "info": "0",
+                "ordering": "0",
+                "children": [
+                    [
+                        {
+                            "type": "row",
+                            "rowType": "header",
+                            "children": [
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 1"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 2"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 3"
+                                    }
+                                ]
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "type": "row",
+                            "rowType": "body",
+                            "children": [
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 1"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 2"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 3"
+                                    }
+                                ]
+                            ]
+                        }
+                    ]
+                ]
+            }]
+        ]
+    ],
+    [12,
+        [
+            [{
+                "type": "table",
+                "footers": "0",
+                "searching": "0",
+                "columnFiltering": "1",
+                "paging": "0",
+                "lengthChange": "0",
+                "info": "0",
+                "ordering": "0",
+                "children": [
+                    [
+                        {
+                            "type": "row",
+                            "rowType": "header",
+                            "children": [
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 1"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 2"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Header 3"
+                                    }
+                                ]
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "type": "row",
+                            "rowType": "body",
+                            "children": [
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 1"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 2"
+                                    }
+                                ],
+                                [
+                                    {
+                                    "type": "text",
+                                    "text": "Cell 3"
+                                    }
+                                ]
+                            ]
+                        }
+                    ]
+                ]
+            }]
+        ]
+    ],
+    [13,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "bar",
+                    "data": [
+                        {
+                            "name": "Series 1",
+                            "data": [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                        },
+                        {
+                            "name": "Series 2",
+                            "data": [5, 4, 32, 55, 10, 20, 6, 50, 14]
+                        }
+                    ],
+                    "options": {
+                        "colors": [
+                            "#448AFF",
+                            "#EC407A"
+                        ],
+                        "XAxisGrid": false,
+                        "YAxisGrid": true,
+                        "legend": true,
+                        "XAxisLabel": "Value",
+                        "YAxisLabel": "Categories",
+                        "legendPosition": "right",
+                        "stripedGrid": "null"
+                    }
+                }
+            ]
+        ]
+    ],
+    [14,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "combo",
+                    "data": [
+                        {
+                            "name": "Series 1",
+                            "type": "bar",
+                            "data": [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                        },
+                        {
+                            "name": "Series 2",
+                            "type": "line",
+                            "data": [5, 4, 32, 55, 10, 20, 6, 50, 14]
+                        }
+                    ],
+                    "options": {
+                        "colors": [
+                            "#448AFF",
+                            "#EC407A"
+                        ],
+                        "XAxisGrid": "true",
+                        "YAxisGrid": "true",
+                        "legend": "true",
+                        "XAxisLabel": "Time",
+                        "YAxisLabel": "Points",
+                        "XAxisType": "numeric",
+                        "align": "center",
+                        "title": "Combo Chart",
+                        "legendPosition": "top"
+                    }
+                }
+            ]
+        ]
+    ],
+    [15,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "line",
+                    "data": [
+                        {
+                            "name": "Series 1",
+                            "data": [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                        },
+                        {
+                            "name": "Series 2",
+                            "data": [5, 4, 32, 55, 10, 20, 6, 50, 14]
+                        }
+                    ],
+                    "options": {
+                        "colors": [
+                            "#448AFF",
+                            "#EC407A"
+                        ],
+                        "XAxisGrid": "true",
+                        "YAxisGrid": "true",
+                        "stripedGrid": "horizontal",
+                        "legend": "true",
+                        "XAxisLabel": "Time",
+                        "YAxisLabel": "Points"
+                    }
+                }
+            ]
+        ]
+    ],
+    [16,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "progress",
+                    "data": {
+                        "value": "40",
+                        "max": "100"
+                    },
+                    "options": {
+                        "size": "md",
+                        "progressColor": "#66BB6A",
+                        "labelLeft": "Progress",
+                        "labelRight": "Max",
+                        "tooltip": "relative"
+                    }
+                }
+            ]
+        ]
+    ],
+    [17,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "radar",
+                    "data": [
+                        {
+                            "name": "Activity",
+                            "data": [35, 52, 15, 38, 24]
+                        }
+                    ],
+                    "options": {
+                        "colors": [
+                            "#66BB6A"
+                        ],
+                        "XAxisGrid": false,
+                        "legend": "true",
+                        "legendPosition": "bottom",
+                        "stripedGrid": null,
+                        "XAxisType": "category",
+                        "XAxisCategories": [
+                            "Sunday",
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday"
+                        ]
+                    }
+                }
+            ]
+        ]
+    ],
+    [18,
+        [
+            [
+                {
+                    "type": "chart",
+                    "chartType": "pie",
+                    "tooltips": "false",
+                    "data": [30, 70],
+                    "options": {
+                        "labels": ["Category A", "Category B"],
+                        "colors": [
+                            "#448AFF",
+                            "#EC407A"
+                        ]
+                    }
+                }
+            ]
+        ]
+    ]
+]
