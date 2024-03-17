@@ -47,7 +47,13 @@ class Category
             ["id" => 10, "name" => "Squared"],
             ["id" => 11, "name" => "With Footers"],
             ["id" => 12, "name" => "With Column Filtering"],
-        ]; // TODO: Add Charts categories
+            ["id" => 13, "name" => "Bar"],
+            ["id" => 14, "name" => "Combo"],
+            ["id" => 15, "name" => "Line"],
+            ["id" => 16, "name" => "Progress"],
+            ["id" => 17, "name" => "Radar"],
+            ["id" => 18, "name" => "Pie"]
+        ];
 
         $sql = "INSERT INTO " . self::TABLE_CATEGORY . " (id, name) VALUES ";
         $values = [];
