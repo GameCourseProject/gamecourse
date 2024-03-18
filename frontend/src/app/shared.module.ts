@@ -111,6 +111,7 @@ import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import { MentionModule } from "angular-mentions";
 
 // Icons
 import {
@@ -142,7 +143,6 @@ import {
   featherX,
   featherXCircle
 } from "@ng-icons/feather-icons";
-
 
 import {
   jamCircleF,
@@ -235,8 +235,10 @@ import {
   tablerQuote,
   tablerDatabase
 } from "@ng-icons/tabler-icons";
-import {MentionModule} from "angular-mentions";
 
+import {
+  heroFireSolid
+} from "@ng-icons/heroicons/solid"
 
 @NgModule({
   declarations: [
@@ -539,7 +541,9 @@ import {MentionModule} from "angular-mentions";
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
       tablerQuote,
-      tablerDatabase
+      tablerDatabase,
+
+      heroFireSolid
     }),
     DataTablesModule,
     NgApexchartsModule,

@@ -90,6 +90,144 @@ class StreaksLibrary extends Library
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
 
+    /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets a given streak's ID in the system.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function id($streak): ValueNode
+    {
+        // NOTE: on mock data, badge will be mocked
+        if (is_array($streak)) $streakId = $streak["id"];
+        else $streakId = $streak->getId();
+        return new ValueNode($streakId, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's name.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function name($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $name = $streak["name"];
+        else $name = $streak->getName();
+        return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's goal.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function goal($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $goal = $streak["goal"];
+        else $goal = $streak->getGoal();
+        return new ValueNode($goal, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's description.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function description($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $description = $streak["description"];
+        else $description = $streak->getDescription();
+        return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's color.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function color($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $color = $streak["color"];
+        else $color = $streak->getColor();
+        return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's reward.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function reward($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $reward = $streak["reward"];
+        else $reward = $streak->getReward();
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's tokens.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function tokens($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $tokens = $streak["tokens"];
+        else $tokens = $streak->getTokens();
+        return new ValueNode($tokens, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's isRepeatable.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function repeatable($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $repeatable = $streak["isRepeatable"];
+        else $repeatable = $streak->isRepeatable();
+        return new ValueNode($repeatable, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's isExtra.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function extra($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $extra = $streak["isExtra"];
+        else $extra = $streak->isRepeatable();
+        return new ValueNode($extra, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+
     /*** ---------- Config ---------- ***/
 
     /**
