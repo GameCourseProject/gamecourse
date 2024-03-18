@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
@@ -284,10 +285,43 @@ class StreaksLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock streaks
-            $streaks = [];
+            $streaks = [
+                ["id" => 1,
+                "name" => "Streak 1",
+                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                "color" =>  Factory::create()->hexColor(),
+                "goal" => Factory::create()->numberBetween(3, 5),
+                "reward" => Factory::create()->randomElement([50, 100, 150, 200]),
+                "tokens" => Factory::create()->randomElement([10, 40, 100]),
+                "isExtra" => 1,
+                "isRepeatable" => 1,
+                "isActive" => 1],
+
+                ["id" => 2,
+                "name" => "Streak 2",
+                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                "color" =>  Factory::create()->hexColor(),
+                "goal" => Factory::create()->numberBetween(3, 5),
+                "reward" => Factory::create()->randomElement([50, 100, 150, 200]),
+                "tokens" => Factory::create()->randomElement([10, 40, 100]),
+                "isExtra" => 0,
+                "isRepeatable" => 1,
+                "isActive" => 1],
+
+                ["id" => 3,
+                "name" => "Streak 3",
+                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                "color" =>  Factory::create()->hexColor(),
+                "goal" => Factory::create()->numberBetween(3, 5),
+                "reward" => Factory::create()->randomElement([50, 100, 150, 200]),
+                "tokens" => Factory::create()->randomElement([10, 40, 100]),
+                "isExtra" => 1,
+                "isRepeatable" => 0,
+                "isActive" => 1],
+            ];
 
         } else $streaks = Streak::getStreaks($courseId, $active);
+
         return new ValueNode($streaks, $this);
     }
 
@@ -359,7 +393,7 @@ class StreaksLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $progression = Core::dictionary()->faker()->numberBetween(0, 10);
+            $progression = Core::dictionary()->faker()->numberBetween(0, 2);
 
         } else {
             $streaksModule = new Streaks($course);
