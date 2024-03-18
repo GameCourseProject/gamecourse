@@ -1,0 +1,285 @@
+[
+   {
+      "aspect": {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
+      "type":"block",
+      "class": "card card bg-base-100 shadow-xl",
+      "variables": [
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            }
+        ],
+      "children":[
+        [
+            {
+                "type": "block",
+                "class": "card-body",
+                "children": [
+                    [
+                        {
+                            "type": "block",
+                            "class": "gap-6",
+                            "direction": "horizontal",
+                            "columns": 2,
+                            "responsive": false,
+                            "children": [
+                                [
+                                    {
+                                        "type": "block",
+                                        "class": "gap-3 items-center mb-4",
+                                        "direction": "horizontal",
+                                        "children": [
+                                            [
+                                                {
+                                                    "type": "icon",
+                                                    "class": "mt-1",
+                                                    "style": "color: {%courseColor}",
+                                                    "icon": "{awards.getIconOfType(\"streak\")}",
+                                                    "size": "1.8rem"
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "type": "text",
+                                                    "class": "font-bold",
+                                                    "style": "font-size: 1.5rem",
+                                                    "text": "Streaks"
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                ],
+                                [
+                                    {
+                                        "type": "block",
+                                        "class": "float-right mt-2 gap-1 items-center font-semibold",
+                                        "direction": "horizontal",
+                                        "responsive": false,
+                                        "children": [
+                                            [
+                                                {
+                                                    "type": "text",
+                                                    "class": "text-neutral\/75",
+                                                    "text": "Total:"
+                                                }
+                                            ],
+                                            [
+                                                {
+                                                    "type": "text",
+                                                    "style": "color: {%courseColor}",
+                                                    "text": "{awards.getUserStreaksTotalReward(%user)} XP"
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                ]
+                            ]
+                        }
+                    ],
+                    [
+                        {
+                            "type": "block",
+                            "class": "gap-3",
+                            "direction": "vertical",
+                            "children": [
+                                [
+                                    {
+                                        "type": "block",
+                                        "class": "p-4 border-base-300 bg-base-200 border-2 rounded-xl",
+                                        "loopData": "{streaks.getStreaks(true)}",
+                                        "variables": [
+                                            {
+                                                "name": "streak",
+                                                "value": "{%item}"
+                                            }
+                                        ],
+                                        "children": [
+                                            [
+                                                {
+                                                    "type": "block",
+                                                    "direction": "horizontal",
+                                                    "responsive": true,
+                                                    "class": "flex flex-wrap justify-between items-center gap-6",
+                                                    "children": [
+                                                        [
+                                                            {
+                                                                "type": "block",
+                                                                "direction": "horizontal",
+                                                                "responsive": true,
+                                                                "class": "flex flex-wrap flex-col md:flex-row gap-6 md:items-center",
+                                                                "children": [
+                                                                    [
+                                                                        {
+                                                                            "type": "block",
+                                                                            "class": "md:w-[20rem]",
+                                                                            "children": [
+                                                                                [
+                                                                                    {
+                                                                                        "type":"text",
+                                                                                        "class":"font-semibold",
+                                                                                        "style":"font-size: 1.1rem; color: {%streak.color}",
+                                                                                        "text":"{%streak.name}"
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type":"text",
+                                                                                        "class":"text-neutral/75",
+                                                                                        "text":"{%streak.description}"
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type":"text",
+                                                                                        "class":"font-medium text-sm mt-2",
+                                                                                        "style":"color: {%streak.color}",
+                                                                                        "variables": [
+                                                                                            {
+                                                                                                "name": "timesCompleted",
+                                                                                                "value": "{streaks.getUserStreakProgression(%user, %streak.id)}"
+                                                                                            }
+                                                                                        ],
+                                                                                        "text":"Reached %timesCompleted {system.if(%timesCompleted == 1, 'time', 'times')}"
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "type": "block",
+                                                                            "class": "flex items-center gap-2",
+                                                                            "direction": "horizontal",
+                                                                            "variables": [
+                                                                                {
+                                                                                    "name": "streakProgress",
+                                                                                    "value": "{streaks.getUserStreakProgression(%user, %streak.id)}"
+                                                                                }
+                                                                            ],
+                                                                            "children": [
+                                                                                [
+                                                                                    {
+                                                                                        "type": "icon",
+                                                                                        "icon": "hero-fire-solid",
+                                                                                        "size": "36px",
+                                                                                        "style":"color: {%streak.color}",
+                                                                                        "loopData":"{collection.generate(%streakProgress)}"
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type": "icon",
+                                                                                        "icon": "hero-fire-solid",
+                                                                                        "size": "36px",
+                                                                                        "class":"text-neutral/30",
+                                                                                        "loopData":"{collection.generate(%missing)}",
+                                                                                        "variables":[
+                                                                                            {
+                                                                                                "name": "missing",
+                                                                                                "value": "{%streak.goal - %streakProgress}"
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type": "icon",
+                                                                                        "icon": "feather-repeat",
+                                                                                        "size": "1.2rem",
+                                                                                        "class": "btn btn-circle btn-ghost btn-sm",
+                                                                                        "visibilityType": "conditional",
+                                                                                        "visibilityCondition": "{%streak.repeatable}",
+                                                                                        "events": [
+                                                                                            {
+                                                                                                "type": "mouseover",
+                                                                                                "action": "{actions.showTooltip('Can be earned multiple times')}"
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                            }
+                                                        ],
+                                                        [
+                                                            {
+                                                                "type": "block",
+                                                                "class":"flex justify-center items-center gap-3",
+                                                                "direction": "horizontal",
+                                                                "children": [
+                                                                    [
+                                                                        {
+                                                                            "type":"block",
+                                                                            "class":"flex flex-col items-center",
+                                                                            "children": [
+                                                                                [
+                                                                                    {
+                                                                                        "type": "text",
+                                                                                        "class": "font-semibold text-lg",
+                                                                                        "text": "{%streak.reward} XP"
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type": "text",
+                                                                                        "class": "font-medium text-error text-sm",
+                                                                                        "text": "extra credit",
+                                                                                        "visibilityType": "conditional",
+                                                                                        "visibilityCondition": "{%streak.extra}"
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "type": "text",
+                                                                            "text": "+"
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "type": "block",
+                                                                            "class": "flex gap-1 items-center",
+                                                                            "direction": "horizontal",
+                                                                            "children": [
+                                                                                [
+                                                                                    {
+                                                                                        "type": "text",
+                                                                                        "text": "{%streak.tokens}",
+                                                                                        "class": "font-semibold text-lg"
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "type": "image",
+                                                                                        "src": "{vc.getImage()}",
+                                                                                        "class": "w-5 h-5 mt-1"
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                            }
+                                                        ]
+                                                    ]
+                                                }
+                                            ]
+                                        ]
+                                    }
+                                ]
+                            ]
+                        }
+                    ]
+                ]
+            }
+        ]
+      ]  
+   }
+]

@@ -74,6 +74,7 @@ class Streaks extends Module
     {
         $this->initDatabase();
         $this->initRules();
+        $this->initTemplates();
 
         // Init config
         Core::database()->insert(self::TABLE_STREAK_CONFIG, ["course" => $this->course->getId()]);
@@ -107,6 +108,7 @@ class Streaks extends Module
     {
         $this->cleanDatabase();
         $this->removeRules();
+        $this->removeTemplates();
     }
 
 
