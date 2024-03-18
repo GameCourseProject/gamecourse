@@ -284,41 +284,45 @@ class StreaksLibrary extends Library
         $courseId = Core::dictionary()->getCourse()->getId();
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
-        $faker = Factory::create();
         if (Core::dictionary()->mockData()) {
+            $faker = Factory::create();
             $streaks = [
-                ["id" => 1,
-                "name" => "Streak 1",
-                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
-                "color" =>  $faker->hexColor(),
-                "goal" => $faker->numberBetween(3, 5),
-                "reward" => $faker->randomElement([50, 100, 150, 200]),
-                "tokens" => $faker->randomElement([10, 40, 100]),
-                "isExtra" => 1,
-                "isRepeatable" => 1,
-                "isActive" => 1],
-
-                ["id" => 2,
-                "name" => "Streak 2",
-                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
-                "color" =>  $faker->hexColor(),
-                "goal" => $faker->numberBetween(3, 5),
-                "reward" => $faker->randomElement([50, 100, 150, 200]),
-                "tokens" => $faker->randomElement([10, 40, 100]),
-                "isExtra" => 0,
-                "isRepeatable" => 1,
-                "isActive" => 1],
-
-                ["id" => 3,
-                "name" => "Streak 3",
-                "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
-                "color" =>  $faker->hexColor(),
-                "goal" => $faker->numberBetween(3, 5),
-                "reward" => $faker->randomElement([50, 100, 150, 200]),
-                "tokens" => $faker->randomElement([10, 40, 100]),
-                "isExtra" => 1,
-                "isRepeatable" => 0,
-                "isActive" => 1],
+                [
+                    "id" => 1,
+                    "name" => "Streak 1",
+                    "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                    "color" =>  $faker->hexColor(),
+                    "goal" => $faker->numberBetween(3, 5),
+                    "reward" => $faker->randomElement([50, 100, 150, 200]),
+                    "tokens" => $faker->randomElement([10, 40, 100]),
+                    "isExtra" => 1,
+                    "isRepeatable" => 1,
+                    "isActive" => 1
+                ],
+                [
+                    "id" => 2,
+                    "name" => "Streak 2",
+                    "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                    "color" =>  $faker->hexColor(),
+                    "goal" => $faker->numberBetween(3, 5),
+                    "reward" => $faker->randomElement([50, 100, 150, 200]),
+                    "tokens" => $faker->randomElement([10, 40, 100]),
+                    "isExtra" => 0,
+                    "isRepeatable" => 1,
+                    "isActive" => 1
+                ],
+                [
+                    "id" => 3,
+                    "name" => "Streak 3",
+                    "description" => "This is the streak's description, e.g. this streak consists of doing x and y.",
+                    "color" =>  $faker->hexColor(),
+                    "goal" => $faker->numberBetween(3, 5),
+                    "reward" => $faker->randomElement([50, 100, 150, 200]),
+                    "tokens" => $faker->randomElement([10, 40, 100]),
+                    "isExtra" => 1,
+                    "isRepeatable" => 0,
+                    "isActive" => 1
+                ],
             ];
 
         } else $streaks = Streak::getStreaks($courseId, $active);

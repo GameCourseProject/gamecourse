@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -504,8 +505,33 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $faker = Factory::create();
+            $users = [
+                [
+                    "id" => 1,
+                    "name" => $faker->name(),
+                    "email" => $faker->email(),
+                    "major" => "MEIC",
+                    "nickname" => "nick",
+                    "studentNumber" => $faker->numberBetween(11111, 99999)
+                ],
+                [
+                    "id" => 2,
+                    "name" => $faker->name(),
+                    "email" => $faker->email(),
+                    "major" => "MEIC",
+                    "nickname" => null,
+                    "studentNumber" => $faker->numberBetween(11111, 99999)
+                ],
+                [
+                    "id" => 3,
+                    "name" => $faker->name(),
+                    "email" => $faker->email(),
+                    "major" => null,
+                    "nickname" => null,
+                    "studentNumber" => $faker->numberBetween(11111, 99999)
+                ],
+            ];
 
         } else $users = $course->getStudents($active);
         return new ValueNode($users, $this);

@@ -412,8 +412,14 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = [
+                [
+                    "id" => 2,
+                    "description" => "Badge 1 (level 1)",
+                    "type" => "badge",
+                    "moduleInstance" => 1
+                ]
+            ];
 
         } else {
             $awardsModule = new Awards($course);

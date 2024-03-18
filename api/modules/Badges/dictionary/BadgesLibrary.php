@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
@@ -434,10 +435,44 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badges
-            $badges = [];
-
+            $faker = Factory::create();
+            $badges = [
+                [
+                    "id" => 1,
+                    "name" => "Badge 1",
+                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
+                    "nrLevels" => $faker->numberBetween(1, 3),
+                    "isExtra" => 1,
+                    "isBragging" => 1,
+                    "isCount" => 1,
+                    "isPoint" => 0,
+                    "isActive" => 1
+                ],
+                [
+                    "id" => 2,
+                    "name" => "Badge 2",
+                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
+                    "nrLevels" => $faker->numberBetween(1, 3),
+                    "isExtra" => 0,
+                    "isBragging" => 1,
+                    "isCount" => 0,
+                    "isPoint" => 1,
+                    "isActive" => 1
+                ],
+                [
+                    "id" => 3,
+                    "name" => "Badge 3",
+                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
+                    "nrLevels" => $faker->numberBetween(1, 3),
+                    "isExtra" => 1,
+                    "isBragging" => 0,
+                    "isCount" => 0,
+                    "isPoint" => 1,
+                    "isActive" => 1
+                ],
+            ];
         } else $badges = Badge::getBadges($courseId, $active);
+
         return new ValueNode($badges, $this);
     }
 
