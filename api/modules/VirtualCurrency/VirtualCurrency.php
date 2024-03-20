@@ -466,8 +466,9 @@ class VirtualCurrency extends Module
             $scope = "[" . implode(", ", $exchanged) . "]";
 
             $lists[] = [
-                "name" => "Exchanging $name",
-                "description" => "$name can be exchanged by XP at a fixed ratio, for instance 2:1 ratio will earn double 
+                "name" => "Manage $name",
+                "description" => "Change the students' $name manually, or convert them into XP.
+                                $name can be exchanged by XP at a fixed ratio, for instance 2:1 ratio will earn double 
                                 the amount of $name in XP. Additionally, setup a threshold if you want the limit the 
                                 maximum amount of $name that can be exchanged. Each student can only exchange $name once.",
                 "itemName" => null,
@@ -495,7 +496,8 @@ class VirtualCurrency extends Module
                     ];
                 }, $wallets),
                 "actions" => [
-                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "accent", "scope" => $scope]
+                    ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "accent", "scope" => $scope],
+                    ["action" => 'Edit ' . $name, "icon" => 'jam-pencil-f', "color" => "warning", "scope" => "[]"]
                 ],
                 "options" => [
                     "order" => [[0, "asc"]],
@@ -623,6 +625,28 @@ class VirtualCurrency extends Module
                             ]
                         ]
                     ]
+                ],
+                "Edit $name" => [
+                    "modalSize" => "sm",
+                    "contents" => [
+                        [
+                            "contentType" => "container",
+                            "classList" => "flex flex-wrap",
+                            "contents" => [
+                                [
+                                    "contentType" => "item",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "quantity",
+                                    "placeholder" => "Quantity",
+                                    "options" => [
+                                        "topLabel" => "New Quantity of $name",
+                                        "required" => true,
+                                    ],
+                                ]
+                            ]
+                        ]
+                    ]
                 ]
             ];
         }
@@ -664,7 +688,7 @@ class VirtualCurrency extends Module
 
             } elseif ($action == Action::DELETE) AutoAction::deleteAction($item["id"]);
 
-        } elseif ($listName == "Exchanging $name") {
+        } elseif ($listName == "Manage $name") {
             if ($action == "Exchange $name" || $action == "Exchange multiple") {
                 if ($action == "Exchange $name") $users = [$item["user"]];
                 else $users = array_map(function ($userId) {
@@ -683,6 +707,11 @@ class VirtualCurrency extends Module
                     }
                 }
                 return "Exchanged $name!";
+
+            } elseif ($action == "Edit $name") {
+                $user = $item["user"];
+                self::setUserTokens($user, $item["quantity"]);
+                return "$name set to ". $item["quantity"] . " for " . $item["name"];
             }
         }
 
