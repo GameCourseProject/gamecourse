@@ -173,7 +173,7 @@ class CoreComponent extends Component
             "category" => $categoryId,
             "module" => $moduleId
         ]);
-        Utils::updateItemPosition(null, $position, self::TABLE_COMPONENT, "position", $id, self::getComponents($categoryId));
+        //Utils::updateItemPosition(null, $position, self::TABLE_COMPONENT, "position", $id, self::getComponents($categoryId));
 
         return new CoreComponent($id);
     }

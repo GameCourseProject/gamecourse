@@ -146,7 +146,7 @@ export class ViewEditorService {
    * Deletes a view
    */
   delete(item: View) {
-    const viewsWithThis = this.viewsByAspect.filter((e) => e.view.findView(item.id));
+    const viewsWithThis = this.viewsByAspect.filter((e) => e.view?.findView(item.id));
 
     const lowerInHierarchy = viewsWithThis.filter((e) =>
       (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))

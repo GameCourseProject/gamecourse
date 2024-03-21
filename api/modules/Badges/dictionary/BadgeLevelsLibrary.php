@@ -13,6 +13,18 @@ class BadgeLevelsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockBadgeLevel(int $number = null) : array
+    {
+        return [
+            "number" => $number ? $number : Core::dictionary()->faker()->numberBetween(1, 3),
+            "goal" => Core::dictionary()->faker()->numberBetween(1, 50),
+            "reward" => Core::dictionary()->faker()->numberBetween(0, 300),
+            "tokens" => Core::dictionary()->faker()->numberBetween(0, 150),
+            "description" => Core::dictionary()->faker()->text(50),
+            "image" => null
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -184,8 +196,7 @@ class BadgeLevelsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badge level
-            $level = [];
+            $level = $this->mockBadgeLevel($number);
 
         } else {
             $badge = Badge::getBadgeById($badgeId);
