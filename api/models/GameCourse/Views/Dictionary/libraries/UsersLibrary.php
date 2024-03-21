@@ -14,6 +14,19 @@ class UsersLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockStudent() : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(4),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "image" => null
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -505,33 +518,9 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $faker = Factory::create();
-            $users = [
-                [
-                    "id" => 1,
-                    "name" => $faker->name(),
-                    "email" => $faker->email(),
-                    "major" => "MEIC",
-                    "nickname" => "nick",
-                    "studentNumber" => $faker->numberBetween(11111, 99999)
-                ],
-                [
-                    "id" => 2,
-                    "name" => $faker->name(),
-                    "email" => $faker->email(),
-                    "major" => "MEIC",
-                    "nickname" => null,
-                    "studentNumber" => $faker->numberBetween(11111, 99999)
-                ],
-                [
-                    "id" => 3,
-                    "name" => $faker->name(),
-                    "email" => $faker->email(),
-                    "major" => null,
-                    "nickname" => null,
-                    "studentNumber" => $faker->numberBetween(11111, 99999)
-                ],
-            ];
+            $users = array_map(function () {
+                return $this->mockStudent();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else $users = $course->getStudents($active);
         return new ValueNode($users, $this);

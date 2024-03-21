@@ -81,11 +81,20 @@ class CoursesLibrary extends Library
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
-/*         if (Core::dictionary()->mockData()) {
-            // TODO: mock course
-            $course = [];
+        if (Core::dictionary()->mockData()) {
+            $fakeStart = Core::dictionary()->faker()->dateTimeThisYear();
+            $course = [
+                "id" => $courseId,
+                "name" => "My Course",
+                "color" => Core::dictionary()->faker()->hexColor(),
+                "year" => date("Y"),
+                "startDate" => $fakeStart->format("Y-m-d H:m:s"),
+                "endDate" => $fakeStart->modify('+6 month')->format("Y-m-d H:m:s")
+            ];
 
-        } else  */$course = Course::getCourseById($courseId);
+        } else {
+            $course = Course::getCourseById($courseId);
+        }
         return new ValueNode($course, $this);
     }
 }

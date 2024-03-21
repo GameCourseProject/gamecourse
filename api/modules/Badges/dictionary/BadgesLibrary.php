@@ -15,6 +15,21 @@ class BadgesLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockBadge(int $id = null, string $name = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => $name ? $name : Core::dictionary()->faker()->text(20),
+            "description" => Core::dictionary()->faker()->text(50),
+            "nrLevels" => Core::dictionary()->faker()->numberBetween(1, 3),
+            "isExtra" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isBragging" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isCount" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isPoint" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isActive" => true
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -391,8 +406,7 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badge
-            $badge = [];
+            $badge = $this->mockBadge($badgeId);
 
         } else $badge = Badge::getBadgeById($badgeId);
         return new ValueNode($badge, $this);
@@ -413,8 +427,7 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badge
-            $badge = [];
+            $badge = $this->mockBadge(null, $name);
 
         } else $badge = Badge::getBadgeByName($courseId, $name);
         return new ValueNode($badge, $this);
@@ -435,42 +448,10 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $faker = Factory::create();
-            $badges = [
-                [
-                    "id" => 1,
-                    "name" => "Badge 1",
-                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
-                    "nrLevels" => $faker->numberBetween(1, 3),
-                    "isExtra" => 1,
-                    "isBragging" => 1,
-                    "isCount" => 1,
-                    "isPoint" => 0,
-                    "isActive" => 1
-                ],
-                [
-                    "id" => 2,
-                    "name" => "Badge 2",
-                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
-                    "nrLevels" => $faker->numberBetween(1, 3),
-                    "isExtra" => 0,
-                    "isBragging" => 1,
-                    "isCount" => 0,
-                    "isPoint" => 1,
-                    "isActive" => 1
-                ],
-                [
-                    "id" => 3,
-                    "name" => "Badge 3",
-                    "description" => "This is the badge's description, e.g. this badge consists of doing x and y.",
-                    "nrLevels" => $faker->numberBetween(1, 3),
-                    "isExtra" => 1,
-                    "isBragging" => 0,
-                    "isCount" => 0,
-                    "isPoint" => 1,
-                    "isActive" => 1
-                ],
-            ];
+            $badges = array_map(function () {
+                return $this->mockBadge();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
+
         } else $badges = Badge::getBadges($courseId, $active);
 
         return new ValueNode($badges, $this);
@@ -524,8 +505,9 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badges
-            $badges = [];
+            $badges = array_map(function () {
+                return $this->mockBadge();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $badgesModule = new Badges($course);

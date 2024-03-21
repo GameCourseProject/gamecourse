@@ -13,6 +13,20 @@ class AwardsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockAward($userId) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "user" => $userId,
+            "description" => Core::dictionary()->faker()->text(20),
+            "type" => Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "moduleInstance" => null,
+            "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -350,8 +364,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId);
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 10)));
 
         } else {
             $awardsModule = new Awards($course);

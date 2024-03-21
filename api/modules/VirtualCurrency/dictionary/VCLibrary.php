@@ -13,6 +13,17 @@ class VCLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockSpending($userId) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "user" => $userId,
+            "description" => Core::dictionary()->faker()->text(20),
+            "amount" => Core::dictionary()->faker()->numberBetween(50, 500),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
+        ];
+    }
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -217,8 +228,9 @@ class VCLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock spending
-            $spending = [];
+            $spending = array_map(function () use ($userId) {
+                return $this->mockSpending($userId);
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 10)));
 
         } else {
             $VCModule = new VirtualCurrency($course);
