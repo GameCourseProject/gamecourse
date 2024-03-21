@@ -293,8 +293,8 @@ class BadgesLibrary extends Library
     public function levels($badge): ValueNode
     {
         // NOTE: on mock data, badge will be mocked
-        if (is_array($badge)) $badge = Badge::getBadgeById($badge["id"]);
-        $levels = $badge->getLevels();
+        if (is_array($badge)) $levels = Badge::getBadgeById($badge["id"]);
+        else $levels = $badge->getLevels();
         return new ValueNode($levels, Core::dictionary()->getLibraryById(BadgeLevelsLibrary::ID));
     }
 

@@ -13,12 +13,13 @@ class LevelLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
-    private function mockLevel() : array
+    private function mockLevel(int $id = null, int $minXP = null, int $number = null) : array
     {
         return [
-            "id" => Core::dictionary()->faker()->numberBetween(0, 1000),
-            "description" => Core::dictionary()->faker()->text(),
-            "minXP" => Core::dictionary()->faker()->numberBetween(0, 1000)
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 1000),
+            "number" => $number ? $number : Core::dictionary()->faker()->numberBetween(1, 20),
+            "description" => Core::dictionary()->faker()->text(15),
+            "minXP" => $minXP ? $minXP : Core::dictionary()->faker()->numberBetween(0, 1000)
         ];
     }
 
@@ -157,8 +158,8 @@ class LevelLibrary extends Library
     public function number($level): ValueNode
     {
         // NOTE: on mock data, level will be mocked
-        if (is_array($level)) $level = Level::getLevelById($level["id"]);
-        $number = $level->getNumber();
+        if (is_array($level)) $number = $level["number"];
+        else $number = $level->getNumber();
         return new ValueNode($number, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -180,7 +181,7 @@ class LevelLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $level = $this->mockLevel();
+            $level = $this->mockLevel($levelId);
 
         } else $level = Level::getLevelById($levelId);
         return new ValueNode($level, $this);
@@ -201,7 +202,7 @@ class LevelLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $level = $this->mockLevel();
+            $level = $this->mockLevel(null, $minXP);
 
         } else $level = Level::getLevelByMinXP($courseId, $minXP);
         return new ValueNode($level, $this);
@@ -243,7 +244,7 @@ class LevelLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $level = $this->mockLevel();
+            $level = $this->mockLevel(null, null, $number);
 
         } else $level = Level::getLevelByNumber($courseId, $number);
         return new ValueNode($level, $this);
