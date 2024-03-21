@@ -52,7 +52,7 @@
       <bb-any *ngIf="view.header.type === ViewType.TEXT" [view]="view.header"></bb-any>
       <span *ngIf="view.header.type  !== ViewType.TEXT">{{view.header.type.capitalize()}}</span>
     </div>
-    
+
     <!-- Content -->
     <div class="collapse-content">
       <bb-any *ngIf="view.content.type === ViewType.TEXT" [view]="view.content"></bb-any>
@@ -67,9 +67,9 @@
 <!------------------------------------------------>
 
 <ng-template #EDIT_DEFAULT>
-  <div tabindex="0" 
+  <div tabindex="0"
        [attr.id]="view.cssId"
-       [classList]="classes + ' ' + view.classList + ' collapse-open'"
+       [classList]="classes + ' ' + view.classList + ' collapse-open !overflow-visible'"
        [attr.style]="view.styles">
 
     <!-- Title -->
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Content -->
-    <div class="collapse-content">
+    <div class="collapse-content !overflow-visible">
       <bb-any [view]="view.content"></bb-any>
     </div>
   </div>
