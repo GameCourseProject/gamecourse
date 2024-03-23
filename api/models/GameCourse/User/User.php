@@ -457,6 +457,9 @@ class User
             "username" => $username,
             "auth_service" => $authService
         ]);
+        Core::database()->insert(self::TABLE_AVATAR, [
+            "user" => $id
+        ]);
         self::createDataFolder($id);
         return new User($id);
     }
@@ -645,8 +648,8 @@ class User
         $where = ["user" => $this->id];
         $data = Core::database()->select($table, $where, "*");
 
-        $data["selected"] = json_decode($data["selected"]);
-        $data["colors"] = json_decode($data["colors"]);
+        $data["selected"] = $data["selected"] ? json_decode($data["selected"]) : null;
+        $data["colors"] = $data["colors"] ? json_decode($data["colors"]) : null;
 
         return $data;
     }
