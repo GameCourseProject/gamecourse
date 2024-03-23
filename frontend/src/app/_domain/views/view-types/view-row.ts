@@ -78,7 +78,7 @@ export class ViewRow extends View {
       else viewTree.push(viewForDatabase); // Is root
     }
     viewsAdded.set(this.id, viewForDatabase);
-    
+
     // Build children into view tree
     for (const child of this.children) {
       child.buildViewTree();
@@ -126,12 +126,21 @@ export class ViewRow extends View {
     // Look for view in children
     for (const child of this.children) {
       const found = child.findView(viewId);
-      if (found) return child;
+      if (found) return found;
     }
     return null;
   }
 
   replaceView(viewId: number, view: View) {
+    // Look for view in children
+    let index = 0;
+    for (const child of this.children) {
+      if (child.id === viewId) {
+        this.children.splice(index, 1, view);
+      }
+      child.replaceView(viewId, view);
+      index += 1;
+    }
   }
 
   switchMode(mode: ViewMode) {

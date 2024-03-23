@@ -21,11 +21,11 @@
 
       <!-- Enable / Disable -->
       <app-top-actions
-        [rightActions]="[{
-          action: status.isEnabled ? 'Disable' : 'Enable',
-          color: status.isEnabled ? 'error' : 'success'
-       }]"
-        (btnClicked)="changeStatus()">
+        [rightActions]="[
+          {action: 'Import Now', color: 'neutral'},
+          {action: status.isEnabled ? 'Disable Schedule' : 'Enable Schedule', color: status.isEnabled ? 'error' : 'success'}
+        ]"
+        (btnClicked)="doTopAction($event)">
       </app-top-actions>
 
       <!-- Status table -->

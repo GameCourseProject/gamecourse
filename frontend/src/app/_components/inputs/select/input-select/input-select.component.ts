@@ -24,10 +24,10 @@ import SlimSelect from "slim-select";
 export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
 
   // Essentials
-  @Input() id: string;                                                              // Unique ID
-  @Input() form: NgForm;                                                            // Form it's part of
-  @Input() value: any;                                                              // Where to store the value
-  @Input() options?: ({value: string, text: string, html?: string} |           // Options to select from
+  @Input() id: string;                                                                         // Unique ID
+  @Input() form: NgForm;                                                                       // Form it's part of
+  @Input() value: any;                                                                         // Where to store the value
+  @Input() options?: ({value: string, text: string, html?: string, display?: boolean} |        // Options to select from
                       {label: string, options: {value: string, text: string, html?: string}[]}
                      )[];
   @Input() placeholder: string;                                                     // Message to show by default
@@ -99,7 +99,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
 
   initSelect() {
     if (!this.required) {
-      this.options.push({value: "", text: ""}) // Need an empty option for deselect
+      this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
     }
 
     const options = {

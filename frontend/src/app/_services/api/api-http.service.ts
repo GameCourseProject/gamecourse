@@ -109,7 +109,6 @@ export class ApiHttpService {
   static readonly QR: string = 'QR';
   static readonly SKILLS: string = 'Skills';
   static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
-  static readonly SUGGESTIONS: string = 'Suggestions';
   static readonly AWARDS: string = 'Awards';
   // FIXME: should be compartimentalized
 
@@ -934,7 +933,8 @@ export class ApiHttpService {
       q1: questionnaireData.q1,
       element: questionnaireData.element,
       q2: questionnaireData.q2,
-      q3: questionnaireData.q3
+      q3: questionnaireData.q3,
+      q4: questionnaireData.q4
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2038,6 +2038,22 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.MODULE);
       qs.push('request', 'changeDataSourceStatus');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res ) );
+  }
+
+  public importDataFromDataSource(courseID: number, moduleID: string): Observable<void> {
+    const data = {
+      "courseId": courseID,
+      "moduleId": moduleID
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.MODULE);
+      qs.push('request', 'importDataFromDataSource');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -3693,7 +3709,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => dateFromDatabase(res['data'])));
   }
 
-  public getAutogameStatus(courseID: number): Observable<DataSourceStatus> {
+  public getAutoGameStatus(courseID: number): Observable<DataSourceStatus> {
     const data = {
       "courseId": courseID,
     }
@@ -3711,6 +3727,37 @@ export class ApiHttpService {
         return res['data'];
       }) );
   }
+
+  public runAutoGameNow(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNow');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
+  public runAutoGameNowForAllTargets(courseID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.AUTOGAME);
+      qs.push('request', 'runNowForAllTargets');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe(map( (res:any) => res) );
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Docs -------------------- ***/

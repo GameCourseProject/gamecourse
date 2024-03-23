@@ -240,21 +240,23 @@ class GameElement
      *
      * @param int $course
      * @param int $user
-     * @param bool $q1
+     * @param string $q1
      * @param string|null $q2
      * @param int|null $q3
+     * @param int|null $q4
      * @param int $element
      * @return void
      */
-    public static function submitGameElementQuestionnaire(int $course, int $user, bool $q1, ?string $q2, ?int $q3, int $element){
+    public static function submitGameElementQuestionnaire(int $course, int $user, string $q1, ?string $q2, ?int $q3, ?int $q4, int $element){
         $table = self::TABLE_ADAPTATION_QUESTIONNAIRE_ANSWERS;
         $date = new DateTime();
         Core::database()->insert($table,[
             "course" => $course,
             "user" => $user,
-            "question1" => +$q1,
+            "question1" => $q1,
             "question2" => $q2,
             "question3" => $q3,
+            "question4" => $q4,
             "element" => $element,
             "date" => $date->format("Y-m-d H:i:s")
         ]);
@@ -276,11 +278,24 @@ class GameElement
         $nrStudents = count($course->getStudents());
         if ($nrStudents == 0) $nrStudents = 1;
 
-        $entriesTrue = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
-        $entriesFalse = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
-        $response["question1"]["false"] = $entriesTrue;
-
-        $response["question1"]["true"] = $entriesFalse;
+        // Version 1 of the questionnaire
+        if ($course->getYear() === '2022-2023') {
+            $entriesTrue = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "0"], "count(*)");
+            $entriesFalse = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "1"], "count(*)");
+            $response["question1"]["false"] = $entriesTrue;
+            $response["question1"]["true"] = $entriesFalse;
+        }
+        // Version 2 of the questionnaire
+        else {
+            $entriesNever = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "Never"], "count(*)");
+            $entriesWeek3 = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "At the 3rd week"], "count(*)");
+            $entriesWeek4 = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "At the 4th week"], "count(*)");
+            $entriesBothWeeks = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question1" => "Both at 3rd and 4th weeks"], "count(*)");
+            $response["question1"]["never"] = $entriesNever;
+            $response["question1"]["week3"] = $entriesWeek3;
+            $response["question1"]["week4"] = $entriesWeek4;
+            $response["question1"]["both"] = $entriesBothWeeks;
+        }
 
         // Statistics question 2
         $aux = Core::database()->selectMultiple($table, ["course" => $course->getId(), "element" => $gameElement], "question2");
@@ -291,10 +306,12 @@ class GameElement
         }
         $response["question2"] = $final;
 
-        // Statistics question 3
+        // Statistics question 3 and 4
         for ($i = 1; $i <= 10; $i++) {
             $entries = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question3" => $i], "count(*)");
             $response["question3"][$i] = $entries;
+            $entries4 = Core::database()->select($table, ["course" => $course->getId(), "element" => $gameElement, "question4" => $i], "count(*)");
+            $response["question4"][$i] = $entries4;
         }
 
         return $response;

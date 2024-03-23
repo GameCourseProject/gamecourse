@@ -895,6 +895,26 @@ class Utils
     }
 
     /**
+     * Gets last lines of log file on a given path.
+     *
+     * @param string $path
+     * @param int $num_lines the number of lines to return
+     * @return string
+     */
+    public static function getFinalLogs(string $path, int $num_lines): string
+    {
+        $logsFile = LOGS_FOLDER . "/" . $path;
+        if (file_exists($logsFile)) {
+            $fileLines = file($logsFile);
+            $totalLines = count($fileLines);
+            $startLine = max(0, $totalLines - $num_lines);
+            return implode("", array_slice($fileLines, $startLine));
+        } else {
+            return "";
+        }
+    }
+
+    /**
      * Creates a new log on a given path.
      *
      * @param string $path

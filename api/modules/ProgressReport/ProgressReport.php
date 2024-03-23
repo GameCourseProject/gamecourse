@@ -297,7 +297,7 @@ class ProgressReport extends Module
                                       <tr>
                                         <td style="padding-right: 0px;padding-left: 0px;" align="center">
                                           <a href="' . URL . '" target="_blank">
-                                            <img align="center" border="0" src="' . URL . '/assets/logo/logo_horz.jpg" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
+                                            <img align="center" border="0" src="' . URL . 'assets/logo/logo_horz.png" alt="GameCourse logo" title="GameCourse logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;;max-width: 249.1px;" width="249.1"/>
                                           </a>
                                         </td>
                                       </tr>
@@ -829,8 +829,8 @@ class ProgressReport extends Module
         $timeLeft = self::datediff(date_create($currentDate), date_create($config["endDate"]), $isWeekly ? "weeks" : "days");
 
         // FIXME: charts don't exist anymore; always download image and save to user_data
-        $pieChartURL = "https://quickchart.io/chart/render/zm-f7746c74-abbb-4250-a0c2-11451cb8f7d6"; // editor: https://quickchart.io/chart-maker/edit/zm-7f2783e0-a82c-41b0-920b-9ce72210fd0a
-        $areaChartURL = "https://quickchart.io/chart/render/zm-a1ad2eb1-9680-4fc1-9e83-008080e79c6b"; // editor: https://quickchart.io/chart-maker/edit/zm-72a28b6b-b495-4c9d-a4e8-ce3e5ce5b013
+        $pieChartURL = "https://quickchart.io/chart/render/sf-8b2ff281-9678-4524-baf3-f193833d505b"; // editor: https://quickchart.io/chart-maker/edit/sf-8b2ff281-9678-4524-baf3-f193833d505b
+        $areaChartURL = "https://quickchart.io/chart/render/sf-5aabe708-710b-4f23-91d3-021c274ff3d1"; // editor: https://quickchart.io/chart-maker/edit/sf-5aabe708-710b-4f23-91d3-021c274ff3d1
 
         if ($this->course->getModuleById(VirtualCurrency::ID)->isEnabled())
             $tokensName = Core::database()->select(VirtualCurrency::TABLE_VC_CONFIG, ["course" => $this->course->getId()], "name");
