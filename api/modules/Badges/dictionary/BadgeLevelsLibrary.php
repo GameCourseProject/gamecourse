@@ -4,6 +4,7 @@ namespace GameCourse\Views\Dictionary;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
+use GameCourse\Module\Badges\Badges;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 
 class BadgeLevelsLibrary extends Library
@@ -16,11 +17,12 @@ class BadgeLevelsLibrary extends Library
     private function mockBadgeLevel(int $number = null) : array
     {
         return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
             "number" => $number ? $number : Core::dictionary()->faker()->numberBetween(1, 3),
             "goal" => Core::dictionary()->faker()->numberBetween(1, 50),
+            "description" => Core::dictionary()->faker()->text(50),
             "reward" => Core::dictionary()->faker()->numberBetween(0, 300),
             "tokens" => Core::dictionary()->faker()->numberBetween(0, 150),
-            "description" => Core::dictionary()->faker()->text(50),
             "image" => null
         ];
     }
@@ -80,7 +82,7 @@ class BadgeLevelsLibrary extends Library
             ),
             new DFunction("getLevelByNumber",
                 [["name" => "number", "optional" => false, "type" => "int"],
-                    ["name" => "number", "optional" => false, "type" => "int"]],
+                    ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
                 $this
@@ -122,7 +124,7 @@ class BadgeLevelsLibrary extends Library
     }
 
     /**
-     * Gets a given levels's description.
+     * Gets a given level's description.
      *
      * @param $level
      * @return ValueNode
@@ -173,7 +175,13 @@ class BadgeLevelsLibrary extends Library
     public function image($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
-        $image = $level["image"];
+        if (Core::dictionary()->mockData()) {
+            $badgesModule = new Badges(Core::dictionary()->getCourse());
+            $image = $badgesModule->getBlankExtraImage();
+
+        } else {
+            $image = $level["image"];
+        }
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 

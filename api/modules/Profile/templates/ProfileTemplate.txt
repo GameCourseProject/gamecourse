@@ -716,7 +716,7 @@
                               [
                                 {
                                   "type": "button",
-                                  "class": "btn-block mt-6",
+                                  "class": "btn-block btn-ghost mt-6",
                                   "text": "Awards",
                                   "color": "{%courseColor}",
                                   "icon": "tabler-trophy",
@@ -856,7 +856,7 @@
                                     "legend": true,
                                     "tooltipXFormatter": "After (?value) days",
                                     "tooltipYFormatter": "(?value) XP",
-                                    "XAxisLabel": "Time (days)",
+                                    "XAxisLabel": "Days since beginning",
                                     "YAxisLabel": "XP"
                                   }
                                 }
@@ -919,7 +919,7 @@
                                     "legend": true,
                                     "tooltipXFormatter": "After (?value) days",
                                     "tooltipYFormatter": "#(?value)",
-                                    "XAxisLabel": "Time (days)",
+                                    "XAxisLabel": "Days since beginning",
                                     "YAxisLabel": "Position",
                                     "YAxisMin": 1,
                                     "YAxisMax": "{%compareWith.count}",
@@ -1114,7 +1114,7 @@
                   [
                     {
                       "type": "button",
-                      "class": "btn-block",
+                      "class": "btn-block btn-ghost",
                       "text": "Badges",
                       "color": "{%courseColor}",
                       "icon": "{awards.getIconOfType(\"badge\")}",
@@ -1129,7 +1129,7 @@
                   [
                     {
                       "type": "button",
-                      "class": "btn-block",
+                      "class": "btn-block btn-ghost",
                       "text": "Skill Tree",
                       "color": "{%courseColor}",
                       "icon": "{awards.getIconOfType(\"skill\")}",
@@ -1144,7 +1144,7 @@
                   [
                     {
                       "type": "button",
-                      "class": "btn-block",
+                      "class": "btn-block btn-ghost",
                       "text": "Streaks",
                       "color": "{%courseColor}",
                       "icon": "{awards.getIconOfType(\"streak\")}",
@@ -1159,7 +1159,7 @@
                   [
                     {
                       "type": "button",
-                      "class": "btn-block",
+                      "class": "btn-block btn-ghost",
                       "text": "Awards",
                       "color": "{%courseColor}",
                       "icon": "tabler-trophy",
@@ -1174,7 +1174,7 @@
                   [
                     {
                       "type": "button",
-                      "class": "btn-block",
+                      "class": "btn-block btn-ghost",
                       "visibilityType": "conditional",
                       "visibilityCondition": "{modules.isEnabled(\"VirtualCurrency\")}",
                       "text": "Spendings",
