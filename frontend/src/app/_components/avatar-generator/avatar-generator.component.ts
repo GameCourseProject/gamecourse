@@ -11,49 +11,28 @@ import {
   EyeTypes,
   FacialHairTypes,
   HairTypes, MouthTypes,
-  NoseTypes,
+  NoseTypes, SelectedTypes,
 } from "./model";
 import * as svg from 'save-svg-as-png';
 
 @Component({
   selector: 'app-avatar-generator',
-  templateUrl: './avatar-generator.component.html',
-  styleUrls: ['./avatar-generator.component.css']
-
+  templateUrl: './avatar-generator.component.html'
 })
 export class AvatarGeneratorComponent implements OnInit {
+  loading: boolean = true;
+
   @Input() public shape: 'round' | 'square' = 'round';
   @Input() public enableBackground: boolean;
   @Input() public enableFace: boolean;
   @Input() public displayDownload: boolean;
-  @Output() private svgUrl = new EventEmitter<string>();
+
+  @Input() public selected: SelectedTypes;
+  @Input() public colors: Colors;
+
   @ViewChild('avatar', {read: ElementRef}) avatar: ElementRef;
-
-  public selected: {
-    hair: HairTypes;
-    eyebrow: EyebrowTypes;
-    eye: EyeTypes;
-    mouth: MouthTypes;
-    facialHair: FacialHairTypes;
-    glasses: GlassesTypes;
-    nose: NoseTypes;
-    clothing: ClothingTypes;
-    clothingGraphic: ClothingGraphicTypes;
-  }
-
-  public colors: Colors = {
-    hair: '',
-    skin: '',
-    clothes: '',
-    graphic: '',
-    accessory: '',
-    background: '',
-    eyebrows: '',
-    eyes: '',
-    mouth: '',
-    facialHair: '',
-    glasses: ''
-  };
+  @Output() private svgUrl = new EventEmitter<string>();
+  @Output() saveSettings = new EventEmitter<{ selected: SelectedTypes; colors: Colors; base64: string}>();
 
   hairTypesArray: HairTypes[] = Object.keys(HairTypes) as HairTypes[];
   eyebrowTypesArray: EyebrowTypes[] = Object.keys(EyebrowTypes) as EyebrowTypes[];
@@ -76,20 +55,37 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.selected = {
-      hair: null,
-      eyebrow: null,
-      eye: null,
-      mouth: null,
-      facialHair: null,
-      glasses: null,
-      nose: null,
-      clothing: null,
-      clothingGraphic: null,
+    this.loading = true;
+
+    if (!this.selected && !this.colors) {
+      this.selected = {
+        hair: null,
+        clothes: null,
+        graphic: null,
+        eyebrows: null,
+        eyes: null,
+        mouth: null,
+        facialHair: null,
+        glasses: null,
+        nose: null,
+      }
+      this.colors = {
+        hair: '',
+        skin: '',
+        clothes: '',
+        graphic: '',
+        accessory: '',
+        background: '',
+        eyebrows: '',
+        eyes: '',
+        mouth: '',
+        facialHair: '',
+        glasses: ''
+      };
+      this.goCompletelyRandom();
     }
-    this.goCompletelyRandom();
-    console.log(this.selected);
-    console.log(this.colors);
+
+    this.loading = false;
   }
 
   public goCompletelyRandom(): void {
@@ -116,11 +112,11 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   public getRandomEyebrowType(): void {
-    this.selected.eyebrow = this.getRandomStyle(this.eyebrowTypesArray, EyebrowTypes).name;
+    this.selected.eyebrows = this.getRandomStyle(this.eyebrowTypesArray, EyebrowTypes).name;
   }
 
   public getRandomEyeType(): void {
-    this.selected.eye = this.getRandomStyle(this.eyeTypesArray, EyeTypes).name;
+    this.selected.eyes = this.getRandomStyle(this.eyeTypesArray, EyeTypes).name;
   }
 
   public getRandomNoseType(): void {
@@ -140,11 +136,11 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   public getRandomClothing(): void {
-    this.selected.clothing = this.getRandomStyle(this.clothingTypesArray, ClothingTypes).name;
+    this.selected.clothes = this.getRandomStyle(this.clothingTypesArray, ClothingTypes).name;
   }
 
   public getRandomClothingGraphic(): void {
-    this.selected.clothingGraphic = this.getRandomStyle(this.clothingGraphicTypesArray, ClothingGraphicTypes).name;
+    this.selected.graphic = this.getRandomStyle(this.clothingGraphicTypesArray, ClothingGraphicTypes).name;
   }
 
   public selectHairType(hair: HairTypes): void {
@@ -152,11 +148,11 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   public selectEyebrowType(eyebrow: EyebrowTypes): void {
-    this.selected.eyebrow = eyebrow;
+    this.selected.eyebrows = eyebrow;
   }
 
   public selectEyeType(eyes: EyeTypes): void {
-    this.selected.eye = eyes;
+    this.selected.eyes = eyes;
   }
 
   public selectMouthType(mouth: MouthTypes): void {
@@ -172,11 +168,11 @@ export class AvatarGeneratorComponent implements OnInit {
   }
 
   public selectClothingType(clothes: ClothingTypes): void {
-    this.selected.clothing = clothes;
+    this.selected.clothes = clothes;
   }
 
   public selectClothingGraphicType(graphic: ClothingGraphicTypes): void {
-    this.selected.clothingGraphic = graphic;
+    this.selected.graphic = graphic;
   }
 
   private getRandomStyle(typesArray: Array<any>, enumm: typeof HairTypes | typeof ClothingTypes | typeof ClothingGraphicTypes | typeof EyebrowTypes | typeof EyeTypes | typeof NoseTypes | typeof MouthTypes | typeof FacialHairTypes | typeof GlassesTypes): { name: any, index: number } {
@@ -212,16 +208,16 @@ export class AvatarGeneratorComponent implements OnInit {
     }
   }
 
-  public doDownload(format: string): void {
-    if (format === 'png') {
-      svg.saveSvgAsPng(this.avatar?.nativeElement?.querySelector('svg'), 'avatar.png');
-    } else {
-      const downloadLink = document.createElement("a");
-      downloadLink.href = this.url;
-      downloadLink.download = "avatar.svg";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+  public doDownload(): void {
+    svg.saveSvgAsPng(this.avatar?.nativeElement?.querySelector('svg'), 'avatar.png');
+  }
+
+  public save() {
+    const svg = this.avatar?.nativeElement?.querySelector("svg");
+    if (svg) {
+      const s = new XMLSerializer().serializeToString(svg)
+      const encodedData = window.btoa(s)
+      this.saveSettings.emit({selected: this.selected, colors: this.colors, base64: encodedData});
     }
   }
 

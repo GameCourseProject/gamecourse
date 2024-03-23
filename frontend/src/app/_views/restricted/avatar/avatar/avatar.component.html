@@ -1,0 +1,14 @@
+<!-- Header -->
+<div class="md:h-full -mt-4">
+  <app-header [title] = "'Your Avatar'" [icon] = "'mat-face-retouching-natural'" [loading]="loading.page"></app-header>
+
+  <app-avatar-generator
+      *ngIf="!loading.page"
+      [enableFace]="true"
+      [enableBackground]="true"
+      [displayDownload]="true"
+      [selected] = "selected"
+      [colors] = "colors"
+      (saveSettings)="saveUserAvatar($event)"
+  />
+</div>

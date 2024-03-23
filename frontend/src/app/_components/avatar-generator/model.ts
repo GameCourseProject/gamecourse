@@ -117,6 +117,18 @@ export enum GlassesTypes {
   GLASSES_ROUND = 'GLASSES_ROUND'
 }
 
+export interface SelectedTypes {
+  hair?: HairTypes;
+  clothes?: ClothingTypes;
+  graphic?: ClothingGraphicTypes;
+  eyebrows?: EyebrowTypes;
+  eyes?: EyeTypes;
+  mouth?: MouthTypes;
+  facialHair?: FacialHairTypes;
+  glasses?: GlassesTypes;
+  nose?: NoseTypes;
+}
+
 export interface Colors {
   hair?: string;
   skin?: string;

@@ -12,10 +12,10 @@ import {
 } from "../model";
 
 @Component({
-  selector: 'app-avatar',
-  templateUrl: './avatar.component.svg',
+  selector: 'app-avatar-svg',
+  templateUrl: './avatar-svg.component.svg',
 })
-export class AvatarComponent implements OnChanges {
+export class AvatarSvgComponent implements OnChanges {
   @Input() public hairType: HairTypes;
   @Input() public eyebrowType: EyebrowTypes;
   @Input() public eyeType: EyeTypes;

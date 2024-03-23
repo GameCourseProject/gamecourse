@@ -78,6 +78,7 @@ import {
   EditableAwardData,
   EditableParticipationData
 } from "../../_views/restricted/courses/course/settings/db-explorer/db-explorer.component";
+import {Colors, SelectedTypes} from "../../_components/avatar-generator/model";
 
 @Injectable({
   providedIn: 'root'
@@ -347,6 +348,40 @@ export class ApiHttpService {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.USER);
       qs.push('request', 'setActive');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
+  // Avatars
+
+  public getUserAvatarSettings(userID: number): Observable<{selected: SelectedTypes, colors: Colors}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUserAvatarSettings');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public saveUserAvatar(userID: number, selected: SelectedTypes, colors: Colors, image: string): Observable<void> {
+    const data = {
+      "userId": userID,
+      "selected": selected,
+      "colors": colors,
+      "image": image
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'saveUserAvatar');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

@@ -71,7 +71,7 @@ import { EventCardComponent } from './_components/cards/event-card/event-card.co
 import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
 // Components: avatars
-import { AvatarComponent } from './_components/avatar-generator/avatar/avatar.component';
+import { AvatarSvgComponent } from './_components/avatar-generator/avatar-svg/avatar-svg.component';
 import { AvatarGeneratorComponent } from './_components/avatar-generator/avatar-generator.component';
 
 // Components: alerts
@@ -147,6 +147,9 @@ import {
   featherXCircle
 } from "@ng-icons/feather-icons";
 
+import {
+  matFaceRetouchingNatural
+} from "@ng-icons/material-icons/baseline"
 
 import {
   jamCircleF,
@@ -305,7 +308,7 @@ import {MentionModule} from "angular-mentions";
     EventCardComponent,
     DatalabelCardComponent,
 
-    AvatarComponent,
+    AvatarSvgComponent,
     AvatarGeneratorComponent,
 
     AlertComponent,
@@ -396,7 +399,7 @@ import {MentionModule} from "angular-mentions";
     EventCardComponent,
     DatalabelCardComponent,
 
-    AvatarComponent,
+    AvatarSvgComponent,
     AvatarGeneratorComponent,
 
     AlertComponent,
@@ -551,7 +554,9 @@ import {MentionModule} from "angular-mentions";
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
       tablerQuote,
-      tablerDatabase
+      tablerDatabase,
+
+      matFaceRetouchingNatural
     }),
     DataTablesModule,
     NgApexchartsModule,

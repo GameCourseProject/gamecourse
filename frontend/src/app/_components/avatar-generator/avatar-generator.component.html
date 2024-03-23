@@ -1,13 +1,13 @@
-<div *ngIf="selected" class="md:h-full md:grid grid-cols-[1fr_3fr] flex flex-col gap-10">
+<div *ngIf="!loading" class="md:h-full md:grid grid-cols-[1fr_3fr] flex flex-col gap-10">
   <div class="flex flex-col items-center gap-5 mt-2">
-    <app-avatar #avatar
+    <app-avatar-svg #avatar
                 (avatarChanged)="prepareLink()"
-                [clothing]="selected.clothing"
-                [clothingGraphic]="selected.clothingGraphic"
+                [clothing]="selected.clothes"
+                [clothingGraphic]="selected.graphic"
                 [colors]="getColorsObject()"
                 [hairType]="selected.hair"
-                [eyebrowType]="selected.eyebrow"
-                [eyeType]="selected.eye"
+                [eyebrowType]="selected.eyebrows"
+                [eyeType]="selected.eyes"
                 [noseType]="selected.nose"
                 [mouthType]="selected.mouth"
                 [facialHairType]="selected.facialHair"
@@ -16,7 +16,7 @@
                 [enableBackground]="enableBackground"
                 [enableFace]="enableFace"
     >
-    </app-avatar>
+    </app-avatar-svg>
     <!-- Background -->
     <div *ngIf="enableBackground" class="card bg-base-100 shadow-xl w-full">
       <div class="card-body flex flex-col">
@@ -33,10 +33,10 @@
       </div>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button class="btn btn-primary" (click)="doDownload('png')">
-        Use as Profile Image
+      <button class="btn btn-primary" (click)="save()">
+        Save
       </button>
-      <button *ngIf="displayDownload" class="btn btn-ghost btn-circle" (click)="doDownload('png')">
+      <button *ngIf="displayDownload" class="btn btn-ghost btn-circle" (click)="doDownload()">
         <ng-icon name="jam-download" size="2rem" />
       </button>
     </div>
@@ -115,13 +115,13 @@
             <button *ngFor="let hair of hairTypesArray"
                     class="w-full bg-base-300 rounded-md {{hair === selected.hair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectHairType(hair)">
-              <app-avatar
+              <app-avatar-svg
                 [hairType]="hair"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
           <!-- Accessory -->
@@ -154,15 +154,15 @@
             </div>
           <div class="grid md:grid-cols-6 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let eyes of eyeTypesArray"
-                    class="w-full bg-base-300 rounded-md {{eyes === selected.eye ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{eyes === selected.eyes ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectEyeType(eyes)">
-              <app-avatar
+              <app-avatar-svg
                 [eyeType]="eyes"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
         </div>
@@ -184,15 +184,15 @@
           </div>
           <div class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let eyebrow of eyebrowTypesArray"
-                    class="w-full bg-base-300 rounded-md {{eyebrow === selected.eyebrow ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{eyebrow === selected.eyebrows ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectEyebrowType(eyebrow)">
-              <app-avatar
+              <app-avatar-svg
                 [eyebrowType]="eyebrow"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
         </div>
@@ -215,13 +215,13 @@
             <button *ngFor="let mouth of mouthTypesArray"
                     class="w-full bg-base-300 rounded-md {{mouth === selected.mouth ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectMouthType(mouth)">
-              <app-avatar
+              <app-avatar-svg
                 [mouthType]="mouth"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
         </div>
@@ -246,13 +246,13 @@
               <button *ngFor="let hair of facialHairTypesArray"
                       class="w-full bg-base-300 rounded-md {{hair === selected.facialHair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                       (click)="selectFacialHairType(hair)">
-                <app-avatar
+                <app-avatar-svg
                   [facialHairType]="hair"
                   [enableFace]="true"
                   [enableHead]="false"
                   [colors]="getColorsObject()"
                 >
-                </app-avatar>
+                </app-avatar-svg>
               </button>
             </div>
           </div>
@@ -274,13 +274,13 @@
               <button *ngFor="let glasses of glassesTypesArray"
                       class="w-full bg-base-300 rounded-md {{glasses === selected.glasses ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                       (click)="selectGlassesType(glasses)">
-                <app-avatar
+                <app-avatar-svg
                   [glassesType]="glasses"
                   [enableFace]="true"
                   [enableHead]="false"
                   [colors]="getColorsObject()"
                 >
-                </app-avatar>
+                </app-avatar-svg>
               </button>
             </div>
           </div>
@@ -302,20 +302,20 @@
           </div>
           <div class="grid md:grid-cols-5 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let clothes of clothingTypesArray"
-                    class="w-full bg-base-300 rounded-md {{clothes === selected.clothing ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{clothes === selected.clothes ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectClothingType(clothes)">
-              <app-avatar
+              <app-avatar-svg
                 [clothing]="clothes"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
           <!-- Print -->
-          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="divider"></div>
-          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="flex flew-row gap-2 items-center">
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="divider"></div>
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="flex flew-row gap-2 items-center">
             <div class="card-title pb-2">Print</div>
             <div class="ml-auto flex flex-row gap-2 items-center">
               <app-input-color
@@ -325,18 +325,18 @@
               <button class="btn btn-ghost btn-circle" (click)="colors.graphic = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
             </div>
           </div>
-          <div *ngIf="selected.clothing === ClothingTypes.GRAPHIC_SHIRT" class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
             <button *ngFor="let graphic of clothingGraphicTypesArray"
-                    class="w-full bg-base-300 rounded-md {{graphic === selected.clothingGraphic ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    class="w-full bg-base-300 rounded-md {{graphic === selected.graphic ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
                     (click)="selectClothingGraphicType(graphic)">
-              <app-avatar
-                [clothing]="selected.clothing"
+              <app-avatar-svg
+                [clothing]="selected.clothes"
                 [clothingGraphic]="graphic"
                 [enableFace]="true"
                 [enableHead]="false"
                 [colors]="getColorsObject()"
               >
-              </app-avatar>
+              </app-avatar-svg>
             </button>
           </div>
         </div>

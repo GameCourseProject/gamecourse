@@ -17,12 +17,13 @@ export class User {
   private _username: string;
   private _authMethod: AuthType;
   private _photoUrl: string;
+  private _avatarUrl: string;
   private _lastLogin: Moment;
   private _nrCourses?: number;
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number,
               theme: Theme, isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
-              lastLogin: Moment, nrCourses?: number) {
+              avatarUrl: string, lastLogin: Moment, nrCourses?: number) {
 
     this._id = id;
     this._name = name;
@@ -36,6 +37,7 @@ export class User {
     this._username = username;
     this._authMethod = authMethod;
     this._photoUrl = photoUrl;
+    this._avatarUrl = avatarUrl;
     this._lastLogin = lastLogin;
     if (nrCourses !== undefined) this._nrCourses = nrCourses;
   }
@@ -136,6 +138,14 @@ export class User {
     this._photoUrl = value;
   }
 
+  get avatarUrl(): string {
+    return this._avatarUrl;
+  }
+
+  set avatarUrl(value: string) {
+    this._avatarUrl = value;
+  }
+
   get lastLogin(): Moment {
     return this._lastLogin;
   }
@@ -166,6 +176,7 @@ export class User {
       obj.username,
       obj.auth_service as AuthType,
       obj.image,
+      obj.avatar,
       dateFromDatabase(obj.lastLogin) ?? null,
       obj.nrCourses ?? null
     );
@@ -185,6 +196,7 @@ interface UserDatabase {
   "username": string,
   "auth_service": string,
   "image": string,
+  "avatar": string,
   "lastLogin": string
   "roles"?: RoleDatabase[],
   "nrCourses"?: number,

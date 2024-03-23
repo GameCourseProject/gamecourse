@@ -129,6 +129,7 @@ class QR extends Module
             $user = new User($participation["user"]);
             $participation["user"] = $user->getData();
             $participation["user"]["image"] = $user->getImage();
+            $participation["user"]["avatar"] = $user->getAvatar();
             $participation["classNumber"] = intval($participation["classNumber"]);
         }
         return $participations;

@@ -695,6 +695,7 @@ class Course
         foreach ($courseUsers as &$courseUser) {
             $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
             $courseUser["image"] = $cu->getImage();
+            $courseUser["avatar"] = $cu->getAvatar();
             $courseUser = CourseUser::parse($courseUser);
         }
         return $courseUsers;
@@ -731,6 +732,7 @@ class Course
         foreach ($courseUsers as &$courseUser) {
             $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
             $courseUser["image"] = $cu->getImage();
+            $courseUser["avatar"] = $cu->getAvatar();
             $courseUser = CourseUser::parse($courseUser);
         }
         return $courseUsers;
@@ -782,6 +784,7 @@ class Course
         foreach ($users as &$user) {
             $u = User::getUserById($user["id"]);
             $user["image"] = $u->getImage();
+            $user["avatar"] = $u->getAvatar();
             $user = User::parse($user);
         }
         return $users;
