@@ -96,6 +96,18 @@
 
     </div>
 
+    <!-- Avatars -->
+    <app-input-toggle
+      [id]="'course-avatars'"
+      [form]="f"
+      [(value)]="courseToManage.avatars"
+      [label]="'Avatars'"
+      [helperText]="'Enabling this lets the expression language access the user\'s avatars, allowing them to show up in pages.'"
+      [helperPosition]="'right'"
+      [classList]="'mt-3'"
+      [color]="'primary'"
+    ></app-input-toggle>
+
     <div class="w-full mt-6 flex">
       <button class="btn btn-primary ml-auto" type="submit" [disabled]="loading.action">
         <!-- Spinner -->

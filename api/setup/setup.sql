@@ -66,6 +66,7 @@ CREATE TABLE course(
     isVisible                   boolean DEFAULT TRUE,
     roleHierarchy               text,
     theme                       varchar(50) DEFAULT NULL,
+    avatars                     boolean DEFAULT TRUE,
 
     UNIQUE key(name, year),
     FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE

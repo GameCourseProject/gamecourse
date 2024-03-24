@@ -47,6 +47,41 @@ export class SettingsComponent implements OnInit {
     this.course = await this.api.getCourseById(courseID).toPromise();
   }
 
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  async editCourse(): Promise<void> {
+    if (this.f.valid) {
+      this.loading.action = true;
+
+      const courseEdited = await this.api.editCourse(clearEmptyValues(this.courseToManage)).toPromise();
+
+      this.loading.action = false;
+      AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
+
+  initCourseToManage(course?: Course): CourseManageData {
+    const courseData: CourseManageData = {
+      name: course?.name ?? null,
+      short: course?.short ?? null,
+      color: course?.color ?? null,
+      year: course?.year ?? null,
+      startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
+      endDate: course?.endDate?.format('YYYY-MM-DD') ?? null,
+      avatars: course?.avatars ?? false
+    };
+    if (course) courseData.id = course.id;
+    return courseData;
+  }
+
   initYearOptions(): {value: string, text: string}[] {
     const years = [];
     const now = new Date();
@@ -63,35 +98,6 @@ export class SettingsComponent implements OnInit {
     }
 
     return years;
-  }
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------ Helpers ------------------ ***/
-  /*** --------------------------------------------- ***/
-
-  initCourseToManage(course?: Course): CourseManageData {
-    const courseData: CourseManageData = {
-      name: course?.name ?? null,
-      short: course?.short ?? null,
-      color: course?.color ?? null,
-      year: course?.year ?? null,
-      startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
-      endDate: course?.endDate?.format('YYYY-MM-DD') ?? null
-    };
-    if (course) courseData.id = course.id;
-    return courseData;
-  }
-
-  async editCourse(): Promise<void> {
-    if (this.f.valid) {
-      this.loading.action = true;
-
-      const courseEdited = await this.api.editCourse(clearEmptyValues(this.courseToManage)).toPromise();
-
-      this.loading.action = false;
-      AlertService.showAlert(AlertType.SUCCESS, 'Course \'' + courseEdited.name + '\' edited');
-
-    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
   }
 
 }

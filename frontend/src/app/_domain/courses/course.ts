@@ -15,12 +15,13 @@ export class Course {
   private _isVisible: boolean;
   private _roleHierarchy: Role[];
   private _theme: string;
+  private _avatars: boolean;
   private _folder?: string;
   private _nrStudents?: number;
 
   constructor(id: number, name: string, short: string, color: string, year: string, startDate: Moment, endDate: Moment,
-              landingPage: number, isActive: boolean, isVisible: boolean, roleHierarchy: Role[], theme: string, folder?: string,
-              nrStudents?: number) {
+              landingPage: number, isActive: boolean, isVisible: boolean, roleHierarchy: Role[], theme: string, avatars: boolean,
+              folder?: string, nrStudents?: number) {
 
     this._id = id;
     this._name = name;
@@ -34,6 +35,7 @@ export class Course {
     this._isVisible = isVisible;
     this._roleHierarchy = roleHierarchy;
     this._theme = theme;
+    this._avatars = avatars;
     if (folder != undefined) this._folder = folder;
     if (nrStudents != undefined) this._nrStudents = nrStudents;
   }
@@ -134,6 +136,14 @@ export class Course {
     this._theme = value;
   }
 
+  get avatars(): boolean {
+    return !!this._avatars;
+  }
+
+  set avatars(value: boolean) {
+    this._avatars = value;
+  }
+
   get folder(): string {
     return this._folder;
   }
@@ -164,6 +174,7 @@ export class Course {
       obj.isVisible,
       obj.roleHierarchy.map(role => Role.fromDatabase(role)),
       obj.theme,
+      obj.avatars,
       obj.folder ?? null,
       obj.nrStudents ?? null
     );
@@ -183,6 +194,7 @@ export interface CourseDatabase {
   "isVisible": boolean,
   "roleHierarchy": RoleDatabase[],
   "theme": string,
+  "avatars": boolean,
   "folder"?: string,
   "nrStudents"?: number,
 }

@@ -523,7 +523,8 @@ export class ApiHttpService {
       year: courseData.year,
       color: courseData.color,
       startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
-      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null
+      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null,
+      avatars: courseData.avatars
     }
 
     const params = (qs: QueryStringParameters) => {
