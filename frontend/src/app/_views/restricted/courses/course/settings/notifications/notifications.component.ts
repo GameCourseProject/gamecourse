@@ -9,6 +9,10 @@ import { Notification } from "src/app/_domain/notifications/notification";
 import { AlertService, AlertType } from "src/app/_services/alert.service";
 import { ApiHttpService } from "src/app/_services/api/api-http.service";
 import { ModalService } from "src/app/_services/modal.service";
+import {
+  CustomFunction,
+  ReferenceManualTab
+} from "../../../../../../_components/inputs/code/input-code/input-code.component";
 
 @Component({
     selector: 'app-notifications',
@@ -36,13 +40,17 @@ export class NotificationsComponent implements OnInit {
     scheduledNotifications: ScheduledNotification[] = [];
 
     modulesToManage: ModuleNotificationManageData[] = [];
+    reportsConfig: ProgressReportConfig;
+
     notificationToSend: string = "";
     receiverRoles: string[] = [];
     schedule: string;
     predictions: boolean;
-    reportsConfig: ProgressReportConfig;
 
     notificationToRead: string;                 // To display fully in pop up
+
+    manualTab: ReferenceManualTab[];
+    ELfunctions: CustomFunction[];
 
     @ViewChild('fSend', { static: false }) fSend: NgForm;
     @ViewChild('fModules', { static: false }) fModules: NgForm;
@@ -74,6 +82,18 @@ export class NotificationsComponent implements OnInit {
                 this.buildTableSchedule();
                 // Modules to config
                 await this.getModules(courseID);
+
+                // Setup Manual
+                await this.getELFunctions();
+                const names = this.ELfunctions.map(fn => fn.name).sort((a, b) => a.localeCompare(b)); // order by name
+                const namespaces = Array.from(new Set(names).values())
+                this.manualTab = [{
+                  name: 'Manual',
+                  type: "manual",
+                  active: true,
+                  customFunctions: this.ELfunctions,
+                  namespaces: namespaces,
+                }]
             }
 
             this.loading.page = false;
@@ -116,6 +136,11 @@ export class NotificationsComponent implements OnInit {
 
     async getProgressReportConfig(courseID: number) {
         this.reportsConfig = await this.api.getProgressReportConfig(courseID).toPromise();
+    }
+
+    async getELFunctions() {
+      this.ELfunctions = await this.api.getELFunctions().toPromise();
+      this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
     }
 
 

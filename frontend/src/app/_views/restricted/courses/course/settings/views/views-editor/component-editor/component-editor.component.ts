@@ -1,31 +1,35 @@
-import { Component, Input, OnChanges, OnInit, ViewChild } from "@angular/core";
-import { CodeTab, CustomFunction, OutputTab, ReferenceManualTab } from "src/app/_components/inputs/code/input-code/input-code.component";
-import { View, ViewMode } from "src/app/_domain/views/view";
-import { BlockDirection, ViewBlock } from "src/app/_domain/views/view-types/view-block";
-import { ViewButton } from "src/app/_domain/views/view-types/view-button";
-import { CollapseIcon, ViewCollapse } from "src/app/_domain/views/view-types/view-collapse";
-import { ViewIcon } from "src/app/_domain/views/view-types/view-icon";
-import { ViewText } from "src/app/_domain/views/view-types/view-text";
-import { ViewType } from "src/app/_domain/views/view-types/view-type";
-import { VisibilityType } from "src/app/_domain/views/visibility/visibility-type";
-import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ModalService } from "src/app/_services/modal.service";
-import { Event } from "src/app/_domain/views/events/event";
-import { Variable } from "src/app/_domain/views/variables/variable";
-import { EventType } from "src/app/_domain/views/events/event-type";
-import { buildEvent } from "src/app/_domain/views/events/build-event";
+import {Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {
+  CodeTab,
+  CustomFunction,
+  OutputTab,
+  ReferenceManualTab
+} from "src/app/_components/inputs/code/input-code/input-code.component";
+import {View, ViewMode} from "src/app/_domain/views/view";
+import {BlockDirection, ViewBlock} from "src/app/_domain/views/view-types/view-block";
+import {ViewButton} from "src/app/_domain/views/view-types/view-button";
+import {CollapseIcon, ViewCollapse} from "src/app/_domain/views/view-types/view-collapse";
+import {ViewIcon} from "src/app/_domain/views/view-types/view-icon";
+import {ViewText} from "src/app/_domain/views/view-types/view-text";
+import {ViewType} from "src/app/_domain/views/view-types/view-type";
+import {VisibilityType} from "src/app/_domain/views/visibility/visibility-type";
+import {AlertService, AlertType} from "src/app/_services/alert.service";
+import {ModalService} from "src/app/_services/modal.service";
+import {Event} from "src/app/_domain/views/events/event";
+import {Variable} from "src/app/_domain/views/variables/variable";
+import {EventType} from "src/app/_domain/views/events/event-type";
+import {buildEvent} from "src/app/_domain/views/events/build-event";
 import * as _ from "lodash"
-import { ViewTable } from "src/app/_domain/views/view-types/view-table";
-import { BBAnyComponent } from "src/app/_components/building-blocks/any/any.component";
-import { ViewImage } from "src/app/_domain/views/view-types/view-image";
-import { RowType, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { ApiHttpService } from "src/app/_services/api/api-http.service";
-import { moveItemInArray } from "@angular/cdk/drag-drop";
-import { ActivatedRoute } from "@angular/router";
-import { ChartType, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { getFakeId, groupedChildren, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
-import { HistoryService } from "src/app/_services/history.service";
-import { ViewEditorService } from "src/app/_services/view-editor.service";
+import {ViewTable} from "src/app/_domain/views/view-types/view-table";
+import {BBAnyComponent} from "src/app/_components/building-blocks/any/any.component";
+import {ViewImage} from "src/app/_domain/views/view-types/view-image";
+import {RowType, ViewRow} from "src/app/_domain/views/view-types/view-row";
+import {ApiHttpService} from "src/app/_services/api/api-http.service";
+import {moveItemInArray} from "@angular/cdk/drag-drop";
+import {ActivatedRoute} from "@angular/router";
+import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
+import {getFakeId, groupedChildren, viewsDeleted} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {ViewEditorService} from "src/app/_services/view-editor.service";
 
 @Component({
   selector: 'app-component-editor',
@@ -48,6 +52,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   rowToEdit?: ViewRow = null;
 
   categoryToAdd?: string = "";
+  labelToAdd?: string = "";
 
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
@@ -153,7 +158,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       style: this.view.styles,
       events: this.view.events ?? [],
       variables: this.view.variables ?? [],
-      loopData: this.view.loopData
+      loopData: this.view.loopData,
     };
 
     if (this.view instanceof ViewButton) {
@@ -183,13 +188,30 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
     }
-    else if (this.view instanceof ViewChart) {
+
+    if (this.view instanceof ViewChart) {
       viewToEdit.chartType = this.view.chartType;
-      viewToEdit.data = this.view.data;
       viewToEdit.options = this.view.options;
+
+      // By default, if the tooltip isn't set then it shows up...
+      if (viewToEdit.options.tooltip == undefined) viewToEdit.options.tooltip = true;
+
+      if (viewToEdit.chartType != ChartType.PROGRESS) {
+        if (typeof this.view.data == 'object') viewToEdit.data = JSON.stringify(this.view.data);
+        else viewToEdit.data = this.view.data;
+        viewToEdit.progressData = {value: "", max: null};
+      }
+      else {
+        viewToEdit.progressData = this.view.data;
+      }
 
       if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
       else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
+    }
+    else { // needed in case user changes type to chart
+      viewToEdit.options = {colors: [], datalabels: [], tooltip: true};
+      viewToEdit.chartType = ChartType.LINE;
+      viewToEdit.progressData = {value: "", max: null};
     }
 
     if (this.view instanceof ViewTable) {
@@ -299,8 +321,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else if (to instanceof ViewChart) {
       to.chartType = from.chartType;
-      to.data = from.data;
       to.options = from.options;
+
+      if (to.chartType === ChartType.PROGRESS) to.data = from.progressData;
+      else to.data = JSON.parse(from.data);
     }
     return to;
   }
@@ -325,7 +349,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return [
       "tabler-award", "tabler-user-circle", "tabler-list-numbers", "tabler-flame",
       "tabler-coin", "jam-layout", "tabler-bulb", "tabler-checks", "feather-repeat",
-      "tabler-users", "tabler-trophy"
+      "tabler-users", "tabler-trophy", "tabler-puzzle", "tabler-bell", "tabler-plug",
+      "tabler-database", "tabler-clipboard-list", "tabler-color-swatch", "feather-info",
+      "feather-file", "feather-home", "feather-sun", "feather-moon", "feather-sliders",
+      "feather-alert-triangle"
     ]
   }
 
@@ -553,6 +580,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.viewToEdit.options.XAxisCategories.splice(index, 1);
   }
 
+  addPieChartLabel() {
+    if (this.viewToEdit.options.labels) {
+      this.viewToEdit.options.labels.push(this.labelToAdd);
+    }
+    else {
+      this.viewToEdit.options.labels = [this.labelToAdd];
+    }
+    this.labelToAdd = "";
+  }
+
+  removePieChartLabel(index: number) {
+    this.viewToEdit.options.labels.splice(index, 1);
+  }
+
   // Exclusives for tables ---------------------
 
   getNumberOfCols() {
@@ -668,6 +709,7 @@ export interface ViewManageData {
   orderingBy?: string,
   src?: string,
   chartType?: ChartType,
-  data?: string | any,
+  data?: string,
+  progressData?: {value: string, max: number},
   options?: {[key: string]: any},
 }

@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -11,6 +12,24 @@ class UsersLibrary extends Library
     public function __construct()
     {
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
+    }
+
+    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => $email ? $email : Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(5),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "theme" => null,
+            "username" => $email ? $email : Core::dictionary()->faker()->email(),
+            "image" => null,
+            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "landingPage" => null,
+            "isActive" => true
+        ];
     }
 
 
@@ -370,8 +389,7 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUserById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock user
-            $user = [];
+            $user = $this->mockUser($userId);
 
         } else $user = CourseUser::getUserById($userId);
         return new ValueNode($user, $this);
@@ -393,8 +411,7 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUserByUsername", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock user
-            $user = [];
+            $user = $this->mockUser();
 
         } else $user = CourseUser::getUserByUsername($username, $authService);
         return new ValueNode($user, $this);
@@ -415,8 +432,7 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUserByEmail", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock user
-            $user = [];
+            $user = $this->mockUser(null, $email);
 
         } else $user = CourseUser::getUserByEmail($email);
         return new ValueNode($user, $this);
@@ -437,8 +453,7 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUserByStudentNumber", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock user
-            $user = [];
+            $user = $this->mockUser(null, null, $studentNumber);
 
         } else $user = CourseUser::getUserByStudentNumber($studentNumber);
         return new ValueNode($user, $this);
@@ -459,8 +474,9 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 10)));
 
         } else $users = $course->getCourseUsers($active);
         return new ValueNode($users, $this);
@@ -482,8 +498,9 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 10)));
 
         } else $users = $course->getCourseUsersWithRole($active, $roleName);
         return new ValueNode($users, $this);
@@ -504,8 +521,9 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else $users = $course->getStudents($active);
         return new ValueNode($users, $this);
@@ -526,8 +544,9 @@ class UsersLibrary extends Library
         $this->requireCoursePermission("getUsers", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 10)));
 
         } else $users = $course->getTeachers($active);
         return new ValueNode($users, $this);

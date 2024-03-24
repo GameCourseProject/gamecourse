@@ -50,8 +50,13 @@ class ModulesLibrary extends Library
      */
     public function isEnabled(string $moduleId): ValueNode
     {
-        $course = Core::dictionary()->getCourse();
-        $isEnabled = $course->isModuleEnabled($moduleId);
-        return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+        if (Core::dictionary()->mockData()) {
+            return new ValueNode(true, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+        }
+        else {
+            $course = Core::dictionary()->getCourse();
+            $isEnabled = $course->isModuleEnabled($moduleId);
+            return new ValueNode($isEnabled, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+        }
     }
 }

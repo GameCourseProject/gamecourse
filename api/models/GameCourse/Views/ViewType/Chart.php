@@ -43,7 +43,7 @@ class Chart extends ViewType
         Core::database()->executeQuery("
             CREATE TABLE IF NOT EXISTS " . self::TABLE_VIEW_CHART . "(
                 id                          bigint unsigned NOT NULL PRIMARY KEY,
-                chartType                   ENUM ('bar', 'combo', 'line', 'progress', 'radar') NOT NULL,
+                chartType                   ENUM ('bar', 'combo', 'line', 'progress', 'radar', 'pie') NOT NULL,
                 data                        TEXT NOT NULL,
                 options                     TEXT DEFAULT NULL,
 

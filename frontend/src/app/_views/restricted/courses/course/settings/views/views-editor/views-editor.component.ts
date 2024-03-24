@@ -80,7 +80,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   options: Option[];
   activeSubMenu: SubMenu;
 
-  coreComponents: any;
+  coreComponents: Map<ViewType, { category: string; views: View[] }[]>;
   customComponents: { id: number, view: View }[];
   sharedComponents: { id: number, sharedTimestamp: string, user: number, view: View }[];
 
@@ -917,7 +917,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     return this.getSelectedCategories().flatMap((category) => category.list);
   }
 
-  getSubcategories() {
+  getSubcategories(): { category: string, views: View[] }[] {
     return this.getSelectedCategories()[0]['list'];
   }
 
