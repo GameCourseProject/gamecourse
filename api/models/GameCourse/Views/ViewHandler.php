@@ -68,8 +68,8 @@ class ViewHandler
         // Register view categories available
         Category::setupViewCategories();
 
-        // TODO: register core components
-        // TODO: register page templates
+        // Register core components
+        CoreComponent::setupCoreComponents();
     }
 
 

@@ -207,12 +207,7 @@ class DocsController
 
     public function setupCoreComponents()
     {
-        $components = json_decode(file_get_contents(ROOT_PATH . "/temp/components.txt"), true);
-        foreach ($components as $pair) {
-            foreach ($pair[1] as $component) {
-                CoreComponent::addComponent($component, null, $pair[0], 0);
-            }
-        };
+        CoreComponent::setupCoreComponents();
     }
 
 

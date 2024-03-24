@@ -145,9 +145,15 @@ export class ViewCollapse extends View {
     if (this.id === viewId) return this;
 
     // Look for view in children
-    if (this.header.findView(viewId)) return this.header;
-    if (this.content.findView(viewId)) return this.content;
-    
+    if (this.header.id === viewId) return this.header;
+    if (this.content.id === viewId) return this.content;
+
+    const foundInHeader = this.header.findView(viewId);
+    if (foundInHeader) return foundInHeader;
+
+    const foundInContent = this.content.findView(viewId);
+    if (foundInContent) return foundInContent;
+
     return null;
   }
 

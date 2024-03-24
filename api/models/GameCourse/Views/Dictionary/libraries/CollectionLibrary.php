@@ -74,6 +74,12 @@ class CollectionLibrary extends Library
                 "Crops a given collection by only returning an item and its K neighbors.",
                 ReturnType::COLLECTION,
                 $this
+            ),
+            new DFunction("generate",
+                [["name" => "size", "optional" => false, "type" => "int"]],
+                "Generates a collection of given size.",
+                ReturnType::COLLECTION,
+                $this
             )
         ];
     }
@@ -273,5 +279,20 @@ class CollectionLibrary extends Library
     public function getKNeighbors(array $collection, int $index, int $k): ValueNode
     {
         return $this->crop($collection, max($index - $k, 0), min($index + $k, count($collection) - 1));
+    }
+
+    /**
+     * Generates a collection of a given size.
+     * Useful to use in loopData, when we don't have
+     * exactly a collection, but instead a number of times to repeat.
+     *
+     * @param int $size
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function generate(int $size): ValueNode
+    {
+        $collection = array_fill(0, $size, []);
+        return new ValueNode($collection, $this);
     }
 }

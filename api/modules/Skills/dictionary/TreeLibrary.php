@@ -13,6 +13,17 @@ class TreeLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockTree(int $id = null, string $name = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "name" => $name ? $name : Core::dictionary()->faker()->text(20),
+            "maxReward" => Core::dictionary()->faker()->numberBetween(4000, 15000),
+            "inView" => true
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -96,8 +107,7 @@ class TreeLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock skill tree
-            $skillTree = [];
+            $skillTree = $this->mockTree($skillTreeId);
 
         } else $skillTree = SkillTree::getSkillTreeById($skillTreeId);
         return new ValueNode($skillTree, $this);
@@ -118,8 +128,7 @@ class TreeLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock skill tree
-            $skillTree = [];
+            $skillTree = $this->mockTree(null, $name);
 
         } else $skillTree = SkillTree::getSkillTreeByName($courseId, $name);
         return new ValueNode($skillTree, $this);
@@ -139,8 +148,9 @@ class TreeLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock skill trees
-            $skillTrees = [];
+            $skillTrees = array_map(function () {
+                return $this->mockTree();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 3)));
 
         } else $skillTrees = SkillTree::getSkillTrees($courseId);
         return new ValueNode($skillTrees, $this);

@@ -7,7 +7,7 @@
 <!--------------------------------------------------->
 
 <ng-template #GENERIC_EDITOR>
-<div class="overflow-x-hidden">
+<div class="overflow-x-hidden text-left">
 
   <app-input-select
     *ngIf="viewToEdit.type !== ViewType.ROW && view.parent"
@@ -21,7 +21,7 @@
   ></app-input-select>
 
   <!--------------------- Chart options ---------------------->
-  <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
+  <ng-container *ngIf="viewToEdit.options && viewToEdit.type === ViewType.CHART && viewToEdit.chartType !== 'progress'" [ngTemplateOutlet]="CHART_EDITOR"></ng-container>
   <ng-container *ngIf="viewToEdit.type === ViewType.CHART && viewToEdit.chartType === 'progress'" [ngTemplateOutlet]="PROGRESS_EDITOR"></ng-container>
 
   <!--------------------- Button options --------------------->
@@ -239,6 +239,73 @@
     </div>
   </ng-container>
 
+  <!-- Table Layout Settings -->
+  <ng-container *ngIf="viewToEdit.type === ViewType.TABLE">
+    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+      <span class="block font-semibold text-md">Layout Settings</span>
+    </div>
+    <div class="flex flex-wrap gap-x-5">
+      <app-input-checkbox
+        [id]="'table-footers'"
+        [(value)]="viewToEdit.footers"
+        [color]="'primary'"
+        [label]="'Add footers'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-searching'"
+        [(value)]="viewToEdit.searching"
+        [color]="'primary'"
+        [label]="'Allow overall searching'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-filtering'"
+        [(value)]="viewToEdit.columnFiltering"
+        [color]="'primary'"
+        [label]="'Allow column filtering'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-paging'"
+        [(value)]="viewToEdit.paging"
+        [color]="'primary'"
+        [label]="'Show number of pages'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-info'"
+        [(value)]="viewToEdit.info"
+        [color]="'primary'"
+        [label]="'Show nº of entries per page'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-lengthChange'"
+        [(value)]="viewToEdit.lengthChange"
+        [color]="'primary'"
+        [label]="'Allow customization of nº entries per page'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+      <app-input-checkbox
+        [id]="'table-ordering'"
+        [(value)]="viewToEdit.ordering"
+        [color]="'primary'"
+        [label]="'Allow ordering customization'"
+        [labelPosition]="'right'">
+      </app-input-checkbox>
+    </div>
+    <app-input-text
+      [id]="'table-orderingBy'"
+      [(value)]="viewToEdit.orderingBy"
+      [topLabel]="'Default Column Ordering'"
+      [helperPosition]="'right'"
+      [helperText]="'The way the table is ordered by default. Must be DESC or ASC followed by : column index'"
+      [placeholder]="'e.g. ASC: 0'"
+      [classList]="'mt-2'"
+    ></app-input-text>
+  </ng-container>
+
   <!--------------------------------------------------->
   <!--------------------- GENERAL --------------------->
   <!--------------------------------------------------->
@@ -412,65 +479,6 @@
       </div>
     </div>
 
-    <!-- Table Layout Settings -->
-    <div *ngIf="viewToEdit.type === ViewType.TABLE">
-      <div class="flex flex-row mt-2 justify-start items-center gap-2">
-        <app-simple-helper [position]="'right'" [text]="'Customize table layout'"></app-simple-helper>
-        <span class="block font-semibold text-lg">Table Layout Settings</span>
-      </div>
-      <div class="flex flex-wrap gap-x-5">
-        <app-input-checkbox
-          [id]="'table-footers'"
-          [(value)]="viewToEdit.footers"
-          [color]="'primary'"
-          [label]="'Add footers'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-searching'"
-          [(value)]="viewToEdit.searching"
-          [color]="'primary'"
-          [label]="'Allow overall searching'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-filtering'"
-          [(value)]="viewToEdit.columnFiltering"
-          [color]="'primary'"
-          [label]="'Allow column filtering'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-paging'"
-          [(value)]="viewToEdit.paging"
-          [color]="'primary'"
-          [label]="'Show number of pages'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-info'"
-          [(value)]="viewToEdit.info"
-          [color]="'primary'"
-          [label]="'Show number of entries/page'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-lengthChange'"
-          [(value)]="viewToEdit.lengthChange"
-          [color]="'primary'"
-          [label]="'Allow customization of nº entries/page'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-        <app-input-checkbox
-          [id]="'table-ordering'"
-          [(value)]="viewToEdit.ordering"
-          [color]="'primary'"
-          [label]="'Allow ordering customization'"
-          [labelPosition]="'right'">
-        </app-input-checkbox>
-      </div>
-    </div>
-
   </ng-container> <!----------------------------->
 
   <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
@@ -616,33 +624,53 @@
     </app-input-text>
   </div>
 
-  <div class="flex flex-row gap-10 mt-2">
-    <div class="w-1/2 shrink-0">
-      <div class="flex flex-row my-2 justify-start items-center gap-2">
-        <app-simple-helper [position]="'right'" [text]="'Series of data to display in chart.'"></app-simple-helper>
-        <span class="block font-semibold text-mg">Chart Data</span>
+  <div class="md:grid grid-cols-2 gap-x-10 mt-2">
+    <app-input-textarea
+      [id]="'chart-data'"
+      [(value)]="viewToEdit.data"
+      [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
+      [required]="true"
+      [label]="'Chart Data'"
+      [helperText]="'Series of data to display in chart.'"
+      [helperPosition]="'right'"
+      [size]="'sm'"
+    ></app-input-textarea>
+    <app-input-color
+      [id]="'chart-colors'"
+      [(value)]="viewToEdit.color"
+      [(values)]="viewToEdit.options.colors"
+      [placeholder]="'Chart Colors'"
+      [topLabel]="'Chart Colors'"
+      [helperText]="'Choose colors for each set of the data series.'"
+      [helperPosition]="'right'"
+      [multiple]="true">
+    </app-input-color>
+    <ng-container *ngIf="viewToEdit.chartType == 'pie'">
+      <div class="bg-base-300 rounded-xl p-4 mt-4">
+        <div class="flex flex-row justify-start items-center gap-2">
+          <app-simple-helper [position]="'right'" [text]="'Labels for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
+          <span class="block font-semibold text-mg pl-1">Add Labels</span>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-2">
+          <div *ngFor="let label of this.viewToEdit.options.labels; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm items-center">
+            {{label}}
+            <ng-icon (click)="removePieChartLabel(i)" class="ml-2 hover:cursor-pointer" name="feather-x" />
+          </div>
+        </div>
+        <div class="flex flex-row gap-2">
+          <app-input-text
+            [id]="'chart-pie-label'"
+            [(value)]="labelToAdd"
+            [placeholder]="'Add a label'"
+            [required]="false"
+          ></app-input-text>
+          <button class="btn btn-secondary" (click)="addPieChartLabel()">Add</button>
+        </div>
       </div>
-      <app-input-text
-        [id]="'chart-data'"
-        [(value)]="viewToEdit.data"
-        [placeholder]="'e.g. { providers.XPEvolution(%item.id, \'day\') }'"
-        [required]="true">
-      </app-input-text>
-    </div>
-    <div class="grow">
-      <app-input-color
-        [id]="'chart-colors'"
-        [(value)]="viewToEdit.color"
-        [(values)]="viewToEdit.options.colors"
-        [placeholder]="'Chart Colors'"
-        [topLabel]="'Chart Colors'"
-        [helperText]="'Choose colors for each set of the data series.'"
-        [helperPosition]="'right'"
-        [multiple]="true">
-      </app-input-color>
-    </div>
+    </ng-container>
   </div>
 
+  <!-- TODO: Options for datalabels. Only certain series, and formatting.
   <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
     <div class="flex flex-row mt-4 justify-start items-center gap-2">
       <span class="block font-semibold text-mg pl-1">Data Labels</span>
@@ -657,7 +685,6 @@
       [label]="'Add data labels to this chart'"
       [labelPosition]="'right'"
     ></app-input-checkbox>
-    <!-- TODO: Options for datalabels. Only certain series, and formatting.
     <ng-container *ngIf="viewToEdit.options.dataLabels">
       <div class="flex flex-col gap-2 mb-2 grow-0">
         <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
@@ -666,8 +693,8 @@
         <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
       </div>
     </ng-container>
-    -->
   </ng-container>
+  -->
 
   <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
     <div class="flex flex-row mt-4 justify-start items-center gap-2">
@@ -705,10 +732,10 @@
             <app-simple-helper [position]="'right'" [text]="'Categories for each data series. They will be sorted in the order they were included.'"></app-simple-helper>
             <span class="block font-semibold text-mg pl-1">Add categories</span>
           </div>
-          <div class="flex flex-row gap-2 mb-2">
+          <div class="flex flex-wrap gap-2 mb-2">
             <div *ngFor="let cat of this.viewToEdit.options.XAxisCategories; index as i" class="flex flex-row border border-base-content text-base-content py-0.5 px-2 rounded-full text-sm">
               {{cat}}
-              <span (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer">x</span>
+              <ng-icon (click)="removeXAxisCategory(i)" class="ml-2 hover:cursor-pointer" name="feather-x" />
             </div>
           </div>
           <div class="flex flex-row gap-2">
@@ -828,26 +855,23 @@
     [labelPosition]="'right'"
   ></app-input-checkbox>
   <div *ngIf="viewToEdit.options.tooltip" class="bg-base-300 rounded-xl p-6 text-xs">
-    Make use of the points in the chart or write expressions if needed. <br>
-    To access points use this.x and this.y, which will access each point coordinates in the data series.<br><br>
+    By default the tooltips only display the values, however you can make the information clearer by formating it. <br>
+    To access the values use (?value)<br><br>
 
-    Check the following example:<br>
+    <b>e.g:</b><br>
     For data series Serie1, with X-categories: 'Jan', 'Feb' and values:<br><br>
 
     Serie1 = [10, 15]<br><br>
 
-    We can format the tooltips for X-axis to be: "The X value for " + this.x + " corresponds to Y value " + this.y + " in this series".<br><br>
-
-    Which would iterate through all data points in graph [ [10 , Jan] , [15 , Feb] , ... ]  and translate to:<br>
-    The X value for <strong>10</strong> corresponds to Y value <strong>Jan</strong>.<br>
-    The X value for <strong>15</strong> corresponds to Y value <strong>Feb</strong>.
+    We can format the tooltips for X-axis to be: "Month: (?value)"<br>
+    And the tooltips for Y-axis to be: "The value is (?value)"
 
     <div class="flex flex-row mt-4">
       <div class="grow border-r-2 border-neutral/10 pr-4">
         <app-input-text
           [id]="'chart-x-tooltip-format'"
           [(value)]="viewToEdit.options.tooltipXFormatter"
-          [placeholder]="'e.g. \'X value:\' + this.x '"
+          [placeholder]="'e.g. X value: (?value)'"
           [required]="false"
           [topLabel]="'Format data tooltips for X values:'"
         ></app-input-text>
@@ -856,7 +880,7 @@
         <app-input-text
           [id]="'chart-y-tooltip-format'"
           [(value)]="viewToEdit.options.tooltipYFormatter"
-          [placeholder]="'e.g. \'Y value:\' + this.y '"
+          [placeholder]="'e.g. Y value: (?value)'"
           [required]="false"
           [topLabel]="'Format data tooltips for Y values:'"
         ></app-input-text>
@@ -1028,6 +1052,7 @@
           [topLabel]="'Custom start angle'"
           [placeholder]="'Select a number (from 0 to 360)'"
           [helperText]="'Custom angle from which the pie slices start. Default is 0.'"
+          [helperPosition]="'right'"
         ></app-input-number>
         <app-input-number
           [id]="'chart-pie-end-angle'"
@@ -1035,6 +1060,7 @@
           [topLabel]="'Custom end angle'"
           [placeholder]="'Select a number (from 0 to 360)'"
           [helperText]="'Custom angle from which the pie slices end. Default is 360.'"
+          [helperPosition]="'right'"
         ></app-input-number>
       </div>
       <div class="px-4">
@@ -1044,6 +1070,7 @@
           [topLabel]="'Custom x-offset'"
           [placeholder]="'Select a number'"
           [helperText]="'Sets left offset to the entire pie chart area.'"
+          [helperPosition]="'right'"
         ></app-input-number>
         <app-input-number
           [id]="'chart-pie-y-offset'"
@@ -1051,6 +1078,7 @@
           [topLabel]="'Custom y-ofset'"
           [placeholder]="'Select a number'"
           [helperText]="'Sets top offset to the entire pie chart area.'"
+          [helperPosition]="'right'"
         ></app-input-number>
       </div>
     </div>
@@ -1136,17 +1164,18 @@
   </div>
 
   <div class="grid grid-cols-2 gap-8 mb-8">
-    <app-input-text
-      [id]="'chart-data'"
-      [(value)]="viewToEdit.data.value"
+    <app-input-textarea
+      [id]="'chart-progress-value'"
+      [(value)]="viewToEdit.progressData.value"
       [placeholder]="'e.g. {xp.getUserExtraCreditXP(%user)}'"
       [required]="true"
-      [topLabel]="'Chart Data'"
+      [label]="'Chart Data'"
       [helperText]="'Series of data to display in chart.'"
-    ></app-input-text>
+      [helperPosition]="'right'"
+    ></app-input-textarea>
     <app-input-number
       [id]="'chart-progress-max'"
-      [(value)]="viewToEdit.data.max"
+      [(value)]="viewToEdit.progressData.max"
       [topLabel]="'Maximum value'"
       [placeholder]="'Select a maximum number'"
       [className]="'mt-1'"
