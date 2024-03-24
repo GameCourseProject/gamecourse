@@ -820,7 +820,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   // Previews -------------------------------------------------------
 
-  async doActionPreview(action: string): Promise<void>{
+  async doAction(action: string): Promise<void>{
     if (action === 'Manage versions') {
       ModalService.openModal('manage-versions');
     }

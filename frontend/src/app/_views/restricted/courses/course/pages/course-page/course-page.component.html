@@ -1,5 +1,5 @@
 <div *ngIf="!loading">
-  <ng-container *ngIf="page.name !== 'Skill Tree' && page.name !== 'Streaks'"> <!-- FIXME: this is hard-coded -->
+  <ng-container *ngIf="page.name !== 'Skill Tree'"> <!-- FIXME: this is hard-coded -->
     <bb-any [view]="pageView"></bb-any>
   </ng-container>
 
@@ -75,67 +75,6 @@
             </ng-container>
 
           </ng-container>
-        </div>
-
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- FIXME: this is hard-coded -->
-  <ng-container *ngIf="page.name === 'Streaks'"> <!-- Streaks -->
-    <div class="card w-full bg-base-100 shadow-xl">
-      <div class="card-body">
-
-        <!-- Header -->
-        <div class="flex justify-between">
-          <div class="prose flex items-center gap-3 mb-4">
-            <ng-icon [name]="'tabler-flame'" [color]="course.color" [size]="'1.8rem'" class="{{'text-primary'}}"></ng-icon>
-            <h2 class="m-0">Streaks</h2>
-          </div>
-          <span class="font-semibold gap-1">Total: <span [style]="'color: ' + course.color">{{streaksTotal}} XP</span></span>
-        </div>
-
-        <!-- Streaks -->
-        <div class="flex flex-col gap-3">
-          <div *ngFor="let streak of streaks; let i = index" class="p-4 border-base-300 bg-base-200 border-2 rounded-xl">
-            <div class="flex flex-wrap justify-between gap-6">
-              <!-- Streak Info -->
-              <div class="flex flex-wrap flex-col md:flex-row gap-6 md:items-center">
-                <div class="md:w-[20rem]">
-                  <p class="font-semibold" [style.font-size]="'1.1rem'" [style.color]="streak.color">{{streak.name}}</p>
-                  <p class="text-neutral/75">{{streak.description}}</p>
-                  <p class="font-medium text-sm mt-2" [style]="'color: ' + streak.color">Reached {{userStreaksInfo[i]?.nrCompletions || 0 }} time{{(userStreaksInfo[i]?.nrCompletions || 0) !== 1 ? 's' : ''}}</p>
-                </div>
-
-                <!-- Streak Progression -->
-                <div class="flex flex-col items-center">
-                  <div class="flex items-center gap-2">
-                    <div *ngFor="let step of steps(userStreaksInfo[i]?.progress || 0)" class="w-9 h-9" [style]="'color: ' + streak.color" [innerHTML]="streak.svg | sanitizeHTML"></div>
-                    <div *ngFor="let step of steps(streak.goal - (userStreaksInfo[i]?.progress || 0))" class="w-9 h-9 text-neutral/30" [innerHTML]="streak.svg | sanitizeHTML"></div>
-                    <div class="tooltip" data-tip="Can be earned multiple times">
-                      <button class="btn btn-circle btn-sm btn-ghost">
-                        <ng-icon name="feather-repeat" size="1.2rem"></ng-icon>
-                      </button>
-                    </div>
-                  </div>
-                  <span *ngIf="userStreaksInfo[i]?.deadline" class="text-sm text-error mt-2 font-medium">Deadline: {{userStreaksInfo[i]?.deadline.format('DD/MM/YYYY HH:mm')}}</span>
-                </div>
-              </div>
-
-              <!-- Streak Reward -->
-              <div class="flex float-right items-center gap-3">
-                <div class="flex flex-col items-center">
-                  <p class="font-semibold text-lg">{{streak.reward}} XP</p>
-                  <p *ngIf="streak.isExtra" class="font-medium text-error text-sm">extra credit</p>
-                </div>
-                <span *ngIf="streak.tokens">+</span>
-                <div *ngIf="streak.tokens" class="flex gap-1 items-center">
-                  <p class="font-semibold text-lg">{{streak.tokens}}</p>
-                  <img class="h-5 w-5" [src]="vcIcon" alt="">
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>

@@ -2,7 +2,6 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
-use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
@@ -189,8 +188,8 @@ class BadgesLibrary extends Library
             ),
             new DFunction("getUsersWithBadge",
                 [["name" => "badgeId", "optional" => false, "type" => "int"],
-                 ["name" => "level", "optional" => false, "type" => "int"],
-                 ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
+                    ["name" => "level", "optional" => false, "type" => "int"],
+                    ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
                 "Gets users who have earned a given badge up to a certain level. Option to order users by the date they acquired badge level.",
                 ReturnType::COLLECTION,
                 $this
@@ -311,8 +310,13 @@ class BadgesLibrary extends Library
     public function levels($badge): ValueNode
     {
         // NOTE: on mock data, badge will be mocked
-        if (is_array($badge)) $levels = $badge["levels"];
-        else $levels = $badge->getLevels();
+        if (Core::dictionary()->mockData()) {
+            $levels = $badge["levels"];
+
+        } else {
+            if (is_array($badge)) $badge = Badge::getBadgeById($badge["id"]);
+            $levels = $badge->getLevels();
+        }
         return new ValueNode($levels, Core::dictionary()->getLibraryById(BadgeLevelsLibrary::ID));
     }
 

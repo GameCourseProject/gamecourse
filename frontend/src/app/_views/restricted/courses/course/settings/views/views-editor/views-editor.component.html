@@ -20,8 +20,8 @@
     <div class="flex justify-center mx-2">
       <ng-icon name="jam-pencil-f" size="1.5rem" class="text-primary mr-2"></ng-icon>
       <span class="text-base-content text-xl font-semibold">
-        {{page ? 'Page \'' + page.name + '\'' 
-        : template ? 'Template \'' + template.name + '\'' 
+        {{page ? 'Page \'' + page.name + '\''
+        : template ? 'Template \'' + template.name + '\''
         : coreTemplate ? 'Template \'' + coreTemplate.name + '\''
         : 'Create new'}}</span>
     </div>
@@ -29,16 +29,16 @@
 
   <app-top-actions
     [leftActions]="editable ? [{action: 'Undo', icon: 'tabler-arrow-back-up', disable: !history.hasUndo()}, {action: 'Redo', icon: 'tabler-arrow-forward-up', disable: !history.hasRedo()}] : []"
-    [rightActions]="[{action: 'Manage versions', color: 'primary', outline: true},
-                      {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false,  dropdown: [
+    [rightActions]="[{action: 'Viewer: ' + (service.selectedAspect?.viewerRole ?? 'none') + ' | User: ' + (service.selectedAspect?.userRole ?? 'none'), color: 'primary', outline: true, icon: 'tabler-caret-down', dropdown: [
+                      {action: 'Manage versions'}]},
+                      {action: 'Preview', icon: 'tabler-caret-down', color: 'secondary', outline: false, dropdown: [
                         {action: 'Raw (default)', icon: getIcon('raw')},
                         {action: 'Layout preview (mock data)', icon: getIcon('mock'), },
                       ]}
                     ]"
     [align]="'center'"
-    (btnClicked)="doActionPreview($event)">
+    (btnClicked)="doAction($event)">
   </app-top-actions>
-  <!-- TODO: {action: 'Final preview (real data)', icon: getIcon('real')} -->
 
   <div *ngIf="!loading.components" class="flex flex-col grow mt-4">
     <!-- Menu of icons (for actions) -->
@@ -56,7 +56,7 @@
           </div>
 
           <!-- First menu: list for components -->
-          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'" 
+          <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'"
                 class="z-50 absolute w-48 rounded-xl bg-base-100 card card-compact shadow-xl top-16 -left-2">
             <div *ngIf="option.description === 'Add Component'" class="p-4 rounded-xl border-2 border-primary">
               <h2 class="text-xl font-semibold text-center text-base-content pt-1">{{option.subMenu.title}}</h2>
@@ -72,7 +72,7 @@
             </div>
 
             <!-- Second menu: components/templates themselves -->
-            <div [@dropdownAnimation] *ngIf="activeSubMenu" 
+            <div [@dropdownAnimation] *ngIf="activeSubMenu"
                   class="z-50 border-2 border-primary absolute w-96 rounded-xl shadow-xl bg-primary card card-compact
                         {{option.description === 'Add Component' && 'left-[12.5rem]'}}">
               <div>
@@ -104,7 +104,7 @@
                           <div>{{item.name}}</div>
                           <div *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" class="text-xs">Shared: {{item.sharedTimestamp}}</div>
                         </div>
-                        <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition shrink-0" 
+                        <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition shrink-0"
                             (click)="triggerTemplateSettings($event, item.id)">
                           <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                         </div>
@@ -117,7 +117,7 @@
                       <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
                           <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
-                          <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                          <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition"
                               (click)="triggerComponentSettings($event, item.id)">
                             <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                           </div>
@@ -129,7 +129,7 @@
                         <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
                           <div class="flex flex-row justify-between items-center">
                             <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
-                            <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition" 
+                            <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition"
                                   (click)="triggerComponentSettings($event, item.id)">
                               <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                             </div>
@@ -143,8 +143,8 @@
                         <div *ngFor="let subcategory of getSubcategories()">
                           <span class="ml-1 text-xs font-bold text-neutral/40 uppercase">{{subcategory.category}}</span>
                           <div class="flex flex-wrap">
-                            <div 
-                              *ngFor="let item of subcategory.views" 
+                            <div
+                              *ngFor="let item of subcategory.views"
                               class="hover:cursor-pointer p-1"
                               (click)="addComponentToPage(item)"
                               [ngClass]="{'w-full': item.type === ViewType.TABLE}"
@@ -161,7 +161,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Custom and Shared Template Settings Pop-up -->
             <div [@dropdownAnimation] *ngIf="templateSettings?.id" class="absolute z-50 left-[22.5rem]" [ngStyle]="{'top.px': templateSettings.top}">
               <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
