@@ -269,6 +269,11 @@ export class SidebarComponent implements OnInit {
             link: path + 'overview',
             name: 'Overview',
             icon: 'feather-info'
+          },
+          {
+            link: path + 'settings',
+            name: 'Course Settings',
+            icon: 'tablerSettings'
           }
         ];
         navigation = navigation.concat(fixed);

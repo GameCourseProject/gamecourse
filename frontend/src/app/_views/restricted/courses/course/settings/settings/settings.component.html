@@ -1,0 +1,115 @@
+<div *ngIf="!loading.page" class="w-full relative">
+
+  <!-- Header -->
+  <app-header [title]="'Course Settings'" [icon]="'tabler-settings'" [loading]="loading.action"></app-header>
+
+  <ng-container [ngTemplateOutlet]="MANAGE"></ng-container>
+</div>
+
+<ng-template #MANAGE>
+  <form #f="ngForm" (ngSubmit)="editCourse()">
+
+    <!-- Name -->
+    <app-input-text
+      [id]="'course-name'"
+      [form]="f"
+      [(value)]="courseToManage.name"
+      [placeholder]="'Course name'"
+      [topLabel]="'Name'"
+      [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
+      [patternErrorMessage]="'Course name \'' + courseToManage.name + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+      [required]="true"
+      [maxLength]="100"
+      [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'">
+    </app-input-text>
+
+    <div class="flex flex-wrap mt-3">
+      <!-- Short -->
+      <div class="w-full sm:w-1/3 sm:pr-3">
+        <app-input-text
+          [id]="'course-short'"
+          [form]="f"
+          [(value)]="courseToManage.short"
+          [placeholder]="'Course acronym'"
+          [topLabel]="'Acronym'"
+          [pattern]="'(?!^\\d+$)^.+$'"
+          [patternErrorMessage]="'Course acronym can\'t be composed of only numbers.'"
+          [maxLength]="20"
+          [maxLengthErrorMessage]="'Course acronym is too long: maximum of 20 characters'">
+        </app-input-text>
+      </div>
+
+      <!-- Year -->
+      <div class="w-full sm:w-1/3 sm:pr-3">
+        <app-input-select
+          [id]="'course-year'"
+          [form]="f"
+          [(value)]="courseToManage.year"
+          [options]="editYearOptions"
+          [placeholder]="'Select an academic year'"
+          [search]="false"
+          [classList]="'mt-3 sm:mt-0'"
+          [topLabel]="'Academic year'"
+          [required]="true">
+        </app-input-select>
+      </div>
+
+      <!-- Color -->
+      <div class="w-full sm:w-1/3">
+        <app-input-color
+          [id]="'course-color'"
+          [form]="f"
+          [(value)]="courseToManage.color"
+          [placeholder]="'Course color'"
+          [classList]="'mt-3 sm:mt-0'"
+          [topLabel]="'Color'">
+        </app-input-color>
+      </div>
+    </div>
+
+    <div class="md:grid grid-cols-2 mt-3 gap-3 flex flex-col">
+
+      <!-- Start date -->
+      <div>
+        <app-input-date
+          [id]="'course-start'"
+          [form]="f"
+          [(value)]="courseToManage.startDate"
+          [placeholder]="'Course start date'"
+          [topLabel]="'Start date'"
+          [required]="true">
+        </app-input-date>
+      </div>
+
+      <!-- End date -->
+      <div>
+        <app-input-date
+          [id]="'course-end'"
+          [form]="f"
+          [(value)]="courseToManage.endDate"
+          [placeholder]="'Course end date'"
+          [classList]="'mt-3 sm:mt-0'"
+          [topLabel]="'End date'"
+          [required]="true">
+        </app-input-date>
+      </div>
+
+    </div>
+
+    <div class="w-full mt-6 flex">
+      <button class="btn btn-primary ml-auto" type="submit" [disabled]="loading.action">
+        <!-- Spinner -->
+        <ng-container *ngIf="loading.action">
+          <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+        </ng-container>
+        Save
+      </button>
+    </div>
+
+  </form>
+</ng-template>
+
+<!-- Spinner -->
+<div *ngIf="loading.page" class="flex justify-center items-center">
+  <app-spinner></app-spinner>
+</div>
