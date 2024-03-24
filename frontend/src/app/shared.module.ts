@@ -70,6 +70,10 @@ import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-ca
 import { EventCardComponent } from './_components/cards/event-card/event-card.component';
 import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
+// Components: avatars
+import { AvatarSvgComponent } from './_components/avatar-generator/avatar-svg/avatar-svg.component';
+import { AvatarGeneratorComponent } from './_components/avatar-generator/avatar-generator.component';
+
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
 
@@ -164,7 +168,8 @@ import {
   jamStopSign,
   jamTrashF,
   jamUpload,
-  jamBox
+  jamBox,
+  jamShuffle
 } from "@ng-icons/jam-icons";
 
 import {
@@ -237,6 +242,10 @@ import {
 } from "@ng-icons/tabler-icons";
 
 import {
+  matFaceRetouchingNatural
+} from "@ng-icons/material-icons/baseline"
+
+import {
   heroFireSolid
 } from "@ng-icons/heroicons/solid"
 
@@ -301,6 +310,9 @@ import {
     AuxVarCardComponent,
     EventCardComponent,
     DatalabelCardComponent,
+
+    AvatarSvgComponent,
+    AvatarGeneratorComponent,
 
     AlertComponent,
 
@@ -390,6 +402,9 @@ import {
     EventCardComponent,
     DatalabelCardComponent,
 
+    AvatarSvgComponent,
+    AvatarGeneratorComponent,
+
     AlertComponent,
 
     SpinnerComponent,
@@ -475,6 +490,7 @@ import {
       jamTrashF,
       jamUpload,
       jamBox,
+      jamShuffle,
 
       tablerAlertTriangle,
       tablerArchive,
@@ -542,6 +558,8 @@ import {
       tablerColumnInsertRight,
       tablerQuote,
       tablerDatabase,
+
+      matFaceRetouchingNatural,
 
       heroFireSolid
     }),

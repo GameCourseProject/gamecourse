@@ -1,0 +1,347 @@
+<div *ngIf="!loading" class="md:h-full md:grid grid-cols-[1fr_3fr] flex flex-col gap-10">
+  <div class="flex flex-col items-center gap-5 mt-2">
+    <app-avatar-svg #avatar
+                (avatarChanged)="prepareLink()"
+                [clothing]="selected.clothes"
+                [clothingGraphic]="selected.graphic"
+                [colors]="getColorsObject()"
+                [hairType]="selected.hair"
+                [eyebrowType]="selected.eyebrows"
+                [eyeType]="selected.eyes"
+                [noseType]="selected.nose"
+                [mouthType]="selected.mouth"
+                [facialHairType]="selected.facialHair"
+                [glassesType]="selected.glasses"
+                [shape]="shape"
+                [enableBackground]="enableBackground"
+                [enableFace]="enableFace"
+    >
+    </app-avatar-svg>
+    <!-- Background -->
+    <div *ngIf="enableBackground" class="card bg-base-100 shadow-xl w-full">
+      <div class="card-body flex flex-col">
+        <div class="card-title pb-2">Background</div>
+        <div class="flex flew-row gap-2">
+          <app-input-color
+            [id]="'background-color'"
+            [(value)]="colors.background"
+            [position]="'top'"
+            [colors]="BackgroundColors"
+          ></app-input-color>
+          <button class="btn btn-ghost btn-circle" (click)="colors.background = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <button class="btn btn-primary" (click)="save()">
+        Save
+      </button>
+      <button *ngIf="displayDownload" class="btn btn-ghost btn-circle" (click)="doDownload()">
+        <ng-icon name="jam-download" size="2rem" />
+      </button>
+    </div>
+  </div>
+
+
+  <div class="w-full md:overflow-auto md:pr-4 md:scrollbar-thin">
+    <div class="flex flex-col md:flex-row pb-5">
+      <button class="btn btn-ghost btn-sm gap-2 md:ml-auto" (click)="goCompletelyRandom()">
+        <ng-icon name="jam-shuffle" size="1.5rem" />
+        Randomize Everything
+      </button>
+      <button class="btn btn-ghost btn-sm gap-2" (click)="getRandomColors()">
+        <ng-icon name="jam-shuffle" size="1.5rem" />
+        Randomize Colors
+      </button>
+    </div>
+
+    <div class="md:grid md:grid-cols-2 flex flex-col gap-4">
+      <!-- Skin -->
+      <div class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="card-title pb-2">Skin</div>
+          <div class="flex flew-row gap-2">
+            <app-input-color
+              [id]="'skin-color'"
+              [(value)]="colors.skin"
+              [colors]="SkinTones"
+            ></app-input-color>
+            <button class="btn btn-ghost btn-circle" (click)="colors.skin = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+          </div>
+        </div>
+      </div>
+      <!-- Nose -->
+      <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="card-title pb-2">Nose</div>
+          <div class="grid grid-cols-3 gap-2 mt-4">
+            <app-input-radio
+              [id]="'no-nose'"
+              [group] = "'nose'"
+              [optionValue] = "'NONE'"
+              [label]="'No'"
+              [(value)]="selected.nose"
+              [color]="'primary'"
+            ></app-input-radio>
+            <app-input-radio
+              [id]="'yes-nose'"
+              [group] = "'nose'"
+              [optionValue] = "'DEFAULT'"
+              [label]="'Yes'"
+              [(value)]="selected.nose"
+              [color]="'primary'"
+            ></app-input-radio>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4 mt-4 pb-36">
+      <!-- Hair -->
+      <div class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Hair</div>
+              <div class="ml-auto flex flex-row gap-2 items-center">
+                <app-input-color
+                  [id]="'hair-color'"
+                  [(value)]="colors.hair"
+                  [colors]="HairColors"
+                ></app-input-color>
+                <button class="btn btn-ghost btn-circle" (click)="colors.hair = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
+            </div>
+          <div class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let hair of hairTypesArray"
+                    class="w-full bg-base-300 rounded-md {{hair === selected.hair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectHairType(hair)">
+              <app-avatar-svg
+                [hairType]="hair"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+          <!-- Accessory -->
+          <div *ngIf="selected.hair === HairTypes.FRIDA || selected.hair === HairTypes.FROANDBAND" class="divider"></div>
+          <div *ngIf="selected.hair === HairTypes.FRIDA || selected.hair === HairTypes.FROANDBAND" class="flex flew-row gap-2 items-center">
+              <div class="card-title pb-2">Accessory</div>
+                <div class="ml-auto flex flex-row gap-2 items-center">
+                    <app-input-color
+                            [id]="'graphic-color'"
+                            [(value)]="colors.accessory"
+                    ></app-input-color>
+                    <button class="btn btn-ghost btn-circle" (click)="colors.accessory = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eyes -->
+      <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Eyes</div>
+              <div class="ml-auto flex flex-row gap-2 items-center">
+                <app-input-color
+                  [id]="'eyes-color'"
+                  [(value)]="colors.eyes"
+                ></app-input-color>
+                <button class="btn btn-ghost btn-circle" (click)="colors.eyes = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
+            </div>
+          <div class="grid md:grid-cols-6 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let eyes of eyeTypesArray"
+                    class="w-full bg-base-300 rounded-md {{eyes === selected.eyes ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectEyeType(eyes)">
+              <app-avatar-svg
+                [eyeType]="eyes"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eyebrows -->
+      <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Eyebrows</div>
+            <div class="ml-auto flex flex-row gap-2 items-center">
+              <app-input-color
+                [id]="'eyebrow-color'"
+                [(value)]="colors.eyebrows"
+                [colors]="HairColors"
+              ></app-input-color>
+              <button class="btn btn-ghost btn-circle" (click)="colors.eyebrows = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let eyebrow of eyebrowTypesArray"
+                    class="w-full bg-base-300 rounded-md {{eyebrow === selected.eyebrows ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectEyebrowType(eyebrow)">
+              <app-avatar-svg
+                [eyebrowType]="eyebrow"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mouth -->
+      <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Mouth</div>
+            <div class="ml-auto flex flex-row gap-2 items-center">
+              <app-input-color
+                [id]="'mouth-color'"
+                [(value)]="colors.mouth"
+              ></app-input-color>
+              <button class="btn btn-ghost btn-circle" (click)="colors.mouth = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-6 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let mouth of mouthTypesArray"
+                    class="w-full bg-base-300 rounded-md {{mouth === selected.mouth ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectMouthType(mouth)">
+              <app-avatar-svg
+                [mouthType]="mouth"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-5">
+        <!-- Facial Hair -->
+        <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+          <div class="card-body flex flex-col">
+            <div class="flex flew-row gap-2 items-center">
+              <div class="card-title pb-2">Facial Hair</div>
+              <div class="ml-auto flex flex-row gap-2 items-center">
+                <app-input-color
+                  [id]="'facial-hair-color'"
+                  [(value)]="colors.facialHair"
+                  [colors]="HairColors"
+                ></app-input-color>
+                <button class="btn btn-ghost btn-circle" (click)="colors.facialHair = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-4">
+              <button *ngFor="let hair of facialHairTypesArray"
+                      class="w-full bg-base-300 rounded-md {{hair === selected.facialHair ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                      (click)="selectFacialHairType(hair)">
+                <app-avatar-svg
+                  [facialHairType]="hair"
+                  [enableFace]="true"
+                  [enableHead]="false"
+                  [colors]="getColorsObject()"
+                >
+                </app-avatar-svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Glasses -->
+        <div *ngIf="enableFace" class="card bg-base-100 shadow-xl w-full">
+          <div class="card-body flex flex-col">
+            <div class="flex flew-row gap-2 items-center">
+              <div class="card-title pb-2">Glasses</div>
+              <div class="ml-auto flex flex-row gap-2 items-center">
+                <app-input-color
+                  [id]="'glasses-color'"
+                  [(value)]="colors.glasses"
+                ></app-input-color>
+                <button class="btn btn-ghost btn-circle" (click)="colors.glasses = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-4">
+              <button *ngFor="let glasses of glassesTypesArray"
+                      class="w-full bg-base-300 rounded-md {{glasses === selected.glasses ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                      (click)="selectGlassesType(glasses)">
+                <app-avatar-svg
+                  [glassesType]="glasses"
+                  [enableFace]="true"
+                  [enableHead]="false"
+                  [colors]="getColorsObject()"
+                >
+                </app-avatar-svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clothes -->
+      <div class="card bg-base-100 shadow-xl w-full">
+        <div class="card-body flex flex-col">
+          <div class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Clothes</div>
+            <div class="ml-auto flex flex-row gap-2 items-center">
+              <app-input-color
+                [id]="'clothes-color'"
+                [(value)]="colors.clothes"
+              ></app-input-color>
+              <button class="btn btn-ghost btn-circle" (click)="colors.clothes = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+            </div>
+          </div>
+          <div class="grid md:grid-cols-5 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let clothes of clothingTypesArray"
+                    class="w-full bg-base-300 rounded-md {{clothes === selected.clothes ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectClothingType(clothes)">
+              <app-avatar-svg
+                [clothing]="clothes"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+          <!-- Print -->
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="divider"></div>
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="flex flew-row gap-2 items-center">
+            <div class="card-title pb-2">Print</div>
+            <div class="ml-auto flex flex-row gap-2 items-center">
+              <app-input-color
+                [id]="'graphic-color'"
+                [(value)]="colors.graphic"
+              ></app-input-color>
+              <button class="btn btn-ghost btn-circle" (click)="colors.graphic = randomizeColor();"><ng-icon name="jam-shuffle" size="1.5rem"/></button>
+            </div>
+          </div>
+          <div *ngIf="selected.clothes === ClothingTypes.GRAPHIC_SHIRT" class="grid md:grid-cols-7 grid-cols-3 gap-2 mt-4">
+            <button *ngFor="let graphic of clothingGraphicTypesArray"
+                    class="w-full bg-base-300 rounded-md {{graphic === selected.graphic ? 'border-2 border-primary' : 'hover:shadow-xl hover:bg-base-300/90 transition'}}"
+                    (click)="selectClothingGraphicType(graphic)">
+              <app-avatar-svg
+                [clothing]="selected.clothes"
+                [clothingGraphic]="graphic"
+                [enableFace]="true"
+                [enableHead]="false"
+                [colors]="getColorsObject()"
+              >
+              </app-avatar-svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -103,6 +103,13 @@ class UsersLibrary extends Library
                 ReturnType::TEXT,
                 $this
             ),
+            new DFunction("avatar",
+                [["name" => "user", "optional" => false, "type" => "User"]],
+                "Gets a given user's student avatar. If the course doesn't
+                allow avatars, will return the image instead.",
+                ReturnType::TEXT,
+                $this
+            ),
             new DFunction("lastActivity",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's last activity datetime in the course.",
@@ -324,6 +331,25 @@ class UsersLibrary extends Library
         if (is_array($user)) $image = $user["image"];
         else $image = $user->getImage();
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given user's avatar URL.
+     *
+     * @param $user
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function avatar($user): ValueNode
+    {
+        // NOTE: on mock data, user will be mocked
+        if (is_array($user)) $avatar = $user["avatar"];
+        else {
+            if (Core::dictionary()->getCourse()->avatars() === true)
+                $avatar = $user->getAvatar();
+            else $avatar = null;
+        }
+        return new ValueNode($avatar, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
     /**

@@ -85,7 +85,7 @@ export class NavbarComponent implements OnInit {
 
   async getLoggedUser(): Promise<void> {
     this.user = await this.api.getLoggedUser().toPromise();
-    this.photo.set(this.user.photoUrl ?? environment.defaultAvatar);
+    this.photo.set(this.user.avatarUrl ?? this.user.photoUrl ?? environment.defaultAvatar);
   }
 
 

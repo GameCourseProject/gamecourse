@@ -15,6 +15,7 @@ use Utils\Utils;
 class User
 {
     const TABLE_USER = "user";
+    const TABLE_AVATAR = "avatar";
 
     const HEADERS = [   // headers for import/export functionality
         "name", "email", "major", "nickname", "studentNumber", "username", "auth_service", "isAdmin", "isActive"
@@ -92,6 +93,16 @@ class User
         return file_exists($this->getDataFolder() . "/profile.png");
     }
 
+    public function getAvatar(): ?string
+    {
+        return $this->hasAvatar() ? API_URL . "/" . $this->getDataFolder(false) . "/avatar.svg" : null;
+    }
+
+    public function hasAvatar(): bool
+    {
+        return file_exists($this->getDataFolder() . "/avatar.svg");
+    }
+
     public function isAdmin(): bool
     {
         return $this->getData("isAdmin");
@@ -120,6 +131,7 @@ class User
         else $fields = str_replace("id", "u.id", $field);
         $data = Core::database()->select($table, $where, $fields);
         if ($field == "*" || str_contains($field, "image")) $data["image"] = $this->getImage();
+        if ($field == "*" || str_contains($field, "avatar")) $data["avatar"] = $this->getAvatar();
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 
@@ -206,6 +218,14 @@ class User
     public function setImage(string $base64)
     {
         Utils::uploadFile($this->getDataFolder(), $base64, "profile.png");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setAvatar(string $base64)
+    {
+        Utils::uploadFile($this->getDataFolder(), $base64, "avatar.svg");
     }
 
     /**
@@ -380,6 +400,7 @@ class User
         foreach ($users as &$user) {
             $u = new User($user["id"]);
             $user["image"] = $u->getImage();
+            $user["avatar"] = $u->getAvatar();
             $user = self::parse($user);
         }
         return $users;
@@ -435,6 +456,9 @@ class User
             "user" => $id,
             "username" => $username,
             "auth_service" => $authService
+        ]);
+        Core::database()->insert(self::TABLE_AVATAR, [
+            "user" => $id
         ]);
         self::createDataFolder($id);
         return new User($id);
@@ -608,6 +632,43 @@ class User
     {
         $dataFolder = (new User($userId))->getDataFolder();
         if (file_exists($dataFolder)) Utils::deleteDirectory($dataFolder);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ---------------------- Avatars --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets the user's avatar settings from the database
+     */
+    public function getAvatarSettings() : array
+    {
+        $table = self::TABLE_AVATAR;
+        $where = ["user" => $this->id];
+        $data = Core::database()->select($table, $where, "*");
+
+        $data["selected"] = $data["selected"] ? json_decode($data["selected"]) : null;
+        $data["colors"] = $data["colors"] ? json_decode($data["colors"]) : null;
+
+        return $data;
+    }
+
+    /**
+     * Updates the user's avatar by saving its png, and settings in database
+     *
+     * @param array $selected
+     * @param array $colors
+     * @param string $image
+     * @throws Exception
+     */
+    public function saveAvatar(array $selected, array $colors, string $image)
+    {
+        $table = self::TABLE_AVATAR;
+        $where = ["user" => $this->id];
+        Core::database()->update($table, ["selected" => json_encode($selected), "colors" => json_encode($colors)], $where);
+
+        $this->setAvatar($image);
     }
 
 

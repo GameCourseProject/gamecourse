@@ -82,6 +82,21 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
     setTimeout(() => {
       this.initSelect();
     }, 0);
+
+    const selectValidator = (control) => {
+      if (this.value) {
+        return null;  // Valid
+      } else {
+        return { required: true };  // Invalid
+      }
+    };
+
+    const validators = [
+      this.required ? selectValidator : null
+    ].filter(validator => validator !== null);
+
+    this.inputSelect.control.setValidators(validators);
+    this.inputSelect.control.updateValueAndValidity();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -98,9 +113,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   initSelect() {
-    if (!this.required) {
-      this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
-    }
+    this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
 
     const options = {
       select: '#' + this.id,

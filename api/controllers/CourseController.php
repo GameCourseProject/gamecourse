@@ -152,9 +152,10 @@ class CourseController
         $endDate = API::getValue("endDate");
         $isActive = $course->isActive();
         $isVisible = $course->isVisible();
+        $avatars = API::getValue("avatars");
 
         // Edit course
-        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars);
 
         $courseInfo = $course->getData();
         if (Core::getLoggedUser()->isAdmin())
@@ -249,6 +250,7 @@ class CourseController
         foreach ($courseUsers as &$courseUserInfo) {
             $courseUser = $course->getCourseUserById($courseUserInfo["id"]);
             $courseUserInfo["image"] = $courseUser->getImage();
+            $courseUserInfo["avatar"] = $courseUser->getAvatar();
             $courseUserInfo["roles"] = $courseUser->getRoles(false);
         }
         API::response($courseUsers);

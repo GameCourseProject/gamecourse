@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import {GlobalComponent} from "./global/global.component";
 import {ModulesComponent} from "./modules/modules.component";
 import {ComingSoonComponent} from "../../../_components/misc/pages/coming-soon/coming-soon.component";
 
@@ -15,7 +14,7 @@ const routes: Routes = [
       },
       {
         path: 'themes',
-        component: GlobalComponent
+        component: ComingSoonComponent
       },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]

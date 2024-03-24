@@ -16,10 +16,10 @@ export class CourseUser extends User {
   static activityRefreshState: Map<number, LoadingState> = new Map<number, LoadingState>();
 
   constructor(id: number, name: string, email: string, major: string, nickname: string, studentNumber: number, theme: Theme,
-              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string,
+              isAdmin: boolean, isActive: boolean, username: string, authMethod: AuthType, photoUrl: string, avatarUrl: string,
               lastLogin: Moment, roles: Role[], lastActivity: Moment, isActiveInCourse: boolean) {
 
-    super(id, name, email, major, nickname, studentNumber, theme, isAdmin, isActive, username, authMethod, photoUrl, lastLogin);
+    super(id, name, email, major, nickname, studentNumber, theme, isAdmin, isActive, username, authMethod, photoUrl, avatarUrl, lastLogin);
 
     this._roles = roles;
     this._lastActivity = lastActivity;
@@ -79,6 +79,7 @@ export class CourseUser extends User {
       obj.username,
       obj.auth_service as AuthType,
       obj.image,
+      obj.avatar,
       dateFromDatabase(obj.lastLogin),
       obj.roles.map(role => Role.fromDatabase(role)),
       dateFromDatabase(obj.lastActivity),
@@ -100,6 +101,7 @@ interface CourseUserDatabase {
   "username": string,
   "auth_service": string,
   "image": string,
+  "avatar": string,
   "lastLogin": string,
   "roles": RoleDatabase[],
   "lastActivity": string,

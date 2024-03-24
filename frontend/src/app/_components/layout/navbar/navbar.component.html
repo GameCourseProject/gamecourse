@@ -97,11 +97,15 @@
             </label>
             <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
               <li><a [routerLink]="'/profile/' + user.id">
-                <ng-icon name="feather-user" size="1rem" color="fillCurrent"></ng-icon>
+                <ng-icon name="feather-user" size="1.2rem" color="fillCurrent"></ng-icon>
                 Profile
               </a></li>
+              <li><a [routerLink]="'/avatar'">
+                <ng-icon name="mat-face-retouching-natural" size="1.2rem" color="fillCurrent"></ng-icon>
+                Avatar
+              </a></li>
               <li><a (click)="logout()">
-                <ng-icon name="feather-log-out" size="1rem" color="fillCurrent"></ng-icon>
+                <ng-icon name="feather-log-out" size="1.2rem" color="fillCurrent"></ng-icon>
                 Logout
               </a></li>
             </ul>
