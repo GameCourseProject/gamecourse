@@ -6,11 +6,10 @@ import {ComingSoonComponent} from "../../../_components/misc/pages/coming-soon/c
 const routes: Routes = [
   {
     path: '',
-    component: ComingSoonComponent,
     children: [
       {
         path: 'modules',
-        component: ModulesComponent
+        component: ComingSoonComponent  // TODO: ModulesComponent
       },
       {
         path: 'themes',
