@@ -44,11 +44,6 @@ export class CoursePageComponent implements OnInit {
   info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}};
   vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
 
-  // FIXME: hard-coded Streaks
-  streaks: Streak[] = [];
-  userStreaksInfo: {id: number, nrCompletions: number, progress: number, deadline: Moment}[];
-  streaksTotal: number;
-
   // FIXME: hard-coded Gold Exchange
   hasExchanged: boolean;
   wallet: number;
@@ -116,12 +111,6 @@ export class CoursePageComponent implements OnInit {
     if (this.page.name === "Skill Tree") {
       await this.initSkillTreesInfo(this.course.id);
       this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user?.id || this.viewer.id, this.skillTrees[0].id).toPromise();
-
-    } else if (this.page.name === "Streaks") {
-      this.streaks = await this.api.getStreaks(this.course.id).toPromise();
-      const info = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
-      this.userStreaksInfo = info.info;
-      this.streaksTotal = info.total;
 
     } else if (this.page.name === "Gold Exchange") {
       this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
