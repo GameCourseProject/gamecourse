@@ -101,7 +101,8 @@
               "traverse",
               "url-parse",
               "xml-but-prettier",
-              "slim-select"
+              "slim-select",
+              "save-svg-as-png"
             ]
           },
           "configurations": {

@@ -36,9 +36,11 @@
       <button class="btn btn-primary" (click)="save()">
         Save
       </button>
-      <button *ngIf="displayDownload" class="btn btn-ghost btn-circle" (click)="doDownload()">
-        <ng-icon name="jam-download" size="2rem" />
-      </button>
+      <div *ngIf="displayDownload" class="tooltip" data-tip="Download .png">
+        <button class="btn btn-ghost btn-circle" (click)="doDownload()">
+          <ng-icon name="jam-download" size="2rem" />
+        </button>
+      </div>
     </div>
   </div>
 
