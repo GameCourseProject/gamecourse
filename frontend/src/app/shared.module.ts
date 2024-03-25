@@ -98,6 +98,7 @@ import { BBImageComponent } from './_components/building-blocks/image/image.comp
 import { BBTableComponent } from './_components/building-blocks/table/table.component';
 import { BBTextComponent } from './_components/building-blocks/text/text.component';
 import { ComponentEditorComponent } from './_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { AspectsManagerComponent } from "./_views/restricted/courses/course/settings/views/views-editor/aspects-manager/aspects-manager.component";
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -333,6 +334,7 @@ import {
     BBTableComponent,
     BBTextComponent,
     ComponentEditorComponent,
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -422,6 +424,8 @@ import {
     BBImageComponent,
     BBTableComponent,
     BBTextComponent,
+
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,

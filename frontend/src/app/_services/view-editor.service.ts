@@ -22,7 +22,7 @@ export class ViewEditorService {
   public selectedAspect: Aspect;  // Selected aspect for previewing and editing
   public rolesHierarchy;
   public aspectsToDelete: Aspect[] = [];
-  public aspectsToAdd: Aspect[] = [];
+  public aspectsToAdd: { newAspect: Aspect, aspectToCopy: Aspect }[] = [];
   public aspectsToChange: { old: Aspect, newAspect: Aspect }[] = [];
 
   selectedChange: Subject<View> = new Subject<View>();
@@ -55,8 +55,8 @@ export class ViewEditorService {
     this.viewsByAspect = this.viewsByAspect.filter(e => e.aspect.userRole !== aspect.userRole || e.aspect.viewerRole !== aspect.viewerRole);
   }
 
-  createAspect(aspect: Aspect) {
-    this.viewsByAspect.push({ aspect: aspect, view: _.cloneDeep(this.viewsByAspect[0].view) }); // FIXME: should be the view of the most similar, less specific, aspect
+  createAspect(aspect: Aspect, view: View) {
+    this.viewsByAspect.push({ aspect: aspect, view: view });
   }
 
   changeAspect(old: Aspect, newAspect: Aspect) {
@@ -84,8 +84,28 @@ export class ViewEditorService {
     this.aspectsToChange = [];
 
     // Create new aspects
-    for (let newAspect of this.aspectsToAdd) {
-      this.createAspect(newAspect);
+    for (let aspect of this.aspectsToAdd) {
+      const view = _.cloneDeep(this.getEntryOfAspect(aspect.aspectToCopy).view);
+
+      // Aspects that are lower in hierarchy than the aspectToCopy + aspectToCopy itself
+      const aspectsBeneath = this.viewsByAspect.filter((e) =>
+        (e.aspect.userRole === aspect.aspectToCopy.userRole && this.isMoreSpecific(e.aspect.viewerRole, aspect.aspectToCopy.viewerRole))
+        || (e.aspect.userRole !== aspect.aspectToCopy.userRole && this.isMoreSpecific(e.aspect.userRole, aspect.aspectToCopy.userRole))
+      ).map(e => e.aspect);
+
+      // Aspects that are higher in hierarchy than the aspectToCopy (so, the ones that are not in aspectsBeneath) + aspectToCopy itself
+      let aspectsToReplace = this.viewsByAspect
+        .filter(e => _.isEqual(e.aspect, aspect.aspectToCopy) || aspectsBeneath.findIndex(i => _.isEqual(i, e)) == -1)
+        .map(e => e.aspect);
+
+      // Aspect [null, null] is common to all so don't replace it
+      aspectsToReplace = aspectsToReplace.filter(e => !_.isEqual(new Aspect(null, null), e));
+
+      for (let aspectToReplace of aspectsToReplace) {
+        view.modifyAspect(aspectToReplace, aspect.newAspect);
+      }
+
+      this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];
   }

@@ -27,10 +27,10 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() id: string;                                                                         // Unique ID
   @Input() form: NgForm;                                                                       // Form it's part of
   @Input() value: any;                                                                         // Where to store the value
-  @Input() options?: ({value: string, text: string, html?: string, display?: boolean} |        // Options to select from
+  @Input() options?: ({value: any, text: string, html?: string, display?: boolean} |           // Options to select from
                       {label: string, options: {value: string, text: string, html?: string}[]}
                      )[];
-  @Input() placeholder: string;                                                     // Message to show by default
+  @Input() placeholder: string;                                                     // Message to show by default  FIXME: not working
 
   @Input() multiple?: boolean;                                                      // Whether to allow multiple selects
   @Input() limit?: number;                                                          // Multiple selection limit

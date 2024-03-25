@@ -1,0 +1,98 @@
+<app-modal
+   [id]="'manage-versions'"
+   [templateRef]="ASPECTS_MANAGER"
+   [header]="'Manage Versions'"
+   [closeBtnText]="'Discard'"
+   [submitBtnText]="'Save'"
+   [size]="'lg'"
+   [static]="true"
+   (onClose)="discardAspects()"
+   (submitBtnClicked)="saveAspects()"
+   [xButton]="false"
+></app-modal>
+
+<ng-template #ASPECTS_MANAGER>
+  <div class="w-full overflow-hidden">
+    <p>
+      The <span class="font-bold text-orange-400">viewer's role</span> is the role from the user accessing the page.<br>
+      The <span class="font-bold text-sky-400">user's role</span> is the role from which the user's information is being displayed.
+    </p>
+    <p class="mt-4">
+      <b>E.g.</b> A page with viewer's role = Teacher, and user's role = Student.<br>
+      This means the version being displayed accepts users of type Teacher to access the page, and displays information about a Student.
+    </p>
+    <p class="mt-4">
+      Roles can also be <span class="font-bold text-violet-400">'none'</span> if you don't want any restrictions on who's accessing or from whom is the information being displayed
+    </p>
+    <p class="text-lg font-semibold mt-6 mb-2">Existing Versions</p>
+
+    <div class="flex flex-row gap-4 w-full">
+      <div>
+        <p class="mb-5">Current Version:</p>
+        <app-aspect-card [aspect]="currentAspect" [course]="course" />
+      </div>
+      <div class="bg-base-200 w-1"></div>
+      <div class="w-full overflow-x-auto">
+        <p class="mb-2">Other Versions:</p>
+        <div class="flex flex-row w-full overflow-x-auto">
+          <div *ngFor="let aspect of getUnselectedAspects(); index as i" (click)="selectAspect(aspect)">
+            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" (deleteEvent)="removeAspect(aspect)"/>
+          </div>
+        </div>
+      </div>
+      <div class="self-center flex flex-col gap-6">
+        <button class="btn btn-secondary" (click)="openCreateNewAspectModal()">Create Version</button>
+        <button class="btn btn-primary" [disabled]="!aspectToSelect" (click)="setCurrent(aspectToSelect)">Set As Current</button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<app-modal
+  *ngIf="modal"
+  [id]="'create-new-aspect'"
+  [templateRef]="NEW_ASPECT"
+  [header]="'Create New Version'"
+  [closeBtnText]="'Cancel'"
+  [submitBtnText]="'Add'"
+  [size]="'sm'"
+  [static]="true"
+  (submitBtnClicked)="f.onSubmit(null); createNewAspect()"
+  (closeBtnClicked)="cancelNewAspect()"
+  [xButton]="false"
+></app-modal>
+
+<ng-template #NEW_ASPECT>
+  <form #f="ngForm">
+    <div class="md:grid grid-cols-2 gap-5 flex flex-col">
+      <app-input-select-role
+        [form]="f"
+        [id]="'role-viewer'"
+        [courseId]="course.id"
+        [topLabel]="'Viewer Role'"
+        [multiple] = false
+        [(value)]="viewerRole"
+      ></app-input-select-role>
+      <app-input-select-role
+        [form]="f"
+        [id]="'role-user'"
+        [courseId]="course.id"
+        [topLabel]="'User Role'"
+        [multiple] = false
+        [(value)]="userRole"
+      ></app-input-select-role>
+    </div>
+    <app-input-select
+      [form]="f"
+      [id]="'aspect-to-copy'"
+      [topLabel]="'Version to Copy'"
+      [(value)]="aspectToCopy"
+      [required]="true"
+      [helperText]="'Use the page/template of this Version as a base.'"
+      [helperPosition]="'right'"
+      [options]="getAspectsAvailableForCopy()"
+      [classList]="'mt-2'"
+      [placeholder]="'Select an existing version'"
+    ></app-input-select>
+  </form>
+</ng-template>

@@ -74,8 +74,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   coreTemplate: Template;                         // core template to view
 
   aspects: Aspect[];                              // Aspects saved
-  aspectsToEdit: Aspect[];                        // Aspects currently being edited in modal
-  aspectToSelect: Aspect;                         // Aspect selected in modal to switch to
+  manageAspects: boolean = false;
 
   options: Option[];
   activeSubMenu: SubMenu;
@@ -137,9 +136,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
           this.service.selectedAspect = new Aspect(null, null);
-          this.aspectsToEdit = [this.service.selectedAspect];
           this.aspects = [this.service.selectedAspect];
-          this.aspectToSelect = this.service.selectedAspect;
           this.loading.aspects = false;
           this.service.viewsByAspect = [{
             aspect: this.service.selectedAspect,
@@ -260,8 +257,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.service.selectedAspect = this.aspects[0];
-    this.aspectToSelect = this.service.selectedAspect;
-    this.aspectsToEdit = _.cloneDeep(this.aspects);
     this.loading.aspects = false;
   }
 
@@ -669,51 +664,14 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   // Aspects -------------------------------------------------------
 
-  selectAspect(aspect: Aspect) {
-    this.aspectToSelect = aspect;
-  }
-
-  switchToAspect() {
-    this.saveAspects();
-    this.service.selectedAspect = this.aspectToSelect;
-    const correspondentView = this.service.getSelectedView();
-    if (correspondentView) {
-      this.view = correspondentView;
-      if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
-    }
-    this.previewMode = 'raw';
-    ModalService.closeModal('manage-versions');
-  }
-
-  createNewAspect() {
-    const aspect = new Aspect("new", "new");
-    this.aspectsToEdit.push(aspect);
-    this.service.aspectsToAdd.push(aspect);
-    this.aspectToSelect = aspect;
-  }
-
-  submitAspects() {
-    this.saveAspects();
-    ModalService.closeModal('manage-versions');
-  }
-
-  saveAspects() {
-    this.aspects = this.aspectsToEdit;
-    this.aspectsToEdit = _.cloneDeep(this.aspects);
-    this.service.applyAspectChanges();
-  }
-
   discardAspects() {
-    ModalService.closeModal('manage-versions');
-    this.aspectsToEdit = _.cloneDeep(this.aspects);
-    this.service.aspectsToDelete = [];
-    this.service.aspectsToChange = [];
-    this.service.aspectsToAdd = [];
+    this.manageAspects = false;
   }
-
-  removeAspect(aspectIdx: number) {
-    const deleted = this.aspectsToEdit.splice(aspectIdx, 1);
-    this.service.aspectsToDelete.push(deleted[0]);
+  saveAspects() {
+    this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
+    this.view = this.service.getSelectedView();
+    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+    this.previewMode = 'raw';
   }
 
   // Components -----------------------------------------------------
@@ -821,7 +779,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   // Previews -------------------------------------------------------
 
   async doAction(action: string): Promise<void>{
-    if (action === 'Manage versions') {
+    if (action === 'Manage Versions') {
+      this.manageAspects = true;
       ModalService.openModal('manage-versions');
     }
     else if (action === 'Undo') {
@@ -946,10 +905,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   triggerTemplateSettings(event: MouseEvent, templateId: number) {
     this.templateSettings.id = this.templateSettings.id == templateId ? null : templateId;
     this.templateSettings.top = event.pageY - 325;
-  }
-
-  isAspectSelected(aspect: Aspect) {
-    return aspect === this.aspectToSelect;
   }
 
 }

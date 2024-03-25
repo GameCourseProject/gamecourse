@@ -55,9 +55,13 @@ export class AspectCardComponent implements OnInit {
     if (this.aspect.viewerRole == "undefined" || this.aspect.viewerRole == "new") this.aspect.viewerRole = null;
     if (this.aspect.userRole == "undefined" || this.aspect.userRole == "new") this.aspect.userRole = null;
     this.edit = false;
-    this.viewEditorService.aspectsToChange.push({old: new Aspect(this.oldViewerRole, this.oldUserRole), newAspect: new Aspect(this.aspect.viewerRole, this.aspect.userRole)});
+
+    const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
+    if (this.viewEditorService.aspectsToAdd.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1) {
+      this.viewEditorService.aspectsToChange.push({old: new Aspect(this.oldViewerRole, this.oldUserRole), newAspect: newAspect});
+    }
   }
-  
+
   cancel() {
     this.aspect.userRole = this.oldUserRole;
     this.aspect.viewerRole = this.oldViewerRole;
