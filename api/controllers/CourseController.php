@@ -908,7 +908,7 @@ class CourseController
         $participations = AutoGame::getParticipations($courseId);
         foreach ($participations as &$participation) {
             $participation["user"] = User::getUserById($participation["user"])->getName();
-            $participation["evaluator"] = $participation["evaluator"] ? User::getUserById($participation["evaluator"])->getName() : "";
+            $participation["evaluatorName"] = $participation["evaluator"] ? User::getUserById($participation["evaluator"])->getName() : "";
         }
         API::response($participations);
     }
@@ -987,7 +987,7 @@ class CourseController
         $participation = API::getValue("participation", "array");
         AutoGame::updateParticipation($participation["id"], $participation["description"],
             $participation["type"], $participation["date"], $participation["source"],
-            $participation["post"], $participation["rating"]);
+            $participation["post"], $participation["rating"], $participation["evaluator"]);
     }
 
     /**
