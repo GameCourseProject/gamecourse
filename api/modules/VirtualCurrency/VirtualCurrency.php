@@ -645,10 +645,8 @@ class VirtualCurrency extends Module
                                 ],
                                 [
                                     "contentType" => "item",
-                                    "classList" => "self-end",
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
-                                    "width" => "1/2",
                                     "id" => "tokens",
                                     "options" => [
                                         "topLabel" => "$name",
@@ -659,7 +657,6 @@ class VirtualCurrency extends Module
                                     "contentType" => "item",
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
-                                    "width" => "1/2",
                                     "id" => "increment",
                                     "placeholder" => "Increment",
                                     "options" => [
