@@ -471,7 +471,6 @@ class VirtualCurrency extends Module
                                 $name can be exchanged by XP at a fixed ratio, for instance 2:1 ratio will earn double 
                                 the amount of $name in XP. Additionally, setup a threshold if you want the limit the 
                                 maximum amount of $name that can be exchanged. Each student can only exchange $name once.",
-                "itemName" => null,
                 "topActions" => [
                     "right" => [
                         ["action" => "Exchange multiple", "icon" => "feather-repeat", "color" => "accent"]
@@ -497,7 +496,7 @@ class VirtualCurrency extends Module
                 }, $wallets),
                 "actions" => [
                     ["action" => 'Exchange ' . $name, "icon" => 'feather-repeat', "color" => "accent", "scope" => $scope],
-                    ["action" => 'Edit ' . $name, "icon" => 'jam-pencil-f', "color" => "warning", "scope" => "[]"]
+                    ["action" => Action::EDIT, "scope" => ActionScope::ALL]
                 ],
                 "options" => [
                     "order" => [[0, "asc"]],
@@ -506,6 +505,7 @@ class VirtualCurrency extends Module
                     ]
                 ],
                 "items" => $wallets,
+                "itemName" => $name,
                 "Exchange multiple" => [
                     "modalSize" => "sm",
                     "contents" => [
@@ -626,7 +626,7 @@ class VirtualCurrency extends Module
                         ]
                     ]
                 ],
-                "Edit $name" => [
+                Action::EDIT => [
                     "modalSize" => "sm",
                     "contents" => [
                         [
@@ -635,14 +635,37 @@ class VirtualCurrency extends Module
                             "contents" => [
                                 [
                                     "contentType" => "item",
+                                    "type" => InputType::TEXT,
+                                    "scope" => ActionScope::ALL,
+                                    "id" => "name",
+                                    "options" => [
+                                        "topLabel" => "Student",
+                                        "disabled" => true
+                                    ]
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "classList" => "self-end",
                                     "type" => InputType::NUMBER,
                                     "scope" => ActionScope::ALL,
-                                    "id" => "quantity",
-                                    "placeholder" => "Quantity",
+                                    "width" => "1/2",
+                                    "id" => "tokens",
                                     "options" => [
-                                        "topLabel" => "New Quantity of $name",
-                                        "required" => true,
+                                        "topLabel" => "$name",
+                                        "disabled" => true
+                                    ]
+                                ],
+                                [
+                                    "contentType" => "item",
+                                    "type" => InputType::NUMBER,
+                                    "scope" => ActionScope::ALL,
+                                    "width" => "1/2",
+                                    "id" => "increment",
+                                    "placeholder" => "Increment",
+                                    "options" => [
+                                        "topLabel" => "Increment"
                                     ],
+                                    "helper" => "Value that will be added to the student's current amount of $name. This value can be positive or negative."
                                 ]
                             ]
                         ]
@@ -708,10 +731,11 @@ class VirtualCurrency extends Module
                 }
                 return "Exchanged $name!";
 
-            } elseif ($action == "Edit $name") {
+            } elseif ($action == Action::EDIT) {
                 $user = $item["user"];
-                self::setUserTokens($user, $item["quantity"]);
-                return "$name set to ". $item["quantity"] . " for " . $item["name"];
+                $newQuantity = $item["tokens"] + $item["increment"];
+                self::setUserTokens($user, $newQuantity);
+                return "$name set to ". $newQuantity . " for " . $item["name"];
             }
         }
 
