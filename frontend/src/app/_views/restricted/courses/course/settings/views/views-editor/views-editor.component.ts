@@ -30,6 +30,7 @@ import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/vie
 import html2canvas from "html2canvas";
 import { HistoryService } from "src/app/_services/history.service";
 import { ViewEditorService } from "src/app/_services/view-editor.service";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'app-views-editor',
@@ -51,7 +52,7 @@ import { ViewEditorService } from "src/app/_services/view-editor.service";
         ]),
       ]),
     ])
-  ], // FIXME
+  ], // FIXME: Could we move this to the scss?
 })
 export class ViewsEditorComponent implements OnInit, OnDestroy {
 
@@ -69,7 +70,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   course: Course;                                 // Specific course in which page exists
   user: User;                                     // Logged in user
   page: Page;                                     // page where information will be saved
-  pageToManage: PageManageData;                   // Manage data
+  pageToManage: PageManageData;                   // NEW page where information will be saved
   template: Template;                             // template where information will be saved
   coreTemplate: Template;                         // core template to view
 
@@ -92,16 +93,15 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
   templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
-  templateToAdd: any;                                      // Template that will be added, after user selects by value or by reference in the modal
+  templateToAdd: any;                             // Template that will be added, after user selects by value or by reference in the modal
 
-  // ADD TEMPLATE OPTIONS
-  duplicateOptions: {name: string, char: string}[] = [
+  duplicateOptions: { name: string, char: string }[] = [
     {name: "By reference", char: "ref"},
     {name: "By value", char: "value"}
   ];
   optionSelected: "ref" | "value" = null;
 
-  _subscription;
+  _subscription: Subscription;
 
   constructor(
     private api: ApiHttpService,
@@ -128,12 +128,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       await this.getTemplates();
 
       this.route.params.subscribe(async childParams => {
-        const segmentForTemplate = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
+        const prevSegment = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
         this.selection.setRearrange(false);
 
         if (segment === 'new') {
-          // Prepare for creation
           this.pageToManage = initPageToManage(courseID);
           this.service.selectedAspect = new Aspect(null, null);
           this.aspects = [this.service.selectedAspect];
@@ -156,30 +155,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
             groupedChildren: groupedChildren
           });
         }
-        else if (segmentForTemplate === 'template') {
-          await this.getTemplate(parseInt(segment));
-          await this.getView();
-          this.history.saveState({
-            viewsByAspect: this.service.viewsByAspect,
-            groupedChildren: groupedChildren
-          });
-        }
-        else if (segmentForTemplate === 'system-template') {
-          this.editable = false;
-          await this.getCoreTemplate(parseInt(segment));
-          await this.getView();
-          this.history.saveState({
-            viewsByAspect: this.service.viewsByAspect,
-            groupedChildren: groupedChildren
-          });
-        }
         else {
-          await this.getPage(parseInt(segment));
-          await this.getView();
-          this.history.saveState({
-            viewsByAspect: this.service.viewsByAspect,
-            groupedChildren: groupedChildren
-          });
+          await this.initView(parseInt(segment),
+            (prevSegment === "template" || prevSegment === "system-template") ? prevSegment : null);
         }
 
       });
@@ -221,27 +199,18 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.rolesHierarchy = rolesHierarchySmart;
   }
 
-  async getPage(pageID: number): Promise<void> {
-    this.page = await this.api.getPageById(pageID).toPromise();
-  }
-
-  async getTemplate(templateID: number): Promise<void> {
-    this.template = await this.api.getCustomTemplateById(templateID).toPromise();
-  }
-
-  async getCoreTemplate(templateID: number): Promise<void> {
-    this.coreTemplate = await this.api.getCoreTemplateById(templateID).toPromise();
-  }
-
-  async getView(): Promise<void> {
+  async initView(id: number, templateType?: 'template' | 'system-template'): Promise<void> {
     let data;
-    if (this.page) {
+    if (!templateType) {
+      this.page = await this.api.getPageById(id).toPromise();
       data = await this.api.renderPageInEditor(this.page.id).toPromise();
     }
-    else if (this.template) {
+    else if (templateType === 'template') {
+      this.template = await this.api.getCustomTemplateById(id).toPromise();
       data = await this.api.renderCustomTemplateInEditor(this.template.id).toPromise();
     }
-    else if (this.coreTemplate) {
+    else if (templateType === 'system-template') {
+      this.coreTemplate = await this.api.getCoreTemplateById(id).toPromise();
       data = await this.api.renderCoreTemplateInEditor(this.coreTemplate.id, this.course.id).toPromise();
     }
     else {
@@ -258,6 +227,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.service.selectedAspect = this.aspects[0];
     this.loading.aspects = false;
+
+    this.history.saveState({
+      viewsByAspect: this.service.viewsByAspect,
+      groupedChildren: groupedChildren
+    });
   }
 
   async getComponents(): Promise<void> {
@@ -555,9 +529,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   async closeEditor() {
     if (this.history.hasUndo()) {
       ModalService.openModal("exit-management");
-    }
-    else {
-      this.closeConfirmed();
+    } else {
+      await this.closeConfirmed();
     }
   }
 
@@ -633,6 +606,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async saveChanges() {
+    this.loading.action = true;
+
     const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
 
     let image;
@@ -643,17 +618,21 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
-      await this.closeConfirmed();
+      this.history.clear();
+      await this.initView(this.page.id);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
       await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, image).toPromise();
-      await this.closeConfirmed();
+      this.history.clear();
+      await this.initView(this.template.id, "template");
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else {
       AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
     }
+
+    this.loading.action = false;
   }
 
   async takeScreenshot() {
@@ -808,13 +787,25 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       }
     }
     else if (action === 'Layout preview (mock data)') {
-      this.previewMode = 'mock';
-      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+      if (this.page) {
+        this.previewMode = 'mock';
+        if (this.history.hasUndo()) {
+          ModalService.openModal('save-before-preview')
+        } else this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+      }
     }
-/*     else if (action === 'Final preview (real data)') {
-      this.previewMode = 'real';
-      this.view = await this.api.previewPage(this.page.id, this.view.aspect).toPromise();
-    } */
+  }
+
+  async saveBeforePreview() {
+    if (this.page) {
+      await this.saveChanges();
+      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+      ModalService.closeModal('save-before-preview')
+    }
+  }
+
+  cancelPreview() {
+    this.previewMode = "raw";
   }
 
   /*** --------------------------------------------- ***/
@@ -878,10 +869,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   getSubcategories(): { category: string, views: View[] }[] {
     return this.getSelectedCategories()[0]['list'];
-  }
-
-  getComponentsOfSubcategory(subcategory: string) {
-    return this.getSelectedCategories()[0]['list'][subcategory];
   }
 
   openAddTemplateModal(item: any) {
