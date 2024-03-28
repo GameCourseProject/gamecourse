@@ -200,6 +200,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async initView(id: number, templateType?: 'template' | 'system-template'): Promise<void> {
+    this.loading.aspects = true;
+
     let data;
     if (!templateType) {
       this.page = await this.api.getPageById(id).toPromise();
@@ -226,12 +228,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.service.selectedAspect = this.aspects[0];
-    this.loading.aspects = false;
 
     this.history.saveState({
       viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
+
+    this.loading.aspects = false;
   }
 
   async getComponents(): Promise<void> {
@@ -646,11 +649,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   discardAspects() {
     this.manageAspects = false;
   }
+
   saveAspects() {
+    this.loading.aspects = true;
+
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
     this.previewMode = 'raw';
+
+    this.loading.aspects = false;
   }
 
   // Components -----------------------------------------------------

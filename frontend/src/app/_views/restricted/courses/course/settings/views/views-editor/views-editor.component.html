@@ -274,7 +274,7 @@
 
 <!-- Manage Versions Modal -->
 <app-aspects-manager
-  *ngIf="aspects && manageAspects"
+  *ngIf="manageAspects && !loading.aspects"
   [course] = "course"
   [aspects]="aspects"
   (discard)="discardAspects()"
