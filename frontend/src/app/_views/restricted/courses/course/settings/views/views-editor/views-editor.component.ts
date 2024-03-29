@@ -148,7 +148,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
             })
           }];
           this.view = this.service.viewsByAspect[0].view;
-          if (this.editable) this.view.switchMode(ViewMode.EDIT);
+          this.view.switchMode(ViewMode.EDIT);
           initGroupedChildren([]);
           this.history.saveState({
             viewsByAspect: this.service.viewsByAspect,
@@ -212,6 +212,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       data = await this.api.renderCustomTemplateInEditor(this.template.id).toPromise();
     }
     else if (templateType === 'system-template') {
+      this.editable = false;
       this.coreTemplate = await this.api.getCoreTemplateById(id).toPromise();
       data = await this.api.renderCoreTemplateInEditor(this.coreTemplate.id, this.course.id).toPromise();
     }
@@ -547,18 +548,23 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.service.add(item, this.selection.get(), "value");
     }
     // If the page is empty, need to add a block first
-    else if (!this.service.getSelectedView() && item.type !== ViewType.BLOCK) {
-      this.view = null;
-      const block = buildView({
-        id: getFakeId(),
-        viewRoot: null,
-        aspect: this.service.selectedAspect,
-        type: "block",
-        class: "p-2",
-      });
-      block.addChildViewToViewTree(item);
-      block.switchMode(ViewMode.EDIT);
-      this.service.add(block, null, "value");
+    else if (!this.service.getSelectedView()) {
+      if (item.type !== ViewType.BLOCK) {
+          this.view = null;
+          const block = buildView({
+            id: getFakeId(),
+            viewRoot: null,
+            aspect: this.service.selectedAspect,
+            type: "block",
+            class: "p-2",
+          });
+          block.addChildViewToViewTree(item);
+          block.switchMode(ViewMode.EDIT);
+          this.service.add(block, null, "value");
+      }
+      else {
+        this.service.add(item, null, "value");
+      }
     }
     // By default without valid selection add to existing root
     else {
