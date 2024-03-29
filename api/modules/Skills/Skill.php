@@ -963,6 +963,31 @@ class Skill
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Gets number of skill attempts of a given user.
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function getSkillAttemptsOfUser(int $userId): int
+    {
+        $course = $this->getCourse();
+
+        // Get tier cost info
+        $tier = $this->getTier();
+        $tierInfo = $tier->getData("costType, cost, increment, minRating");
+
+
+        $name = $this->getName();
+        $nrAttempts = count(array_filter(AutoGame::getParticipations($course->getId(), $userId, "graded post"),
+            function ($item) use ($name, $tierInfo) {
+                return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
+        }));
+
+        return $nrAttempts;
+    }
+
+    /**
      * Gets skill cost in tokens for a given user.
      *
      * @param int $userId
