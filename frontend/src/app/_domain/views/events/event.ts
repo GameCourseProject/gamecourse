@@ -52,7 +52,7 @@ export abstract class Event {
    */
   abstract print(): string;
 
-  protected printHelper(args: string[]): string {
+  protected printHelper(args: (string | boolean)[]): string {
     return '{actions.' + this.action + '(' + args.join(', ') + ')}';
   }
 }

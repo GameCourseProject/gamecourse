@@ -20,8 +20,7 @@ export function buildEvent(type: EventType, expression: string): Event {
   const eventStr = expression.replace(/[{}]|\bactions.\b/g, '');
   const action: EventAction = eventStr.split('(')[0] as EventAction;
   const args: string[] = eventStr.split('(')[1].split(',').map(arg => arg.trim().replace(')', ''));
-
-  if (action === EventAction.GO_TO_PAGE) return new GoToPageEvent(type, expression, args[0], args[1] || null);
+  if (action === EventAction.GO_TO_PAGE) return new GoToPageEvent(type, expression, args[0], args[1] || null, args[2] ? args[2] == "1" : null);
   if (action === EventAction.SHOW_TOOLTIP) return new ShowTooltipEvent(type, expression, args[0], args[1]);
   // NOTE: insert here other types of event actions
 

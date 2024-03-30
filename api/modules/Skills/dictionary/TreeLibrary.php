@@ -43,6 +43,12 @@ class TreeLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("id",
+                [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
+                "Gets skill tree's id.",
+                ReturnType::TEXT,
+                $this
+            ),
             new DFunction("name",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's name.",
@@ -87,6 +93,21 @@ class TreeLibrary extends Library
 
 
     /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets skill tree's id.
+     *
+     * @param $skillTree
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function id($skillTree): ValueNode
+    {
+        // NOTE: on mock data, skill tree will be mocked
+        if (is_array($skillTree)) $id = $skillTree["id"];
+        else $id = $skillTree->getId();
+        return new ValueNode($id, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
 
     /**
      * Gets skill tree's name.
