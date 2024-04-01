@@ -171,17 +171,16 @@ class SkillsLibrary extends Library
 
         } else {
             $skill = new Skill($skill["id"]);
-            $dependencies = array_map(function($dep) {
-                $str = ' ';
-                foreach ($dep as $index => $skill) {
-                    $str .= $skill["name"] . ($index != count($dep) - 1 ? ' + ' : '');
+            $dependencies = [];
+            foreach ($skill->getDependencies() as $combo) {
+                $str = '';
+                foreach ($combo as $index => $skill) {
+                    $str .= $skill["name"] . ($index != count($combo) - 1 ? ' + ' : '');
                 }
-                return $str;
-            }, $skill->getDependencies());
+                $dependencies[] = ["name" => $str];
+            }
         };
-        $dependencies = implode('\n', $dependencies);
-
-        return new ValueNode($dependencies, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($dependencies, $this);
     }
 
     /**
