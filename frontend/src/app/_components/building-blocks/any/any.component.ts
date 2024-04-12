@@ -16,10 +16,10 @@ import {Event} from "../../../_domain/views/events/event";
 import {EventAction} from "../../../_domain/views/events/event-action";
 import {GoToPageEvent} from "../../../_domain/views/events/actions/go-to-page-event";
 import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-tooltip-event';
+import {ExchangeTokensEvent} from "../../../_domain/views/events/actions/exchange-tokens-event";
 import {ActivatedRoute} from "@angular/router";
 import { ViewSelectionService } from 'src/app/_services/view-selection.service';
 import { ModalService } from 'src/app/_services/modal.service';
-import * as _ from "lodash"
 import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import { HistoryService } from 'src/app/_services/history.service';
@@ -120,6 +120,10 @@ export class BBAnyComponent implements OnInit {
     return ShowTooltipEvent;
   }
 
+  get ExchangeTokensEvent(): typeof ExchangeTokensEvent {
+    return ExchangeTokensEvent;
+  }
+
   getEvent(action: EventAction): Event {
     return this.view.events.find(ev => ev.action === action) || null;
   }
@@ -169,7 +173,7 @@ export class BBAnyComponent implements OnInit {
     this.componentEditor.discardView();
     ModalService.closeModal('save-as-component');
   }
-  
+
   saveAction() {
     ModalService.openModal('save-as-component');
   }

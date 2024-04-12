@@ -89,9 +89,15 @@ class VCLibrary extends Library
                 ReturnType::NUMBER,
                 $this
             ),
+            new DFunction("getUserExchanged",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
+                "Gets a boolean indicating if the student already exchanged their tokens for XP or not.",
+                ReturnType::BOOLEAN,
+                $this
+            ),
             new DFunction("exchangeTokensForXP",
                 [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "ratio", "optional" => true, "type" => "float"],
+                    ["name" => "ratio", "optional" => true, "type" => "string"],
                     ["name" => "threshold", "optional" => true, "type" => "int"],
                     ["name" => "extra", "optional" => true, "type" => "bool"]],
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
@@ -267,18 +273,42 @@ class VCLibrary extends Library
     /*** ---- Exchanging Tokens ----- ***/
 
     /**
+     * Checks if the student already exchanged Tokens for XP.
+     *
+     * @param int $userId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserExchanged(int $userId): ?ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $exchanged = Core::dictionary()->faker()->boolean();
+
+        } else {
+            $VCModule = new VirtualCurrency($course);
+            $exchanged = $VCModule->hasExchanged($userId);
+        }
+        return new ValueNode($exchanged, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
+
+    /**
      * Exchanges a given user's tokens for XP according to
      * a specific ratio and threshold. Option to give XP as
      * extra credit.
      *
      * @param int $userId
-     * @param float $ratio
+     * @param string $ratio
      * @param int|null $threshold
      * @param bool|null $extra
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, float $ratio = 1, ?int $threshold = null, ?bool $extra = true): ?ValueNode
+    public function exchangeTokensForXP(int $userId, string $ratio, ?int $threshold = null, ?bool $extra = true): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
@@ -290,9 +320,8 @@ class VCLibrary extends Library
             return null;
 
         } else {
-            $VCModule = new VirtualCurrency($course);
-            $VCModule->exchangeTokensForXP($userId, $ratio, $threshold, $extra);
+            $args = [$userId, $ratio, $threshold, $extra];
+            return new ValueNode("exchangeTokensForXP(" . implode(", ", $args) . ")");
         }
-        return null;
     }
 }

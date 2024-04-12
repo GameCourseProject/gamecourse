@@ -13,6 +13,7 @@ import { ViewSelectionDirective } from "./_directives/view-selection.directive";
 import { ScrollableDragDirective } from "./_directives/scrollable-drag.directive";
 import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
 import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
+import {ExchangeTokensDirective} from "./_directives/views/events/actions/exchange-tokens.directive";
 import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
 import { DropZoneDirective } from './_directives/dropzone.directive';
 
@@ -260,6 +261,7 @@ import {
     ScrollableDragDirective,
     GoToPageDirective,
     ShowTooltipDirective,
+    ExchangeTokensDirective,
     TableDataCustomDirective,
     DropZoneDirective,
 

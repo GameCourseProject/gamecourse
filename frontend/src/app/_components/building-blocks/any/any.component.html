@@ -48,7 +48,8 @@
       [attr.data-view-id]="view.id"
       [attr.data-view-root]="view.viewRoot"
       [goToPage]="{event: getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent, view}"
-      [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}">
+      [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}"
+      [exchangeTokens]="{event: getEvent(EventAction.EXCHANGE_TOKENS) | as : ExchangeTokensEvent, view}">
 
     <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    ></bb-block>
     <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   ></bb-button>
