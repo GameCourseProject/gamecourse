@@ -21,8 +21,34 @@ class TreeLibrary extends Library
             "course" => 0,
             "name" => $name ? $name : Core::dictionary()->faker()->text(20),
             "maxReward" => Core::dictionary()->faker()->numberBetween(4000, 15000),
-            "inView" => true
-            // TODO: mock Tiers
+            "inView" => true,
+            "tiers" => array_map(function () {
+                return $this->mockTier();
+            }, range(1, 4))
+        ];
+    }
+
+    private function mockTier() : array
+    {
+        return [
+            "name" => Core::dictionary()->faker()->text(5),
+            "reward" => Core::dictionary()->faker()->numberBetween(200, 2000),
+            "skills" => array_map(function () {
+                return $this->mockSkill();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 7)))
+        ];
+    }
+
+    private function mockSkill() : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->text(20),
+            "color" => Core::dictionary()->faker()->hexColor(),
+            "isCollab" => Core::dictionary()->faker()->boolean(),
+            "dependencies" => array_map(function () {
+                return ["name" => Core::dictionary()->faker()->text(20)];
+            }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
         ];
     }
 
@@ -217,7 +243,7 @@ class TreeLibrary extends Library
         if (Core::dictionary()->mockData()) {
             $skillTrees = array_map(function () {
                 return $this->mockTree();
-            }, range(1, Core::dictionary()->faker()->numberBetween(1, 3)));
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 2)));
 
         } else $skillTrees = SkillTree::getSkillTrees($courseId);
         return new ValueNode($skillTrees, $this);

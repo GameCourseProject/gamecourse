@@ -315,13 +315,7 @@ class VCLibrary extends Library
         $course = Core::dictionary()->getCourse();
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
-        if (Core::dictionary()->mockData()) {
-            // Do nothing
-            return null;
-
-        } else {
-            $args = [$userId, $ratio, $threshold, $extra];
-            return new ValueNode("exchangeTokensForXP(" . implode(", ", $args) . ")");
-        }
+        $args = [$userId, $ratio, $threshold, $extra];
+        return new ValueNode("exchangeTokensForXP(" . implode(", ", $args) . ")");
     }
 }
