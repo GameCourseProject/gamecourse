@@ -23,7 +23,7 @@ export class AspectsManagerComponent implements OnInit{
   // New Aspect to Add
   viewerRole: string = null;
   userRole: string = null;
-  aspectToCopy: Aspect = null;
+  aspectToCopy: string = null;
 
   modal: boolean = false;
 
@@ -67,7 +67,11 @@ export class AspectsManagerComponent implements OnInit{
       const viewerRole = this.viewerRole != "" ? this.viewerRole : null;
       const userRole = this.userRole != "" ? this.userRole : null;
       const newAspect = new Aspect(viewerRole, userRole);
-      const aspectToCopy = new Aspect(this.aspectToCopy?.viewerRole ?? null, this.aspectToCopy?.userRole ?? null);
+
+      let [viewerToCopy, userToCopy] = this.aspectToCopy.split(" | ");
+      if (viewerToCopy === 'none') viewerToCopy = null;
+      if (userToCopy === 'none') userToCopy = null;
+      const aspectToCopy = new Aspect(viewerToCopy, userToCopy);
 
       if (this.aspectsToEdit.findIndex(e => _.isEqual(e, newAspect)) == -1) {
         this.aspectsToEdit.push(newAspect);
@@ -127,6 +131,11 @@ export class AspectsManagerComponent implements OnInit{
   }
 
   getAspectsAvailableForCopy() {
-    return this.aspects.map(e => {return {value: e, text: "Viewer: " + (e.viewerRole ?? "none") + " | User: " + (e.userRole ?? "none")}});
+    return this.aspects.map(e => {
+      return {
+        value: (e.viewerRole ?? "none") + " | " + (e.userRole ?? "none"),
+        text: "Viewer: " + (e.viewerRole ?? "none") + " | User: " + (e.userRole ?? "none")
+      }
+    });
   }
 }

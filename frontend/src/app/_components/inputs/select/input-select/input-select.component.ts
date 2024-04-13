@@ -62,7 +62,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() requiredErrorMessage?: string = 'Required';                              // Message for required error
 
   // Methods
-  @Input() setData?: Observable<{value: any, text: string, html?: string,      // Set data on demand
+  @Input() setData?: Observable<{value: string, text: string, html?: string,        // Set data on demand
     selected: boolean}[]>;
 
   @Output() valueChange = new EventEmitter<any | any[]>();
