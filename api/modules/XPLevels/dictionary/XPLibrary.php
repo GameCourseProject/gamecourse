@@ -119,7 +119,7 @@ class XPLibrary extends Library
     public function getMaxExtraCredit(): ValueNode
     {
         if (Core::dictionary()->mockData()) {
-            $maxExtraCredit = Core::dictionary()->faker()->numberBetween(1000, 5000);
+            $maxExtraCredit = Core::dictionary()->faker()->numberBetween(3000, 5000);
 
         } else {
             $XPModule = new XPLevels(Core::dictionary()->getCourse());
@@ -170,7 +170,7 @@ class XPLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $extraCredit = Core::dictionary()->faker()->numberBetween(0, 3000);
+            $extraCredit = Core::dictionary()->faker()->numberBetween(0, 1000);
 
         } else {
             $XPModule = new XPLevels($course);
