@@ -64,7 +64,9 @@ export class AspectsManagerComponent implements OnInit{
 
   createNewAspect() {
     if (this.f.valid) {
-      const newAspect = new Aspect(this.viewerRole, this.userRole);
+      const viewerRole = this.viewerRole != "" ? this.viewerRole : null;
+      const userRole = this.userRole != "" ? this.userRole : null;
+      const newAspect = new Aspect(viewerRole, userRole);
       const aspectToCopy = new Aspect(this.aspectToCopy?.viewerRole ?? null, this.aspectToCopy?.userRole ?? null);
 
       if (this.aspectsToEdit.findIndex(e => _.isEqual(e, newAspect)) == -1) {

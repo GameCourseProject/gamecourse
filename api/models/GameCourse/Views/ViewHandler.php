@@ -478,10 +478,45 @@ class ViewHandler
         $viewTreeByAspect = [];
         $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null)->getData("id, viewerRole, userRole");
         $aspects = Aspect::getAspectsInViewTree($viewRoot);
+
+        $hierarchy = Role::getCourseRoles($courseId, false, true);
+
         foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = self::renderView($viewRoot, [$aspect, $defaultAspect]);
-            $aspectRoles = ["viewerRole" => $aspect["viewerRole"] ? Role::getRoleName($aspect["viewerRole"]) : null, 
-                            "userRole" => $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null];
+            $viewerRoleName = $aspect["viewerRole"] ? Role::getRoleName($aspect["viewerRole"]) : null;
+            $userRoleName = $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null;
+
+            // Add aspects that are higher in hierarchy by checking roles above and all possible combinations
+            $sortedAspects = [];
+
+            $parentsOfViewer = [$viewerRoleName];
+            if (isset($aspect["viewerRole"])) {
+                $parentsOfViewer = array_merge($parentsOfViewer, Role::getParentNamesOfRole($hierarchy, null, $aspect["viewerRole"]));
+            }
+
+            $parentsOfUser = [$userRoleName];
+            if (isset($aspect["userRole"])) {
+                $parentsOfUser = array_merge($parentsOfUser, Role::getParentNamesOfRole($hierarchy, null, $aspect["userRole"]));
+            }
+
+            foreach ($parentsOfViewer as $viewerRole) {
+                $viewerRoleId = null;
+                if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
+
+                foreach ($parentsOfUser as $userRole) {
+                    $userRoleId = null;
+                    if (isset($userRole)) $userRoleId = Role::getRoleId($userRole, $courseId);
+
+                    if (isset($userRoleId) || isset($viewerRoleId)) {
+                        $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
+                        $sortedAspects[] = $parentAspect;
+                    }
+                }
+            }
+            $sortedAspects[] = $defaultAspect;
+
+            // Render and associate with aspect
+            $viewTreeOfAspect = self::renderView($viewRoot, $sortedAspects);
+            $aspectRoles = ["viewerRole" => $viewerRoleName, "userRole" => $userRoleName];
             $viewTreeByAspect[] = ["aspect" => $aspectRoles, "view" => $viewTreeOfAspect];
         }
         return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];

@@ -52,8 +52,8 @@ export class AspectCardComponent implements OnInit {
   }
 
   save() {
-    if (this.aspect.viewerRole == "undefined" || this.aspect.viewerRole == "new") this.aspect.viewerRole = null;
-    if (this.aspect.userRole == "undefined" || this.aspect.userRole == "new") this.aspect.userRole = null;
+    if (this.aspect.viewerRole == "" || this.aspect.viewerRole == "undefined" || this.aspect.viewerRole == "new") this.aspect.viewerRole = null;
+    if (this.aspect.userRole == "" || this.aspect.userRole == "undefined" || this.aspect.userRole == "new") this.aspect.userRole = null;
     this.edit = false;
 
     const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
