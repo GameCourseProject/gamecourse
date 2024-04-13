@@ -83,6 +83,7 @@ class Skills extends Module
     {
         $this->initDatabase();
         $this->createDataFolder();
+        $this->initTemplates();
         $this->initRules();
 
         // Init config
@@ -130,6 +131,7 @@ class Skills extends Module
     {
         $this->cleanDatabase();
         $this->removeDataFolder();
+        $this->removeTemplates();
         $this->removeRules();
         $this->removeNotifications();
     }

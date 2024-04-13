@@ -1,0 +1,303 @@
+[
+    {
+        "aspect": {
+            "viewerRole": null,
+            "userRole": "Student"
+        },
+        "type": "block",
+        "class": "card card bg-base-100 shadow-xl",
+        "variables": [
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            }
+        ],
+        "children": [
+            [
+                {
+                    "type": "block",
+                    "class": "card-body",
+                    "children": [
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-6",
+                                "direction": "horizontal",
+                                "columns": 2,
+                                "responsive": false,
+                                "children": [
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "gap-3 items-center mb-4",
+                                            "direction": "horizontal",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "icon",
+                                                        "class": "mt-1",
+                                                        "style": "color: {%courseColor}",
+                                                        "icon": "tabler-bulb",
+                                                        "size": "1.8rem"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "class": "font-bold",
+                                                        "style": "font-size: 1.5rem",
+                                                        "text": "Skill Tree"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "float-right mt-2 gap-1 items-center font-semibold",
+                                            "direction": "horizontal",
+                                            "responsive": false,
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "class": "text-neutral\/75",
+                                                        "text": "Total:"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "style": "color: {%courseColor}",
+                                                        "text": "{xp.getUserSkillsXP(%user)} XP"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "loopData": "{tree.getSkillTrees()}",
+                                "variables": [
+                                    {
+                                        "name": "skillTree",
+                                        "value":"{%item}"
+                                    }
+                                ],
+                                "children": [
+                                    [
+                                        {
+                                            "type": "text",
+                                            "text": "{%skillTree.name}",
+                                            "class": "text-center font-semibold text-xl mb-2"
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "direction": "horizontal",
+                                            "columns": "4",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "loopData": "{%skillTree.tiers}",
+                                                        "class": "{system.if(%index == %skillTree.tiers.count - 1, 'px-4', 'border-r-2 border-neutral/10 px-4')}",
+                                                        "variables": [
+                                                            {
+                                                                "name": "tier",
+                                                                "value":"{%item}"
+                                                            }
+                                                        ],
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "text": "{%tier.name}: {%tier.reward} XP",
+                                                                    "class": "text-center font-semibold my-2",
+                                                                    "style": "color: {%courseColor}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "loopData": "{%tier.skills}",
+                                                                    "variables": [
+                                                                        {
+                                                                            "name": "skill",
+                                                                            "value": "{%item}"
+                                                                        }
+                                                                    ],
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "direction": "horizontal",
+                                                                                "responsive": true,
+                                                                                "class": "flex flex-row gap-2 justify-center items-center m-2",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "style": "background: {system.if(skills.isSkillAvailableForUser(%user, %skill.id, %skillTree.id), %skill.color, '#607D8B')}; outline-color: {system.if(skills.isSkillAvailableForUser(%user, %skill.id, %skillTree.id), %skill.color, '#607D8B')}; opacity: {system.if(skills.isSkillAvailableForUser(%user, %skill.id, %skillTree.id), '1', '0.75')}",
+                                                                                            "class": "w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2 relative",
+                                                                                            "events": [
+                                                                                                {
+                                                                                                    "type": "click",
+                                                                                                    "action": "{actions.goToPage(%skill.id, null, true)}"
+                                                                                                }
+                                                                                            ],
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "text": "{%skill.name}",
+                                                                                                        "class": "block text-white font-semibold text-xs break-words",
+                                                                                                        "style": "color: white; text-decoration: inherit"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "icon",
+                                                                                                        "class": "absolute -bottom-1 right-0 mr-2 mb-1 text-white",
+                                                                                                        "icon": "tabler-checks",
+                                                                                                        "size": "1.1rem",
+                                                                                                        "visibilityType": "conditional",
+                                                                                                        "visibilityCondition": "{skills.isSkillCompletedByUser(%user, %skill.id)}"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "icon",
+                                                                                                        "class": "absolute -bottom-1 left-0 ml-2 mb-1 text-white",
+                                                                                                        "icon": "tabler-users",
+                                                                                                        "size": "1.1rem",
+                                                                                                        "visibilityType": "conditional",
+                                                                                                        "visibilityCondition": "{%skill.isCollab}"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "variables": [
+                                                                                                {
+                                                                                                    "name": "attempts",
+                                                                                                    "value": "{skills.getUserSkillAttempts(%user, %skill.id)}"
+                                                                                                }
+                                                                                            ],
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{skills.isSkillAvailableForUser(%user, %skill.id, %skillTree.id)}",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "class": "font-medium text-sm",
+                                                                                                        "text": "Nr. attempts: {%attempts}"
+                                                                                                    }
+                                                                                                ],
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "block",
+                                                                                                        "direction": "horizontal",
+                                                                                                        "class": "flex gap-1 items-center",
+                                                                                                        "visibilityType": "conditional",
+                                                                                                        "visibilityCondition": "{modules.isEnabled(\"VirtualCurrency\")}",
+                                                                                                        "children": [
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "text",
+                                                                                                                    "class": "font-medium text-sm",
+                                                                                                                    "text": "Cost to {system.if(%attempts > 0, 'retry', 'try')}: {skills.getUserSkillCost(%user, %skill.id)}"
+                                                                                                                }
+                                                                                                            ],
+                                                                                                            [
+                                                                                                                {
+                                                                                                                    "type": "image",
+                                                                                                                    "class": "h-4 w-4 mt-1.5",
+                                                                                                                    "src": "{vc.getImage()}"
+                                                                                                                }
+                                                                                                            ]
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "mb-5",
+                                                                                "visibilityType": "conditional",
+                                                                                "visibilityCondition": "{%skill.dependencies.count > 0}",
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "variables": [
+                                                                                                {
+                                                                                                    "name": "usedWildcards",
+                                                                                                    "value": "{skills.getUserSkillUsedWildcards(%user, %skill.id)}"
+                                                                                                }
+                                                                                            ],
+                                                                                            "text": "{%usedWildcards} {system.if(%usedWildcards == 1, 'wildcard', 'wildcards')} used",
+                                                                                            "class": "prose font-semibold text-sm text-center text-error",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{%usedWildcards > 0}"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "block",
+                                                                                            "class": "prose text-xs text-center mb-0.5 whitespace-pre",
+                                                                                            "children": [
+                                                                                                [
+                                                                                                    {
+                                                                                                        "type": "text",
+                                                                                                        "loopData": "{%skill.dependencies}",
+                                                                                                        "text": "{%item.name}"
+                                                                                                    }
+                                                                                                ]
+                                                                                            ]
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "text": "Wildcards available: {skills.getUserTotalAvailableWildcards(%user, %skillTree.id)}",
+                                                                    "class": "font-semibold mt-4 text-center",
+                                                                    "visibilityType": "conditional",
+                                                                    "visibilityCondition": "{%index == %skillTree.tiers.count - 1}"
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ]
+                    ]
+                }
+            ]
+        ]
+    }
+]
