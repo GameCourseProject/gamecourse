@@ -586,7 +586,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     else if (!this.service.getSelectedView()) {
       this.service.add(item, null, this.optionSelected);
     }
-    // By default without valid selection add to existing root
+    // By default, without valid selection add to existing root
     else {
       this.service.add(item, this.view, this.optionSelected);
     }

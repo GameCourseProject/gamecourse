@@ -188,7 +188,7 @@
 
     <!-- Editor -->
     <div class="grow {{editable ? 'rounded-xl border-2 border-neutral border-opacity-10 p-2' : ''}}">
-      <bb-any *ngIf="view && !loading.page" [view]="view" id="capture"></bb-any>
+      <bb-any *ngIf="view && !loading.page" [view]="view" id="capture" [isExistingRoot]="!pageToManage"></bb-any>
     </div>
   </div>
 
