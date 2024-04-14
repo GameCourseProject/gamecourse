@@ -143,7 +143,7 @@ export class DBExplorerComponent implements OnInit {
         {type: TableDataType.TEXT, content: {text: entry.post}},
         {type: TableDataType.DATETIME, content: {datetime: dateFromDatabase(entry.date), datetimeFormat: 'DD/MM/YYYY HH:mm'}},
         {type: TableDataType.TEXT, content: {text: entry.rating?.toString()}},
-        {type: TableDataType.TEXT, content: {text: entry.evaluator}},
+        {type: TableDataType.TEXT, content: {text: entry.evaluatorName}},
         {type: TableDataType.ACTIONS, content: {actions: [Action.EDIT, Action.DELETE]}},
       ]);
       entry.date = dateFromDatabase(entry.date)?.format("YYYY-MM-DDTHH:mm"); // prepare for working in datetime picker
@@ -274,7 +274,8 @@ export interface EditableParticipationData {
   post: string,
   date: string,
   rating: number,
-  evaluator: string,
+  evaluator: number,
+  evaluatorName: string,
 }
 
 export interface EditableAwardData {
