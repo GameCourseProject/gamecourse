@@ -172,7 +172,7 @@ export class CoursePageComponent implements OnInit {
   async exchange() {
     this.exchanging = true;
 
-    const earnedXP = await this.api.exchangeUserTokens(this.course.id, this.user?.id || this.viewer.id, '1:1', 1000, false).toPromise();
+    const earnedXP = await this.api.exchangeUserTokens(this.course.id, this.user?.id || this.viewer.id, '1:1', 1000, true).toPromise();
     this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
     this.wallet = await this.api.getUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
 
