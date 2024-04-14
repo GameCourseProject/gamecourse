@@ -129,7 +129,9 @@ export class BBAnyComponent implements OnInit {
   }
 
   getEvent(action: EventAction): Event {
-    return this.view.events.find(ev => ev.action === action) || null;
+    if (this.view.mode == ViewMode.DISPLAY) {
+      return this.view.events.find(ev => ev.action === action) || null;
+    } else return null;
   }
 
 
@@ -199,6 +201,12 @@ export class BBAnyComponent implements OnInit {
       viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
+  }
+
+  selectParentAction() {
+    if (this.view.parent) {
+      this.selection.update(this.view.parent);
+    }
   }
 
 }

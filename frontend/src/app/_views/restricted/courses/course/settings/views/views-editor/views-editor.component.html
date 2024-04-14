@@ -194,9 +194,27 @@
 
   <div *ngIf="editable" class="card-actions justify-end py-6">
     <button class="btn btn-ghost" (click)="closeEditor()">Cancel</button>
-    <button *ngIf="pageToManage || !template" class="btn btn-primary" (click)="openSaveAsTemplateModal()">Save as Template</button>
-    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">Save as Page</button>
-    <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">Save Changes</button>
+
+    <button *ngIf="pageToManage || !template" class="btn btn-primary" (click)="openSaveAsTemplateModal()">
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+      </ng-container>
+      Save as Template
+    </button>
+
+    <button *ngIf="pageToManage" class="btn btn-primary" (click)="openSaveAsPageModal()">
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+      </ng-container>
+      Save as Page
+    </button>
+
+    <button *ngIf="!pageToManage" class="btn btn-primary" (click)="saveChanges()">
+      <ng-container *ngIf="loading.action">
+        <app-spinner [size]="'sm'" [color]="'primary-content'" [classList]="'mr-3'"></app-spinner>
+      </ng-container>
+      Save Changes
+    </button>
   </div>
 
   <!-- Loader -->

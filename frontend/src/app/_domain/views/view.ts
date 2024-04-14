@@ -296,7 +296,7 @@ export interface ViewDatabase {
 }
 
 export enum ViewMode {
-  DISPLAY = 'display',    // final appearence and behaviour
+  DISPLAY = 'display',    // final appearance and behaviour
   PREVIEW = 'preview',    // used in the edit component modal
   EDIT = 'edit',          // default in views editor
   REARRANGE = 'rearrange' // rearrange in views editor

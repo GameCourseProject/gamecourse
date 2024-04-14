@@ -20,9 +20,10 @@
                 hover:cursor-pointer hover:bg-secondary-focus transition-all"
          (click)="$event.stopPropagation()">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
-      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box">
+      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box text-base font-normal no-underline w-48">
         <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
         <li (click)="duplicateAction()"><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
+        <li (click)="selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.5rem"/>Select Parent</a></li>
         <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
         <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
       </ul>
