@@ -128,6 +128,7 @@ class Page
     public function getData(string $field = "*")
     {
         $data = Core::database()->select(self::TABLE_PAGE, ["id" => $this->id], $field);
+        if ($field == "*" || str_contains($field, "image")) $data["image"] = $this->getImage();
         return is_array($data) ? self::parse($data) : self::parse(null, $data, $field);
     }
 

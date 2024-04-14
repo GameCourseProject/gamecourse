@@ -174,10 +174,6 @@ export class BBAnyComponent implements OnInit {
     ModalService.closeModal('save-as-component');
   }
 
-  saveAction() {
-    ModalService.openModal('save-as-component');
-  }
-
   deleteAction() {
     this.service.delete(this.view);
     this.selection.clear();

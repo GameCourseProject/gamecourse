@@ -498,13 +498,13 @@ class ViewHandler
                 $parentsOfUser = array_merge($parentsOfUser, Role::getParentNamesOfRole($hierarchy, null, $aspect["userRole"]));
             }
 
-            foreach ($parentsOfViewer as $viewerRole) {
-                $viewerRoleId = null;
-                if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
+            foreach ($parentsOfUser as $userRole) {
+                $userRoleId = null;
+                if (isset($userRole)) $userRoleId = Role::getRoleId($userRole, $courseId);
 
-                foreach ($parentsOfUser as $userRole) {
-                    $userRoleId = null;
-                    if (isset($userRole)) $userRoleId = Role::getRoleId($userRole, $courseId);
+                foreach ($parentsOfViewer as $viewerRole) {
+                    $viewerRoleId = null;
+                    if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
 
                     if (isset($userRoleId) || isset($viewerRoleId)) {
                         $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
