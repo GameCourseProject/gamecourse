@@ -199,7 +199,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.rolesHierarchy = rolesHierarchySmart;
   }
 
-  async initView(id: number, templateType?: 'template' | 'system-template'): Promise<void> {
+  async initView(id: number, templateType?: 'template' | 'system-template', keepAspect: boolean = false): Promise<void> {
     this.loading.aspects = true;
 
     let data;
@@ -223,12 +223,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.service.viewsByAspect = data["viewTreeByAspect"];
     initGroupedChildren(data["viewTree"]);
-    this.view = this.service.viewsByAspect[0].view;
-
-    if (this.editable) this.view.switchMode(ViewMode.EDIT);
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
-    this.service.selectedAspect = this.aspects[0];
+    if (!keepAspect) this.service.selectedAspect = this.aspects[0];
+
+    this.view = this.service.getSelectedView();
+    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
 
     this.history.saveState({
       viewsByAspect: this.service.viewsByAspect,
@@ -628,13 +628,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
       this.history.clear();
-      await this.initView(this.page.id);
+      await this.initView(this.page.id, null, true);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
       await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, image).toPromise();
       this.history.clear();
-      await this.initView(this.template.id, "template");
+      await this.initView(this.template.id, "template", true);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else {

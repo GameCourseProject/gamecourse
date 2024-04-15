@@ -61,8 +61,10 @@
           [placeholder]="'Button Color'"
           [topLabel]="'Color'"
           [helperText]="'Choose color for the button'"
-          [helperPosition]="'right'">
-        </app-input-color>
+          [helperPosition]="'right'"
+          [pattern]="''"
+          [maxLength]="null"
+        ></app-input-color>
       </div>
     </div>
   </ng-container>
@@ -643,8 +645,10 @@
       [topLabel]="'Chart Colors'"
       [helperText]="'Choose colors for each set of the data series.'"
       [helperPosition]="'right'"
-      [multiple]="true">
-    </app-input-color>
+      [multiple]="true"
+      [pattern]="''"
+      [maxLength]="null"
+    ></app-input-color>
     <ng-container *ngIf="viewToEdit.chartType == 'pie'">
       <div class="bg-base-300 rounded-xl p-4 mt-4">
         <div class="flex flex-row justify-start items-center gap-2">
@@ -1151,16 +1155,20 @@
       [placeholder]="'Choose a Color'"
       [topLabel]="'Progress Bar Color'"
       [helperText]="'Choose color for displaying the progress bar.'"
-      [helperPosition]="'right'">
-    </app-input-color>
+      [helperPosition]="'right'"
+      [pattern]="''"
+      [maxLength]="null"
+    ></app-input-color>
     <app-input-color
       [id]="'chart-progress-background'"
       [(value)]="viewToEdit.options.trackColor"
       [placeholder]="'Choose a Color'"
       [topLabel]="'Background Color'"
       [helperText]="'Choose color for displaying the progress bar\'s background.'"
-      [helperPosition]="'right'">
-    </app-input-color>
+      [helperPosition]="'right'"
+      [pattern]="''"
+      [maxLength]="null"
+    ></app-input-color>
   </div>
 
   <div class="grid grid-cols-2 gap-8 mb-8">
