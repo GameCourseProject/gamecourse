@@ -1,10 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Aspect } from '../_domain/views/aspects/aspect';
-import { View, ViewMode } from '../_domain/views/view';
+import {Injectable} from '@angular/core';
+import {Aspect} from '../_domain/views/aspects/aspect';
+import {View, ViewMode} from '../_domain/views/view';
 import * as _ from "lodash"
-import { addToGroupedChildren, getFakeId, groupedChildren, viewsDeleted } from '../_domain/views/build-view-tree/build-view-tree';
-import { Subject } from 'rxjs';
-import { ViewTable } from '../_domain/views/view-types/view-table';
+import {
+  addToGroupedChildren, addVariantToGroupedChildren,
+  getFakeId,
+  groupedChildren,
+  viewsDeleted
+} from '../_domain/views/build-view-tree/build-view-tree';
+import {Subject} from 'rxjs';
+import {ViewTable} from '../_domain/views/view-types/view-table';
 
 
 /**
@@ -39,12 +44,12 @@ export class ViewEditorService {
     return this.viewsByAspect.find((e) => _.isEqual(e.aspect, aspect));
   }
 
-  isMoreSpecific(role: string | null, antecessor: string | null): boolean {
-    if (role && !antecessor || role === antecessor) {
+  isMoreSpecific(role: string | null, ancestor: string | null): boolean {
+    if (role && !ancestor || role === ancestor) {
       return true;
     }
     else if (this.rolesHierarchy[role]?.parent) {
-      return this.isMoreSpecific(this.rolesHierarchy[role].parent._name, antecessor);
+      return this.isMoreSpecific(this.rolesHierarchy[role].parent._name, ancestor);
     }
     else {
       return false;
@@ -87,24 +92,18 @@ export class ViewEditorService {
     for (let aspect of this.aspectsToAdd) {
       const view = _.cloneDeep(this.getEntryOfAspect(aspect.aspectToCopy).view);
 
-      // Aspects that are lower in hierarchy than the aspectToCopy + aspectToCopy itself
-      const aspectsBeneath = this.viewsByAspect.filter((e) =>
-        (e.aspect.userRole === aspect.aspectToCopy.userRole && this.isMoreSpecific(e.aspect.viewerRole, aspect.aspectToCopy.viewerRole))
-        || (e.aspect.userRole !== aspect.aspectToCopy.userRole && this.isMoreSpecific(e.aspect.userRole, aspect.aspectToCopy.userRole))
-      ).map(e => e.aspect);
-
-      // Aspects that are higher in hierarchy than the aspectToCopy (so, the ones that are not in aspectsBeneath) + aspectToCopy itself
-      let aspectsToReplace = this.viewsByAspect
-        .filter(e => _.isEqual(e.aspect, aspect.aspectToCopy) || aspectsBeneath.findIndex(i => _.isEqual(i, e)) == -1)
-        .map(e => e.aspect);
-
-      // Aspect [null, null] is common to all so don't replace it
-      aspectsToReplace = aspectsToReplace.filter(e => !_.isEqual(new Aspect(null, null), e));
+      const defaultAspect = new Aspect(null, null)
+      const aspectsToReplace = this.viewsByAspect.filter((e) => {
+        if (_.isEqual(e.aspect, defaultAspect)) return false;
+        if (e.aspect.userRole === aspect.newAspect.userRole) return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole);
+        else if (e.aspect.viewerRole === aspect.newAspect.viewerRole) return !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole);
+        else return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole) && !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole)
+      }).map(e => e.aspect);
+      //console.log(aspectsToReplace);
 
       for (let aspectToReplace of aspectsToReplace) {
-        view.modifyAspect(aspectToReplace, aspect.newAspect);
+        view.modifyAspect(aspectToReplace, aspect.newAspect, true);
       }
-
       this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];
@@ -189,6 +188,21 @@ export class ViewEditorService {
     if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
       viewsDeleted.push(item.id);
     }
+    // Still exists -> there must be something higher in hierarchy... and it should be kept
+    // So create a new block equal to the parent but without this specific item, and with this aspect -> will have more priority over the original
+    // TODO
+    /*else if (higherInHierarchy.length > 0 && item.parent) {
+      const newBlock = _.cloneDeep(item.parent);
+      newBlock.id = getFakeId();
+      newBlock.removeChildView(item.id);
+      newBlock.aspect = this.selectedAspect;
+      for (let child of newBlock.children) {
+        addToGroupedChildren(child, newBlock.id);
+      }
+      if (item.parent.parent) {
+        addVariantToGroupedChildren(item.parent.parent.id, item.parent.id, newBlock.id);
+      }
+    }*/
 
     if (item.parent) {
       let entry = groupedChildren.get(item.parent.id);

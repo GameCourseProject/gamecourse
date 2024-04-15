@@ -197,7 +197,7 @@ export abstract class View {
 
   abstract switchMode(mode: ViewMode);
 
-  abstract modifyAspect(old: Aspect, newAspect: Aspect);
+  abstract modifyAspect(old: Aspect, newAspect: Aspect, changeId?: boolean);
 
   getAllVariables() : Variable[] {
     if (this.parent) {

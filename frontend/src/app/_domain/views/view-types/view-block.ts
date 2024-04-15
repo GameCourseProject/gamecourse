@@ -5,7 +5,13 @@ import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
-import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {
+  getFakeId,
+  groupedChildren,
+  viewTree,
+  viewsAdded,
+  addVariantToGroupedChildren
+} from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 
 export class ViewBlock extends View {
@@ -166,12 +172,17 @@ export class ViewBlock extends View {
     }
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
+  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
     if (_.isEqual(old, this.aspect)) {
       this.aspect = newAspect;
+      if (changeId && this.parent) {
+        const oldId = this.id;
+        this.id = getFakeId();
+        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      }
     }
     for (let child of this.children) {
-      child.modifyAspect(old, newAspect);
+      child.modifyAspect(old, newAspect, changeId);
     }
   }
 

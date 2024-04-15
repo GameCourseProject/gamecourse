@@ -71,6 +71,16 @@ export function addToGroupedChildren(view: View, parentId: number) {
   }
 }
 
+export function addVariantToGroupedChildren(parentId: number, baseId: number, variantId: number) {
+  let entry = groupedChildren.get(parentId);
+  entry.forEach((group: number[]) => {
+    if (group.indexOf(baseId) != -1)
+      group.push(variantId);
+      groupedChildren.set(parentId, entry);
+    }
+  )
+}
+
 /**
  * Builds a view tree to be sent to database by merging all aspects
  * according to view ids and viewIds.

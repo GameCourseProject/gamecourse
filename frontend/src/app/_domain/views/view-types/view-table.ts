@@ -7,7 +7,13 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {
+  getFakeId,
+  groupedChildren,
+  viewTree,
+  viewsAdded,
+  addVariantToGroupedChildren
+} from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 import { ViewText } from "./view-text";
@@ -371,15 +377,20 @@ export class ViewTable extends View {
     // else if (to === 'down') type === 'header' ? this.headerRows.insertAtIndex(of + 1, rowToMove) : this.rows.insertAtIndex(of + 1, rowToMove);
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
+  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
     if (_.isEqual(old, this.aspect)) {
       this.aspect = newAspect;
+      if (changeId && this.parent) {
+        const oldId = this.id;
+        this.id = getFakeId();
+        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      }
     }
     for (const headerRow of this.headerRows) {
-      headerRow.modifyAspect(old, newAspect);
+      headerRow.modifyAspect(old, newAspect, changeId);
     }
     for (const row of this.bodyRows) {
-      row.modifyAspect(old, newAspect);
+      row.modifyAspect(old, newAspect, changeId);
     }
   }
 

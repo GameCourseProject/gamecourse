@@ -6,7 +6,13 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {
+  getFakeId,
+  groupedChildren,
+  viewTree,
+  viewsAdded,
+  addVariantToGroupedChildren
+} from "../build-view-tree/build-view-tree";
 import { ViewText } from "./view-text";
 import { ViewBlock } from "./view-block";
 import * as _ from "lodash"
@@ -166,12 +172,17 @@ export class ViewCollapse extends View {
     this.content.switchMode(mode);
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
+  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
     if (_.isEqual(old, this.aspect)) {
       this.aspect = newAspect;
+      if (changeId && this.parent) {
+        const oldId = this.id;
+        this.id = getFakeId();
+        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      }
     }
-    this.content.modifyAspect(old, newAspect);
-    this.header.modifyAspect(old, newAspect);
+    this.content.modifyAspect(old, newAspect, changeId);
+    this.header.modifyAspect(old, newAspect, changeId);
   }
 
   /**
