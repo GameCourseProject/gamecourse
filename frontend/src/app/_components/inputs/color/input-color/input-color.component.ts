@@ -43,7 +43,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() pattern?: string = this.COLOR_PATTERN;                     // The pattern to be applied
   @Input() required?: boolean;                                        // Make it required
   @Input() minLength?: number = 7;                                    // Enforce a minimum length
-  @Input() maxLength?: number = 7;                                    // Enforce a maximum length
+  @Input() maxLength?: number | null = 7;                             // Enforce a maximum length
 
   // Errors
   @Input() patternErrorMessage?: string =
@@ -110,7 +110,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       ],
 
     }).on('init', pickr => {
-      if (pickr.getSelectedColor())
+      if (pickr.getSelectedColor() && this.pattern != "")
         this.valueChange.emit(pickr.getSelectedColor().toHEXA().toString(0));
 
     }).on('change', color => {

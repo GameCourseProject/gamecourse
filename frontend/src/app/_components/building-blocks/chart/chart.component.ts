@@ -21,14 +21,14 @@ export class BBChartComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW;
+    this.edit = this.view.mode === ViewMode.EDIT || this.view.mode === ViewMode.PREVIEW || this.view.mode === ViewMode.REARRANGE;
     this.classes = 'bb-chart bb-' + this.view.chartType + '-chart';
 
     if (this.view.chartType === ChartType.PIE) {
       this.seriesToPreview = Array.isArray(this.view.data) ? this.view.data : [];
     }
     else {
-      this.seriesToPreview = typeof this.view.data == 'object' ? this.view.data : [{ data: [] }];
+      this.seriesToPreview = Array.isArray(this.view.data) ? this.view.data : [{ data: [] }];
     }
   }
 

@@ -50,8 +50,8 @@ export class InputSelectRoleComponent implements OnInit {
   // Errors
   @Input() requiredErrorMessage?: string = 'Required';                // Message for required error
 
-  @Output() valueChange = new EventEmitter<string[]>();
-  @Output() btnClicked = new EventEmitter<string[]>();
+  @Output() valueChange = new EventEmitter<any | any[]>();
+  @Output() btnClicked = new EventEmitter<any | any[]>();
 
     constructor(
         private api: ApiHttpService,

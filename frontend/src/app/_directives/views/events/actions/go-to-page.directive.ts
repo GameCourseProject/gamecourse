@@ -22,9 +22,10 @@ export class GoToPageDirective {
    * @param pageId
    * @param userId (optional)
    */
-  goToPage(pageId: string, userId?: string): void {
+  goToPage(pageId: string, userId?: string, isSkill: boolean = false): void {
     let path = 'pages/' + pageId;
     if (userId) path += '/user/' + userId;
+    if (isSkill) path = 'skills/' + pageId;
     this.router.navigate([path], {relativeTo: this.route.parent.parent});
   }
 
@@ -41,7 +42,7 @@ export class GoToPageDirective {
 
     // Perform event
     if (event.type === this.info.event.type)
-      this.goToPage(this.info.event.pageId, this.info.event.userId);
+      this.goToPage(this.info.event.pageId, this.info.event.userId, this.info.event.isSkill);
   }
 
 }

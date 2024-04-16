@@ -13,6 +13,7 @@ import { ViewSelectionDirective } from "./_directives/view-selection.directive";
 import { ScrollableDragDirective } from "./_directives/scrollable-drag.directive";
 import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
 import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
+import {ExchangeTokensDirective} from "./_directives/views/events/actions/exchange-tokens.directive";
 import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
 import { DropZoneDirective } from './_directives/dropzone.directive';
 
@@ -98,6 +99,7 @@ import { BBImageComponent } from './_components/building-blocks/image/image.comp
 import { BBTableComponent } from './_components/building-blocks/table/table.component';
 import { BBTextComponent } from './_components/building-blocks/text/text.component';
 import { ComponentEditorComponent } from './_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { AspectsManagerComponent } from "./_views/restricted/courses/course/settings/views/views-editor/aspects-manager/aspects-manager.component";
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -238,7 +240,8 @@ import {
   tablerColumnInsertLeft,
   tablerColumnInsertRight,
   tablerQuote,
-  tablerDatabase
+  tablerDatabase,
+  tablerBinaryTree
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -259,6 +262,7 @@ import {
     ScrollableDragDirective,
     GoToPageDirective,
     ShowTooltipDirective,
+    ExchangeTokensDirective,
     TableDataCustomDirective,
     DropZoneDirective,
 
@@ -333,6 +337,7 @@ import {
     BBTableComponent,
     BBTextComponent,
     ComponentEditorComponent,
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -422,6 +427,8 @@ import {
     BBImageComponent,
     BBTableComponent,
     BBTextComponent,
+
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -558,6 +565,7 @@ import {
       tablerColumnInsertRight,
       tablerQuote,
       tablerDatabase,
+      tablerBinaryTree,
 
       matFaceRetouchingNatural,
 

@@ -68,7 +68,6 @@ import {
   GameElementManageData,
   QuestionnaireManageData
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
-import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
@@ -3651,90 +3650,6 @@ export class ApiHttpService {
       }));
 
   }
-
-  // TODO. hard-coded
-  public getUserTotalAvailableWildcards(courseID: number, userID: number, skillTreeID: number): Observable<number> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getUserTotalAvailableWildcards');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-      qs.push('skillTreeId', skillTreeID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']));
-  }
-
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number | string]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getSkillsExtraInfo');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-      qs.push('skillTreeId', skillTreeID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']));
-  }
-
-  public getStreaks(courseID: number): Observable<Streak[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getStreaks');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => {
-        return {
-          id: obj.id,
-          name: obj.name,
-          description: obj.description,
-          color: obj.color,
-          image: obj.image,
-          svg: obj.svg,
-          goal: obj.goal,
-          reward: obj.reward,
-          tokens: obj.tokens,
-          isExtra: obj.isExtra,
-          isRepeatable: obj.isRepeatable,
-          isPeriodic: obj.isPeriodic
-        };
-      })));
-  }
-
-  public getUserStreaksInfo(courseID: number, userID: number): Observable<{info: {id: number, nrCompletions: number, progress: number, deadline: Moment}[], total: number}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getUserStreaksInfo');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        res['data']['info'] = res['data']['info'].map(obj => {
-          return {
-            id: obj.id,
-            nrCompletions: obj.nrCompletions,
-            progress: obj.progress,
-            deadline: dateFromDatabase(obj.deadline),
-          };
-        });
-        return res['data'];
-      }));
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ----------------- AutoGame ------------------ ***/

@@ -11,6 +11,8 @@ use GameCourse\Course\Course;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use Utils\Utils;
 use ZipArchive;
+use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 
 /**
  * This is the Skill model, which implements the necessary methods
@@ -963,6 +965,31 @@ class Skill
     /*** ---------------------------------------------------- ***/
 
     /**
+     * Gets number of skill attempts of a given user.
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function getSkillAttemptsOfUser(int $userId): int
+    {
+        $course = $this->getCourse();
+
+        // Get tier cost info
+        $tier = $this->getTier();
+        $tierInfo = $tier->getData("costType, cost, increment, minRating");
+
+
+        $name = $this->getName();
+        $nrAttempts = count(array_filter(AutoGame::getParticipations($course->getId(), $userId, "graded post"),
+            function ($item) use ($name, $tierInfo) {
+                return $item["description"] === "Skill Tree, Re: $name" && $item["rating"] >= $tierInfo["minRating"];
+        }));
+
+        return $nrAttempts;
+    }
+
+    /**
      * Gets skill cost in tokens for a given user.
      *
      * @param int $userId
@@ -994,6 +1021,96 @@ class Skill
         }
 
         return $tierInfo["cost"] + $tierInfo["increment"] * $nrAttempts;
+    }
+
+    /**
+     * Returns number of used wildcards by the user on this skill
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function wildcardsUsed(int $userId): int
+    {
+        $course = $this->getCourse();
+        $skill = $this;
+
+        $userSkillAwards = (new Awards($course))->getUserSkillsAwards($userId);
+        $skillAwards = array_values(array_filter($userSkillAwards, function ($award) use ($skill) {
+            return $award["type"] === AwardType::SKILL && $award["description"] == $skill->getName() && $award["moduleInstance"] == $skill->getId();
+        }));
+        $completed = !empty($skillAwards);
+
+        return $completed ? intval(Core::database()->select(Skills::TABLE_AWARD_WILDCARD, ["award" => $skillAwards[0]["id"]], "IFNULL(SUM(nrWildcardsUsed), 0) as nrWildcardsUsed")["nrWildcardsUsed"]) : 0;
+    }
+
+    /**
+     * Returns bool indicating if skill is available for user or not
+     *
+     * @param int $userId
+     * @return int
+     * @throws Exception
+     */
+    public function availableForUser(int $userId, int $skillTreeId): int
+    {
+        $course = $this->getCourse();
+        $skill = $this;
+
+        $dependencies = $skill->getDependencies();
+
+        $userSkillAwards = (new Awards($course))->getUserSkillsAwards($userId);
+
+        $completed = !empty($skillAwards);
+
+        return $completed || empty($dependencies) || $this->dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies);
+    }
+
+    private function dependenciesMet($course, $userId, $skillTreeId, $userSkillAwards, $dependencies) // FIXME: create proper function
+    {
+        $wildcardTier = Tier::getWildcard($skillTreeId)->getId();
+        foreach ($dependencies as $dependency) {
+            $completed = true;
+            foreach ($dependency as $skill) {
+                if ($skill["tier"] === $wildcardTier) {
+                    $hasWildcard = (new Skills($course))->userHasWildcardAvailable($userId, $skillTreeId);
+                    if (!$hasWildcard) {
+                        $completed = false;
+                        break;
+                    }
+
+                } else {
+                    $skillCompleted = !empty(array_filter($userSkillAwards, function ($award) use ($skill) {
+                        return $award["type"] === AwardType::SKILL && $award["description"] == $skill["name"] && $award["moduleInstance"] == $skill["id"];
+                    }));
+                    if (!$skillCompleted) {
+                        $completed = false;
+                        break;
+                    }
+                }
+            }
+            if ($completed) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns bool indicating if skill is available for user or not
+     *
+     * @param int $userId
+     * @return bool
+     * @throws Exception
+     */
+    public function completedByUser(int $userId): bool
+    {
+        $course = $this->getCourse();
+        $skill = $this;
+
+        $userSkillAwards = (new Awards($course))->getUserSkillsAwards($userId);
+        $skillAwards = array_values(array_filter($userSkillAwards, function ($award) use ($skill) {
+            return $award["type"] === AwardType::SKILL && $award["description"] == $skill->getName() && $award["moduleInstance"] == $skill->getId();
+        }));
+
+        return !empty($skillAwards);
     }
 
 

@@ -324,7 +324,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.options = from.options;
 
       if (to.chartType === ChartType.PROGRESS) to.data = from.progressData;
-      else to.data = JSON.parse(from.data);
+      else {
+        if (Array.isArray(to.data)) to.data = JSON.parse(from.data);
+        else to.data = from.data;
+      }
     }
     return to;
   }

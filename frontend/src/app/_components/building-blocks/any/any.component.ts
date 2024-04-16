@@ -16,14 +16,17 @@ import {Event} from "../../../_domain/views/events/event";
 import {EventAction} from "../../../_domain/views/events/event-action";
 import {GoToPageEvent} from "../../../_domain/views/events/actions/go-to-page-event";
 import {ShowTooltipEvent} from 'src/app/_domain/views/events/actions/show-tooltip-event';
+import {ExchangeTokensEvent} from "../../../_domain/views/events/actions/exchange-tokens-event";
 import {ActivatedRoute} from "@angular/router";
-import { ViewSelectionService } from 'src/app/_services/view-selection.service';
-import { ModalService } from 'src/app/_services/modal.service';
-import * as _ from "lodash"
-import { ComponentEditorComponent } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
-import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
-import { HistoryService } from 'src/app/_services/history.service';
-import { ViewEditorService } from 'src/app/_services/view-editor.service';
+import {ViewSelectionService} from 'src/app/_services/view-selection.service';
+import {ModalService} from 'src/app/_services/modal.service';
+import {
+  ComponentEditorComponent
+} from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import {groupedChildren} from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {HistoryService} from 'src/app/_services/history.service';
+import {ViewEditorService} from 'src/app/_services/view-editor.service';
+import {AlertService, AlertType} from "../../../_services/alert.service";
 
 @Component({
   selector: 'bb-any',
@@ -32,6 +35,7 @@ import { ViewEditorService } from 'src/app/_services/view-editor.service';
 export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
+  @Input() isExistingRoot: boolean = false;
 
   @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
 
@@ -120,8 +124,14 @@ export class BBAnyComponent implements OnInit {
     return ShowTooltipEvent;
   }
 
+  get ExchangeTokensEvent(): typeof ExchangeTokensEvent {
+    return ExchangeTokensEvent;
+  }
+
   getEvent(action: EventAction): Event {
-    return this.view.events.find(ev => ev.action === action) || null;
+    if (this.view.mode == ViewMode.DISPLAY) {
+      return this.view.events.find(ev => ev.action === action) || null;
+    } else return null;
   }
 
 
@@ -169,19 +179,20 @@ export class BBAnyComponent implements OnInit {
     this.componentEditor.discardView();
     ModalService.closeModal('save-as-component');
   }
-  
-  saveAction() {
-    ModalService.openModal('save-as-component');
-  }
 
   deleteAction() {
-    this.service.delete(this.view);
-    this.selection.clear();
-    this.delete = true;
-    this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
-    });
+    if (this.isExistingRoot) {
+      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...")
+    }
+    else {
+      this.service.delete(this.view);
+      this.selection.clear();
+      this.delete = true;
+      this.history.saveState({
+        viewsByAspect: this.service.viewsByAspect,
+        groupedChildren: groupedChildren
+      });
+    }
   }
 
   duplicateAction() {
@@ -190,6 +201,12 @@ export class BBAnyComponent implements OnInit {
       viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
+  }
+
+  selectParentAction() {
+    if (this.view.parent) {
+      this.selection.update(this.view.parent);
+    }
   }
 
 }

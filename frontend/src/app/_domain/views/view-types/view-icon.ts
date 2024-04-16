@@ -4,7 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {getFakeId, viewTree, viewsAdded, addVariantToGroupedChildren} from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 
 export class ViewIcon extends View {
@@ -96,9 +96,14 @@ export class ViewIcon extends View {
     this.mode = mode;
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
+  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
     if (_.isEqual(old, this.aspect)) {
       this.aspect = newAspect;
+      if (changeId && this.parent) {
+        const oldId = this.id;
+        this.id = getFakeId();
+        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      }
     }
   }
 

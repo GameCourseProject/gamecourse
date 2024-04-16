@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Output, EventEmitter } from '@angular/core';
-import * as _ from "lodash";
 import { Event } from 'src/app/_domain/views/events/event';
 import { EventType } from 'src/app/_domain/views/events/event-type';
 import { AlertService, AlertType } from 'src/app/_services/alert.service';
@@ -36,11 +35,11 @@ export class EventCardComponent implements OnInit {
   getEventTypes() {
     return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
-  
+
   deleteAction() {
     this.deleteEvent.emit();
   }
-  
+
   addNewAction() {
     if (this.eventToAdd.type != null && this.eventToAdd.expression != "") {
       this.createEvent.emit({
@@ -56,7 +55,7 @@ export class EventCardComponent implements OnInit {
   editAction() {
     this.edit = true;
   }
-  
+
   saveAction() {
     if (this.eventToAdd.type != null && this.eventToAdd.expression != "") {
       this.edit = false;
@@ -67,10 +66,10 @@ export class EventCardComponent implements OnInit {
     }
     else AlertService.showAlert(AlertType.ERROR, "Event must have When and Do");
   }
-  
+
   cancelAction() {
     this.edit = false;
     this.ngOnInit();
   }
-  
+
 }

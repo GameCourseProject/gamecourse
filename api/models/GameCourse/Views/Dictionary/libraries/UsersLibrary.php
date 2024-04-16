@@ -28,7 +28,8 @@ class UsersLibrary extends Library
             "image" => null,
             "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
             "landingPage" => null,
-            "isActive" => true
+            "isActive" => true,
+            "avatar" => null
         ];
     }
 
