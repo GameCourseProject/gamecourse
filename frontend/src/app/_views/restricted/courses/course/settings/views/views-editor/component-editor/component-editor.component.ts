@@ -653,10 +653,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     if (this.viewToEdit.headerRows[0]) {
       const newHeaderCell = ViewText.getDefault(this.viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
       this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
+
+      const entry = groupedChildren.get(this.viewToEdit.headerRows[0].id);
+      entry.splice(index, 0, [newHeaderCell.id]);
+      groupedChildren.set(this.viewToEdit.headerRows[0].id, entry);
     }
     for (let row of this.viewToEdit.bodyRows) {
       const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
       row.children.splice(index, 0, newCell);
+
+      const entry = groupedChildren.get(row.id);
+      entry.splice(index, 0, [newCell.id]);
+      groupedChildren.set(row.id, entry);
     }
   }
   moveColumn(from: number, to: number) {
