@@ -180,7 +180,7 @@ export class ViewEditorService {
       || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.userRole, e.aspect.userRole))
     );
 
-    // if there is any, it means we need to create a new version of the parent, without the item, for this aspect
+    // if there is any aspect above, we need to create a new version of the parent, without the item, for this aspect
     if (higherInHierarchy.length > 0 && item.parent) {
       const newBlock = _.cloneDeep(item.parent);
       newBlock.removeChildView(item.id);
@@ -202,9 +202,7 @@ export class ViewEditorService {
           let view = el.view.findView(item.parent.id);
           view.parent.replaceView(view.id, newBlock);
         }
-
       }
-
       // make a new block with the original content, so the parent has the two alternatives (original and new) as child
       // keeping the root the same
       else {
@@ -236,6 +234,7 @@ export class ViewEditorService {
               for (let el of otherBlock.children) {
                 el.parent = otherBlock
               }
+              otherBlock.parent = item.parent;
             }
           }
 
@@ -249,10 +248,15 @@ export class ViewEditorService {
       }
 
     }
-    else if (higherInHierarchy.length > 0) { // item has no parent at all -> it's the root we are deleting, doesn't make sense to do it at all
-      return
+    // item has no parent at all -> it's the root we are deleting -> only gets here if it's a new page -> it's fine! just make it null
+    else if (!item.parent) {
+      this.viewsByAspect = this.viewsByAspect.map(e =>
+        _.isEqual(e.aspect, this.selectedAspect) ? { aspect: e.aspect, view: null } : e
+      );
+      groupedChildren.delete(item.id);
     }
-    else { // no higher -> can just delete it here and in lower aspects
+    // no higher -> can just delete it here and in lower aspects
+    else {
       for (let el of lowerInHierarchy) {
         let view = el.view.findView(item.id);
         if (view.parent) {
@@ -282,7 +286,6 @@ export class ViewEditorService {
     if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
       viewsDeleted.push(item.id);
     }
-
   }
 
   /*

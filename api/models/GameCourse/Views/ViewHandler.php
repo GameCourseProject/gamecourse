@@ -800,10 +800,11 @@ class ViewHandler
 
                 // Move view (if changed)
                 // WARNING: this isn't creating logs, it's moving the views immediately
-                // I needed this to not lose track of the positions when moving to an already occupyied position
+                // I needed this to not lose track of the positions when moving to an already occupied position
                 if (isset($parent["parent"])) {
-                    $prevPos = (int)Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "child" => $view["id"]], "position");
-                    if (isset($prevPos) && $prevPos != $parent["pos"]) {
+                    $prevPos = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $view["id"]], "*");
+
+                    if (isset($prevPos) && $prevPos["parent"] == $parent["parent"] && $prevPos["position"] != $parent["pos"]) {
 
                         // If the position is already occupied, need to disoccupy it first to keep the constraint
                         $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
@@ -822,6 +823,9 @@ class ViewHandler
                             ["parent" => $parent["parent"], "pos" => $prevPos],
                             ["parent" => $parent["parent"], "pos" => $parent["pos"]]
                         );
+                    }
+                    else if (isset($prevPos) && $prevPos["parent"] != $parent["parent"]) {
+                        Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $prevPos["parent"], "position" => $prevPos["position"]]);
                     }
                 }
 

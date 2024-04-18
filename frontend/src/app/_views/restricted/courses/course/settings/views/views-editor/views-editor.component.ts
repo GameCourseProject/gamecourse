@@ -114,6 +114,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.history.clear();
+    this.selection.clear();
     this._subscription = this.service.selectedChange.subscribe((value) => {
       this.view = null;
       setTimeout(() => {
