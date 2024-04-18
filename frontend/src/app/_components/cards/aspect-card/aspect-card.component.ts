@@ -7,6 +7,7 @@ import { NgForm } from '@angular/forms';
 import { Output, EventEmitter } from '@angular/core';
 import * as _ from "lodash";
 import { ViewEditorService } from 'src/app/_services/view-editor.service';
+import {AlertService, AlertType} from "../../../_services/alert.service";
 
 @Component({
   selector: 'app-aspect-card',
@@ -54,11 +55,21 @@ export class AspectCardComponent implements OnInit {
   save() {
     if (this.aspect.viewerRole == "" || this.aspect.viewerRole == "undefined" || this.aspect.viewerRole == "new") this.aspect.viewerRole = null;
     if (this.aspect.userRole == "" || this.aspect.userRole == "undefined" || this.aspect.userRole == "new") this.aspect.userRole = null;
-    this.edit = false;
-
     const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
-    if (this.viewEditorService.aspectsToAdd.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1) {
+
+    if (
+      (this.viewEditorService.viewsByAspect.findIndex(e => _.isEqual(e.aspect, newAspect)) == -1 || this.viewEditorService.aspectsToDelete.findIndex(e => _.isEqual(e, newAspect)) != -1)
+      && this.viewEditorService.aspectsToAdd.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
+      && this.viewEditorService.aspectsToChange.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
+    ) {
       this.viewEditorService.aspectsToChange.push({old: new Aspect(this.oldViewerRole, this.oldUserRole), newAspect: newAspect});
+      this.edit = false;
+    }
+    else {
+      this.aspect.userRole = this.oldUserRole;
+      this.aspect.viewerRole = this.oldViewerRole;
+      this.edit = true;
+      AlertService.showAlert(AlertType.ERROR, "A version with these roles already exists.");
     }
   }
 

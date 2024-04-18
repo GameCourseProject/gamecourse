@@ -96,14 +96,13 @@ export class ViewText extends View {
     this.mode = mode;
   }
 
+  // fixes the entire view to be visible to an aspect
   modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
     if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
       const oldId = this.id;
-      const copy = _.cloneDeep(this);
-      (this.parent as any).children.splice((this.parent as any).children.findIndex(e => e.id == oldId), 1, copy);
-
       this.replaceWithFakeIds();
-      addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      this.aspect = newAspect;
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
     }
   }
 
@@ -113,7 +112,6 @@ export class ViewText extends View {
       this.aspect = newAspect;
     }
   }
-
   /**
    * Gets a default text view.
    */

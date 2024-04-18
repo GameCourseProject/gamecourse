@@ -116,6 +116,7 @@ export class AspectsManagerComponent implements OnInit{
   removeAspect(aspect: Aspect) {
     this.aspectsToEdit = this.aspectsToEdit.filter(e => !_.isEqual(e, aspect))
     this.service.aspectsToDelete.push(aspect);
+    this.aspectToSelect = null;
   }
 
   /*** --------------------------------------------- ***/
