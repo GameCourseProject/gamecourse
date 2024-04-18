@@ -106,14 +106,20 @@ export class ViewChart extends View {
     this.mode = mode;
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
-    if (_.isEqual(old, this.aspect)) {
+  // fixes the entire view to be visible to an aspect
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      this.replaceWithFakeIds();
       this.aspect = newAspect;
-      if (changeId && this.parent) {
-        const oldId = this.id;
-        this.id = getFakeId();
-        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
-      }
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+    }
+  }
+
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      this.aspect = newAspect;
     }
   }
 

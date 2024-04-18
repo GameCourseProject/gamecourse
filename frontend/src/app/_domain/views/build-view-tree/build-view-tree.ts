@@ -112,6 +112,7 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
           }
         }
         view.children.splice(view.children.indexOf(group), 1, group.filter(e => typeof e !== "number"));
+        view.children = view.children.filter(e => e.length > 0);
       }
     }
   }

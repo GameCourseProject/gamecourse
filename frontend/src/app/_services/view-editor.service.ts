@@ -70,7 +70,7 @@ export class ViewEditorService {
   changeAspect(old: Aspect, newAspect: Aspect) {
     this.viewsByAspect = this.viewsByAspect.map(e => {
       if (_.isEqual(e.aspect, old)) {
-        e.view.modifyAspect(old, newAspect);
+        e.view.modifyAspect([old], newAspect);
         return {aspect: newAspect, view: e.view}
       }
       else return e
@@ -103,9 +103,7 @@ export class ViewEditorService {
         else return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole) && !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole)
       }).map(e => e.aspect);
 
-      for (let aspectToReplace of aspectsToReplace) {
-        view.modifyAspect(aspectToReplace, aspect.newAspect, true);
-      }
+      view.modifyAspect(aspectsToReplace, aspect.newAspect);
       this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];

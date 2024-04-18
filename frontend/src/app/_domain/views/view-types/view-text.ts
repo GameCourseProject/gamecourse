@@ -96,14 +96,21 @@ export class ViewText extends View {
     this.mode = mode;
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
-    if (_.isEqual(old, this.aspect)) {
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      const copy = _.cloneDeep(this);
+      (this.parent as any).children.splice((this.parent as any).children.findIndex(e => e.id == oldId), 1, copy);
+
+      this.replaceWithFakeIds();
+      addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+    }
+  }
+
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
       this.aspect = newAspect;
-      if (changeId && this.parent) {
-        const oldId = this.id;
-        this.id = getFakeId();
-        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
-      }
     }
   }
 
