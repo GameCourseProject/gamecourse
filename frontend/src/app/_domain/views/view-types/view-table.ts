@@ -239,9 +239,11 @@ export class ViewTable extends View {
     // Replace IDs in children
     for (const headerRow of this.headerRows) {
       headerRow.replaceWithFakeIds();
+      headerRow.parent.id = this.id;
     }
     for (const row of this.bodyRows) {
       row.replaceWithFakeIds();
+      row.parent.id = this.id;
     }
   }
 

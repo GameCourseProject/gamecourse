@@ -127,6 +127,7 @@ export class ViewBlock extends View {
     // Replace IDs in children
     for (const child of this.children) {
       child.replaceWithFakeIds();
+      child.parent.id = this.id;
     }
   }
 

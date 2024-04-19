@@ -73,12 +73,17 @@ export function addToGroupedChildren(view: View, parentId: number) {
 
 export function addVariantToGroupedChildren(parentId: number, baseId: number, variantId: number) {
   let entry = groupedChildren.get(parentId);
-  entry.forEach((group: number[]) => {
-    if (group.indexOf(baseId) != -1)
-      group.push(variantId);
-      groupedChildren.set(parentId, entry);
-    }
-  )
+  if (entry) {
+    entry.forEach((group: number[]) => {
+      if (group.indexOf(baseId) != -1) {
+        group.push(variantId);
+        groupedChildren.set(parentId, entry);
+      }
+    })
+  } else {
+    console.log("Warning: Entry for parent not found");
+    groupedChildren.set(parentId, [[variantId]]);
+  }
 }
 
 /**
@@ -116,5 +121,7 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
       }
     }
   }
+  console.log(viewTree);
+  console.log(groupedChildren);
   return viewTree;
 }

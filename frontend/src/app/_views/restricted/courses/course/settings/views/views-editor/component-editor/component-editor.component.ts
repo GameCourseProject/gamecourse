@@ -28,7 +28,12 @@ import {ApiHttpService} from "src/app/_services/api/api-http.service";
 import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
-import {getFakeId, groupedChildren, viewsDeleted} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {
+  addToGroupedChildren, addVariantToGroupedChildren,
+  getFakeId,
+  groupedChildren,
+  viewsDeleted
+} from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 
 @Component({
@@ -420,6 +425,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
       // this view isn't used in any other version "above"
       if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
+
         // if the type changed need to delete the old one and create a new in backend
         const oldId = this.view.id;
         if (changedType) {
@@ -447,17 +453,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       // this is a new view in the tree with a new id
       else {
         const oldId = this.view.id;
-        this.view.id = getFakeId();
+        this.view.replaceWithFakeIds();
         this.view.aspect = this.service.selectedAspect;
 
-        let group = groupedChildren.get(this.view.parent.id);
-        if (group) {
-          group.find((e) => e.includes(oldId)).push(this.view.id);
-          groupedChildren.set(this.view.parent.id, group);
-        }
-        else { // this is the first child inserted
-          groupedChildren.set(this.view.parent.id, [[this.view.id]]);
-        }
+        addToGroupedChildren(this.view, null);
+        addVariantToGroupedChildren(this.view.parent.id, oldId, this.view.id);
 
         // propagate the changes to the views lower in hierarchy that have the oldId
         for (let el of lowerInHierarchy) {
@@ -477,15 +477,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     else if (changedType) {
       const oldId = this.view.id;
       viewsDeleted.push(oldId);
-      this.view.id = getFakeId();
+      this.view.replaceWithFakeIds();
 
-      let entry = groupedChildren.get(this.view.parent.id);
-      if (entry) {
-        const group = entry.find((e) => e.includes(oldId));
-        const index = group.indexOf(oldId);
-        group.splice(index, 1, this.view.id);
-        groupedChildren.set(this.view.parent.id, entry);
-      }
+      addToGroupedChildren(this.view, null);
+      addVariantToGroupedChildren(this.view.parent.id, oldId, this.view.id);
     }
 
     if (!this.saveButton) ModalService.closeModal('component-editor');
@@ -537,18 +532,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   deleteEvent(index: number) {
     this.viewToEdit.events.splice(index, 1);
-  }
-
-  addDataLabel(event: { serie: string; format: string }) {
-    this.viewToEdit.options.dataLabelsOnSeries.push(event);
-  }
-
-  updateDataLabel(event: { serie: string; format: string }, index: number) {
-    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1, event);
-  }
-
-  deleteDataLabel(index: number) {
-    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1);
   }
 
   changeStripedGrid(event: boolean, orientation: string) {
@@ -628,11 +611,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(from, 1, this.viewToEdit.bodyRows[to])[0];
     }
   }
-  moveHeaderRow(from: number, to: number) {
-    if (0 <= to && to < this.viewToEdit.headerRows.length) {
-      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(from, 1, this.viewToEdit.headerRows[to])[0];
-    }
-  }
+
   selectCell(cell: View) {
     if (this.cellToEdit === cell) {
       this.cellToEdit = null;

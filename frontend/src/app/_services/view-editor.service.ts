@@ -196,10 +196,6 @@ export class ViewEditorService {
       newBlock.switchMode(ViewMode.EDIT);
       addToGroupedChildren(newBlock, null);
 
-      for (let el of newBlock.children) {
-        el.parent = newBlock;
-      }
-
       // the parent also has a parent already -> just make an alternative block then
       if (item.parent.parent) {
         newBlock.parent = item.parent.parent;

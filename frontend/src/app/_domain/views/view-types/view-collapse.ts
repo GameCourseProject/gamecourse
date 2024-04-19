@@ -131,8 +131,12 @@ export class ViewCollapse extends View {
 
   replaceWithFakeIds() {
     this.id = getFakeId();
+
     this.content.replaceWithFakeIds();
+    this.content.parent.id = this.id;
+
     this.header.replaceWithFakeIds();
+    this.header.parent.id = this.id;
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
