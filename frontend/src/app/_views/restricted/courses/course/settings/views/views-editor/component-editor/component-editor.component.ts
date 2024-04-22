@@ -101,9 +101,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   prepareAdditionalTools() {
     let helpVariables = "# Globals:" +
-      "\n%course = # the course that the user is manipulating" +
-      "\n%user = # the user associated to the page which is being displayed" +
-      "\n%viewer = # the user that is currently logged in watching the page" +
+      "\n%course = # id of the course that the user is manipulating" +
+      "\n%user = # id of the user associated to the page which is being displayed" +
+      "\n%viewer = # id of the user that is currently logged in watching the page" +
       "\n%item = # used to access the values of the collection being iterated";
 
     if (this.view.getAllVariables().length > 0) {
