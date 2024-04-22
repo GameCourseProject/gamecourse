@@ -114,6 +114,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.history.clear();
+    this.selection.clear();
     this._subscription = this.service.selectedChange.subscribe((value) => {
       this.view = null;
       setTimeout(() => {
@@ -667,6 +668,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.loading.aspects = false;
   }
 
+  switchToAspect(aspect: Aspect) {
+    this.service.selectedAspect = aspect;
+    this.view = this.service.getSelectedView();
+    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+  }
+
+  aspectIsSelected(aspect: Aspect) {
+    return _.isEqual(this.service.selectedAspect, aspect);
+  }
+
   // Components -----------------------------------------------------
 
   async saveComponent() {
@@ -828,11 +839,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   get ViewType(): typeof ViewType {
     return ViewType;
-  }
-
-  getIcon(mode: string): string {
-    if (mode === this.previewMode) return 'tabler-check';
-    else return '';
   }
 
   getItems(option: Option) {

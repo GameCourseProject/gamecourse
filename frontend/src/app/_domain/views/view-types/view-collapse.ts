@@ -11,7 +11,7 @@ import {
   groupedChildren,
   viewTree,
   viewsAdded,
-  addVariantToGroupedChildren
+  addVariantToGroupedChildren, addToGroupedChildren
 } from "../build-view-tree/build-view-tree";
 import { ViewText } from "./view-text";
 import { ViewBlock } from "./view-block";
@@ -131,8 +131,12 @@ export class ViewCollapse extends View {
 
   replaceWithFakeIds() {
     this.id = getFakeId();
+
     this.content.replaceWithFakeIds();
+    this.content.parent.id = this.id;
+
     this.header.replaceWithFakeIds();
+    this.header.parent.id = this.id;
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -172,17 +176,30 @@ export class ViewCollapse extends View {
     this.content.switchMode(mode);
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect, changeId: boolean = false) {
-    if (_.isEqual(old, this.aspect)) {
+  // fixes the entire view to be visible to an aspect
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      this.replaceWithFakeIds();
       this.aspect = newAspect;
-      if (changeId && this.parent) {
-        const oldId = this.id;
-        this.id = getFakeId();
-        addVariantToGroupedChildren(this.parent.id, oldId, this.id);
-      }
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      addToGroupedChildren(this, this.parent?.id ?? null)
+      this.header.replaceAspect(aspectsToReplace, newAspect);
+      this.content.replaceAspect(aspectsToReplace, newAspect);
     }
-    this.content.modifyAspect(old, newAspect, changeId);
-    this.header.modifyAspect(old, newAspect, changeId);
+    else {
+      this.header.modifyAspect(aspectsToReplace, newAspect);
+      this.content.modifyAspect(aspectsToReplace, newAspect);
+    }
+  }
+
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      this.aspect = newAspect;
+    }
+    this.header.replaceAspect(aspectsToReplace, newAspect);
+    this.content.replaceAspect(aspectsToReplace, newAspect);
   }
 
   /**

@@ -166,10 +166,6 @@
                 "type": "block",
                 "class": "card card-body bg-base-100 shadow-xl",
                 "direction": "horizontal"
-            }],
-            [{
-                "type": "block",
-                "class": "card card-body bg-base-100 shadow-xl border-base-300 border-2 p-6"
             }]
         ]
     ],

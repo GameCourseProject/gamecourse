@@ -39,10 +39,10 @@ export class AspectsManagerComponent implements OnInit{
   ngOnInit(): void {
     this.aspectsToEdit = _.cloneDeep(this.aspects);
     this.currentAspect = this.service.selectedAspect;
+    this.aspectToSelect = null;
     this.service.aspectsToDelete = [];
     this.service.aspectsToChange = [];
     this.service.aspectsToAdd = [];
-    this.modal = true;
   }
 
   /*** --------------------------------------------- ***/
@@ -54,10 +54,14 @@ export class AspectsManagerComponent implements OnInit{
   }
 
   setCurrent(aspect: Aspect) {
+    this.aspectToSelect = null;
     this.currentAspect = aspect;
   }
 
   openCreateNewAspectModal() {
+    // set a default option
+    this.aspectToCopy = (this.service.selectedAspect.viewerRole ?? "none") + " | " + (this.service.selectedAspect.userRole ?? "none");
+
     this.modal = true;
     ModalService.openModal("create-new-aspect");
   }
@@ -116,6 +120,7 @@ export class AspectsManagerComponent implements OnInit{
   removeAspect(aspect: Aspect) {
     this.aspectsToEdit = this.aspectsToEdit.filter(e => !_.isEqual(e, aspect))
     this.service.aspectsToDelete.push(aspect);
+    this.aspectToSelect = null;
   }
 
   /*** --------------------------------------------- ***/

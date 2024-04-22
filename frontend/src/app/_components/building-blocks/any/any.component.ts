@@ -177,10 +177,13 @@ export class BBAnyComponent implements OnInit {
 
   cancelEditAction() {
     this.componentEditor.discardView();
-    ModalService.closeModal('save-as-component');
   }
 
   deleteAction() {
+    ModalService.openModal('component-delete-' + this.view.id);
+  }
+
+  submitDeleteAction() {
     if (this.isExistingRoot) {
       AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...")
     }

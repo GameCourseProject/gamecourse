@@ -339,11 +339,11 @@
         [id]="'data-iter'"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Data Iteration'"
-        [helperText]="'Determines how many times this component will be repeated.
-          \n E.g. {skillTrees.trees} Means that this component will be repeated the number of skill trees available in this
-          course. If there are 3 skill trees in the course, the text will be repeated 3 times.'"
+        [helperText]="'Determines for which items this component will be repeated.
+          \n E.g. {skillTrees.trees} Means that this component will be repeated for each of the skill trees available in this
+          course. If there are 3 skill trees in the course, the component will be repeated 3 times.'"
         [helperPosition]="'right'"
-        [placeholder]="'e.g. { skillTrees.trees }'"
+        [placeholder]="'e.g. {skillTrees.trees}'"
       ></app-input-text>
     </div>
 

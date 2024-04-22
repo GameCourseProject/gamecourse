@@ -28,7 +28,12 @@ import {ApiHttpService} from "src/app/_services/api/api-http.service";
 import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
-import {getFakeId, groupedChildren, viewsDeleted} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {
+  addToGroupedChildren, addVariantToGroupedChildren,
+  getFakeId,
+  groupedChildren,
+  viewsDeleted
+} from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 
 @Component({
@@ -95,10 +100,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables = "# These are the variables available in this component, from the component's parents.\n\n";
+    let helpVariables = "# Globals:" +
+      "\n%course = # id of the course that the user is manipulating" +
+      "\n%user = # id of the user associated to the page which is being displayed" +
+      "\n%viewer = # id of the user that is currently logged in watching the page" +
+      "\n%item = # used to access the values of the collection being iterated";
 
-    for (const variable of this.view.getAllVariables()) {
-      helpVariables += "%" + variable.name + " = " + variable.value + "\n";
+    if (this.view.getAllVariables().length > 0) {
+      helpVariables += "\n\n# Inherited from the component's parents:\n";
+
+      for (const variable of this.view.getAllVariables()) {
+        helpVariables += "%" + variable.name + " = " + variable.value + "\n";
+      }
     }
 
     this.additionalToolsTabs = [
@@ -420,6 +433,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
       // this view isn't used in any other version "above"
       if (viewsWithThis.filter((e) => !lowerInHierarchy.includes(e)).length == 0) {
+
         // if the type changed need to delete the old one and create a new in backend
         const oldId = this.view.id;
         if (changedType) {
@@ -447,17 +461,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       // this is a new view in the tree with a new id
       else {
         const oldId = this.view.id;
-        this.view.id = getFakeId();
+        this.view.replaceWithFakeIds();
         this.view.aspect = this.service.selectedAspect;
 
-        let group = groupedChildren.get(this.view.parent.id);
-        if (group) {
-          group.find((e) => e.includes(oldId)).push(this.view.id);
-          groupedChildren.set(this.view.parent.id, group);
-        }
-        else { // this is the first child inserted
-          groupedChildren.set(this.view.parent.id, [[this.view.id]]);
-        }
+        addToGroupedChildren(this.view, null);
+        addVariantToGroupedChildren(this.view.parent.id, oldId, this.view.id);
 
         // propagate the changes to the views lower in hierarchy that have the oldId
         for (let el of lowerInHierarchy) {
@@ -477,15 +485,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     else if (changedType) {
       const oldId = this.view.id;
       viewsDeleted.push(oldId);
-      this.view.id = getFakeId();
+      this.view.replaceWithFakeIds();
 
-      let entry = groupedChildren.get(this.view.parent.id);
-      if (entry) {
-        const group = entry.find((e) => e.includes(oldId));
-        const index = group.indexOf(oldId);
-        group.splice(index, 1, this.view.id);
-        groupedChildren.set(this.view.parent.id, entry);
-      }
+      addToGroupedChildren(this.view, null);
+      addVariantToGroupedChildren(this.view.parent.id, oldId, this.view.id);
     }
 
     if (!this.saveButton) ModalService.closeModal('component-editor');
@@ -537,18 +540,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   deleteEvent(index: number) {
     this.viewToEdit.events.splice(index, 1);
-  }
-
-  addDataLabel(event: { serie: string; format: string }) {
-    this.viewToEdit.options.dataLabelsOnSeries.push(event);
-  }
-
-  updateDataLabel(event: { serie: string; format: string }, index: number) {
-    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1, event);
-  }
-
-  deleteDataLabel(index: number) {
-    this.viewToEdit.options.dataLabelsOnSeries.splice(index, 1);
   }
 
   changeStripedGrid(event: boolean, orientation: string) {
@@ -628,11 +619,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.viewToEdit.bodyRows[to] = this.viewToEdit.bodyRows.splice(from, 1, this.viewToEdit.bodyRows[to])[0];
     }
   }
-  moveHeaderRow(from: number, to: number) {
-    if (0 <= to && to < this.viewToEdit.headerRows.length) {
-      this.viewToEdit.headerRows[to] = this.viewToEdit.headerRows.splice(from, 1, this.viewToEdit.headerRows[to])[0];
-    }
-  }
+
   selectCell(cell: View) {
     if (this.cellToEdit === cell) {
       this.cellToEdit = null;
@@ -653,10 +640,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     if (this.viewToEdit.headerRows[0]) {
       const newHeaderCell = ViewText.getDefault(this.viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
       this.viewToEdit.headerRows[0].children.splice(index, 0, newHeaderCell);
+
+      const entry = groupedChildren.get(this.viewToEdit.headerRows[0].id);
+      entry.splice(index, 0, [newHeaderCell.id]);
+      groupedChildren.set(this.viewToEdit.headerRows[0].id, entry);
     }
     for (let row of this.viewToEdit.bodyRows) {
       const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
       row.children.splice(index, 0, newCell);
+
+      const entry = groupedChildren.get(row.id);
+      entry.splice(index, 0, [newCell.id]);
+      groupedChildren.set(row.id, entry);
     }
   }
   moveColumn(from: number, to: number) {
