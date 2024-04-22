@@ -100,10 +100,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables = "# These are the variables available in this component, from the component's parents.\n\n";
+    let helpVariables = "# Globals:" +
+      "\n%course = # the course that the user is manipulating" +
+      "\n%user = # the user associated to the page which is being displayed" +
+      "\n%viewer = # the user that is currently logged in watching the page" +
+      "\n%item = # used to access the values of the collection being iterated";
 
-    for (const variable of this.view.getAllVariables()) {
-      helpVariables += "%" + variable.name + " = " + variable.value + "\n";
+    if (this.view.getAllVariables().length > 0) {
+      helpVariables += "\n\n# Inherited from the component's parents:\n";
+
+      for (const variable of this.view.getAllVariables()) {
+        helpVariables += "%" + variable.name + " = " + variable.value + "\n";
+      }
     }
 
     this.additionalToolsTabs = [
