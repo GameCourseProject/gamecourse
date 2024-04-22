@@ -147,7 +147,8 @@ import {
   featherUsers,
   featherVolume2,
   featherX,
-  featherXCircle
+  featherXCircle,
+  featherChevronDown
 } from "@ng-icons/feather-icons";
 
 import {
@@ -476,6 +477,7 @@ import {
       featherVolume2,
       featherX,
       featherXCircle,
+      featherChevronDown,
 
       jamCircleF,
       jamDownload,
