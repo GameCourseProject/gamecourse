@@ -297,15 +297,23 @@
         [labelPosition]="'right'">
       </app-input-checkbox>
     </div>
-    <app-input-text
-      [id]="'table-orderingBy'"
-      [(value)]="viewToEdit.orderingBy"
-      [topLabel]="'Default Column Ordering'"
-      [helperPosition]="'right'"
-      [helperText]="'The way the table is ordered by default. Must be DESC or ASC followed by : column index'"
-      [placeholder]="'e.g. ASC: 0'"
-      [classList]="'mt-2'"
-    ></app-input-text>
+    <div class="grid grid-cols-2 gap-8 items-end">
+      <app-input-select
+        [id]="'table-ordering-type'"
+        [(value)]="viewToEdit.orderingByType"
+        [options]="getColumnOrderingTypeOptions()"
+        [placeholder]="'Select ordering type'"
+        [topLabel]="'Default Column Ordering'"
+        [helperText]="'The way the table is ordered by default. E.g. ASC 0 means that the content of the table will be ordered based on the content of the column at index 0, ascending.'"
+        [helperPosition]="'right'"
+      ></app-input-select>
+      <app-input-select
+        [id]="'table-ordering-index'"
+        [(value)]="viewToEdit.orderingByIndex"
+        [options]="getColumnOrderingIndexOptions()"
+        [placeholder]="'Select index of column to be ordered'"
+      ></app-input-select>
+    </div>
   </ng-container>
 
   <!--------------------------------------------------->
@@ -502,26 +510,22 @@
             (click)="tableSelectedTab = 'Overall'">Overall</button>
     <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Rows' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
             (click)="tableSelectedTab = 'Rows'">Rows</button>
-    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Cells' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
-            (click)="tableSelectedTab = 'Cells'">Cells</button>
+    <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Columns' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
+            (click)="tableSelectedTab = 'Columns'">Columns</button>
   </div>
   <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
     <ng-container *ngIf="tableSelectedTab == 'Overall'" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 
     <!--------------------- Rows Tab --------------------->
     <ng-container *ngIf="tableSelectedTab == 'Rows'">
-      <span class="block font-semibold text-lg mb-2">Current Rows:</span>
+      <span class="block font-semibold text-lg mb-2">Current Body Rows:</span>
       <div class="flex flex-col gap-2">
-        <span>Header</span>
-        <div *ngFor="let row of this.viewToEdit.headerRows; index as i" class="flex flex-row items-center">
-          <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
-        </div>
-        <button *ngIf="this.viewToEdit.headerRows.length <= 0" class="btn btn-secondary" (click)="addHeaderRow(0)">Add Header Row</button>
-        <div class="divider"></div>
-        <span>Body</span>
         <div *ngFor="let row of this.viewToEdit.bodyRows; index as i">
           <div class="flex flex-row items-center">
-            <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center mr-2">Row {{row.uniqueId}}</div>
+            <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{row === rowToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
+                 (click)="selectRow(row)">
+              Row Template {{row.id}}
+            </div>
             <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
             <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
             <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
@@ -539,9 +543,9 @@
 
     </ng-container>
 
-    <!--------------------- Cells Tab --------------------->
-    <ng-container *ngIf="tableSelectedTab == 'Cells'">
-      <span class="block font-semibold text-lg mb-2">Current Cells:</span>
+    <!--------------------- Columns Tab --------------------->
+    <ng-container *ngIf="tableSelectedTab == 'Columns'">
+      <span class="block font-semibold text-lg mb-2">Current Columns:</span>
       <div class="flex flex-col gap-2">
         <div class="flex flex-row items-center gap-3 divide-x-2 divide-base-100">
           <div *ngFor="let col of [].constructor(getNumberOfCols()); index as i" class="w-full flex justify-center">
@@ -1142,7 +1146,7 @@
   <app-input-select
     [id]="'chart-progress-size'"
     [(value)]="viewToEdit.options.size"
-    [options]="getProgressSizes()"
+    [options]="getProgressSizeOptions()"
     [placeholder]="'Select size'"
     [topLabel]="'Dimensions'"
     [classList]="'mb-4'">

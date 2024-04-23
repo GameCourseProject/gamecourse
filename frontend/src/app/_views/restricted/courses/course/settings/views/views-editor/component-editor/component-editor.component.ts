@@ -237,7 +237,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.lengthChange = this.view.lengthChange;
       viewToEdit.info = this.view.info;
       viewToEdit.ordering = this.view.ordering;
-      viewToEdit.orderingBy = this.view.orderingBy;
+
+      if (this.view.orderingBy) {
+        [viewToEdit.orderingByType, viewToEdit.orderingByIndex] = this.view.orderingBy.split(": ");
+      }
     }
     else { // have rows prepared in case user switches type to table
       viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
@@ -330,7 +333,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.lengthChange = from.lengthChange;
       to.info = from.info;
       to.ordering = from.ordering;
-      to.orderingBy = from.orderingBy;
+      to.orderingBy = from.orderingByType + ": " + from.orderingByIndex;
     }
     else if (to instanceof ViewChart) {
       to.chartType = from.chartType;
@@ -398,8 +401,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
 
-  getProgressSizes() {
+  getProgressSizeOptions() {
     return [{ value: "xs", text: "Extra Small" }, { value: "sm", text: "Small" }, { value: "md", text: "Medium" }, { value: "lg", text: "Large" }]
+  }
+
+  getColumnOrderingTypeOptions() {
+    return [{ value: "ASC", text: "ASC - Ascending" }, { value: "DESC", text: "DESC - Descending" }]
+  }
+
+  getColumnOrderingIndexOptions() {
+    return this.viewToEdit.headerRows[0].children.map((e, index) => { return { value: index.toString(), text: "Column " + index }})
   }
 
   /*** --------------------------------------------- ***/
@@ -602,15 +613,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
   }
-  addHeaderRow(index: number) {
-    const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
-    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
-    for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
-      newRow.children.push(newCell);
-    }
-    this.viewToEdit.headerRows.splice(index, 0, newRow);
-  }
   deleteBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
   }
@@ -704,7 +706,8 @@ export interface ViewManageData {
   lengthChange?: boolean,
   info?: boolean,
   ordering?: boolean,
-  orderingBy?: string,
+  orderingByType?: string,
+  orderingByIndex?: string,
   src?: string,
   chartType?: ChartType,
   data?: string,
