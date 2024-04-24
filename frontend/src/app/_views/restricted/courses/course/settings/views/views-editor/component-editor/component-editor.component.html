@@ -456,16 +456,20 @@
           [id]="'design-id'"
           [(value)]="viewToEdit.cssId"
           [topLabel]="'ID'"
-          [helperText]="'Html\'s ID tag'"
+          [helperText]="'HTML\'s ID tag'"
           [helperPosition]="'right'"
         ></app-input-text>
         <app-input-text
           [id]="'design-class'"
           [(value)]="viewToEdit.classList"
           [topLabel]="'Class'"
-          [helperText]="'Html\'s Class tag'"
+          [helperText]="'HTML\'s Class tag'"
           [helperPosition]="'right'"
         ></app-input-text>
+        <span class="text-xs pb-2">
+          You can use <a class="link" href="https://tailwindcss.com">Tailwind CSS</a> and <a class="link" href="https://daisyui.com/components/">DaisyUI</a> classes.
+        </span>
+
         <app-input-text
           [id]="'design-style'"
           [(value)]="viewToEdit.style"
