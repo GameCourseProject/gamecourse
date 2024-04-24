@@ -64,7 +64,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridVertical?: boolean = false;
 
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
-  functions: CustomFunction[];
   ELfunctions: CustomFunction[];
   namespaces: string[];
 
@@ -124,43 +123,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
 
       { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
-        customFunctions: this.functions.concat(this.ELfunctions), courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
+        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
 
-      { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
+      { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
     ]
   }
 
   async getCustomFunctions(courseID: number){
-    this.functions = await this.api.getRuleFunctions(courseID).toPromise();
-
-    // Remove 'gc' and 'transform' functions (not needed for rule editor)
-    let index = this.functions.findIndex(fn => fn.keyword === 'gc');
-    this.functions.splice(index, 1);
-    index = this.functions.findIndex(fn => fn.keyword === 'transform');
-    this.functions.splice(index, 1);
-
-    for (let i = 0; i < this.functions.length; i++) {
-      let description = this.functions[i].description;
-      const startMarker = ":example:";
-      const startIndex = description.indexOf(startMarker);
-
-      if (startIndex !== -1) {
-        this.functions[i].example = description.substring(startIndex + startMarker.length).trim();
-        description = description.substring(0, startIndex).trim();
-      }
-
-      // Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
-      this.functions[i].description = description;
-      this.functions[i].returnType = "-> " + this.functions[i].returnType;
-    }
-
     this.ELfunctions = await this.api.getELFunctions().toPromise();
-    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
+    //this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
 
     // set namespaces of functions
-    let names = this.functions.concat(this.ELfunctions)
+    let names = this.ELfunctions
       .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
     this.namespaces = Array.from(new Set(names).values())
     moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
