@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
   CodeTab,
   CustomFunction,
@@ -70,7 +70,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
-    public service: ViewEditorService
+    public service: ViewEditorService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   async ngOnInit() {
@@ -100,19 +101,23 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables = "# Globals:" +
-      "\n%course = # id of the course that the user is manipulating" +
-      "\n%user = # id of the user associated to the page which is being displayed" +
-      "\n%viewer = # id of the user that is currently logged in watching the page" +
-      "\n%item = # used to access the values of the collection being iterated";
+    let helpVariables = "";
 
     if (this.view.getAllVariables().length > 0) {
-      helpVariables += "\n\n# Inherited from the component's parents:\n";
+      helpVariables += "# Inherited from the component's parents:\n";
 
       for (const variable of this.view.getAllVariables()) {
         helpVariables += "%" + variable.name + " = " + variable.value + "\n";
       }
     }
+
+    if (helpVariables.length > 0) helpVariables += '\n\n';
+
+    helpVariables += "# Globals:" +
+      "\n%course = # id of the course that the user is manipulating" +
+      "\n%user = # id of the user associated to the page which is being displayed" +
+      "\n%viewer = # id of the user that is currently logged in watching the page" +
+      "\n%item = # used to access the values of the collection being iterated";
 
     this.additionalToolsTabs = [
       { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true }, // FIXME
@@ -627,6 +632,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.cellToEdit = null;
     }
     else {
+      this.cellToEdit = null;
+      this.cdr.detectChanges(); // Manually trigger change detection
       this.cellToEdit = cell;
     }
   }

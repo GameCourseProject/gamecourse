@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -49,7 +49,8 @@ export class BBAnyComponent implements OnInit {
     private route: ActivatedRoute,
     public selection: ViewSelectionService,
     private history: HistoryService,
-    public service: ViewEditorService
+    public service: ViewEditorService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -163,11 +164,10 @@ export class BBAnyComponent implements OnInit {
     // and recalculates visibility since it might have changed
     this.visible = false;
     this.selection.setRearrange(true);
-    setTimeout(() => {
-      this.selection.setRearrange(false);
-      this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
-        (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
-    }, 100);
+    this.cdr.detectChanges();
+    this.selection.setRearrange(false);
+    this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+      (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({
       viewsByAspect: this.service.viewsByAspect,
