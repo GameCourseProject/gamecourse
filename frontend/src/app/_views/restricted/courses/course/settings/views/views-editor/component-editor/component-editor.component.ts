@@ -124,7 +124,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
 
       { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
-        customFunctions: this.functions.concat(this.ELfunctions), courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview. Here don't need to put it inside {}" },
+        customFunctions: this.functions.concat(this.ELfunctions), courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
 
       { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces
