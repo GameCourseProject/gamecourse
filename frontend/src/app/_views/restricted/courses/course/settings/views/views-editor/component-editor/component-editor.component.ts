@@ -2,7 +2,7 @@ import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from 
 import {
   CodeTab,
   CustomFunction,
-  OutputTab,
+  OutputTab, PreviewTab,
   ReferenceManualTab
 } from "src/app/_components/inputs/code/input-code/input-code.component";
 import {View, ViewMode} from "src/app/_domain/views/view";
@@ -46,6 +46,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
 
   show: boolean = true;
+  courseId: number;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
 
@@ -62,7 +63,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
 
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
   functions: CustomFunction[];
   ELfunctions: CustomFunction[];
   namespaces: string[];
@@ -76,8 +77,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   async ngOnInit() {
     this.route.parent.params.subscribe(async params => {
-      const courseID = parseInt(params.id);
-      await this.getCustomFunctions(courseID);
+      this.courseId = parseInt(params.id);
+      await this.getCustomFunctions(this.courseId);
       this.prepareAdditionalTools();
     })
   }
@@ -120,8 +121,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       "\n%item = # used to access the values of the collection being iterated";
 
     this.additionalToolsTabs = [
-      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true }, // FIXME
-      { name: 'Preview expression', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview expression', value: null },
+      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
+
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
+        customFunctions: this.functions.concat(this.ELfunctions), courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview. Here don't need to put it inside {}" },
+
       { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
         namespaces: this.namespaces
       },

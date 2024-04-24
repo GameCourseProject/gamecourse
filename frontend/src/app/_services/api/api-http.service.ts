@@ -1888,6 +1888,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res));
   }
 
+  public previewExpression(courseID: number, expression: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      expression: expression
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'previewExpression');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res));
+  }
+
   public previewRule(ruleData: RuleManageData): Observable<void> {
     const data = {
       courseId: ruleData.course,
