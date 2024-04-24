@@ -29,6 +29,7 @@ export abstract class View {
   private _variables?: Variable[];
   private _events?: Event[];
 
+  public fakeIndex?: number;      // Only used in the view editor to show numbers of rows and cells
 
   protected constructor(mode: ViewMode, type: ViewType, id: number, viewRoot: number, parent: View, aspect: Aspect,
                         cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,

@@ -524,14 +524,26 @@
           <div class="flex flex-row items-center">
             <div class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{row === rowToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
                  (click)="selectRow(row)">
-              Row Template {{row.id}}
+              Row Template {{row.fakeIndex}}
             </div>
-            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
-            <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
-            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
-            <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
-            <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
-            <button class="btn btn-ghost rounded-full p-1" (click)="deleteBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+            <div class="tooltip" [attr.data-tip]="'Move one row up'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i-1)" [disabled]="i == 0"><ng-icon [name]="'tabler-arrow-narrow-up'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Move one row down'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="moveBodyRow(i, i+1)" [disabled]="i == viewToEdit.bodyRows.length - 1"><ng-icon [name]="'tabler-arrow-narrow-down'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Add one row above'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i)"><ng-icon [name]="'tabler-row-insert-top'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Add one row under'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="addBodyRow(i+1)"><ng-icon [name]="'tabler-row-insert-bottom'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Edit'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="selectRow(row)"><ng-icon [name]="'jam-pencil'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Delete'">
+              <button class="btn btn-ghost rounded-full p-1" (click)="deleteBodyRow(i)"><ng-icon name="feather-X" size="1.5rem" class="text-error"/></button>
+            </div>
           </div>
           <!-- Row editor -->
           <div *ngIf="row === rowToEdit" class="bg-base-100 my-4 rounded-xl p-6">
@@ -549,11 +561,21 @@
       <div class="flex flex-col gap-2">
         <div class="flex flex-row items-center gap-3 divide-x-2 divide-base-100">
           <div *ngFor="let col of [].constructor(getNumberOfCols()); index as i" class="w-full flex justify-center">
-            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i-1)"><ng-icon [name]="'tabler-arrow-narrow-left'" [size]="'1.5rem'"/></button>
-            <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i+1)"><ng-icon [name]="'tabler-arrow-narrow-right'" [size]="'1.5rem'"/></button>
-            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i)"><ng-icon [name]="'tabler-column-insert-left'" [size]="'1.5rem'"/></button>
-            <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i+1)"><ng-icon [name]="'tabler-column-insert-right'" [size]="'1.5rem'"/></button>
-            <button class="shrink btn btn-ghost rounded-full p-0" (click)="deleteColumn(i)"><ng-icon name="feather-X" size="1.5rem" color="red"/></button>
+            <div class="tooltip" [attr.data-tip]="'Move column to the left'">
+              <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i-1)" [disabled]="i == 0"><ng-icon [name]="'tabler-arrow-narrow-left'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Move column to the right'">
+              <button class="shrink btn btn-ghost rounded-full p-0" (click)="moveColumn(i, i+1)" [disabled]="i == getNumberOfCols() - 1"><ng-icon [name]="'tabler-arrow-narrow-right'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Add column to the left'">
+              <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i)"><ng-icon [name]="'tabler-column-insert-left'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Add column to the right'">
+              <button class="shrink btn btn-ghost rounded-full p-0" (click)="addColumn(i+1)"><ng-icon [name]="'tabler-column-insert-right'" [size]="'1.5rem'"/></button>
+            </div>
+            <div class="tooltip" [attr.data-tip]="'Delete'">
+              <button class="shrink btn btn-ghost rounded-full p-0" (click)="deleteColumn(i)"><ng-icon name="feather-X" size="1.5rem" class="text-error"/></button>
+            </div>
           </div>
         </div>
         <span>Header</span>
@@ -561,7 +583,7 @@
           <div *ngFor="let cell of this.viewToEdit.headerRows[i].children;"
                 class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
                 (click)="selectCell(cell)">
-              {{$any(cell).text ?? "Cell"}}
+              {{$any(cell).text?.length > 0 ? $any(cell).text : "Header Cell"}}
           </div>
         </div>
         <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.headerRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
@@ -571,7 +593,7 @@
           <div *ngFor="let cell of this.viewToEdit.bodyRows[i].children;"
                 class="w-full rounded-md border border-dashed border-neutral/50 p-2 text-center hover:cursor-pointer {{cell === cellToEdit ? 'bg-base-100' : 'transition hover:bg-base-100'}}"
                 (click)="selectCell(cell)">
-            Cell
+            {{"Row " + row.fakeIndex + " Cell " + cell.fakeIndex}}
           </div>
         </div>
         <button *ngIf="getNumberOfCols() <= 0 && this.viewToEdit.bodyRows?.length > 0" class="btn btn-secondary" (click)="addColumn(0)" >Add Column</button>
@@ -579,7 +601,7 @@
         <!-- Cell editor -->
         <div *ngIf="cellToEdit" class="mt-10 bg-base-100 rounded-xl p-6">
           <div class="prose">
-            <h3>Edit Cell</h3>
+            <h3>Edit Cell {{cellToEdit.fakeIndex}}</h3>
           </div>
           <app-component-editor *ngIf="cellToEdit" [view]="cellToEdit" [saveButton]="true"/>
         </div>

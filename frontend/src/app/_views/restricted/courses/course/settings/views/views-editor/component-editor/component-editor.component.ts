@@ -246,6 +246,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       if (this.view.orderingBy) {
         [viewToEdit.orderingByType, viewToEdit.orderingByIndex] = this.view.orderingBy.split(": ");
       }
+
+      viewToEdit.bodyRows.forEach((row, rowIndex) => {
+        row.children.forEach((cell, cellIndex) => {
+          cell.fakeIndex = cellIndex + 1;
+        });
+        row.fakeIndex = rowIndex + 1;
+      })
     }
     else { // have rows prepared in case user switches type to table
       viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
@@ -613,10 +620,14 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell " + (i + 1));
+      newCell.fakeIndex = i + 1;
       newRow.children.push(newCell);
     }
+    newRow.fakeIndex = this.viewToEdit.bodyRows.length + 1;
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
+
+    addToGroupedChildren(newRow, this.view.id);
   }
   deleteBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
@@ -656,6 +667,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     for (let row of this.viewToEdit.bodyRows) {
       const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
+      newCell.fakeIndex = row.children.length + 1;
       row.children.splice(index, 0, newCell);
 
       const entry = groupedChildren.get(row.id);
