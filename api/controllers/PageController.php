@@ -7,7 +7,6 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
-use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;
@@ -16,7 +15,6 @@ use GameCourse\Views\Component\CoreComponent;
 use GameCourse\Views\Category\Category;
 use GameCourse\Views\Template\CoreTemplate;
 use GameCourse\Views\Template\CustomTemplate;
-use GameCourse\Views\ViewType\ViewType;
 
 /**
  * This is the Page controller, which holds API endpoints for
@@ -890,6 +888,11 @@ class PageController
         API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
     }
 
+    /**
+     * Previews an expression of the Language Expression as Text.
+     *
+     * @throws Exception
+     */
     public function previewExpression()
     {
         API::requireValues('courseId', 'expression');
@@ -901,17 +904,9 @@ class PageController
 
         $expression = API::getValue("expression", "string");
 
-        // Translate Expression Language FIXME: move out of here
         $viewerId = Core::getLoggedUser()->getId();
 
-        $viewType = ViewType::getViewTypeById("text");
-        $view = ["text" => $expression];
-        $viewType->compile($view);
-        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
-        Core::dictionary()->setVisitor($visitor);
-        $viewType->evaluate($view, $visitor);
-
-        API::response($view["text"]);
+        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId));
     }
 
 

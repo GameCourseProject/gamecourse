@@ -1,9 +1,7 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {basicSetup, EditorView} from "codemirror";
-import {Compartment, EditorState, Range, RangeSet, StateEffect, StateField} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
-import {Decoration, gutter, GutterMarker, hoverTooltip} from "@codemirror/view";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
@@ -12,6 +10,12 @@ import {basicLight} from "cm6-theme-basic-light";
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
+
+// @ts-ignore
+import {Decoration, gutter, GutterMarker, hoverTooltip} from "@codemirror/view";
+
+// @ts-ignore
+import {Compartment, EditorState, Range, RangeSet, StateEffect, StateField} from "@codemirror/state";
 
 // @ts-ignore
 import {
@@ -212,12 +216,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
         let myFunction = tab.customFunctions.find(option => option.keyword === word);
-        let text = `<span class="text-secondary font-semibold">${myFunction.keyword + " (" +
+        let text = `<span class="text-secondary font-semibold text-sm">${myFunction.keyword + " (" +
                     myFunction.args.map(arg => {
                       return (arg === myFunction.args[0] ? "" : " ") +
                                 `<span class="text-primary">${arg.name + (arg.optional ? "? " : "") + ": " + arg.type}</span>`;
                     }).join("") + ")"} <br /></span>
-            ${myFunction.description}`;
+            <span class="text-sm">${myFunction.description}</span>`;
 
         return {
           pos: start,
@@ -322,6 +326,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           },
           " &light .cm-tooltip.cm-completionInfo": {
             backgroundColor: "#bec1c4 !important"
+          },
+          ".cm-completionInfo": {
+            fontSize: "0.875rem",
+            left: "0 !important",
+            top: "100% !important",
+            width: "300px !important"
+          },
+          ".cm-tooltip.cm-tooltip-autocomplete > ul": {
+            width: "300px !important"
           }
         }),
         this.makeGutter(tab)

@@ -6,8 +6,10 @@ use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\CreationMode;
+use GameCourse\Views\ExpressionLanguage\EvaluateVisitor;
 use GameCourse\Views\Logging\Logging;
 use GameCourse\Views\ViewHandler;
+use GameCourse\Views\ViewType\ViewType;
 use Utils\Cache;
 use Utils\CronJob;
 use Utils\Time;
@@ -695,6 +697,23 @@ class Page
         $defaultAspect = Aspect::getAspectBySpecs($pageInfo["course"], null, null);
         $sortedAspects = [$aspect->getData($aspectParams), $defaultAspect->getData($aspectParams)];
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, true);
+    }
+
+    /**
+     * Previews an expression of the Language Expression as Text.
+     *
+     * @throws Exception
+     */
+    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId)
+    {
+        $viewType = ViewType::getViewTypeById("text");
+        $view = ["text" => $expression];
+        $viewType->compile($view);
+        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
+        Core::dictionary()->setVisitor($visitor);
+        $viewType->evaluate($view, $visitor);
+
+        return $view["text"];
     }
 
 
