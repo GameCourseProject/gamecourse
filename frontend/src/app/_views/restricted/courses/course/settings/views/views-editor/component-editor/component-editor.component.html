@@ -482,9 +482,27 @@
           [helperText]="'HTML\'s Class tag'"
           [helperPosition]="'right'"
         ></app-input-text>
-        <span class="text-xs pb-2">
-          You can use <a class="link" href="https://tailwindcss.com">Tailwind CSS</a> and <a class="link" href="https://daisyui.com/components/">DaisyUI</a> classes.
-        </span>
+
+        <p [ngSwitch]="viewToEdit.type" class="text-xs font-normal mt-1">
+          <span *ngSwitchCase="ViewType.BUTTON">
+            Check out <a class="link link-secondary" href="https://daisyui.com/components/button/" target="_blank">DaisyUI's Buttons</a>.
+            You can also use <a class="link" href="https://tailwindcss.com" target="_blank">Tailwind CSS</a>.
+          </span>
+          <span *ngSwitchCase="ViewType.BLOCK">
+            Check out <a class="link link-secondary" href="https://daisyui.com/components/card/" target="_blank">DaisyUI's Cards</a>.
+            You can also use <a class="link" href="https://tailwindcss.com" target="_blank">Tailwind CSS</a>.
+          </span>
+          <span *ngSwitchCase="ViewType.TEXT">
+            Check out <a class="link link-secondary" href="https://tailwindcss.com/docs/font-size" target="_blank">Tailwind's Typography</a> and <a class="link link-secondary" href="https://daisyui.com/docs/colors/#-2" target="_blank">Daisy UI's Colors</a>.
+          </span>
+          <span *ngSwitchCase="ViewType.ICON">
+            Check out <a class="link link-secondary" href="https://daisyui.com/docs/colors/#-2" target="_blank">Daisy UI's Colors</a>.
+            You can also use <a class="link" href="https://tailwindcss.com" target="_blank">Tailwind CSS</a>.
+          </span>
+          <span *ngSwitchDefault>
+            You can use <a class="link" href="https://daisyui.com/components/" target="_blank">Daisy UI</a> and <a class="link" href="https://tailwindcss.com" target="_blank">Tailwind CSS</a>.
+          </span>
+        </p>
 
         <app-input-text
           [id]="'design-style'"
