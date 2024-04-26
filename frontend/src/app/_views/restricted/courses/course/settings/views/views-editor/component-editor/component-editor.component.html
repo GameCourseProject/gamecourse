@@ -1,6 +1,22 @@
-<ng-container *ngIf="viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
-<ng-container *ngIf="viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
+<div class="alert alert-info shadow-md mb-4 text-sm font-normal" *ngIf="view.parent && view.parent.type !== ViewType.ROW && higherInHierarchy.length > 0">
+  <ng-icon name="feather-info" size="1.5rem" color="fillCurrent"></ng-icon>
+  <div class="flex flex-col items-start">
+    <p>This component is inherited from another version that is higher in the hierarchy. Making changes here will create a new instance that:</p>
+    <ul class="list-disc ml-5">
+      <li><span class="font-semibold">Won't</span> affect the versions that are <span class="font-semibold">higher</span> in the hierarchy ({{getHigherInHierarchyString()}})</li>
+      <li><span class="font-semibold">Will</span> be propagated to the versions that are <span class="font-semibold">lower</span> in the hierarchy</li>
+    </ul>
+    <p>If you intend to change this component everywhere, edit it in the version that is higher in the hierarchy instead.</p>
+  </div>
+</div>
 
+<ng-container *ngIf="!loading && viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+<ng-container *ngIf="!loading && viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
+
+<!-- Loader -->
+<div class="w-full flex justify-center" *ngIf="loading">
+  <app-spinner [size]="'md'" [color]="'primary'"></app-spinner>
+</div>
 
 <!--------------------------------------------------->
 <!----- EDITOR FOR TEXT, BUTTONS, BLOCKS, ETC. ------>

@@ -35,6 +35,7 @@ import {
   viewsDeleted
 } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
+import {Aspect} from "../../../../../../../../_domain/views/aspects/aspect";
 
 @Component({
   selector: 'app-component-editor',
@@ -45,6 +46,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   @Input() view: View;
   @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
 
+  loading: boolean = true;
   show: boolean = true;
   courseId: number;
 
@@ -67,6 +69,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   ELfunctions: CustomFunction[];
   namespaces: string[];
 
+  higherInHierarchy: {aspect: Aspect, view: View}[] = [];
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -79,10 +83,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.courseId = parseInt(params.id);
       await this.getCustomFunctions(this.courseId);
       this.prepareAdditionalTools();
+      this.higherInHierarchy = this.service.higherInHierarchy(this.view);
+      this.loading = false;
     })
   }
 
   ngOnChanges() {
+    this.loading = true;
     this.viewToEdit = this.initViewToEdit();
 
     if (this.view instanceof ViewTable) {
@@ -95,6 +102,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.viewToPreview = _.cloneDeep(this.view);
       this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
+    this.loading = false;
   }
 
   // Additional Tools --------------------------------------
@@ -111,7 +119,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       }
     }
 
-    if (helpVariables.length > 0) helpVariables += '\n\n';
+    if (helpVariables.length > 0) helpVariables += '\n';
 
     helpVariables += "# Globals:" +
       "\n%course = # id of the course that the user is manipulating" +
@@ -247,6 +255,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  getHigherInHierarchyString() {
+    return this.higherInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
+  }
 
   changeComponentType(view: View, type: ViewType): View {
     let newView;

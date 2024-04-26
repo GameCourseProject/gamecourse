@@ -118,6 +118,17 @@ export class ViewEditorService {
     this.aspectsToAdd = [];
   }
 
+  higherInHierarchy(item: View) {
+    const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
+
+    const higherInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.viewerRole, e.aspect.viewerRole))
+      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.userRole, e.aspect.userRole))
+    );
+
+    return higherInHierarchy;
+  }
+
 
   /*********************************** VIEWS ACTIONS  ***********************************/
 
