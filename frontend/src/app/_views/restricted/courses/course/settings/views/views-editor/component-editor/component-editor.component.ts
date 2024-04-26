@@ -1,8 +1,8 @@
-import {Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
   CodeTab,
   CustomFunction,
-  OutputTab,
+  OutputTab, PreviewTab,
   ReferenceManualTab
 } from "src/app/_components/inputs/code/input-code/input-code.component";
 import {View, ViewMode} from "src/app/_domain/views/view";
@@ -35,6 +35,7 @@ import {
   viewsDeleted
 } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
+import {Aspect} from "../../../../../../../../_domain/views/aspects/aspect";
 
 @Component({
   selector: 'app-component-editor',
@@ -45,7 +46,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   @Input() view: View;
   @Input() saveButton?: boolean = false;        // Adds a button at the end of all the options to save them
 
+  loading: boolean = true;
   show: boolean = true;
+  courseId: number;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
 
@@ -62,26 +65,31 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
 
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab)[];
-  functions: CustomFunction[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
   ELfunctions: CustomFunction[];
   namespaces: string[];
+
+  higherInHierarchy: {aspect: Aspect, view: View}[] = [];
 
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
-    public service: ViewEditorService
+    public service: ViewEditorService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   async ngOnInit() {
     this.route.parent.params.subscribe(async params => {
-      const courseID = parseInt(params.id);
-      await this.getCustomFunctions(courseID);
+      this.courseId = parseInt(params.id);
+      await this.getCustomFunctions(this.courseId);
       this.prepareAdditionalTools();
+      this.higherInHierarchy = this.service.higherInHierarchy(this.view);
+      this.loading = false;
     })
   }
 
   ngOnChanges() {
+    this.loading = true;
     this.viewToEdit = this.initViewToEdit();
 
     if (this.view instanceof ViewTable) {
@@ -94,64 +102,49 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.viewToPreview = _.cloneDeep(this.view);
       this.viewToPreview.switchMode(ViewMode.PREVIEW);
     }
+    this.loading = false;
   }
 
   // Additional Tools --------------------------------------
   // code from the rules editor
 
   prepareAdditionalTools() {
-    let helpVariables = "# Globals:" +
-      "\n%course = # id of the course that the user is manipulating" +
-      "\n%user = # id of the user associated to the page which is being displayed" +
-      "\n%viewer = # id of the user that is currently logged in watching the page" +
-      "\n%item = # used to access the values of the collection being iterated";
+    let helpVariables = "";
 
     if (this.view.getAllVariables().length > 0) {
-      helpVariables += "\n\n# Inherited from the component's parents:\n";
+      helpVariables += "# Inherited from the component's parents:\n";
 
       for (const variable of this.view.getAllVariables()) {
         helpVariables += "%" + variable.name + " = " + variable.value + "\n";
       }
     }
 
+    if (helpVariables.length > 0) helpVariables += '\n';
+
+    helpVariables += "# Globals:" +
+      "\n%course = # id of the course that the user is manipulating" +
+      "\n%user = # id of the user associated to the page which is being displayed" +
+      "\n%viewer = # id of the user that is currently logged in watching the page" +
+      "\n%item = # used to access the values of the collection being iterated";
+
     this.additionalToolsTabs = [
-      { name: 'Available variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true }, // FIXME
-      { name: 'Preview expression', type: "output", active: false, running: null, debugOutput: false, runMessage: 'Preview expression', value: null },
-      { name: 'Manual', type: "manual", active: false, customFunctions: this.functions.concat(this.ELfunctions),
+      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
+
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
+        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
+
+      { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
     ]
   }
 
   async getCustomFunctions(courseID: number){
-    this.functions = await this.api.getRuleFunctions(courseID).toPromise();
-
-    // Remove 'gc' and 'transform' functions (not needed for rule editor)
-    let index = this.functions.findIndex(fn => fn.keyword === 'gc');
-    this.functions.splice(index, 1);
-    index = this.functions.findIndex(fn => fn.keyword === 'transform');
-    this.functions.splice(index, 1);
-
-    for (let i = 0; i < this.functions.length; i++) {
-      let description = this.functions[i].description;
-      const startMarker = ":example:";
-      const startIndex = description.indexOf(startMarker);
-
-      if (startIndex !== -1) {
-        this.functions[i].example = description.substring(startIndex + startMarker.length).trim();
-        description = description.substring(0, startIndex).trim();
-      }
-
-      // Now 'description' contains the modified string without ':example:' and 'exampleText' contains the extracted text.
-      this.functions[i].description = description;
-      this.functions[i].returnType = "-> " + this.functions[i].returnType;
-    }
-
     this.ELfunctions = await this.api.getELFunctions().toPromise();
-    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
+    //this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
 
     // set namespaces of functions
-    let names = this.functions.concat(this.ELfunctions)
+    let names = this.ELfunctions
       .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
     this.namespaces = Array.from(new Set(names).values())
     moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
@@ -237,7 +230,17 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.lengthChange = this.view.lengthChange;
       viewToEdit.info = this.view.info;
       viewToEdit.ordering = this.view.ordering;
-      viewToEdit.orderingBy = this.view.orderingBy;
+
+      if (this.view.orderingBy) {
+        [viewToEdit.orderingByType, viewToEdit.orderingByIndex] = this.view.orderingBy.split(": ");
+      }
+
+      viewToEdit.bodyRows.forEach((row, rowIndex) => {
+        row.children.forEach((cell, cellIndex) => {
+          cell.fakeIndex = cellIndex + 1;
+        });
+        row.fakeIndex = rowIndex + 1;
+      })
     }
     else { // have rows prepared in case user switches type to table
       viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
@@ -252,6 +255,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  getHigherInHierarchyString() {
+    return this.higherInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
+  }
 
   changeComponentType(view: View, type: ViewType): View {
     let newView;
@@ -330,7 +337,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.lengthChange = from.lengthChange;
       to.info = from.info;
       to.ordering = from.ordering;
-      to.orderingBy = from.orderingBy;
+      to.orderingBy = from.orderingByType + ": " + from.orderingByIndex;
     }
     else if (to instanceof ViewChart) {
       to.chartType = from.chartType;
@@ -398,8 +405,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return [{ value: "butt", text: "Butt" }, { value: "square", text: "Square" }, { value: "round", text: "Round" }]
   }
 
-  getProgressSizes() {
+  getProgressSizeOptions() {
     return [{ value: "xs", text: "Extra Small" }, { value: "sm", text: "Small" }, { value: "md", text: "Medium" }, { value: "lg", text: "Large" }]
+  }
+
+  getColumnOrderingTypeOptions() {
+    return [{ value: "ASC", text: "ASC - Ascending" }, { value: "DESC", text: "DESC - Descending" }]
+  }
+
+  getColumnOrderingIndexOptions() {
+    return this.viewToEdit.headerRows[0].children.map((e, index) => { return { value: index.toString(), text: "Column " + index }})
   }
 
   /*** --------------------------------------------- ***/
@@ -597,19 +612,14 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY);
     const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
     for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
+      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell " + (i + 1));
+      newCell.fakeIndex = i + 1;
       newRow.children.push(newCell);
     }
+    newRow.fakeIndex = this.viewToEdit.bodyRows.length + 1;
     this.viewToEdit.bodyRows.splice(index, 0, newRow);
-  }
-  addHeaderRow(index: number) {
-    const newRow = ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER);
-    const iterations = this.getNumberOfCols() == 0 ? 1 : this.getNumberOfCols();
-    for (let i = 0; i < iterations; i++) {
-      const newCell = ViewText.getDefault(newRow, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header");
-      newRow.children.push(newCell);
-    }
-    this.viewToEdit.headerRows.splice(index, 0, newRow);
+
+    addToGroupedChildren(newRow, this.view.id);
   }
   deleteBodyRow(index: number) {
     this.viewToEdit.bodyRows.splice(index, 1);
@@ -625,6 +635,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.cellToEdit = null;
     }
     else {
+      this.cellToEdit = null;
+      this.cdr.detectChanges(); // Manually trigger change detection
       this.cellToEdit = cell;
     }
   }
@@ -647,6 +659,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     for (let row of this.viewToEdit.bodyRows) {
       const newCell = ViewText.getDefault(row, this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Cell");
+      newCell.fakeIndex = row.children.length + 1;
       row.children.splice(index, 0, newCell);
 
       const entry = groupedChildren.get(row.id);
@@ -704,7 +717,8 @@ export interface ViewManageData {
   lengthChange?: boolean,
   info?: boolean,
   ordering?: boolean,
-  orderingBy?: string,
+  orderingByType?: string,
+  orderingByIndex?: string,
   src?: string,
   chartType?: ChartType,
   data?: string,

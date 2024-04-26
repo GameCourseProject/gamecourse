@@ -1,9 +1,7 @@
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {basicSetup, EditorView} from "codemirror";
-import {Compartment, EditorState, Range, RangeSet, StateEffect, StateField} from "@codemirror/state";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
-import {Decoration, hoverTooltip, gutter, GutterMarker} from "@codemirror/view";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
@@ -12,6 +10,12 @@ import {basicLight} from "cm6-theme-basic-light";
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
+
+// @ts-ignore
+import {Decoration, gutter, GutterMarker, hoverTooltip} from "@codemirror/view";
+
+// @ts-ignore
+import {Compartment, EditorState, Range, RangeSet, StateEffect, StateField} from "@codemirror/state";
 
 // @ts-ignore
 import {
@@ -29,6 +33,8 @@ import {python, pythonLanguage} from "@codemirror/lang-python";
 import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
+import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {AlertService, AlertType} from "../../../../_services/alert.service";
 
 @Component({
   selector: 'app-input-code',
@@ -48,7 +54,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
 
-  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab )[] = [
+  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[] = [
     { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false, debugOutput: false }];
 
@@ -84,9 +90,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   //selection: string
 
+  expressionToPreview: string = "";
+  outputPreview: any = null;
+
   constructor(
     private themeService: ThemingService,
-    private updateService: UpdateService
+    private updateService: UpdateService,
+    private api: ApiHttpService
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -98,7 +108,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.tabs.length; i++){
       views[i] = new EditorView();
 
-      if (this.tabs[i].type === 'code'){
+      if (this.tabs[i].type === 'code' || this.tabs[i].type === 'preview'){
         this.setUpKeywords((this.tabs[i] as CodeTab));
 
       } else if (this.tabs[i].type === 'manual') {
@@ -175,11 +185,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       if (this.tabs[i].type === 'code') {
         this.initCodeMirror(i, (this.tabs[i] as CodeTab));
       }
+      else if (this.tabs[i].type === 'preview') {
+        this.initCodeMirror(i, (this.tabs[i] as PreviewTab));
+      }
     }
   }
 
   // Initializes code editor and basic setup
-  initCodeMirror(index: number, tab: CodeTab) {
+  initCodeMirror(index: number, tab: CodeTab | PreviewTab) {
 
     const element = document.getElementById(this.getId(index, tab.name)) as Element;
     let tabSize = new Compartment;
@@ -203,12 +216,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       let word = text.slice(start - from, end - from);
       if (this.isInFunctions(word)){
         let myFunction = tab.customFunctions.find(option => option.keyword === word);
-        let text = `<span class="text-secondary font-semibold">${myFunction.keyword + " (" +
+        let text = `<span class="text-secondary font-semibold text-sm">${myFunction.keyword + " (" +
                     myFunction.args.map(arg => {
                       return (arg === myFunction.args[0] ? "" : " ") +
                                 `<span class="text-primary">${arg.name + (arg.optional ? "? " : "") + ": " + arg.type}</span>`;
                     }).join("") + ")"} <br /></span>
-            ${myFunction.description}`;
+            <span class="text-sm">${myFunction.description}</span>`;
 
         return {
           pos: start,
@@ -258,9 +271,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if ((update.docChanged && update.viewportChanged) || update.selectionSet){
-            this.valueChange.emit(view.state.doc.toString());
-            if (query) this.toggleAlert(view, query);
-            this.isCompleted.emit(!this.showAlert);
+            if (tab.type === 'code') {
+              this.valueChange.emit(view.state.doc.toString());
+              if (query) this.toggleAlert(view, query);
+              this.isCompleted.emit(!this.showAlert);
+            }
+            else if (tab.type === 'preview') {
+              this.expressionToPreview = view.state.doc.toString();
+            }
             //insertCommentCommand(view);
 
             // Manages selection for 'preview function' functionality
@@ -308,6 +326,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           },
           " &light .cm-tooltip.cm-completionInfo": {
             backgroundColor: "#bec1c4 !important"
+          },
+          ".cm-completionInfo": {
+            fontSize: "0.875rem",
+            left: "0 !important",
+            top: "100% !important",
+            width: "300px !important"
+          },
+          ".cm-tooltip.cm-tooltip-autocomplete > ul": {
+            width: "300px !important"
           }
         }),
         this.makeGutter(tab)
@@ -497,29 +524,51 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     return null;
   }
 
-  isRunning(tab: OutputTab | CodeTab): boolean {
-    if ((tab as OutputTab).type === "output") {
+  isRunning(tab: CodeTab | OutputTab | ReferenceManualTab | PreviewTab): boolean {
+    if ((tab as OutputTab).type === "output" || (tab as PreviewTab).type === "preview") {
       return (tab as OutputTab).running;
     }
     return null;
   }
 
-  simulateOutput(indexTab: number, tab: OutputTab | CodeTab){
-    if ((tab as OutputTab).type === "output") {
+  simulateOutput(indexTab: number, tab: OutputTab | CodeTab | PreviewTab){
+    if ((tab as OutputTab).type === "output" || (tab as PreviewTab).type === "preview") {
       (tab as OutputTab).running = true;
       this.runOutput.emit(indexTab);
     }
   }
 
-  refreshingOutput(indexTab: number, tab: OutputTab | CodeTab) {
-    if ((tab as OutputTab).type === "output") {
+  refreshingOutput(indexTab: number, tab: OutputTab | CodeTab | PreviewTab) {
+    if ((tab as OutputTab).type === "output" || (tab as PreviewTab).type === "preview") {
       if ((tab as OutputTab).value) {
         (tab as OutputTab).running = false;
         return;
       }
       this.refreshOutput.emit(indexTab);
     }
+  }
 
+  async previewExpression(tab: PreviewTab){
+    (tab as PreviewTab).running = true;
+
+    let toPreview = this.expressionToPreview
+      .replace(/#.*/g, '') // Remove comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/(\s*:\s*)/g, ':') // Replace ' : ', ' :' and ': ' with ':'
+      .trim(); // Trim any trailing whitespace or newline characters
+
+    // Put expression between {} if it isn't already
+    if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
+      toPreview = `{${toPreview.trim()}}`;
+    }
+
+    try {
+      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
+    } catch {
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong... You might want to check your expression.");
+    }
+
+    (tab as PreviewTab).running = false;
   }
 
   /*** --------------------------------------------- ***/
@@ -608,6 +657,23 @@ export interface CodeTab {
   customKeywords?: string[],                       // Personalized keywords
   customFunctions?: CustomFunction[],              // Personalized functions
   readonly?: boolean,                              // Make editor readonly
+}
+
+export interface PreviewTab {
+  name: string,                                    // Name of the tab that will appear above
+  type: "preview",                                 // Specifies type of tab in editor
+  active: boolean,                                 // Indicates which tab is active (only one at a time!)
+  debug: boolean,                                  // Allows debug to occur or not (in case of metadata should be false, for instance)
+  highlightQuery?: string,                         // Text to highlight
+  value?: string,                                  // Value on init
+  mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  placeholder?: string,                            // Message to show by default
+  nrLines?: number,                                // Number of lines already added to the editor. Default = 10 lines
+  customKeywords?: string[],                       // Personalized keywords
+  customFunctions?: CustomFunction[],              // Personalized functions
+  readonly?: boolean,                              // Make editor readonly
+  running: boolean,                                // Boolean to show if code is running in background
+  courseId: number
 }
 
 export interface OutputTab {

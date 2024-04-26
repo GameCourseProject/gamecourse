@@ -121,7 +121,5 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
       }
     }
   }
-  console.log(viewTree);
-  console.log(groupedChildren);
   return viewTree;
 }
