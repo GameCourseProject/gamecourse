@@ -866,26 +866,21 @@ class PageController
      * Renders a given page for previewing.
      *
      * @param int $pageId
-     * @param int $userId (optional)
+     * @param int $userId
+     * @param int $viewerId
      * @throws Exception
      */
     public function previewPage()
     {
-        API::requireValues("pageId");
+        API::requireValues("pageId", "viewerId", "userId");
 
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
-        
-        $course = $page->getCourse();
-        $courseId = $course->getId();
 
-        $userRole = API::getValue("userRole", "string");
-        $userRoleId = $userRole ? Role::getRoleId($userRole, $courseId) : null;
+        $viewerId = API::getValue("viewerId", "int");
+        $userId = API::getValue("userId", "int");
 
-        $viewerRole = API::getValue("viewerRole", "string");
-        $viewerRoleId = $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null;
-
-        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
+        API::response($page->previewPage($viewerId, $userId));
     }
 
     /**

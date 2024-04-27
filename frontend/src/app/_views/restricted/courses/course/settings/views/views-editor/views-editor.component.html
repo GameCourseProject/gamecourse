@@ -203,6 +203,10 @@
             <ng-icon [ngClass]="{'invisible' : 'mock' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
             Layout preview (mock data)
           </a></li>
+          <li (click)="doAction('Final preview (real data)')" class="{{!page ? 'disabled' : ''}}"><a>
+            <ng-icon [ngClass]="{'invisible' : 'real' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
+            Final preview (real data)
+          </a></li>
         </ul>
       </div>
 
@@ -413,3 +417,36 @@
   (submitBtnClicked)="saveBeforePreview()"
   (onClose)="cancelPreview()"
 ></app-simple-modal>
+
+
+<!-- Preview As -->
+<app-modal
+  *ngIf="!loading.users"
+  [id]="'preview-as'"
+  [templateRef]="PREVIEW_AS"
+  [header]="'Preview With Real Data'"
+  [closeBtnText]="'Close'"
+  [submitBtnText]="'Preview'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="previewWithRealData()"
+  (onClose)="cancelPreview()"
+/>
+<ng-template #PREVIEW_AS>
+  Select the users for which you want to preview this page.
+  <app-input-select
+    [id]="'viewer-to-preview'"
+    [(value)]="viewerToPreview"
+    [options]="viewersToPreview"
+    [placeholder]="'Select user'"
+    [topLabel]="'Viewer'"
+    [required]="true"
+  ></app-input-select>
+  <app-input-select
+    [id]="'user-to-preview'"
+    [(value)]="userToPreview"
+    [options]="usersToPreview"
+    [placeholder]="'Select user'"
+    [topLabel]="'User'"
+    [required]="true"
+  ></app-input-select>
+</ng-template>

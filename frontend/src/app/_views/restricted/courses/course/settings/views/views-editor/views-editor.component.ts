@@ -5,32 +5,39 @@ import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
 
 import {initPageToManage, PageManageData} from "../views/views.component";
-import { ViewType } from "src/app/_domain/views/view-types/view-type";
-import { trigger, style, animate, transition, group } from '@angular/animations';
-import { View, ViewMode } from "src/app/_domain/views/view";
-import { buildView } from "src/app/_domain/views/build-view/build-view";
+import {ViewType} from "src/app/_domain/views/view-types/view-type";
+import {animate, group, style, transition, trigger} from '@angular/animations';
+import {View, ViewMode} from "src/app/_domain/views/view";
+import {buildView} from "src/app/_domain/views/build-view/build-view";
 import * as _ from "lodash"
-import { ViewSelectionService } from "src/app/_services/view-selection.service";
-import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
-import { User } from "src/app/_domain/users/user";
-import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, setGroupedChildren, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
-import { Role } from "src/app/_domain/roles/role";
-import { Template } from "src/app/_domain/views/templates/template";
-import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
-import { ViewButtonDatabase, ViewButton } from "src/app/_domain/views/view-types/view-button";
-import { ViewChartDatabase, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { ViewIconDatabase, ViewIcon } from "src/app/_domain/views/view-types/view-icon";
-import { ViewImageDatabase, ViewImage } from "src/app/_domain/views/view-types/view-image";
-import { ViewRowDatabase, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { ViewTableDatabase, ViewTable } from "src/app/_domain/views/view-types/view-table";
-import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/view-text";
+import {ViewSelectionService} from "src/app/_services/view-selection.service";
+import {ModalService} from 'src/app/_services/modal.service';
+import {AlertService, AlertType} from "src/app/_services/alert.service";
+import {ViewBlock, ViewBlockDatabase} from "src/app/_domain/views/view-types/view-block";
+import {User} from "src/app/_domain/users/user";
+import {Aspect} from "src/app/_domain/views/aspects/aspect";
+import {
+  buildViewTree,
+  getFakeId,
+  groupedChildren,
+  initGroupedChildren,
+  setGroupedChildren,
+  viewsDeleted
+} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {Role} from "src/app/_domain/roles/role";
+import {Template} from "src/app/_domain/views/templates/template";
+import {ViewCollapse, ViewCollapseDatabase} from "src/app/_domain/views/view-types/view-collapse";
+import {ViewButton, ViewButtonDatabase} from "src/app/_domain/views/view-types/view-button";
+import {ViewChart, ViewChartDatabase} from "src/app/_domain/views/view-types/view-chart";
+import {ViewIcon, ViewIconDatabase} from "src/app/_domain/views/view-types/view-icon";
+import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/view-image";
+import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
+import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
+import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
 import html2canvas from "html2canvas";
-import { HistoryService } from "src/app/_services/history.service";
-import { ViewEditorService } from "src/app/_services/view-editor.service";
-import { Subscription } from "rxjs";
+import {HistoryService} from "src/app/_services/history.service";
+import {ViewEditorService} from "src/app/_services/view-editor.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-views-editor',
@@ -60,7 +67,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     page: true,
     components: true,
     aspects: true,
-    action: false
+    action: false,
+    users: true
   };
 
   view: View;                                     // Full view tree of the page
@@ -76,6 +84,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   aspects: Aspect[];                              // Aspects saved
   manageAspects: boolean = false;
+
+  usersToPreview: { value: number, text: string }[];
+  viewersToPreview: { value: number, text: string }[];
+  userToPreview: number;
+  viewerToPreview: number;
 
   options: Option[];
   activeSubMenu: SubMenu;
@@ -238,17 +251,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
 
     this.loading.aspects = false;
-  }
-
-  sortAspects() {
-    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
-      if (_.isEqual(a, new Aspect(null, null))) return -1;
-      else if (_.isEqual(b, new Aspect(null, null))) return 1;
-      else if (a.viewerRole == null && b.viewerRole != null) return 1;
-      else if (a.viewerRole != null && b.viewerRole == null) return -1;
-      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
-      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
-    });
   }
 
   async getComponents(): Promise<void> {
@@ -663,7 +665,20 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ---------------------------------------------------------------
   // Aspects -------------------------------------------------------
+  // ---------------------------------------------------------------
+
+  sortAspects() {
+    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
+      if (_.isEqual(a, new Aspect(null, null))) return -1;
+      else if (_.isEqual(b, new Aspect(null, null))) return 1;
+      else if (a.viewerRole == null && b.viewerRole != null) return 1;
+      else if (a.viewerRole != null && b.viewerRole == null) return -1;
+      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
+      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
+    });
+  }
 
   discardAspects() {
     this.manageAspects = false;
@@ -685,7 +700,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   switchToAspect(aspect: Aspect) {
     this.service.selectedAspect = aspect;
     this.view = this.service.getSelectedView();
-    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+
+    if (this.view && this.editable) {
+      this.view.switchMode(ViewMode.EDIT);
+      this.previewMode = 'raw';
+    }
+
     this.manageAspects = false;
   }
 
@@ -693,7 +713,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     return _.isEqual(this.service.selectedAspect, aspect);
   }
 
+
+  // ----------------------------------------------------------------
   // Components -----------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveComponent() {
     let component = _.cloneDeep(this.selection.get());
@@ -751,7 +774,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Templates --------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Templates ------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveTemplate() {
     let image;
@@ -795,7 +820,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ----------------------------------------------------------------
   // Previews -------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async doAction(action: string): Promise<void>{
     if (action === 'Manage Versions') {
@@ -830,8 +857,21 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.page) {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
-          ModalService.openModal('save-before-preview')
-        } else this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+          ModalService.openModal('save-before-preview');
+        } else {
+          await this.previewWithMockData();
+        }
+      }
+    }
+    else if (action === 'Final preview (real data)') {
+      if (this.page) {
+        this.previewMode = 'real';
+        if (this.history.hasUndo()) {
+          ModalService.openModal('save-before-preview');
+        }
+        else {
+          await this.selectUsersToPreview();
+        }
       }
     }
   }
@@ -839,14 +879,66 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   async saveBeforePreview() {
     if (this.page) {
       await this.saveChanges();
-      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
-      ModalService.closeModal('save-before-preview')
+
+      if (this.previewMode === 'mock') {
+        await this.previewWithMockData();
+        ModalService.closeModal('save-before-preview');
+      }
+      else if (this.previewMode === 'real') {
+        ModalService.closeModal('save-before-preview');
+        await this.selectUsersToPreview();
+      }
     }
   }
 
   cancelPreview() {
     this.previewMode = "raw";
+    this.loading.users = true;
   }
+
+  async selectUsersToPreview() {
+    await this.getViewersToPreview();
+    await this.getUsersToPreview();
+    this.loading.users = false;
+    ModalService.openModal('preview-as');
+  }
+
+  async getViewersToPreview() {
+    let res;
+    if (this.service.selectedAspect.viewerRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.viewerRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.viewersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async getUsersToPreview() {
+    let res;
+    if (this.service.selectedAspect.userRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.userRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.usersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async previewWithRealData() {
+    this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
+    ModalService.closeModal('preview-as');
+  }
+
+  async previewWithMockData() {
+    try {
+      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+    }
+    catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong...");
+      this.previewMode = "raw";
+      //console.log(e);
+    }
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/

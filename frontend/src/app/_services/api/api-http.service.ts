@@ -3547,17 +3547,13 @@ export class ApiHttpService {
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
-  public previewPage(pageID: number, aspect: Aspect): Observable<View> {
+  public previewPage(pageID: number, viewerID: number, userID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'previewPage');
       qs.push('pageId', pageID);
-      if (aspect.userRole) {
-        qs.push('userRole', aspect.userRole);
-      }
-      if (aspect.viewerRole) {
-        qs.push('viewerRole', aspect.viewerRole);
-      }
+      qs.push('viewerId', viewerID);
+      qs.push('userId', userID);
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
