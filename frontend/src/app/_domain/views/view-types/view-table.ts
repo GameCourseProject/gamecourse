@@ -7,7 +7,13 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {
+  getFakeId,
+  groupedChildren,
+  viewTree,
+  viewsAdded,
+  addVariantToGroupedChildren, addToGroupedChildren
+} from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 import { buildComponent } from "src/app/_views/restricted/courses/course/settings/views/views-editor/views-editor.component";
 import { ViewText } from "./view-text";
@@ -233,9 +239,11 @@ export class ViewTable extends View {
     // Replace IDs in children
     for (const headerRow of this.headerRows) {
       headerRow.replaceWithFakeIds();
+      headerRow.parent.id = this.id;
     }
     for (const row of this.bodyRows) {
       row.replaceWithFakeIds();
+      row.parent.id = this.id;
     }
   }
 
@@ -289,97 +297,41 @@ export class ViewTable extends View {
     }
   }
 
-  insertColumn(to: 'left'|'right', of: number, minID: number): number { // TODO: refactor view editor
-    return null;
-    // // Insert in headers
-    // for (let headerRow of this.headerRows) {
-    //   const defaultCell = ViewText.getDefault(--minID, headerRow.id, headerRow.role);
-    //   if (to === 'left') headerRow.children.insertAtIndex(of, defaultCell);
-    //   else if (to === 'right') headerRow.children.insertAtIndex(of + 1, defaultCell);
-    // }
-    //
-    // // Insert in body rows
-    // for (let row of this.rows) {
-    //   const defaultCell = ViewText.getDefault(--minID, row.id, row.role);
-    //   if (to === 'left') row.children.insertAtIndex(of, defaultCell);
-    //   else if (to === 'right') row.children.insertAtIndex(of + 1, defaultCell);
-    // }
-    //
-    // this.nrColumns++;
-    // return this.headerRows.length + this.rows.length;
+  // fixes the entire view to be visible to an aspect
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      this.replaceWithFakeIds();
+      this.aspect = newAspect;
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      addToGroupedChildren(this, this.parent?.id ?? null)
+      for (const child of this.headerRows) {
+        child.replaceAspect(aspectsToReplace, newAspect);
+      }
+      for (const child of this.bodyRows) {
+        child.replaceAspect(aspectsToReplace, newAspect);
+      }
+    }
+    else {
+      for (const child of this.headerRows) {
+        child.modifyAspect(aspectsToReplace, newAspect);
+      }
+      for (const child of this.bodyRows) {
+        child.modifyAspect(aspectsToReplace, newAspect);
+      }
+    }
   }
 
-  insertRow(type: 'header'|'body', to: 'up'|'down', of: number, minID: number): number { // TODO: refactor view editor
-    return null;
-    // const rowID = --minID;
-    // const newRow = new ViewRow(rowID, rowID, this.id, this.role, ViewMode.EDIT,
-    //   [...Array(this.nrColumns)].map(x => ViewText.getDefault(--minID, rowID, this.role)),
-    //   null, null, null, null,
-    //   View.VIEW_CLASS + ' ' + ViewRow.ROW_CLASS + ' ' + (type === 'header' ? ViewTable.TABLE_HEADER_CLASS : ViewTable.TABLE_BODY_CLASS));
-    //
-    // if (to === 'up') type === 'header' ? this.headerRows.insertAtIndex(of, newRow) : this.rows.insertAtIndex(of, newRow);
-    // else if (to === 'down') type === 'header' ? this.headerRows.insertAtIndex(of + 1, newRow) : this.rows.insertAtIndex(of + 1, newRow);
-    //
-    // return this.nrColumns + 1;
-  }
-
-  deleteColumn(index: number) { // TODO: refactor view editor
-    // // Delete from headers
-    // for (let headerRow of this.headerRows)
-    //   headerRow.children.removeAtIndex(index);
-    //
-    // // Delete body rows
-    // for (let row of this.rows)
-    //   row.children.removeAtIndex(index);
-    //
-    // this.nrColumns--;
-  }
-
-  deleteRow(type: 'header'|'body', index: number) { // TODO: refactor view editor
-    // if (type === 'header') this.headerRows.removeAtIndex(index);
-    // else if (type === 'body') this.rows.removeAtIndex(index);
-  }
-
-  moveColumn(to: 'left'|'right', of: number) { // TODO: refactor view editor
-    // // Ignore edges
-    // if ((to === 'left' && of === 0) || (to === 'right' && of === this.nrColumns - 1)) return;
-    //
-    // // Move in headers
-    // for (let headerRow of this.headerRows) {
-    //   const cellToMove = headerRow.children[of];
-    //   headerRow.children.removeAtIndex(of);
-    //   if (to === 'left') headerRow.children.insertAtIndex(of - 1, cellToMove);
-    //   else if (to === 'right') headerRow.children.insertAtIndex(of + 1, cellToMove);
-    // }
-    //
-    // // Move in body rows
-    // for (let row of this.rows) {
-    //   const cellToMove = row.children[of];
-    //   row.children.removeAtIndex(of);
-    //   if (to === 'left') row.children.insertAtIndex(of - 1, cellToMove);
-    //   else if (to === 'right') row.children.insertAtIndex(of + 1, cellToMove);
-    // }
-  }
-
-  moveRow(type: 'header'|'body', to: 'up'|'down', of: number) { // TODO: refactor view editor
-    // // Ignore edges
-    // if ((to === 'up' && of === 0) || (to === 'down' && of === ((type === 'header' ? this.headerRows.length : this.rows.length) - 1))) return;
-    //
-    // const rowToMove = type === 'header' ? this.headerRows[of] : this.rows[of];
-    // type === 'header' ? this.headerRows.removeAtIndex(of) : this.rows.removeAtIndex(of);
-    // if (to === 'up') type === 'header' ? this.headerRows.insertAtIndex(of - 1, rowToMove) : this.rows.insertAtIndex(of - 1, rowToMove);
-    // else if (to === 'down') type === 'header' ? this.headerRows.insertAtIndex(of + 1, rowToMove) : this.rows.insertAtIndex(of + 1, rowToMove);
-  }
-
-  modifyAspect(old: Aspect, newAspect: Aspect) {
-    if (_.isEqual(old, this.aspect)) {
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
       this.aspect = newAspect;
     }
-    for (const headerRow of this.headerRows) {
-      headerRow.modifyAspect(old, newAspect);
+    for (const child of this.headerRows) {
+      child.replaceAspect(aspectsToReplace, newAspect);
     }
-    for (const row of this.bodyRows) {
-      row.modifyAspect(old, newAspect);
+    for (const child of this.bodyRows) {
+      child.replaceAspect(aspectsToReplace, newAspect);
     }
   }
 

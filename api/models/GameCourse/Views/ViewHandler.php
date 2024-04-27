@@ -68,8 +68,8 @@ class ViewHandler
         // Register view categories available
         Category::setupViewCategories();
 
-        // TODO: register core components
-        // TODO: register page templates
+        // Register core components
+        CoreComponent::setupCoreComponents();
     }
 
 
@@ -478,10 +478,45 @@ class ViewHandler
         $viewTreeByAspect = [];
         $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null)->getData("id, viewerRole, userRole");
         $aspects = Aspect::getAspectsInViewTree($viewRoot);
+
+        $hierarchy = Role::getCourseRoles($courseId, false, true);
+
         foreach ($aspects as $aspect) {
-            $viewTreeOfAspect = self::renderView($viewRoot, [$aspect, $defaultAspect]);
-            $aspectRoles = ["viewerRole" => $aspect["viewerRole"] ? Role::getRoleName($aspect["viewerRole"]) : null, 
-                            "userRole" => $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null];
+            $viewerRoleName = $aspect["viewerRole"] ? Role::getRoleName($aspect["viewerRole"]) : null;
+            $userRoleName = $aspect["userRole"] ? Role::getRoleName($aspect["userRole"]) : null;
+
+            // Add aspects that are higher in hierarchy by checking roles above and all possible combinations
+            $sortedAspects = [];
+
+            $parentsOfViewer = [$viewerRoleName];
+            if (isset($aspect["viewerRole"])) {
+                $parentsOfViewer = array_merge($parentsOfViewer, Role::getParentNamesOfRole($hierarchy, null, $aspect["viewerRole"]));
+            }
+
+            $parentsOfUser = [$userRoleName];
+            if (isset($aspect["userRole"])) {
+                $parentsOfUser = array_merge($parentsOfUser, Role::getParentNamesOfRole($hierarchy, null, $aspect["userRole"]));
+            }
+
+            foreach ($parentsOfUser as $userRole) {
+                $userRoleId = null;
+                if (isset($userRole)) $userRoleId = Role::getRoleId($userRole, $courseId);
+
+                foreach ($parentsOfViewer as $viewerRole) {
+                    $viewerRoleId = null;
+                    if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
+
+                    if (isset($userRoleId) || isset($viewerRoleId)) {
+                        $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
+                        $sortedAspects[] = $parentAspect;
+                    }
+                }
+            }
+            $sortedAspects[] = $defaultAspect;
+
+            // Render and associate with aspect
+            $viewTreeOfAspect = self::renderView($viewRoot, $sortedAspects);
+            $aspectRoles = ["viewerRole" => $viewerRoleName, "userRole" => $userRoleName];
             $viewTreeByAspect[] = ["aspect" => $aspectRoles, "view" => $viewTreeOfAspect];
         }
         return ["viewTree" => $viewTree, "viewTreeByAspect" => $viewTreeByAspect];
@@ -762,34 +797,36 @@ class ViewHandler
                 // Update view
                 $views[$view["id"]] = $view;
                 $logs[] = new EditLog($view["id"]);
+            }
+            // Move view (if changed)
+            // WARNING: this isn't creating logs, it's moving the views immediately
+            // I needed this to not lose track of the positions when moving to an already occupied position
+            if (isset($parent["parent"])) {
+                $prevPos = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $view["id"]], "*");
 
-                // Move view (if changed)
-                // WARNING: this isn't creating logs, it's moving the views immediately
-                // I needed this to not lose track of the positions when moving to an already occupyied position
-                if (isset($parent["parent"])) {
-                    $prevPos = (int)Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "child" => $view["id"]], "position");
-                    if (isset($prevPos) && $prevPos != $parent["pos"]) {
+                if ((isset($prevPos) && $prevPos["parent"] == $parent["parent"] && $prevPos["position"] != $parent["pos"]) || !isset($prevPos)) {
+                    // If the position is already occupied, need to disoccupy it first to keep the constraint
+                    $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
+                    if (!empty($occupying)) {
+                        Core::database()->executeQuery("SET @i=0");
+                        $sql = "SELECT MAX(if(@i=position,@i:=position+1,@i)) FROM " . self::TABLE_VIEW_PARENT . " WHERE parent = " . $parent["parent"] . " ORDER BY position";
+                        $tempPos = intval(Core::database()->executeQuery($sql)->fetchColumn());
 
-                        // If the position is already occupied, need to disoccupy it first to keep the constraint
-                        $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
-                        if (!empty($occupying)) {
-                            Core::database()->executeQuery("SET @i=0");
-                            $sql = "SELECT MAX(if(@i=position,@i:=position+1,@i)) FROM " . self::TABLE_VIEW_PARENT . " WHERE parent = " . $parent["parent"] . " ORDER BY position";
-                            $tempPos = intval(Core::database()->executeQuery($sql)->fetchColumn());
-
-                            self::moveView($occupying["child"], 
-                                ["parent" => $parent["parent"], "pos" => $parent["pos"]], 
-                                ["parent" => $parent["parent"], "pos" => $tempPos]
-                            );
-                        }
-
-                        self::moveView($view["id"], 
+                        self::moveView($occupying["child"],
+                            ["parent" => $parent["parent"], "pos" => $parent["pos"]],
+                            ["parent" => $parent["parent"], "pos" => $tempPos]
+                        );
+                    }
+                    else if (isset($prevPos)) {
+                        self::moveView($view["id"],
                             ["parent" => $parent["parent"], "pos" => $prevPos],
                             ["parent" => $parent["parent"], "pos" => $parent["pos"]]
                         );
                     }
                 }
-
+                else if (isset($prevPos) && $prevPos["parent"] != $parent["parent"]) {
+                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $prevPos["parent"], "position" => $prevPos["position"]]);
+                }
             }
 
             // Translate view of a specific type

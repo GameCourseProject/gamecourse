@@ -39,6 +39,14 @@ CREATE TABLE IF NOT EXISTS user_page_history(
 );
 SET FOREIGN_KEY_CHECKS=1;
 
+CREATE TABLE avatar(
+     user                        int unsigned PRIMARY KEY,
+     selected                    TEXT,
+     colors                      TEXT,
+
+     FOREIGN key(user) REFERENCES user(id) ON DELETE CASCADE
+);
+
 
 /*** ---------------------------------------------------- ***/
 /*** ------------------ Course tables ------------------- ***/
@@ -58,6 +66,7 @@ CREATE TABLE course(
     isVisible                   boolean DEFAULT TRUE,
     roleHierarchy               text,
     theme                       varchar(50) DEFAULT NULL,
+    avatars                     boolean DEFAULT TRUE,
 
     UNIQUE key(name, year),
     FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE

@@ -115,17 +115,31 @@
       ></app-input-select-role>
 
       <!-- Message -->
-      <app-input-textarea
-        [id]="'announcement'"
-        [maxLength]="150"
-        [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
-        [(value)]="notificationToSend"
-        [form]="fSend"
-        [placeholder]="'Write the message you want to send here (maximum of 150 characters)'"
-        [label]="'Message'"
-        [required]="true"
-        [classList]="'mt-2'"
-      ></app-input-textarea>
+      <div class="md:grid grid-cols-2 mt-4 gap-4">
+        <div class="flex flex-col">
+          <h3 class="font-semibold py-2">Message</h3>
+          <span class="text-sm mb-4">
+            Your message can have up to 150 characters.
+            You can also use expressions from the Expression Language,
+            just make sure to put them <b> between curly brackets &#123; } </b>.
+          </span>
+          <app-input-textarea
+            [id]="'announcement'"
+            [maxLength]="150"
+            [maxLengthErrorMessage]="'Your message is too long: maximum of 150 characters'"
+            [(value)]="notificationToSend"
+            [form]="fSend"
+            [required]="true"
+            [placeholder]="'Write the message you want to send here'"
+          ></app-input-textarea>
+        </div>
+        <app-input-code
+          [id]="'manual'"
+          [showTabs]="false"
+          [tabs]="manualTab"
+          [title]="'Manual'"
+        ></app-input-code>
+      </div>
 
       <div class="grid md:grid-cols-2 gap-4 mt-10">
         <!-- Schedule -->

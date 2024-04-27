@@ -29,7 +29,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                        // Classes to add
   @Input() disabled?: boolean;                                        // Make it disabled
-  @Input() colors?: string[];                                          // Custom swatches of colors
+  @Input() colors?: string[];                                         // Custom swatches of colors
 
   @Input() topLabel?: string;                                         // Top label text
   @Input() leftLabel?: string;                                        // Text on prepended label
@@ -37,11 +37,13 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   @Input() helperText?: string;                                       // Text for helper tooltip
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';      // Helper position
 
+  @Input() position?: 'top' | 'end';                                  // Position of the picker
+
   // Validity
   @Input() pattern?: string = this.COLOR_PATTERN;                     // The pattern to be applied
   @Input() required?: boolean;                                        // Make it required
   @Input() minLength?: number = 7;                                    // Enforce a minimum length
-  @Input() maxLength?: number = 7;                                    // Enforce a maximum length
+  @Input() maxLength?: number | null = 7;                             // Enforce a maximum length
 
   // Errors
   @Input() patternErrorMessage?: string =
@@ -75,7 +77,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
   initPicker() {
     this.pickr = Pickr.create({
       el: '#' + this.id,
-      container: '#color-picker',
+      container: '#color-picker-' + this.id,
       theme: 'monolith',
       appClass: 'relative !top-0 !left-0 !shadow-none',
       useAsButton: true,
@@ -84,9 +86,9 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       lockOpacity: true,
       comparison: false,
       components: {
-        preview: this.colors == null,
+        preview: true,
         opacity: false,
-        hue: this.colors == null,
+        hue: true,
       },
       swatches: this.colors ?? [
         '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#C62828', '#B71C1C',
@@ -108,7 +110,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
       ],
 
     }).on('init', pickr => {
-      if (pickr.getSelectedColor())
+      if (pickr.getSelectedColor() && this.pattern != "")
         this.valueChange.emit(pickr.getSelectedColor().toHEXA().toString(0));
 
     }).on('change', color => {
@@ -127,7 +129,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     this.show = true;
     this.pickr.show();
 
-    const picker = document.getElementById('color-picker');
+    const picker = document.getElementById('color-picker-' + this.id);
     picker.classList.remove('hidden');
   }
 
@@ -135,7 +137,7 @@ export class InputColorComponent implements OnInit, AfterViewInit {
     this.show = false;
     this.pickr?.hide();
 
-    const picker = document.getElementById('color-picker');
+    const picker = document.getElementById('color-picker-' + this.id);
     picker.classList.add('hidden');
   }
 

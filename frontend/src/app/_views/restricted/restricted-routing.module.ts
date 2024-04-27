@@ -21,6 +21,10 @@ const routes: Routes = [
         loadChildren: () => import('./profile/profile.module').then(mod => mod.ProfileModule)
       },
       {
+        path: 'avatar',
+        loadChildren: () => import('./avatar/avatar.module').then(mod => mod.AvatarModule)
+      },
+      {
         path: 'courses',
         loadChildren: () => import('./courses/courses.module').then(mod => mod.CoursesModule),
       },

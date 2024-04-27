@@ -31,6 +31,7 @@ import {RulesComponent} from "./settings/rules/section-rules/rules/rules.compone
 import { AutogameComponent } from './settings/autogame/autogame.component';
 import { NotificationsComponent } from './settings/notifications/notifications.component';
 import { DBExplorerComponent } from './settings/db-explorer/db-explorer.component';
+import {SettingsComponent} from "./settings/settings/settings.component";
 
 
 @NgModule({
@@ -60,7 +61,8 @@ import { DBExplorerComponent } from './settings/db-explorer/db-explorer.componen
     SubmitParticipationPageComponent,
     SkillPageComponent,
     NotificationsComponent,
-    DBExplorerComponent
+    DBExplorerComponent,
+    SettingsComponent
   ],
     imports: [
         CommonModule,

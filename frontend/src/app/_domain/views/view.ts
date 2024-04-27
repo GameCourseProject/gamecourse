@@ -29,6 +29,7 @@ export abstract class View {
   private _variables?: Variable[];
   private _events?: Event[];
 
+  public fakeIndex?: number;      // Only used in the view editor to show numbers of rows and cells
 
   protected constructor(mode: ViewMode, type: ViewType, id: number, viewRoot: number, parent: View, aspect: Aspect,
                         cssId?: string, classList?: string, styles?: string, visibilityType?: VisibilityType,
@@ -197,7 +198,9 @@ export abstract class View {
 
   abstract switchMode(mode: ViewMode);
 
-  abstract modifyAspect(old: Aspect, newAspect: Aspect);
+  abstract modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect);
+
+  abstract replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect);
 
   getAllVariables() : Variable[] {
     if (this.parent) {
@@ -296,7 +299,7 @@ export interface ViewDatabase {
 }
 
 export enum ViewMode {
-  DISPLAY = 'display',    // final appearence and behaviour
+  DISPLAY = 'display',    // final appearance and behaviour
   PREVIEW = 'preview',    // used in the edit component modal
   EDIT = 'edit',          // default in views editor
   REARRANGE = 'rearrange' // rearrange in views editor

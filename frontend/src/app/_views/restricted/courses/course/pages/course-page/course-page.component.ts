@@ -3,18 +3,10 @@ import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
 
 import {Course} from "../../../../../../_domain/courses/course";
 import {Page} from "../../../../../../_domain/views/pages/page";
-import {Skill} from "../../../../../../_domain/modules/config/personalized-config/skills/skill";
-import {SkillTree} from "../../../../../../_domain/modules/config/personalized-config/skills/skill-tree";
-import {TableDataType} from "../../../../../../_components/tables/table-data/table-data.component";
-import {Tier} from "../../../../../../_domain/modules/config/personalized-config/skills/tier";
 import {User} from "../../../../../../_domain/users/user";
 import {View} from "../../../../../../_domain/views/view";
 
 import {ApiHttpService} from "../../../../../../_services/api/api-http.service";
-import {AlertService, AlertType} from "../../../../../../_services/alert.service";
-
-import {Moment} from "moment";
-import {environment} from "../../../../../../../environments/environment";
 
 @Component({
   selector: 'app-course-page',
@@ -30,29 +22,6 @@ export class CoursePageComponent implements OnInit {
 
   page: Page;
   pageView: View;
-
-  // FIXME: hard-coded Skill Tree
-  skillTrees: SkillTree[];
-  skillTreesInfo: {
-    skillTreeId: number,
-    loading: {tiers: boolean, skills: boolean},
-    data: {tiers: {type: TableDataType, content: any}[][], skills: {type: TableDataType, content: any}[][]},
-    tiers: Tier[],
-    skills: Skill[]
-  }[] = [];
-  availableWildcards: number;
-  info: {[skillID: number]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}};
-  vcIcon: string = environment.apiEndpoint + '/modules/VirtualCurrency/assets/default.png';
-
-  // FIXME: hard-coded Streaks
-  streaks: Streak[] = [];
-  userStreaksInfo: {id: number, nrCompletions: number, progress: number, deadline: Moment}[];
-  streaksTotal: number;
-
-  // FIXME: hard-coded Gold Exchange
-  hasExchanged: boolean;
-  wallet: number;
-  exchanging: boolean;
 
   constructor(
     private api: ApiHttpService,
@@ -111,101 +80,10 @@ export class CoursePageComponent implements OnInit {
 
   async getPage(pageID: number): Promise<void> {
     this.page = await this.api.getPageById(pageID).toPromise();
-
-    // FIXME: hard-coded
-    if (this.page.name === "Skill Tree") {
-      await this.initSkillTreesInfo(this.course.id);
-      this.availableWildcards = await this.api.getUserTotalAvailableWildcards(this.course.id, this.user?.id || this.viewer.id, this.skillTrees[0].id).toPromise();
-
-    } else if (this.page.name === "Streaks") {
-      this.streaks = await this.api.getStreaks(this.course.id).toPromise();
-      const info = await this.api.getUserStreaksInfo(this.course.id, this.user?.id || this.viewer.id).toPromise();
-      this.userStreaksInfo = info.info;
-      this.streaksTotal = info.total;
-
-    } else if (this.page.name === "Gold Exchange") {
-      this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
-      this.wallet = await this.api.getUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
-    }
   }
 
   async renderPage(pageID: number, userID?: number): Promise<void> {
     this.pageView = await this.api.renderPage(pageID, userID).toPromise();
   }
 
-
-  // FIXME: hard-coded below
-
-  async initSkillTreesInfo(courseID: number) { // FIXME: hard-coded
-    this.skillTreesInfo = [];
-    this.skillTrees = await this.api.getSkillTrees(courseID).toPromise();
-    for (const skillTree of this.skillTrees) {
-      // Get info
-      const tiers = await this.api.getTiersOfSkillTree(skillTree.id, null).toPromise();
-      const skills = await this.api.getSkillsOfSkillTree(skillTree.id, null, null, null).toPromise();
-      this.info = await this.api.getSkillsExtraInfo(this.course.id, this.user?.id || this.viewer.id, this.skillTrees[0].id).toPromise();
-      this.skillTreesInfo.push({skillTreeId: skillTree.id, loading: {tiers: false, skills: false}, data: {tiers: [], skills: []}, tiers, skills});
-    }
-  }
-
-  getSkillTreeInfo(skillTreeId: number): { // FIXME: hard-coded
-    skillTreeId: number,
-    loading: {tiers: boolean, skills: boolean},
-    data: {tiers: {type: TableDataType, content: any}[][], skills: {type: TableDataType, content: any}[][]},
-    tiers: Tier[],
-    skills: Skill[]
-  } {
-    const index = this.skillTreesInfo.findIndex(el => el.skillTreeId === skillTreeId);
-    return this.skillTreesInfo[index];
-  }
-
-  filterSkillsByTier(skills: Skill[], tierID: number): Skill[] { // FIXME: hard-coded
-    return skills.filter(skill => skill.tierID === tierID && skill.isActive);
-  }
-
-  goToSkillPage(skill: Skill) { // FIXME: hard-coded
-    this.router.navigate(['./skills', skill.id], {relativeTo: this.route.parent.parent})
-  }
-
-  getComboText(combo: Skill[]): string { // FIXME: hard-coded
-    let str = '';
-    for (let i = 0; i < combo.length; i++) {
-      const skill = combo[i];
-      str += skill.name + (i != combo.length - 1 ? ' + ' : '');
-    }
-    return str;
-  }
-
-  steps(goal: number): number[] {
-    return Array(goal);
-  }
-
-  async exchange() {
-    this.exchanging = true;
-
-    const earnedXP = await this.api.exchangeUserTokens(this.course.id, this.user?.id || this.viewer.id, '1:1', 1000, true).toPromise();
-    this.hasExchanged = await this.api.hasExchangedUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
-    this.wallet = await this.api.getUserTokens(this.course.id, this.user?.id || this.viewer.id).toPromise();
-
-    this.exchanging = false;
-    AlertService.showAlert(AlertType.SUCCESS, 'You earned ' + earnedXP + ' XP!');
-  }
-}
-
-export interface Streak { // FIXME: hard-coded
-  id: number,
-  name: string,
-  description: string,
-  color: string,
-  image: string;
-  svg: string,
-  goal: number,
-  reward: number,
-  tokens: number,
-  isExtra: boolean,
-  isRepeatable: boolean,
-  isPeriodic: boolean,
-  nrCompletions: number,
-  progress: number,
-  deadline: Moment,
 }

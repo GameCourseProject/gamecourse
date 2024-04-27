@@ -4,7 +4,7 @@ import {Aspect} from "../aspects/aspect";
 import {VisibilityType} from "../visibility/visibility-type";
 import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
-import { getFakeId, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {getFakeId, viewTree, viewsAdded, addVariantToGroupedChildren} from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 
 export class ViewIcon extends View {
@@ -96,8 +96,19 @@ export class ViewIcon extends View {
     this.mode = mode;
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
-    if (_.isEqual(old, this.aspect)) {
+  // fixes the entire view to be visible to an aspect
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      this.replaceWithFakeIds();
+      this.aspect = newAspect;
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+    }
+  }
+
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
       this.aspect = newAspect;
     }
   }

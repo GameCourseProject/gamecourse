@@ -34,7 +34,7 @@ class Course
 
     const HEADERS = [   // headers for import/export functionality
         "name", "short", "color", "year", "startDate", "endDate", "landingPage", "isActive", "isVisible",
-        "roleHierarchy", "theme"
+        "roleHierarchy", "theme", "avatars"
     ];
 
     protected $id;
@@ -108,6 +108,11 @@ class Course
     public function isVisible(): bool
     {
         return $this->getData("isVisible");
+    }
+
+    public function avatars(): bool
+    {
+        return $this->getData("avatars");
     }
 
     /**
@@ -219,6 +224,14 @@ class Course
     public function setVisible(bool $isVisible)
     {
         $this->setData(["isVisible" => +$isVisible]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setAvatars(bool $avatars)
+    {
+        $this->setData(["avatars" => +$avatars]);
     }
 
     /**
@@ -538,7 +551,7 @@ class Course
      * @throws Exception
      */
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
-                               ?string $endDate, bool $isActive, bool $isVisible): Course
+                               ?string $endDate, bool $isActive, bool $isVisible, bool $avatars): Course
     {
         $this->setData([
             "name" => $name,
@@ -548,7 +561,8 @@ class Course
             "startDate" => $startDate,
             "endDate" => $endDate,
             "isActive" => +$isActive,
-            "isVisible" => +$isVisible
+            "isVisible" => +$isVisible,
+            "avatars" => +$avatars
         ]);
         return $this;
     }
@@ -695,6 +709,7 @@ class Course
         foreach ($courseUsers as &$courseUser) {
             $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
             $courseUser["image"] = $cu->getImage();
+            $courseUser["avatar"] = $cu->getAvatar();
             $courseUser = CourseUser::parse($courseUser);
         }
         return $courseUsers;
@@ -731,6 +746,7 @@ class Course
         foreach ($courseUsers as &$courseUser) {
             $cu = CourseUser::getCourseUserById($courseUser["id"], $this);
             $courseUser["image"] = $cu->getImage();
+            $courseUser["avatar"] = $cu->getAvatar();
             $courseUser = CourseUser::parse($courseUser);
         }
         return $courseUsers;
@@ -782,6 +798,7 @@ class Course
         foreach ($users as &$user) {
             $u = User::getUserById($user["id"]);
             $user["image"] = $u->getImage();
+            $user["avatar"] = $u->getAvatar();
             $user = User::parse($user);
         }
         return $users;
@@ -1349,13 +1366,14 @@ class Course
             $isVisible = $course[$indexes["isVisible"]];
             $roleHierarchy = $course[$indexes["roleHierarchy"]];
             $theme = $course[$indexes["theme"]];
+            $avatars = $course[$indexes["avatars"]];
 
             $mode = null;
             $course = self::getCourseByNameAndYear($name, $year);
             if ($course) {  // course already exists
                 if ($replace) { // replace
                     $mode = "update";
-                    $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
+                    $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars);
                     $course->setTheme($theme);
                 }
 
@@ -1363,6 +1381,7 @@ class Course
                 $mode = "create";
                 $course = self::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
                 $course->setTheme($theme);
+                $course->setAvatars($avatars);
                 $nrCoursesImported++;
             }
 
@@ -1428,7 +1447,7 @@ class Course
         $zip->addFromString("courses.csv", Utils::exportToCSV($courses, function ($course) {
             return [$course["name"], $course["short"], $course["color"], $course["year"], $course["startDate"],
                 $course["endDate"], $course["landingPage"], +$course["isActive"], +$course["isVisible"], $course["roleHierarchy"],
-                $course["theme"]];
+                $course["theme"], +$course["avatars"]];
         }, self::HEADERS));
 
         // Add each course
@@ -1617,7 +1636,7 @@ class Course
     private static function parse(array $course = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "landingPage"];
-        $boolValues = ["isActive", "isVisible"];
+        $boolValues = ["isActive", "isVisible", "avatars"];
         $jsonValues = ["roleHierarchy"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], $course, $field, $fieldName);
@@ -1631,7 +1650,7 @@ class Course
      */
     private static function trim(&...$values)
     {
-        $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme"];
+        $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme", "avatars"];
         Utils::trim($params, ...$values);
     }
 }

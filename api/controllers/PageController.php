@@ -888,6 +888,27 @@ class PageController
         API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
     }
 
+    /**
+     * Previews an expression of the Language Expression as Text.
+     *
+     * @throws Exception
+     */
+    public function previewExpression()
+    {
+        API::requireValues('courseId', 'expression');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $expression = API::getValue("expression", "string");
+
+        $viewerId = Core::getLoggedUser()->getId();
+
+        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId));
+    }
+
 
     /*** --------------------------------------------- ***/
     /*** -------------- Import / Export -------------- ***/

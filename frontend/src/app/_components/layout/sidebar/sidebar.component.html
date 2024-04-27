@@ -17,13 +17,12 @@
 
         <!-- Category -->
         <ng-container *ngIf="nav.category && nav.children?.length > 0">
-          <div *ngIf="showDivider('top', i, navigation)" class="divider rounded before:bg-base-200 after:bg-base-200 mt-0"></div>
           <li class="menu-title uppercase"><span>{{nav.category}}</span></li>
         </ng-container>
 
         <!-- Nav. Item(s) -->
         <li *ngFor="let item of (nav.children ?? [nav])">
-          <a class="py-3 pl-5 hover:bg-primary hover:bg-opacity-10" [routerLink]="item.link" [routerLinkActive]="'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30'"
+          <a class="py-3 pl-5 hover:bg-primary hover:bg-opacity-10" [routerLink]="item.link" [routerLinkActive]="'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30'" [routerLinkActiveOptions]="{exact: item.name == 'Course Settings'}"
               (click)="sidebar.close()">
             <ng-icon *ngIf="item.icon" [name]="item.icon" size="1.5rem" color="fillCurrent"></ng-icon>
             {{item.name}}
@@ -31,7 +30,7 @@
         </li>
 
         <!-- Divider -->
-        <ng-container *ngIf="showDivider('bottom', i, navigation)">
+        <ng-container *ngIf="showDivider(i, navigation)">
           <div class="divider rounded before:bg-base-200 after:bg-base-200 m-0"></div>
         </ng-container>
 

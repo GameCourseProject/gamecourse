@@ -269,6 +269,11 @@ export class SidebarComponent implements OnInit {
             link: path + 'overview',
             name: 'Overview',
             icon: 'feather-info'
+          },
+          {
+            link: path + 'settings',
+            name: 'Course Settings',
+            icon: 'tablerSettings'
           }
         ];
         navigation = navigation.concat(fixed);
@@ -317,25 +322,11 @@ export class SidebarComponent implements OnInit {
     else return null;
   }
 
-  showDivider(position: 'top' | 'bottom', index: number, navigation: Navigation[]): boolean {
+  showDivider(index: number, navigation: Navigation[]): boolean {
+    if (index === navigation.length - 1) return false;
+
     const item = navigation[index];
-
-    if (position === 'top') {
-      if (index === 0) return false;
-      for (let j = 0; j < index; j++) {
-        if (navigation[j].children && navigation[j].children.length === 0)
-          return false;
-      }
-      return item.category && item.children?.length > 0;
-
-    } else {
-      if (index === navigation.length - 1) return false;
-      for (let j = index + 1; j < navigation.length; j++) {
-        if (navigation[j].children && navigation[j].children.length === 0)
-          return false;
-      }
-      return item.category && item.children?.length > 0;
-    }
+    return (item.category && item.children?.length > 0) || navigation[index + 1].children?.length > 0;
   }
 }
 

@@ -1031,6 +1031,11 @@ class Badges extends Module
         return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/assets/blank.png";
     }
 
+    public function getBlankExtraImage(): string
+    {
+        return API_URL . "/" . Utils::getDirectoryName(MODULES_FOLDER) . "/" . $this->id . "/assets/blank_extra.png";
+    }
+
 
     /*** ---------- Badges ---------- ***/
 

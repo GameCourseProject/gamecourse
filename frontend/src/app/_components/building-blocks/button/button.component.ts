@@ -31,8 +31,12 @@ export class BBButtonComponent implements OnInit {
     this.classes = 'bb-button btn';
     if (this.view.color) this.classes += ' bb-button-colored';
     if (this.view.icon) this.classes += ' bb-button-icon';
-    if (!this.view.classList.containsWord('btn-')) this.classes = 'btn-ghost';
     // Transform goToPage event into a link
+
+    const reg=/^#([0-9a-f]{3}){1,2}$/i;
+    if (this.edit && this.view.color && !reg.test(this.view.color)) {
+      this.classes += ' bg-base-content hover:bg-base-content';
+    }
 
     if (!this.edit) {
       const goToPageEventIndex = this.view.events.findIndex(ev => ev.action === EventAction.GO_TO_PAGE);

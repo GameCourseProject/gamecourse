@@ -45,19 +45,19 @@
       [ngClass]="{'input-error': form && form.submitted && inputColor.invalid}"
     />
 
-    
+
     <!-- Insert Button -->
     <button *ngIf="multiple && value" type="button" class="btn btn-square btn-success !rounded-none btn-{{size}}" tabindex="0" (click)="addInput()">
       <ng-icon [name]="'tabler-check'" size="1.5rem"></ng-icon>
     </button>
 
-    <div class="dropdown dropdown-end" (clickedOutside)="this.closePicker()">
+    <div class="dropdown {{position == 'top' ? 'dropdown-top' : 'dropdown-end'}}" (clickedOutside)="this.closePicker()">
       <!-- Color Picker Button -->
       <button type="button" class="btn btn-square !rounded-r-md !rounded-l-none {{InputGroupBtnColor[color]}} btn-{{size}}" tabindex="0" (click)="openPicker()">
         <ng-icon [name]="'tabler-color-swatch'" size="1.5rem"></ng-icon>
       </button>
 
-      <div id="color-picker" class="dropdown-content p-2 bg-base-100 !rounded-box w-53 shadow mt-1" tabindex="0"></div>
+      <div id="color-picker-{{id}}" class="dropdown-content p-2 bg-base-100 !rounded-box w-53 shadow mt-1" tabindex="0"></div>
     </div>
 
   </label>

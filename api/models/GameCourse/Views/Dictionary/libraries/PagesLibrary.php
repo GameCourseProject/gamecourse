@@ -83,8 +83,9 @@ class PagesLibrary extends Library
         $this->requireCoursePermission("getPageByName", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock page
-            $page = [];
+            $page = [
+                "id" => 0
+            ];
 
         } else {
             $page = Page::getPageByName($courseId, $name);

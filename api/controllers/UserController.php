@@ -144,6 +144,7 @@ class UserController
         if ($loggedUser->getId() != $user->getId() && !$loggedUser->isAdmin()) {
             $userInfo = $user->getData("name, major, nickname, studentNumber, username, auth_service");
             $userInfo["image"] = $user->getImage();
+            $userInfo["avatar"] = $user->getAvatar();
         } else $userInfo = $user->getData();
 
         API::response($userInfo);
@@ -362,6 +363,46 @@ class UserController
         API::response($user->isAStudent());
     }
 
+
+    /*** --------------------------------------------- ***/
+    /*** ------------------ Avatars ------------------ ***/
+    /*** --------------------------------------------- ***/
+
+    /**
+     * Gets a user's avatar settings.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function getUserAvatarSettings()
+    {
+        API::requireValues("userId");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        API::response($user->getAvatarSettings());
+    }
+
+    /**
+     * Saves a user's avatar.
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function saveUserAvatar()
+    {
+        API::requireValues("userId", "selected", "colors", "image");
+
+        $userId = API::getValue("userId", "int");
+        $user = API::verifyUserExists($userId);
+
+        $selected = API::getValue("selected", "array");
+        $colors = API::getValue("colors", "array");
+        $png = API::getValue("image");
+
+        $user->saveAvatar($selected, $colors, $png);
+    }
 
     /*** --------------------------------------------- ***/
     /*** -------------- Import / Export -------------- ***/

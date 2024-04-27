@@ -310,7 +310,8 @@ export class CoursesComponent implements OnInit {
       color: course?.color ?? null,
       year: course?.year ?? null,
       startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
-      endDate: course?.endDate?.format('YYYY-MM-DD') ?? null
+      endDate: course?.endDate?.format('YYYY-MM-DD') ?? null,
+      avatars: course?.avatars ?? false
     };
     if (course) courseData.id = course.id;
     return courseData;
@@ -371,7 +372,8 @@ export interface CourseManageData {
   color: string,
   year: string,
   startDate: string,
-  endDate: string
+  endDate: string,
+  avatars: boolean
 }
 
 export interface ImportCoursesData {

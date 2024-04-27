@@ -30,10 +30,24 @@
         <div [id]="getId(i, tab.name)"></div>
       </div>
 
+      <!-- Preview code tabs  -->
+      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto">
+        <div [id]="getId(i, tab.name)"></div>
+        <button type="button" class="btn btn-secondary btn-sm text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}} rounded-none" (click)="previewExpression(tab)">
+          <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
+          <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+          Preview Expression
+        </button>
+        <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
+          <div class="text-sm font-semibold h-fit">Result: </div>
+          <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
+        </div>
+      </div>
+
       <!-- Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1">
-        <div class="w-full flex">
-          <div class="w-[calc(50%-0.25rem)]">
+      <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1 h-full overflow-y-clip">
+        <div class="w-full flex h-full">
+          <div class="w-[calc(50%-0.25rem)] h-full flex flex-col">
             <div class="justify-center flex mb-1.5">
               <app-input-search
                 [id] = "'manual'"
@@ -44,7 +58,7 @@
                 (valueChange)="filterFunctions($event)">
               </app-input-search>
             </div>
-            <div class="bg-base-300 {{size === 'lg' ? 'h-[32rem]' : 'h-64'}} overflow-y-auto overflow-x-auto">
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
               <div *ngFor="let namespace of tab.namespaces">
                 <ng-container *ngIf="containsFunctions(namespace)">
                   <span class="text-sm"><strong>{{ namespace !== 'gamerules' ? 'Namespace: ' : 'Others: ' }}</strong>

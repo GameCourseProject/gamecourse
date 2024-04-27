@@ -14,6 +14,71 @@ class BadgesLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => $email ? $email : Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(5),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "theme" => null,
+            "username" => $email ? $email : Core::dictionary()->faker()->email(),
+            "image" => null,
+            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "landingPage" => null,
+            "isActive" => true
+        ];
+    }
+
+    private function mockBadge(int $id = null, string $name = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => $name ? $name : Core::dictionary()->faker()->text(20),
+            "description" => Core::dictionary()->faker()->text(50),
+            "nrLevels" => Core::dictionary()->faker()->numberBetween(1, 3),
+            "isExtra" => Core::dictionary()->faker()->boolean(),
+            "isBragging" => Core::dictionary()->faker()->boolean(),
+            "isCount" => Core::dictionary()->faker()->boolean(),
+            "isPoint" => Core::dictionary()->faker()->boolean(),
+            "isActive" => true,
+            "levels" => array_map(function () {
+                return $this->mockBadgeLevel();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 3)))
+        ];
+    }
+
+    private function mockBadgeLevel(int $number = null) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "number" => $number ? $number : Core::dictionary()->faker()->numberBetween(1, 3),
+            "goal" => Core::dictionary()->faker()->numberBetween(1, 50),
+            "description" => Core::dictionary()->faker()->text(50),
+            "reward" => Core::dictionary()->faker()->numberBetween(0, 300),
+            "tokens" => Core::dictionary()->faker()->numberBetween(0, 150),
+            "image" => null
+        ];
+    }
+
+    private function mockProgression(int $userId = null) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "user" => $userId,
+            "course" => 0,
+            "description" => Core::dictionary()->faker()->text(30),
+            "type" => Core::dictionary()->faker()->text(15),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "rating" => Core::dictionary()->faker()->numberBetween(0, 5),
+            "post" => null,
+            "evaluator" => null,
+            "link" => null
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -75,7 +140,7 @@ class BadgesLibrary extends Library
             ),
             new DFunction("isBasedOnCounts",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
-                "Checks whether a given badge is based on counting ocurrences of a given type.",
+                "Checks whether a given badge is based on counting occurrences of a given type.",
                 ReturnType::BOOLEAN,
                 $this
             ),
@@ -123,8 +188,8 @@ class BadgesLibrary extends Library
             ),
             new DFunction("getUsersWithBadge",
                 [["name" => "badgeId", "optional" => false, "type" => "int"],
-                 ["name" => "level", "optional" => false, "type" => "int"],
-                 ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
+                    ["name" => "level", "optional" => false, "type" => "int"],
+                    ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
                 "Gets users who have earned a given badge up to a certain level. Option to order users by the date they acquired badge level.",
                 ReturnType::COLLECTION,
                 $this
@@ -245,8 +310,13 @@ class BadgesLibrary extends Library
     public function levels($badge): ValueNode
     {
         // NOTE: on mock data, badge will be mocked
-        if (is_array($badge)) $badge = Badge::getBadgeById($badge["id"]);
-        $levels = $badge->getLevels();
+        if (Core::dictionary()->mockData()) {
+            $levels = $badge["levels"];
+
+        } else {
+            if (is_array($badge)) $badge = Badge::getBadgeById($badge["id"]);
+            $levels = $badge->getLevels();
+        }
         return new ValueNode($levels, Core::dictionary()->getLibraryById(BadgeLevelsLibrary::ID));
     }
 
@@ -390,8 +460,7 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badge
-            $badge = [];
+            $badge = $this->mockBadge($badgeId);
 
         } else $badge = Badge::getBadgeById($badgeId);
         return new ValueNode($badge, $this);
@@ -412,8 +481,7 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badge
-            $badge = [];
+            $badge = $this->mockBadge(null, $name);
 
         } else $badge = Badge::getBadgeByName($courseId, $name);
         return new ValueNode($badge, $this);
@@ -434,10 +502,12 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badges
-            $badges = [];
+            $badges = array_map(function () {
+                return $this->mockBadge();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else $badges = Badge::getBadges($courseId, $active);
+
         return new ValueNode($badges, $this);
     }
 
@@ -459,8 +529,9 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock users
-            $users = [];
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(0, 5)));
 
         } else {
             $badgesModule = new Badges($course);
@@ -489,8 +560,9 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock badges
-            $badges = [];
+            $badges = array_map(function () {
+                return $this->mockBadge();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 3)));
 
         } else {
             $badgesModule = new Badges($course);
@@ -541,8 +613,9 @@ class BadgesLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock progression
-            $progression = [];
+            $progression = array_map(function () {
+                return $this->mockProgression();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 3)));
 
         } else {
             $badgesModule = new Badges($course);

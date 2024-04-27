@@ -27,10 +27,10 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() id: string;                                                                         // Unique ID
   @Input() form: NgForm;                                                                       // Form it's part of
   @Input() value: any;                                                                         // Where to store the value
-  @Input() options?: ({value: string, text: string, html?: string, display?: boolean} |        // Options to select from
+  @Input() options?: ({value: any, text: string, html?: string, display?: boolean} |           // Options to select from
                       {label: string, options: {value: string, text: string, html?: string}[]}
                      )[];
-  @Input() placeholder: string;                                                     // Message to show by default
+  @Input() placeholder: string;                                                     // Message to show by default  FIXME: not working
 
   @Input() multiple?: boolean;                                                      // Whether to allow multiple selects
   @Input() limit?: number;                                                          // Multiple selection limit
@@ -62,7 +62,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() requiredErrorMessage?: string = 'Required';                              // Message for required error
 
   // Methods
-  @Input() setData?: Observable<{value: any, text: string, html?: string,      // Set data on demand
+  @Input() setData?: Observable<{value: string, text: string, html?: string,        // Set data on demand
     selected: boolean}[]>;
 
   @Output() valueChange = new EventEmitter<any | any[]>();
@@ -82,6 +82,21 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
     setTimeout(() => {
       this.initSelect();
     }, 0);
+
+    const selectValidator = (control) => {
+      if (this.value) {
+        return null;  // Valid
+      } else {
+        return { required: true };  // Invalid
+      }
+    };
+
+    const validators = [
+      this.required ? selectValidator : null
+    ].filter(validator => validator !== null);
+
+    this.inputSelect.control.setValidators(validators);
+    this.inputSelect.control.updateValueAndValidity();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -98,9 +113,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   initSelect() {
-    if (!this.required) {
-      this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
-    }
+    this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
 
     const options = {
       select: '#' + this.id,

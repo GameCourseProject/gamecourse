@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
@@ -12,6 +13,22 @@ class StreaksLibrary extends Library
     public function __construct()
     {
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
+    }
+
+    private function mockStreak() : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->text(20),
+            "description" => Core::dictionary()->faker()->text(50),
+            "color" =>  Core::dictionary()->faker()->hexColor(),
+            "goal" => Core::dictionary()->faker()->numberBetween(3, 5),
+            "reward" => Core::dictionary()->faker()->randomElement([50, 100, 150, 200]),
+            "tokens" => Core::dictionary()->faker()->randomElement([10, 40, 100]),
+            "isExtra" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isRepeatable" => Core::dictionary()->faker()->randomElement([0, 1]),
+            "isActive" => Core::dictionary()->faker()->randomElement([0, 1])
+        ];
     }
 
 
@@ -90,6 +107,144 @@ class StreaksLibrary extends Library
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
 
+    /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets a given streak's ID in the system.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function id($streak): ValueNode
+    {
+        // NOTE: on mock data, badge will be mocked
+        if (is_array($streak)) $streakId = $streak["id"];
+        else $streakId = $streak->getId();
+        return new ValueNode($streakId, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's name.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function name($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $name = $streak["name"];
+        else $name = $streak->getName();
+        return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's goal.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function goal($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $goal = $streak["goal"];
+        else $goal = $streak->getGoal();
+        return new ValueNode($goal, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's description.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function description($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $description = $streak["description"];
+        else $description = $streak->getDescription();
+        return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's color.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function color($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $color = $streak["color"];
+        else $color = $streak->getColor();
+        return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's reward.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function reward($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $reward = $streak["reward"];
+        else $reward = $streak->getReward();
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's tokens.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function tokens($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $tokens = $streak["tokens"];
+        else $tokens = $streak->getTokens();
+        return new ValueNode($tokens, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's isRepeatable.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function repeatable($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $repeatable = $streak["isRepeatable"];
+        else $repeatable = $streak->isRepeatable();
+        return new ValueNode($repeatable, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given streak's isExtra.
+     *
+     * @param $streak
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function extra($streak): ValueNode
+    {
+        // NOTE: on mock data, level will be mocked
+        if (is_array($streak)) $extra = $streak["isExtra"];
+        else $extra = $streak->isRepeatable();
+        return new ValueNode($extra, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+
     /*** ---------- Config ---------- ***/
 
     /**
@@ -146,10 +301,12 @@ class StreaksLibrary extends Library
         $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock streaks
-            $streaks = [];
+            $streaks = array_map(function () {
+                return $this->mockStreak();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else $streaks = Streak::getStreaks($courseId, $active);
+
         return new ValueNode($streaks, $this);
     }
 
@@ -221,7 +378,7 @@ class StreaksLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $progression = Core::dictionary()->faker()->numberBetween(0, 10);
+            $progression = Core::dictionary()->faker()->numberBetween(0, 2);
 
         } else {
             $streaksModule = new Streaks($course);

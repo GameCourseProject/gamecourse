@@ -20,6 +20,20 @@ class CoreComponent extends Component
 
 
     /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Setup ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+    public static function setupCoreComponents()
+    {
+        $components = json_decode(file_get_contents(ROOT_PATH . "/models/GameCourse/Views/Component/CoreComponents.txt"), true);
+        foreach ($components as $pair) {
+            foreach ($pair[1] as $component) {
+                CoreComponent::addComponent($component, null, $pair[0], 0);
+            }
+        };
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** ---------------------- Getters --------------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -159,7 +173,7 @@ class CoreComponent extends Component
             "category" => $categoryId,
             "module" => $moduleId
         ]);
-        Utils::updateItemPosition(null, $position, self::TABLE_COMPONENT, "position", $id, self::getComponents($categoryId));
+        //Utils::updateItemPosition(null, $position, self::TABLE_COMPONENT, "position", $id, self::getComponents($categoryId));
 
         return new CoreComponent($id);
     }

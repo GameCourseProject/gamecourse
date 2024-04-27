@@ -34,6 +34,6 @@
   </div>
   <div *ngIf="!edit && !new" class="ml-auto flex flex-row gap-2">
     <button class="btn btn-ghost p-0 m-0"><ng-icon name="jam-pencil" size="1.5rem" (click)="editAction()"/></button>
-    <button class="btn btn-ghost p-0 m-0"><ng-icon name="feather-X" size="1.5rem" color="red" (click)="deleteAction()"/></button>
+    <button class="btn btn-ghost p-0 m-0"><ng-icon name="feather-X" size="1.5rem" class="text-error" (click)="deleteAction()"/></button>
   </div>
 </div>

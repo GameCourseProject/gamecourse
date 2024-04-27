@@ -11,18 +11,19 @@
 <!-- Edit version -->
 <ng-container *ngIf="!delete && view?.mode === ViewMode.EDIT">
   <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
-    <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-40">
+    <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-30">
       {{view.type.capitalize()}}
     </div>
     <!-- Actions -->
     <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}}
-                absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-40
+                absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-30
                 hover:cursor-pointer hover:bg-secondary-focus transition-all"
          (click)="$event.stopPropagation()">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
-      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box">
-        <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
+      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-300 rounded-box text-base font-normal no-underline w-48">
+        <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"/>Edit</a></li>
         <li (click)="duplicateAction()"><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
+        <li (click)="selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.5rem"/>Select Parent</a></li>
         <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
         <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
       </ul>
@@ -34,7 +35,7 @@
 <!-- Rearrange version -->
 <ng-container *ngIf="view?.mode === ViewMode.REARRANGE">
   <div class="relative outline-2 rounded-xl transition outline outline-primary hover:cursor-pointer">
-    <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs z-40">
+    <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs z-30">
       {{view.type.capitalize()}}
     </div>
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
@@ -48,7 +49,8 @@
       [attr.data-view-id]="view.id"
       [attr.data-view-root]="view.viewRoot"
       [goToPage]="{event: getEvent(EventAction.GO_TO_PAGE) | as : GoToPageEvent, view}"
-      [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}">
+      [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}"
+      [exchangeTokens]="{event: getEvent(EventAction.EXCHANGE_TOKENS) | as : ExchangeTokensEvent, view}">
 
     <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    ></bb-block>
     <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   ></bb-button>
@@ -63,12 +65,11 @@
 
 
 <!-- Edit Modal -->
-
 <app-modal
   *ngIf="isSelected()"
   [id]="'component-editor'"
   [templateRef]="COMPONENT_EDITOR"
-  [header]="'Edit component'"
+  [header]="'Edit Component'"
   [xButton]="false"
   [closeBtnText]="'Cancel'"
   [submitBtnText]="'Save'"
@@ -79,10 +80,23 @@
   (closeBtnClicked)="cancelEditAction()"
   [classList]="'overflow-x-hidden'"
 />
-
 <ng-template #COMPONENT_EDITOR>
   <app-component-editor
-    [view]="view">
-  </app-component-editor>
+    [view]="view"
+  ></app-component-editor>
 </ng-template>
 
+
+<!-- Delete Modal -->
+<app-simple-modal
+  *ngIf="isSelected()"
+  [id]="'component-delete-' + view.id"
+  [title]="'Delete'"
+  [text]="'Are you sure you want to delete this?'"
+  [submitBtnColor]="'error'"
+  [submitBtnText]="'Delete'"
+  (submitBtnClicked)="submitDeleteAction()"
+  [actionInProgress]="true"
+  [static]="true"
+  (click)="$event.stopPropagation()"
+></app-simple-modal>

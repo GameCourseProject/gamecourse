@@ -68,7 +68,6 @@ import {
   GameElementManageData,
   QuestionnaireManageData
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
-import { Streak } from 'src/app/_views/restricted/courses/course/pages/course-page/course-page.component';
 import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
@@ -78,6 +77,7 @@ import {
   EditableAwardData,
   EditableParticipationData
 } from "../../_views/restricted/courses/course/settings/db-explorer/db-explorer.component";
+import {Colors, SelectedTypes} from "../../_components/avatar-generator/model";
 
 @Injectable({
   providedIn: 'root'
@@ -355,6 +355,40 @@ export class ApiHttpService {
   }
 
 
+  // Avatars
+
+  public getUserAvatarSettings(userID: number): Observable<{selected: SelectedTypes, colors: Colors}> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'getUserAvatarSettings');
+      qs.push('userId', userID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data']) );
+  }
+
+  public saveUserAvatar(userID: number, selected: SelectedTypes, colors: Colors, image: string): Observable<void> {
+    const data = {
+      "userId": userID,
+      "selected": selected,
+      "colors": colors,
+      "image": image
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.USER);
+      qs.push('request', 'saveUserAvatar');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+
   // Courses
 
   public isATeacher(userID: number): Observable<boolean> {
@@ -488,7 +522,8 @@ export class ApiHttpService {
       year: courseData.year,
       color: courseData.color,
       startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
-      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null
+      endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null,
+      avatars: courseData.avatars
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1853,6 +1888,22 @@ export class ApiHttpService {
       .pipe( map((res: any) => res));
   }
 
+  public previewExpression(courseID: number, expression: string): Observable<void> {
+    const data = {
+      courseId: courseID,
+      expression: expression
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'previewExpression');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res));
+  }
+
   public previewRule(ruleData: RuleManageData): Observable<void> {
     const data = {
       courseId: ruleData.course,
@@ -3029,7 +3080,11 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true)}})));
+      .pipe(map((res: any) => res['data'].map((e) => {
+        const view = buildView(e.view, true);
+        view.mode = ViewMode.PREVIEW;
+        return {...e, view: view}
+      })));
   }
 
   public getSharedComponents(): Observable<{id: number, sharedTimestamp: string, user: number, view: View}[]> {
@@ -3040,7 +3095,11 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.get(url, ApiHttpService.httpOptions)
-      .pipe(map((res: any) => res['data'].map((e) => {return {...e, view: buildView(e.view, true), sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}})));
+      .pipe(map((res: any) => res['data'].map((e) => {
+        const view = buildView(e.view, true);
+        view.mode = ViewMode.PREVIEW;
+        return {...e, view: view, sharedTimestamp: dateFromDatabase(e.sharedTimestamp).format('DD/MM/YYYY')}
+      })));
   }
 
   public shareComponent(componentID: number, courseID: number, userID: number, description: string): Observable<void> {
@@ -3607,90 +3666,6 @@ export class ApiHttpService {
       }));
 
   }
-
-  // TODO. hard-coded
-  public getUserTotalAvailableWildcards(courseID: number, userID: number, skillTreeID: number): Observable<number> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getUserTotalAvailableWildcards');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-      qs.push('skillTreeId', skillTreeID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']));
-  }
-
-  public getSkillsExtraInfo(courseID: number, userID: number, skillTreeID: number): Observable<{[skillID: number | string]: {available: boolean, attempts: number, cost: number, completed: boolean, wildcardsUsed: number}}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getSkillsExtraInfo');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-      qs.push('skillTreeId', skillTreeID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data']));
-  }
-
-  public getStreaks(courseID: number): Observable<Streak[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getStreaks');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => {
-        return {
-          id: obj.id,
-          name: obj.name,
-          description: obj.description,
-          color: obj.color,
-          image: obj.image,
-          svg: obj.svg,
-          goal: obj.goal,
-          reward: obj.reward,
-          tokens: obj.tokens,
-          isExtra: obj.isExtra,
-          isRepeatable: obj.isRepeatable,
-          isPeriodic: obj.isPeriodic
-        };
-      })));
-  }
-
-  public getUserStreaksInfo(courseID: number, userID: number): Observable<{info: {id: number, nrCompletions: number, progress: number, deadline: Moment}[], total: number}> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getUserStreaksInfo');
-      qs.push('courseId', courseID);
-      qs.push('userId', userID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => {
-        res['data']['info'] = res['data']['info'].map(obj => {
-          return {
-            id: obj.id,
-            nrCompletions: obj.nrCompletions,
-            progress: obj.progress,
-            deadline: dateFromDatabase(obj.deadline),
-          };
-        });
-        return res['data'];
-      }));
-  }
-
 
   /*** --------------------------------------------- ***/
   /*** ----------------- AutoGame ------------------ ***/

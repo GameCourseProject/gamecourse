@@ -13,6 +13,7 @@ import { ViewSelectionDirective } from "./_directives/view-selection.directive";
 import { ScrollableDragDirective } from "./_directives/scrollable-drag.directive";
 import { GoToPageDirective } from "./_directives/views/events/actions/go-to-page.directive";
 import { ShowTooltipDirective } from "./_directives/views/events/actions/show-tooltip.directive";
+import {ExchangeTokensDirective} from "./_directives/views/events/actions/exchange-tokens.directive";
 import { TableDataCustomDirective } from './_components/tables/table-data/table-data-custom.directive';
 import { DropZoneDirective } from './_directives/dropzone.directive';
 
@@ -70,6 +71,10 @@ import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-ca
 import { EventCardComponent } from './_components/cards/event-card/event-card.component';
 import { DatalabelCardComponent } from './_components/cards/datalabel-card/datalabel-card.component';
 
+// Components: avatars
+import { AvatarSvgComponent } from './_components/avatar-generator/avatar-svg/avatar-svg.component';
+import { AvatarGeneratorComponent } from './_components/avatar-generator/avatar-generator.component';
+
 // Components: alerts
 import { AlertComponent } from './_components/alerts/alert/alert.component';
 
@@ -94,6 +99,7 @@ import { BBImageComponent } from './_components/building-blocks/image/image.comp
 import { BBTableComponent } from './_components/building-blocks/table/table.component';
 import { BBTextComponent } from './_components/building-blocks/text/text.component';
 import { ComponentEditorComponent } from './_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
+import { AspectsManagerComponent } from "./_views/restricted/courses/course/settings/views/views-editor/aspects-manager/aspects-manager.component";
 
 // Components: misc
 import { AutoGameToastComponent } from './_components/misc/autogame-toast/auto-game-toast.component';
@@ -111,6 +117,7 @@ import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import { MentionModule } from "angular-mentions";
 
 // Icons
 import {
@@ -140,9 +147,9 @@ import {
   featherUsers,
   featherVolume2,
   featherX,
-  featherXCircle
+  featherXCircle,
+  featherChevronDown
 } from "@ng-icons/feather-icons";
-
 
 import {
   jamCircleF,
@@ -164,7 +171,8 @@ import {
   jamStopSign,
   jamTrashF,
   jamUpload,
-  jamBox
+  jamBox,
+  jamShuffle
 } from "@ng-icons/jam-icons";
 
 import {
@@ -233,10 +241,17 @@ import {
   tablerColumnInsertLeft,
   tablerColumnInsertRight,
   tablerQuote,
-  tablerDatabase
+  tablerDatabase,
+  tablerBinaryTree
 } from "@ng-icons/tabler-icons";
-import {MentionModule} from "angular-mentions";
 
+import {
+  matFaceRetouchingNatural
+} from "@ng-icons/material-icons/baseline"
+
+import {
+  heroFireSolid
+} from "@ng-icons/heroicons/solid"
 
 @NgModule({
   declarations: [
@@ -248,6 +263,7 @@ import {MentionModule} from "angular-mentions";
     ScrollableDragDirective,
     GoToPageDirective,
     ShowTooltipDirective,
+    ExchangeTokensDirective,
     TableDataCustomDirective,
     DropZoneDirective,
 
@@ -300,6 +316,9 @@ import {MentionModule} from "angular-mentions";
     EventCardComponent,
     DatalabelCardComponent,
 
+    AvatarSvgComponent,
+    AvatarGeneratorComponent,
+
     AlertComponent,
 
     SpinnerComponent,
@@ -319,6 +338,7 @@ import {MentionModule} from "angular-mentions";
     BBTableComponent,
     BBTextComponent,
     ComponentEditorComponent,
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -388,6 +408,9 @@ import {MentionModule} from "angular-mentions";
     EventCardComponent,
     DatalabelCardComponent,
 
+    AvatarSvgComponent,
+    AvatarGeneratorComponent,
+
     AlertComponent,
 
     SpinnerComponent,
@@ -405,6 +428,8 @@ import {MentionModule} from "angular-mentions";
     BBImageComponent,
     BBTableComponent,
     BBTextComponent,
+
+    AspectsManagerComponent,
 
     AutoGameToastComponent,
     HeaderComponent,
@@ -452,6 +477,7 @@ import {MentionModule} from "angular-mentions";
       featherVolume2,
       featherX,
       featherXCircle,
+      featherChevronDown,
 
       jamCircleF,
       jamDownload,
@@ -473,6 +499,7 @@ import {MentionModule} from "angular-mentions";
       jamTrashF,
       jamUpload,
       jamBox,
+      jamShuffle,
 
       tablerAlertTriangle,
       tablerArchive,
@@ -539,7 +566,12 @@ import {MentionModule} from "angular-mentions";
       tablerColumnInsertLeft,
       tablerColumnInsertRight,
       tablerQuote,
-      tablerDatabase
+      tablerDatabase,
+      tablerBinaryTree,
+
+      matFaceRetouchingNatural,
+
+      heroFireSolid
     }),
     DataTablesModule,
     NgApexchartsModule,

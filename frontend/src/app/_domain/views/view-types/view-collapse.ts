@@ -6,7 +6,13 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {ErrorService} from "../../../_services/error.service";
-import { getFakeId, groupedChildren, viewTree, viewsAdded } from "../build-view-tree/build-view-tree";
+import {
+  getFakeId,
+  groupedChildren,
+  viewTree,
+  viewsAdded,
+  addVariantToGroupedChildren, addToGroupedChildren
+} from "../build-view-tree/build-view-tree";
 import { ViewText } from "./view-text";
 import { ViewBlock } from "./view-block";
 import * as _ from "lodash"
@@ -125,8 +131,12 @@ export class ViewCollapse extends View {
 
   replaceWithFakeIds() {
     this.id = getFakeId();
+
     this.content.replaceWithFakeIds();
+    this.content.parent.id = this.id;
+
     this.header.replaceWithFakeIds();
+    this.header.parent.id = this.id;
   }
 
   findParent(parentId: number): View { // TODO: refactor view editor
@@ -145,9 +155,15 @@ export class ViewCollapse extends View {
     if (this.id === viewId) return this;
 
     // Look for view in children
-    if (this.header.findView(viewId)) return this.header;
-    if (this.content.findView(viewId)) return this.content;
-    
+    if (this.header.id === viewId) return this.header;
+    if (this.content.id === viewId) return this.content;
+
+    const foundInHeader = this.header.findView(viewId);
+    if (foundInHeader) return foundInHeader;
+
+    const foundInContent = this.content.findView(viewId);
+    if (foundInContent) return foundInContent;
+
     return null;
   }
 
@@ -160,12 +176,30 @@ export class ViewCollapse extends View {
     this.content.switchMode(mode);
   }
 
-  modifyAspect(old: Aspect, newAspect: Aspect) {
-    if (_.isEqual(old, this.aspect)) {
+  // fixes the entire view to be visible to an aspect
+  modifyAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
+      const oldId = this.id;
+      this.replaceWithFakeIds();
+      this.aspect = newAspect;
+      if (this.parent) addVariantToGroupedChildren(this.parent.id, oldId, this.id);
+      addToGroupedChildren(this, this.parent?.id ?? null)
+      this.header.replaceAspect(aspectsToReplace, newAspect);
+      this.content.replaceAspect(aspectsToReplace, newAspect);
+    }
+    else {
+      this.header.modifyAspect(aspectsToReplace, newAspect);
+      this.content.modifyAspect(aspectsToReplace, newAspect);
+    }
+  }
+
+  // simply replaces without any other change (helper for the function above)
+  replaceAspect(aspectsToReplace: Aspect[], newAspect: Aspect) {
+    if (aspectsToReplace.filter(e => _.isEqual(this.aspect, e)).length > 0) {
       this.aspect = newAspect;
     }
-    this.content.modifyAspect(old, newAspect);
-    this.header.modifyAspect(old, newAspect);
+    this.header.replaceAspect(aspectsToReplace, newAspect);
+    this.content.replaceAspect(aspectsToReplace, newAspect);
   }
 
   /**
