@@ -17,7 +17,7 @@
     <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Pages'</i></span>
   </div>
 
-  <div class="navbar bg-base-300 sticky -top-14 z-50 shadow-md rounded-xl" *ngIf="editable">
+  <div class="navbar bg-base-300 sticky -top-14 z-40 shadow-md rounded-xl" *ngIf="editable">
     <!-- Undo Redo -->
     <div class="border-r-neutral/10 border-r-2 mr-4">
       <button class="btn btn-sm btn-ghost gap-2" [ngClass]="{'hover:pointer-events-none text-base-content/30': !history.hasUndo()}" (click)="doAction('Undo')">

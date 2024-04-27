@@ -1,4 +1,4 @@
-<nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-40 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
+<nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-50 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
      [ngStyle]="{'background-color': course?.color ? course.color : ''}">
 
   <div class="flex justify-between w-full">
@@ -63,7 +63,7 @@
             </label>
           </div>
 
-          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 !z-50">
+          <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-80 z-50">
             <div class="rounded-t-box">
               <div class="text-lg content-start px-3.5 pt-2"><strong>Notifications</strong></div>
               <li class="font-light text-xs content-end px-2 pb-2 -mt-5 w-34"
@@ -95,7 +95,7 @@
                 <img class="object-cover" [src]="photo.get()" alt="user profile image" />
               </div>
             </label>
-            <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 !z-50">
+            <ul tabindex="0" class="menu dropdown-content p-2 shadow bg-base-100 rounded-box w-48 z-50">
               <li><a [routerLink]="'/profile/' + user.id">
                 <ng-icon name="feather-user" size="1.2rem" color="fillCurrent"></ng-icon>
                 Profile

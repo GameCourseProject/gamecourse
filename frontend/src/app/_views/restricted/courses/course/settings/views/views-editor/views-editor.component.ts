@@ -227,6 +227,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     if (!keepAspect) this.service.selectedAspect = this.aspects[0];
+    this.sortAspects();
 
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
@@ -237,6 +238,17 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
 
     this.loading.aspects = false;
+  }
+
+  sortAspects() {
+    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
+      if (_.isEqual(a, new Aspect(null, null))) return -1;
+      else if (_.isEqual(b, new Aspect(null, null))) return 1;
+      else if (a.viewerRole == null && b.viewerRole != null) return 1;
+      else if (a.viewerRole != null && b.viewerRole == null) return -1;
+      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
+      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
+    });
   }
 
   async getComponents(): Promise<void> {
@@ -665,6 +677,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
     this.previewMode = 'raw';
 
+    this.sortAspects();
+
     this.loading.aspects = false;
   }
 
@@ -672,6 +686,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.selectedAspect = aspect;
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+    this.manageAspects = false;
   }
 
   aspectIsSelected(aspect: Aspect) {
