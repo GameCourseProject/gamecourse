@@ -350,16 +350,14 @@ class ViewHandler
         $mockData = $populate && !is_array($populate);
 
         if ($mockData) {
-            $faker = Factory::create();
-
             // Create temporary viewer with viewer role
-            $fakeViewer = User::addUser($faker->name(), "ist0", AuthService::FENIX, $faker->email(),
-                $faker->numberBetween(-99999, -11111), null, null, false, true);
+            $fakeViewer = User::addUser("Preview's Viewer", "ist0", AuthService::FENIX, "viewer@not.real",
+                0, null, null, false, true);
             CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
 
             // Create temporary user with user role
-            $fakeUser = User::addUser($faker->name(), "ist1", AuthService::FENIX, $faker->email(),
-                $faker->numberBetween(-99999, -11111), null, null, false, true);
+            $fakeUser = User::addUser("Preview's User", "ist1", AuthService::FENIX, "user@not.real",
+                1, null, null, false, true);
             CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
 
             $sortedAspects = Aspect::getAspectsByViewerAndUser($aspectToMock["course"], $fakeViewer->getId(), $fakeUser->getId(), true);
