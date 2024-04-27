@@ -3,6 +3,7 @@ namespace GameCourse\Views;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Component\Component;
@@ -350,15 +351,39 @@ class ViewHandler
         $mockData = $populate && !is_array($populate);
 
         if ($mockData) {
+            $course = Course::getCourseById($aspectToMock["course"]);
+
             // Create temporary viewer with viewer role
-            $fakeViewer = User::addUser("Preview's Viewer", "ist0", AuthService::FENIX, "viewer@not.real",
-                0, null, null, false, true);
-            CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+            $fakeViewer = User::getUserByEmail("viewer@not.real");
+            if (!isset($fakeViewer)) {
+                $fakeViewer = User::addUser("Preview's Viewer", "viewer@not.real", AuthService::FENIX, "viewer@not.real",
+                    0, null, null, false, true);
+                CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+            } else {
+                $courseViewer = CourseUser::getCourseUserById($fakeViewer->getId(), $course);
+                if (!isset($courseViewer)) {
+                    CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+                } else {
+                    if (isset($aspectToMock["viewerRole"])) $courseViewer->setRoles([$aspectToMock["viewerRole"]]);
+                    else $courseViewer->setRoles([]);
+                }
+            }
 
             // Create temporary user with user role
-            $fakeUser = User::addUser("Preview's User", "ist1", AuthService::FENIX, "user@not.real",
-                1, null, null, false, true);
-            CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+            $fakeUser = User::getUserByEmail("user@not.real");
+            if (!isset($fakeUser)) {
+                $fakeUser = User::addUser("Preview's User", "user@not.real", AuthService::FENIX, "user@not.real",
+                    1, null, null, false, true);
+                CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+            } else {
+                $courseUser = CourseUser::getCourseUserById($fakeUser->getId(), $course);
+                if (!isset($courseUser)) {
+                    CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+                } else {
+                    if (isset($aspectToMock["userRole"])) $courseUser->setRoles([$aspectToMock["userRole"]]);
+                    else $courseUser->setRoles([]);
+                }
+            }
 
             $sortedAspects = Aspect::getAspectsByViewerAndUser($aspectToMock["course"], $fakeViewer->getId(), $fakeUser->getId(), true);
         }

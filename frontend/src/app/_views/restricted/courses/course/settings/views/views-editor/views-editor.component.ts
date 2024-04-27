@@ -700,7 +700,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   switchToAspect(aspect: Aspect) {
     this.service.selectedAspect = aspect;
     this.view = this.service.getSelectedView();
-    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+
+    if (this.view && this.editable) {
+      this.view.switchMode(ViewMode.EDIT);
+      this.previewMode = 'raw';
+    }
+
     this.manageAspects = false;
   }
 
@@ -929,7 +934,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     catch (e) {
       AlertService.showAlert(AlertType.ERROR, "Something went wrong...");
-      console.log(e);
+      this.previewMode = "raw";
+      //console.log(e);
     }
   }
 
