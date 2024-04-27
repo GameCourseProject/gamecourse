@@ -60,7 +60,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     page: true,
     components: true,
     aspects: true,
-    action: false
+    action: false,
+    users: true
   };
 
   view: View;                                     // Full view tree of the page
@@ -76,6 +77,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   aspects: Aspect[];                              // Aspects saved
   manageAspects: boolean = false;
+
+  usersToPreview: { value: number, text: string }[];
+  viewersToPreview: { value: number, text: string }[];
+  userToPreview: number;
+  viewerToPreview: number;
 
   options: Option[];
   activeSubMenu: SubMenu;
@@ -238,17 +244,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
 
     this.loading.aspects = false;
-  }
-
-  sortAspects() {
-    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
-      if (_.isEqual(a, new Aspect(null, null))) return -1;
-      else if (_.isEqual(b, new Aspect(null, null))) return 1;
-      else if (a.viewerRole == null && b.viewerRole != null) return 1;
-      else if (a.viewerRole != null && b.viewerRole == null) return -1;
-      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
-      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
-    });
   }
 
   async getComponents(): Promise<void> {
@@ -663,7 +658,20 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ---------------------------------------------------------------
   // Aspects -------------------------------------------------------
+  // ---------------------------------------------------------------
+
+  sortAspects() {
+    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
+      if (_.isEqual(a, new Aspect(null, null))) return -1;
+      else if (_.isEqual(b, new Aspect(null, null))) return 1;
+      else if (a.viewerRole == null && b.viewerRole != null) return 1;
+      else if (a.viewerRole != null && b.viewerRole == null) return -1;
+      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
+      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
+    });
+  }
 
   discardAspects() {
     this.manageAspects = false;
@@ -693,7 +701,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     return _.isEqual(this.service.selectedAspect, aspect);
   }
 
+
+  // ----------------------------------------------------------------
   // Components -----------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveComponent() {
     let component = _.cloneDeep(this.selection.get());
@@ -751,7 +762,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Templates --------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Templates ------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveTemplate() {
     let image;
@@ -795,7 +808,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ----------------------------------------------------------------
   // Previews -------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async doAction(action: string): Promise<void>{
     if (action === 'Manage Versions') {
@@ -830,8 +845,19 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.page) {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
-          ModalService.openModal('save-before-preview')
+          ModalService.openModal('save-before-preview');
         } else this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+      }
+    }
+    else if (action === 'Final preview (real data)') {
+      if (this.page) {
+        this.previewMode = 'real';
+        if (this.history.hasUndo()) {
+          ModalService.openModal('save-before-preview');
+        }
+        else {
+          await this.selectUsersToPreview();
+        }
       }
     }
   }
@@ -839,14 +865,55 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   async saveBeforePreview() {
     if (this.page) {
       await this.saveChanges();
-      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
-      ModalService.closeModal('save-before-preview')
+
+      if (this.previewMode === 'mock') {
+        this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+        ModalService.closeModal('save-before-preview');
+      }
+      else if (this.previewMode === 'real') {
+        ModalService.closeModal('save-before-preview');
+        await this.selectUsersToPreview();
+      }
     }
   }
 
   cancelPreview() {
     this.previewMode = "raw";
+    this.loading.users = true;
   }
+
+  async selectUsersToPreview() {
+    await this.getViewersToPreview();
+    await this.getUsersToPreview();
+    this.loading.users = false;
+    ModalService.openModal('preview-as');
+  }
+
+  async getViewersToPreview() {
+    let res;
+    if (this.service.selectedAspect.viewerRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.viewerRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.viewersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async getUsersToPreview() {
+    let res;
+    if (this.service.selectedAspect.userRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.userRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.usersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async previewWithRealData() {
+    this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
+    ModalService.closeModal('preview-as');
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
