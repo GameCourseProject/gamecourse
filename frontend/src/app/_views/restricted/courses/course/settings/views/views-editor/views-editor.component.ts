@@ -5,32 +5,39 @@ import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
 
 import {initPageToManage, PageManageData} from "../views/views.component";
-import { ViewType } from "src/app/_domain/views/view-types/view-type";
-import { trigger, style, animate, transition, group } from '@angular/animations';
-import { View, ViewMode } from "src/app/_domain/views/view";
-import { buildView } from "src/app/_domain/views/build-view/build-view";
+import {ViewType} from "src/app/_domain/views/view-types/view-type";
+import {animate, group, style, transition, trigger} from '@angular/animations';
+import {View, ViewMode} from "src/app/_domain/views/view";
+import {buildView} from "src/app/_domain/views/build-view/build-view";
 import * as _ from "lodash"
-import { ViewSelectionService } from "src/app/_services/view-selection.service";
-import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
-import { User } from "src/app/_domain/users/user";
-import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, setGroupedChildren, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
-import { Role } from "src/app/_domain/roles/role";
-import { Template } from "src/app/_domain/views/templates/template";
-import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
-import { ViewButtonDatabase, ViewButton } from "src/app/_domain/views/view-types/view-button";
-import { ViewChartDatabase, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { ViewIconDatabase, ViewIcon } from "src/app/_domain/views/view-types/view-icon";
-import { ViewImageDatabase, ViewImage } from "src/app/_domain/views/view-types/view-image";
-import { ViewRowDatabase, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { ViewTableDatabase, ViewTable } from "src/app/_domain/views/view-types/view-table";
-import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/view-text";
+import {ViewSelectionService} from "src/app/_services/view-selection.service";
+import {ModalService} from 'src/app/_services/modal.service';
+import {AlertService, AlertType} from "src/app/_services/alert.service";
+import {ViewBlock, ViewBlockDatabase} from "src/app/_domain/views/view-types/view-block";
+import {User} from "src/app/_domain/users/user";
+import {Aspect} from "src/app/_domain/views/aspects/aspect";
+import {
+  buildViewTree,
+  getFakeId,
+  groupedChildren,
+  initGroupedChildren,
+  setGroupedChildren,
+  viewsDeleted
+} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {Role} from "src/app/_domain/roles/role";
+import {Template} from "src/app/_domain/views/templates/template";
+import {ViewCollapse, ViewCollapseDatabase} from "src/app/_domain/views/view-types/view-collapse";
+import {ViewButton, ViewButtonDatabase} from "src/app/_domain/views/view-types/view-button";
+import {ViewChart, ViewChartDatabase} from "src/app/_domain/views/view-types/view-chart";
+import {ViewIcon, ViewIconDatabase} from "src/app/_domain/views/view-types/view-icon";
+import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/view-image";
+import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
+import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
+import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
 import html2canvas from "html2canvas";
-import { HistoryService } from "src/app/_services/history.service";
-import { ViewEditorService } from "src/app/_services/view-editor.service";
-import { Subscription } from "rxjs";
+import {HistoryService} from "src/app/_services/history.service";
+import {ViewEditorService} from "src/app/_services/view-editor.service";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-views-editor',
@@ -846,7 +853,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
           ModalService.openModal('save-before-preview');
-        } else this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+        } else {
+          await this.previewWithMockData();
+        }
       }
     }
     else if (action === 'Final preview (real data)') {
@@ -867,7 +876,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       await this.saveChanges();
 
       if (this.previewMode === 'mock') {
-        this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+        await this.previewWithMockData();
         ModalService.closeModal('save-before-preview');
       }
       else if (this.previewMode === 'real') {
@@ -912,6 +921,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   async previewWithRealData() {
     this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
     ModalService.closeModal('preview-as');
+  }
+
+  async previewWithMockData() {
+    try {
+      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+    }
+    catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong...");
+      console.log(e);
+    }
   }
 
 
