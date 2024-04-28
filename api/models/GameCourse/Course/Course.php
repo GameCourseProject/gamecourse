@@ -551,7 +551,7 @@ class Course
      * @throws Exception
      */
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
-                               ?string $endDate, bool $isActive, bool $isVisible, bool $avatars): Course
+                               ?string $endDate, bool $isActive, bool $isVisible, bool $avatars, ?string $theme): Course
     {
         $this->setData([
             "name" => $name,
@@ -562,7 +562,8 @@ class Course
             "endDate" => $endDate,
             "isActive" => +$isActive,
             "isVisible" => +$isVisible,
-            "avatars" => +$avatars
+            "avatars" => +$avatars,
+            "theme" => $theme
         ]);
         return $this;
     }

@@ -66,6 +66,10 @@ export class ThemingService {
     await this.api.setUserTheme(loggedUser.id, theme).toPromise();
   }
 
+  previewTheme(theme: Theme) {
+    this.apply(theme);
+  }
+
   private apply(theme: Theme) {
     const html = document.querySelector('html');
     html.setAttribute('data-theme', theme);

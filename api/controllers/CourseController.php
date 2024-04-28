@@ -138,7 +138,7 @@ class CourseController
     public function editCourse()
     {
         API::requireAdminPermission();
-        API::requireValues('courseId', 'name', 'short', 'year', 'color', 'startDate', 'endDate');
+        API::requireValues('courseId', 'name', 'short', 'year', 'color', 'startDate', 'endDate', 'theme');
 
         $courseId = API::getValue('courseId', "int");
         $course = API::verifyCourseExists($courseId);
@@ -153,9 +153,10 @@ class CourseController
         $isActive = $course->isActive();
         $isVisible = $course->isVisible();
         $avatars = API::getValue("avatars");
+        $theme = API::getValue("theme");
 
         // Edit course
-        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars);
+        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars, $theme);
 
         $courseInfo = $course->getData();
         if (Core::getLoggedUser()->isAdmin())
