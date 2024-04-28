@@ -24,6 +24,7 @@ export class SettingsComponent implements OnInit {
   course: Course;
   courseToManage: CourseManageData = this.initCourseToManage();
   editYearOptions: {value: string, text: string}[] = this.initYearOptions();
+  defaultTheme: Theme;
 
   @ViewChild('f', { static: false }) f: NgForm;
 
@@ -38,6 +39,7 @@ export class SettingsComponent implements OnInit {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
       this.courseToManage = this.initCourseToManage(this.course);
+      this.defaultTheme = await this.themeService.getUserPreference();
       this.loading.page = false;
     });
   }
@@ -113,13 +115,13 @@ export class SettingsComponent implements OnInit {
     return Object.values(Theme).filter(e => e != Theme.DARK && e != Theme.LIGHT);
   }
 
-  selectTheme(theme: string) {
+  async selectTheme(theme: string) {
     this.courseToManage.theme = (theme as Theme) ?? null;
     if (theme) {
       this.themeService.previewTheme(theme as Theme);
-    }
-    else {
-      this.themeService.previewTheme(Theme.LIGHT);
+    } else {
+      this.defaultTheme = await this.themeService.getUserPreference();
+      this.themeService.previewTheme(this.defaultTheme);
     }
   }
 

@@ -318,7 +318,9 @@ export class SidebarComponent implements OnInit {
   /*** --------------------------------------------- ***/
 
   getDefaultLogoImg(): string {
-    const theme = this.themeService.getTheme();
+    const html = document.querySelector('html');
+    const theme = html.getAttribute('data-theme');
+
     switch (theme) {
       case Theme.DARK:
       case Theme.SYNTHWAVE:

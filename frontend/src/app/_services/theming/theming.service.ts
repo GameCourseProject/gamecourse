@@ -33,26 +33,23 @@ export class ThemingService {
       }
     }
 
+    // Else use the user-specific theme
+    this.theme = await this.getUserPreference();
+    this.apply(this.theme);
+  }
+
+  async getUserPreference(): Promise<Theme> {
     // If user already changed the theme, use it
     const themeStored = window.localStorage.getItem('theme');
-    if (themeStored)  {
-      this.theme = themeStored as Theme;
-      this.apply(this.theme);
-      return;
-    }
+    if (themeStored) return themeStored as Theme;
 
     // If user has theme preference saved in database, use it
     const loggedUser = await this.api.getLoggedUser().toPromise();
     const themePreference = await this.api.getUserTheme(loggedUser.id).toPromise();
-    if (themePreference) {
-      this.theme = themePreference;
-      this.apply(this.theme);
-      return;
-    }
+    if (themePreference) return themePreference;
 
     // Else user their browser preference
-    this.theme = this.prefersDark() ? Theme.DARK : Theme.LIGHT;
-    this.apply(this.theme);
+    return this.prefersDark() ? Theme.DARK : Theme.LIGHT;
   }
 
   async saveTheme(theme: Theme): Promise<void> {
