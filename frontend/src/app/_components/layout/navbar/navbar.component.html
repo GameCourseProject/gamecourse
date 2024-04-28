@@ -43,15 +43,15 @@
       <!-- Right -->
       <div class="flex justify-end items-center gap-1.5">
 
-        <!-- Home -->
-        <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
-          <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
-        </div>
-
         <!-- Theme Toggler -->
         <ng-container *ngIf="!course?.theme">
           <app-theme-toggler></app-theme-toggler>
         </ng-container>
+
+        <!-- Home -->
+        <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
+          <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
+        </div>
 
         <!-- Notification -->
         <div class="dropdown dropdown-end">

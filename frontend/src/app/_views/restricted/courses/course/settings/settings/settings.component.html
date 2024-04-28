@@ -9,23 +9,26 @@
 <ng-template #MANAGE>
   <form #f="ngForm" (ngSubmit)="editCourse()">
 
-    <!-- Name -->
-    <app-input-text
-      [id]="'course-name'"
-      [form]="f"
-      [(value)]="courseToManage.name"
-      [placeholder]="'Course name'"
-      [topLabel]="'Name'"
-      [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
-      [patternErrorMessage]="'Course name \'' + courseToManage.name + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
-      [required]="true"
-      [maxLength]="100"
-      [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'">
-    </app-input-text>
+    <div class="card bg-base-100 shadow-xl card-body mb-5">
+      <h2 class="card-title">Information</h2>
 
-    <div class="flex flex-wrap mt-3">
-      <!-- Short -->
-      <div class="w-full sm:w-1/3 sm:pr-3">
+      <div class="md:grid grid-cols-3 mt-3 gap-3 flex flex-col">
+        <div class="col-span-2">
+          <!-- Name -->
+          <app-input-text
+            [id]="'course-name'"
+            [form]="f"
+            [(value)]="courseToManage.name"
+            [placeholder]="'Course name'"
+            [topLabel]="'Name'"
+            [pattern]="'^[x00-\\xFF\\w()&\\s-]+$'"
+            [patternErrorMessage]="'Course name \'' + courseToManage.name + '\' is not allowed. Allowed characters: alphanumeric  _  (  )  -  &'"
+            [required]="true"
+            [maxLength]="100"
+            [maxLengthErrorMessage]="'Course name is too long: maximum of 100 characters'">
+          </app-input-text>
+        </div>
+        <!-- Short -->
         <app-input-text
           [id]="'course-short'"
           [form]="f"
@@ -39,8 +42,8 @@
         </app-input-text>
       </div>
 
-      <!-- Year -->
-      <div class="w-full sm:w-1/3 sm:pr-3">
+      <div class="md:grid grid-cols-3 md:mt-3 gap-3 flex flex-col">
+        <!-- Year -->
         <app-input-select
           [id]="'course-year'"
           [form]="f"
@@ -52,7 +55,39 @@
           [topLabel]="'Academic year'"
           [required]="true">
         </app-input-select>
+
+        <!-- Start date -->
+        <div>
+          <app-input-date
+            [id]="'course-start'"
+            [form]="f"
+            [(value)]="courseToManage.startDate"
+            [placeholder]="'Course start date'"
+            [topLabel]="'Start date'"
+            [required]="true">
+          </app-input-date>
+        </div>
+
+        <!-- End date -->
+        <div>
+          <app-input-date
+            [id]="'course-end'"
+            [form]="f"
+            [(value)]="courseToManage.endDate"
+            [placeholder]="'Course end date'"
+            [classList]="'mt-3 sm:mt-0'"
+            [topLabel]="'End date'"
+            [required]="true">
+          </app-input-date>
+        </div>
+
       </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl card-body">
+      <h2 class="card-title">Customization</h2>
+
+      <!-- Themes -->
 
       <!-- Color -->
       <div class="w-full sm:w-1/3">
@@ -65,48 +100,19 @@
           [topLabel]="'Color'">
         </app-input-color>
       </div>
+
+      <!-- Avatars -->
+      <app-input-toggle
+        [id]="'course-avatars'"
+        [form]="f"
+        [(value)]="courseToManage.avatars"
+        [label]="'Allow Avatars'"
+        [helperText]="'Enabling this lets the expression language access the user\'s avatars, allowing them to show up in pages.'"
+        [helperPosition]="'right'"
+        [classList]="'mt-3'"
+        [color]="'primary'"
+      ></app-input-toggle>
     </div>
-
-    <div class="md:grid grid-cols-2 mt-3 gap-3 flex flex-col">
-
-      <!-- Start date -->
-      <div>
-        <app-input-date
-          [id]="'course-start'"
-          [form]="f"
-          [(value)]="courseToManage.startDate"
-          [placeholder]="'Course start date'"
-          [topLabel]="'Start date'"
-          [required]="true">
-        </app-input-date>
-      </div>
-
-      <!-- End date -->
-      <div>
-        <app-input-date
-          [id]="'course-end'"
-          [form]="f"
-          [(value)]="courseToManage.endDate"
-          [placeholder]="'Course end date'"
-          [classList]="'mt-3 sm:mt-0'"
-          [topLabel]="'End date'"
-          [required]="true">
-        </app-input-date>
-      </div>
-
-    </div>
-
-    <!-- Avatars -->
-    <app-input-toggle
-      [id]="'course-avatars'"
-      [form]="f"
-      [(value)]="courseToManage.avatars"
-      [label]="'Avatars'"
-      [helperText]="'Enabling this lets the expression language access the user\'s avatars, allowing them to show up in pages.'"
-      [helperPosition]="'right'"
-      [classList]="'mt-3'"
-      [color]="'primary'"
-    ></app-input-toggle>
 
     <div class="w-full mt-6 flex">
       <button class="btn btn-primary ml-auto" type="submit" [disabled]="loading.action">
