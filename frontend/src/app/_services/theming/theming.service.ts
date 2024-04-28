@@ -21,7 +21,18 @@ export class ThemingService {
     return this.theme;
   }
 
-  async loadTheme(): Promise<void> {
+  async loadTheme(courseId? : number): Promise<void> {
+
+    // If course has theme preference in database, use it
+    if (courseId) {
+      const course =  await this.api.getCourseById(courseId).toPromise();
+      if (course && course.theme) {
+        this.theme = course.theme as Theme;
+        this.apply(this.theme);
+        return;
+      }
+    }
+
     // If user already changed the theme, use it
     const themeStored = window.localStorage.getItem('theme');
     if (themeStored)  {

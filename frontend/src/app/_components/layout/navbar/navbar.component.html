@@ -1,5 +1,5 @@
 <nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-50 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
-     [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+     [ngStyle]="{'background-color': course?.theme ? '' : course?.color ? course.color : ''}">
 
   <div class="flex justify-between w-full">
     <!-- Left -->
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Theme Toggler -->
-        <ng-container>
+        <ng-container *ngIf="!course?.theme">
           <app-theme-toggler></app-theme-toggler>
         </ng-container>
 
