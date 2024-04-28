@@ -1,5 +1,5 @@
 <nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-50 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
-     [ngStyle]="{'background-color': course?.color ? course.color : ''}">
+     [ngStyle]="{'background-color': getNavbarColor()}">
 
   <div class="flex justify-between w-full">
     <!-- Left -->
@@ -43,15 +43,15 @@
       <!-- Right -->
       <div class="flex justify-end items-center gap-1.5">
 
+        <!-- Theme Toggler -->
+        <ng-container *ngIf="theme == Theme.LIGHT || theme == Theme.DARK">
+          <app-theme-toggler></app-theme-toggler>
+        </ng-container>
+
         <!-- Home -->
         <div class="btn btn-ghost btn-circle text-primary-content" [routerLink]="'/'">
           <ng-icon name="feather-home" size="1.7rem" color="fillCurrent"></ng-icon>
         </div>
-
-        <!-- Theme Toggler -->
-        <ng-container>
-          <app-theme-toggler></app-theme-toggler>
-        </ng-container>
 
         <!-- Notification -->
         <div class="dropdown dropdown-end">
@@ -86,7 +86,7 @@
 
         <ng-container *ngIf="user">
           <!-- Greet -->
-          <p class="text-white align-middle ml-2 hidden sm:block">Hey, {{user.nickname?.split(' ')[0] ?? user.name.split(' ')[0] ?? user.username}}!</p>
+          <p class="text-primary-content align-middle ml-2 hidden sm:block">Hey, {{user.nickname?.split(' ')[0] ?? user.name.split(' ')[0] ?? user.username}}!</p>
 
           <!-- Avatar -->
           <div class="dropdown dropdown-end">

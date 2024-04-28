@@ -31,18 +31,13 @@ export class NavbarComponent implements OnInit {
   notifications: Notification[] = [];
   mode: "new" | "notNew";
 
-  theme: Theme;
-
   // FIXME: navbar space should be configurable in modules
-  hasTokensEnabled: boolean;
   isStudent: boolean;
   tokens: number;
-  tokensImg: string = ApiEndpointsService.API_ENDPOINT + '/modules/' + ApiHttpService.VIRTUAL_CURRENCY + '/imgs/token.png'; // FIXME: should be configurable
 
   constructor(
     private api: ApiHttpService,
     public router: Router,
-    private themeService: ThemingService,
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService,
     public sidebar: SidebarService
@@ -75,7 +70,6 @@ export class NavbarComponent implements OnInit {
         this.getLoggedUser();
       }
     });
-    this.theme = this.themeService.getTheme();
   }
 
 
@@ -164,16 +158,20 @@ export class NavbarComponent implements OnInit {
   }
 
   /*** --------------------------------------------- ***/
-  /*** ------------- Configurable Area ------------- ***/
+  /*** ------------------ Themes ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async getConfigurableArea(): Promise<void> {
-    // FIXME: should be made general
-    // this.hasTokensEnabled = await this.isVirtualCurrencyEnabled();
-    // if (this.hasTokensEnabled) {
-    //   this.isStudent = await this.api.isStudent(this.course.id, this.user.id).toPromise();
-    //   if (this.isStudent) this.tokens = await this.getUserTokens();
-    // }
+  protected readonly Theme = Theme;
+
+  get theme() {
+    const html = document.querySelector('html');
+    return html.getAttribute('data-theme') as Theme;
+  }
+
+  getNavbarColor() {
+    if (this.course?.color && (this.theme == Theme.LIGHT || this.theme == Theme.DARK)) {
+      return this.course.color;
+    } else return '';
   }
 
 
@@ -213,17 +211,4 @@ export class NavbarComponent implements OnInit {
     return parts.includes('Courses') && parts.length >= 2;
   }
 
-  async isVirtualCurrencyEnabled(): Promise<boolean> {
-    return of(false).toPromise(); // FIXME
-    // const courseID = this.getCourseIDFromURL();
-    // if (courseID) return await this.api.isVirtualCurrencyEnabled(courseID).toPromise();
-    // return null;
-  }
-
-  async getUserTokens(): Promise<number> {
-    return of(100).toPromise(); // FIXME
-    // const courseID = this.getCourseIDFromURL();
-    // if (courseID) return await this.api.getUserTokens(courseID, this.user.id).toPromise();
-    // return null;
-  }
 }

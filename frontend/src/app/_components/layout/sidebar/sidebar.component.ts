@@ -85,7 +85,7 @@ export class SidebarComponent implements OnInit {
 
     if (this.isDocs) this.navigation = this.getDocsNavigation();
     else if (!isInCourse) {
-      this.navigation = this.getMainNavigation();
+      this.navigation = await this.getMainNavigation();
       this.course = null;
 
     } else if (isInCourse) {
@@ -118,9 +118,9 @@ export class SidebarComponent implements OnInit {
     return this.docsNavigation;
   }
 
-  getMainNavigation(): Navigation[] {
+  async getMainNavigation(): Promise<Navigation[]> {
     this.mainNavigation = [];
-    const pages: {[key: string]: Navigation} = {
+    const pages: { [key: string]: Navigation } = {
       mainPage: {
         link: '/home',
         name: 'Homepage',
@@ -166,6 +166,9 @@ export class SidebarComponent implements OnInit {
     }
     this.mainNavigation.push(pages.aboutPage);
 
+    // load default theme
+    await this.themeService.loadTheme();
+
     return this.mainNavigation;
   }
 
@@ -178,6 +181,9 @@ export class SidebarComponent implements OnInit {
       const isAdminOrTeacher = this.user.isAdmin || await this.api.isTeacher(courseID, this.user.id).toPromise();
 
       this.courseNavigation = buildCourseNavigation(this.course, this.user.id, this.visibleUserPages, isAdminOrTeacher);
+
+      // load course theme
+      await this.themeService.loadTheme(this.course.id);
     }
     return this.courseNavigation;
 
@@ -257,11 +263,6 @@ export class SidebarComponent implements OnInit {
                 link: path + 'settings/pages',
                 name: 'Pages',
                 icon: 'feather-file'
-              },
-              {
-                link: path + 'settings/themes',
-                name: 'Themes',
-                icon: 'tabler-color-swatch'
               }
             ]
           },
@@ -311,9 +312,25 @@ export class SidebarComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  get DefaultLogoImg(): string {
-    const theme = this.themeService.getTheme();
-    return theme === Theme.DARK ? environment.logoPicture.dark : environment.logoPicture.light;
+  getDefaultLogoImg(): string {
+    const html = document.querySelector('html');
+    const theme = html.getAttribute('data-theme');
+
+    switch (theme) {
+      case Theme.DARK:
+      case Theme.SYNTHWAVE:
+      case Theme.DRACULA:
+      case Theme.HALLOWEEN:
+      case Theme.FOREST:
+      case Theme.BLACK:
+      case Theme.LUXURY:
+      case Theme.NIGHT:
+      case Theme.COFFEE:
+      case Theme.BUSINESS:
+        return environment.logoPicture.dark;
+      default:
+        return environment.logoPicture.light;
+    }
   }
 
   getCourseIDFromURL(): number {

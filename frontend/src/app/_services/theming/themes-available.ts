@@ -3,7 +3,7 @@ export enum Theme {
   DARK = 'dark',
   CUPCAKE = 'cupcake',
   BUMBLEBEE = 'bumblebee',
-  EMERALD = 'emeral',
+  EMERALD = 'emerald',
   CORPORATE = 'corporate',
   SYNTHWAVE = 'synthwave',
   RETRO = 'retro',

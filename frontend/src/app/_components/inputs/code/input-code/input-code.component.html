@@ -20,9 +20,8 @@
     </ng-container>
   </div>
 
-  <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto
-        {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}"
-       [style.background-color]="getTheme() === 'light' ? '#FFFFFF' : '#282C34'">
+  <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto bg-base-200
+        {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}">
 
     <ng-container *ngFor="let tab of tabs, let i = index">
       <!-- Editor code tabs  -->
@@ -45,7 +44,7 @@
       </div>
 
       <!-- Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1 h-full overflow-y-clip">
+      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
           <div class="w-[calc(50%-0.25rem)] h-full flex flex-col">
             <div class="justify-center flex mb-1.5">
@@ -58,7 +57,7 @@
                 (valueChange)="filterFunctions($event)">
               </app-input-search>
             </div>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
               <div *ngFor="let namespace of tab.namespaces">
                 <ng-container *ngIf="containsFunctions(namespace)">
                   <span class="text-sm"><strong>{{ namespace !== 'gamerules' ? 'Namespace: ' : 'Others: ' }}</strong>
@@ -81,7 +80,7 @@
           </div>
 
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2">
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content">
             <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
               Select a function
             </span>

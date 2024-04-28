@@ -1,12 +1,12 @@
-<aside id="sidebar" class="fixed w-64 inset-y-0 flex flex-col items-center justify-between block p-0 mt-20 lg:my-4 antialiased
-              transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-tr-2xl lg:rounded-2xl
+<aside id="sidebar" class="fixed w-64 inset-y-0 flex flex-col items-center justify-between p-0 mt-20 lg:my-4 antialiased
+              transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-tr-2xl lg:rounded-box
               lg:left-0 lg:translate-x-0 shadow-xl lg:h-auto bottom-0 pb-4">
 
   <!-- Logo -->
   <div class="h-25 px-6 py-6 pb-3">
     <a [routerLink]="'/'">
       <img class="max-h-full"
-           [src]="DefaultLogoImg"
+           [src]="getDefaultLogoImg()"
            alt="">
     </a>
   </div>

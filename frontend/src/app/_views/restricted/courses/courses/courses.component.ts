@@ -11,6 +11,7 @@ import {User} from "../../../../_domain/users/user";
 import {TableDataType} from "../../../../_components/tables/table-data/table-data.component";
 import {Action} from "../../../../_domain/modules/config/Action";
 import {clearEmptyValues} from "../../../../_utils/misc/misc";
+import {Theme} from "../../../../_services/theming/themes-available";
 
 
 @Component({
@@ -311,7 +312,8 @@ export class CoursesComponent implements OnInit {
       year: course?.year ?? null,
       startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
       endDate: course?.endDate?.format('YYYY-MM-DD') ?? null,
-      avatars: course?.avatars ?? false
+      avatars: course?.avatars ?? false,
+      theme: (course?.theme as Theme) ?? null
     };
     if (course) courseData.id = course.id;
     return courseData;
@@ -373,7 +375,8 @@ export interface CourseManageData {
   year: string,
   startDate: string,
   endDate: string,
-  avatars: boolean
+  avatars: boolean,
+  theme: Theme
 }
 
 export interface ImportCoursesData {

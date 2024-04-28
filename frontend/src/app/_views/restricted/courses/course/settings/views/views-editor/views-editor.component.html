@@ -17,9 +17,9 @@
     <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Pages'</i></span>
   </div>
 
-  <div class="navbar bg-base-300 sticky -top-14 z-40 shadow-md rounded-xl" *ngIf="editable">
+  <div class="navbar bg-base-300 sticky -top-14 z-40 shadow-md rounded-box" *ngIf="editable">
     <!-- Undo Redo -->
-    <div class="border-r-neutral/10 border-r-2 mr-4">
+    <div class="border-r-base-content/10 border-r-2 mr-4">
       <button class="btn btn-sm btn-ghost gap-2" [ngClass]="{'hover:pointer-events-none text-base-content/30': !history.hasUndo()}" (click)="doAction('Undo')">
         <ng-icon name="tabler-arrow-back-up" size="1.5rem" color="fillCurrent" />
         Undo
@@ -46,7 +46,7 @@
            class="z-50 absolute w-48 rounded-xl bg-base-300 card card-compact shadow-xl top-16 -left-2">
         <div *ngIf="option.description === 'Add Component'" class="p-4 rounded-xl border-2 border-primary">
           <h2 class="text-xl font-semibold text-center text-base-content pt-1">{{option.subMenu.title}}</h2>
-          <div class="divider -my-0.5 before:bg-neutral/10 after:bg-neutral/10"></div>
+          <div class="divider -my-0.5 before:bg-base-content/10 after:bg-base-content/10"></div>
           <ul class="menu">
             <li *ngFor="let item of getItems(option), let i = index">
               <a class="py-1 pl-5 rounded-lg {{option.subMenu.items[item].isSelected ? 'bg-primary bg-opacity-30 hover:bg-primary hover:bg-opacity-30' : 'hover:bg-primary hover:bg-opacity-10'}}"
@@ -69,7 +69,7 @@
               </h2>
             </div>
             <div class="w-full bg-base-300 flex rounded-b-xl">
-              <div class="border-r-2 border-neutral/10 w-fit py-2">
+              <div class="border-r-2 border-base-content/10 w-fit py-2">
                 <ul>
                   <li *ngFor="let item of getCategoryListItem(), let i = index">
                     <div class="mt-1 mb-1 mx-3 hover:cursor-pointer hover:badge-secondary text-semibold
@@ -128,7 +128,7 @@
                   <!-- System components, divided into subcategories -->
                   <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'System'" class="space-y-5">
                     <div *ngFor="let subcategory of getSubcategories()">
-                      <span class="ml-1 text-xs font-bold text-neutral/40 uppercase">{{subcategory.category}}</span>
+                      <span class="ml-1 text-xs font-bold text-base-content/40 uppercase">{{subcategory.category}}</span>
                       <div class="flex flex-wrap">
                         <div
                           *ngFor="let item of subcategory.views"
@@ -214,7 +214,7 @@
   </div>
 
   <!-- Editor -->
-  <div class="mt-6 grow {{editable ? 'rounded-xl border-2 border-neutral border-opacity-10 p-2' : ''}}">
+  <div class="mt-6 grow {{editable ? 'rounded-xl border-2 border-base-content border-opacity-10 p-2' : ''}}">
     <bb-any *ngIf="view && !loading.page" [view]="view" id="capture" [isExistingRoot]="!pageToManage"></bb-any>
     <!-- Loader -->
     <app-loader [loading]="loading.page"></app-loader>
