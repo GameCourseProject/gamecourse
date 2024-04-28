@@ -45,18 +45,16 @@
 
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
-              <button class="btn btn-sm btn-{{page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+              <button class="btn btn-sm btn-{{page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle tooltip tooltip-left"
                       data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
-                <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-black' : 'text-white')}}">
+                <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem">
                 </ng-icon>
               </button>
             </ng-container>
             <ng-template #defaultButton>
-              <button class="btn btn-sm btn-{{!page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle hover:text-base-content tooltip tooltip-left"
+              <button class="btn btn-sm btn-{{!page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle tooltip tooltip-left"
                       data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
-                <ng-icon name="{{!page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem"
-                         class="{{getTheme() === 'light' ? 'text-white' : (!page.isVisible ? 'text-white' : 'text-black')}}">
+                <ng-icon name="{{!page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem">
                 </ng-icon>
               </button>
             </ng-template>
