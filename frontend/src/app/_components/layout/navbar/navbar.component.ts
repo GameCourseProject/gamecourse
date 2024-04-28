@@ -32,15 +32,12 @@ export class NavbarComponent implements OnInit {
   mode: "new" | "notNew";
 
   // FIXME: navbar space should be configurable in modules
-  hasTokensEnabled: boolean;
   isStudent: boolean;
   tokens: number;
-  tokensImg: string = ApiEndpointsService.API_ENDPOINT + '/modules/' + ApiHttpService.VIRTUAL_CURRENCY + '/imgs/token.png'; // FIXME: should be configurable
 
   constructor(
     private api: ApiHttpService,
     public router: Router,
-    private themeService: ThemingService,
     private sanitizer: DomSanitizer,
     private updateManager: UpdateService,
     public sidebar: SidebarService
