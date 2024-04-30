@@ -6,7 +6,7 @@ import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
 import {oneDark} from "@codemirror/theme-one-dark";
-import {basicLight} from "cm6-theme-basic-light";
+import {githubLight} from '@ddietr/codemirror-themes/github-light'
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
@@ -134,14 +134,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     function getLanguageKeywords(mode: string): string[] {
       switch (mode) {
         case "python": return ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
-          'elif', 'else', 'except', 'false', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-          'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'true', 'try', 'while', 'with', 'yield'];
+          'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+          'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
         case "javascript": return ["abstract", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
           "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "export", "extends", "false",
           "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int",
           "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short",
           "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var",
           "void", "volatile", "while", "with", "yield"];
+        case "el": return ["true", "false"];
         default: return [];
       }
     }
@@ -201,7 +202,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let query = tab.highlightQuery;
 
     // Initializes with the device's theme
-    const theme = this.themeService.getTheme() === 'dark' ? oneDark : basicLight;
+    const theme = this.themeService.getTheme() === 'dark' ? oneDark : githubLight;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -322,10 +323,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             }
           },
           "&light .cm-tooltip-below" : {
-            backgroundColor: "#bec1c4 !important",
+            backgroundColor: "#dedfe1 !important",
           },
           " &light .cm-tooltip.cm-completionInfo": {
-            backgroundColor: "#bec1c4 !important"
+            backgroundColor: "#dedfe1 !important"
           },
           ".cm-completionInfo": {
             fontSize: "0.875rem",
@@ -632,7 +633,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   loadTheme() {
     for (let i = 0; i < this.tabs.length; i++){
       this.views[i].dispatch({
-        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
+        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : oneDark)
       });
     }
   }
@@ -667,7 +668,7 @@ export interface PreviewTab {
   debug: boolean,                                  // Allows debug to occur or not (in case of metadata should be false, for instance)
   highlightQuery?: string,                         // Text to highlight
   value?: string,                                  // Value on init
-  mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  mode?: "el",                                     // Type of code to write.
   placeholder?: string,                            // Message to show by default
   nrLines?: number,                                // Number of lines already added to the editor. Default = 10 lines
   customKeywords?: string[],                       // Personalized keywords
