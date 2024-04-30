@@ -499,7 +499,6 @@ class ViewHandler
 
         // Get view tree for each aspect of view root
         $viewTreeByAspect = [];
-        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null)->getData("id, viewerRole, userRole");
         $aspects = Aspect::getAspectsInViewTree($viewRoot);
 
         $hierarchy = Role::getCourseRoles($courseId, false, true);
@@ -515,11 +514,13 @@ class ViewHandler
             if (isset($aspect["viewerRole"])) {
                 $parentsOfViewer = array_merge($parentsOfViewer, Role::getParentNamesOfRole($hierarchy, null, $aspect["viewerRole"]));
             }
+            $parentsOfViewer[] = null;
 
             $parentsOfUser = [$userRoleName];
             if (isset($aspect["userRole"])) {
                 $parentsOfUser = array_merge($parentsOfUser, Role::getParentNamesOfRole($hierarchy, null, $aspect["userRole"]));
             }
+            $parentsOfUser[] = null;
 
             foreach ($parentsOfUser as $userRole) {
                 $userRoleId = null;
@@ -529,13 +530,10 @@ class ViewHandler
                     $viewerRoleId = null;
                     if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
 
-                    if (isset($userRoleId) || isset($viewerRoleId)) {
-                        $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
-                        $sortedAspects[] = $parentAspect;
-                    }
+                    $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
+                    $sortedAspects[] = $parentAspect;
                 }
             }
-            $sortedAspects[] = $defaultAspect;
 
             // Render and associate with aspect
             $viewTreeOfAspect = self::renderView($viewRoot, $sortedAspects);
