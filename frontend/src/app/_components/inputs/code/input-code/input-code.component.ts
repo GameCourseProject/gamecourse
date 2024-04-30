@@ -134,8 +134,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     function getLanguageKeywords(mode: string): string[] {
       switch (mode) {
         case "python": return ['and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del',
-          'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-          'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 'with', 'yield'];
+          'elif', 'else', 'except', 'false', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
+          'None', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'true', 'try', 'while', 'with', 'yield'];
         case "javascript": return ["abstract", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
           "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "export", "extends", "false",
           "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int",
@@ -583,7 +583,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     if (searchQuery) {
       let functions: CustomFunction[] = [];
       for (let i = 0; i < this.filteredFunctions.length; i++){
-        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())) {
+        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())
+          ||this.filteredFunctions[i].name.toLowerCase().includes(searchQuery.toLowerCase())) {
           functions.push(this.filteredFunctions[i]);
         }
       }
