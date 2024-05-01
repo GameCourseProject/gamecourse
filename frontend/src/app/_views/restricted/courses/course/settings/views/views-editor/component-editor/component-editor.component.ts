@@ -130,7 +130,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.additionalToolsTabs = [
       { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
 
-      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "el",
         customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
 
       { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,

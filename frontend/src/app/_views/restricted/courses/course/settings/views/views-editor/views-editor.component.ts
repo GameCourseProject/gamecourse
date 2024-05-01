@@ -66,7 +66,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   loading = {
     page: true,
     components: true,
-    aspects: true,
     action: false,
     users: true
   };
@@ -150,7 +149,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           this.pageToManage = initPageToManage(courseID);
           this.service.selectedAspect = new Aspect(null, null);
           this.aspects = [this.service.selectedAspect];
-          this.loading.aspects = false;
           this.service.viewsByAspect = [{
             aspect: this.service.selectedAspect,
             view: buildView({
@@ -214,8 +212,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async initView(id: number, templateType?: 'template' | 'system-template', keepAspect: boolean = false): Promise<void> {
-    this.loading.aspects = true;
-
     let data;
     if (!templateType) {
       this.page = await this.api.getPageById(id).toPromise();
@@ -249,8 +245,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       viewsByAspect: this.service.viewsByAspect,
       groupedChildren: groupedChildren
     });
-
-    this.loading.aspects = false;
   }
 
   async getComponents(): Promise<void> {
@@ -685,16 +679,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   saveAspects() {
-    this.loading.aspects = true;
-
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
     this.previewMode = 'raw';
 
     this.sortAspects();
-
-    this.loading.aspects = false;
   }
 
   switchToAspect(aspect: Aspect) {
@@ -924,11 +914,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async previewWithRealData() {
+    this.loading.action = true;
+
     this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
+
+    this.loading.action = false;
     ModalService.closeModal('preview-as');
   }
 
   async previewWithMockData() {
+    this.loading.action = true;
     try {
       this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
     }
@@ -937,6 +932,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.previewMode = "raw";
       //console.log(e);
     }
+    this.loading.action = false;
   }
 
 
