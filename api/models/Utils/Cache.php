@@ -12,7 +12,7 @@ use Opis\Closure\SerializableClosure;
 class Cache
 {
 
-    const TABLE_VIEWS_CACHE = "views_cache";
+    const TABLE_VIEW_CACHE = "views_cache";
 
     /*** --------------------------------------------- ***/
     /*** ------------------ General ------------------ ***/
@@ -117,49 +117,27 @@ class Cache
         self::$viewsCache[$cacheId] = $data;
     }
 
-    public static function storeViewsInDatabase(int $pageId, int $userId = null) {
-        if($userId === null) {
-            $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (page_id, cache_key, cache_value) VALUES ";
-        } else {
-            $insertQuery = "INSERT INTO " . self::TABLE_VIEWS_CACHE . " (page_id, user_id, cache_key, cache_value) VALUES ";
-        }
+    public static function loadFromDatabase(int $pageId, ?int $userId) {
+        return self::loadPageFromCache(["page_id" => $pageId, "user_id" => $userId]);
+    }
 
-        $values = [];
+    private static function loadPageFromCache(array $where) {
+        $page = Core::database()->select(self::TABLE_VIEW_CACHE, $where);
 
-        foreach (self::$viewsCache as $key => $value) {
-            $compressedKey = base64_encode(gzcompress($key));
-            $compressedValue = base64_encode(gzcompress($value));
-          
-            if($userId === null) {
-                $values[] = "({$pageId},'{$compressedKey}','{$compressedValue}')";
-            } else {
-                $values[] = "({$pageId},{$userId},'{$compressedKey}','{$compressedValue}')";
-            }
-        }
+        return isset($page) ? unserialize(gzuncompress(base64_decode($page["value"]))) : null;
+    }
 
-        $insertQuery .= implode(", ", $values);
-
-        Core::database()->executeQuery($insertQuery);
-        self::$viewsCache = [];
+    public static function storeUserViewInDatabase(int $pageId, ?int $userId, array $page) {
+        Core::database()->insert(self::TABLE_VIEW_CACHE, [
+            "page_id" => $pageId,
+            "user_id" => $userId,
+            "value" => base64_encode(gzcompress(serialize($page))),
+        ]);
         Core::dictionary()->cleanViews();
     }
 
-    public static function loadFromDatabase(int $pageId, string $type, int $userId) {
-        if ($type === "individual") {
-            self::loadCache(["page_id" => $pageId, "user_id" => $userId]);
-        } else {
-            self::loadCache(["page_id" => $pageId]);
-        }
-    }
-
-    private static function loadCache(array $where) {
-        $results = Core::database()->selectMultiple(self::TABLE_VIEWS_CACHE, $where, "cache_key, cache_value");
-      
-        foreach ($results as $res) {
-            $key = gzuncompress(base64_decode($res["cache_key"]));
-            $value = gzuncompress(base64_decode($res["cache_value"]));
-            self::$viewsCacheInDatabase[$key] = $value;
-        }
+    public static function cleanCache() {
+        self::$viewsCache = [];
     }
 
 

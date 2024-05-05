@@ -10,6 +10,7 @@ use GameCourse\Course\Course;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 use Utils\Utils;
 
 /**
@@ -672,6 +673,7 @@ class Role
     public static function updateUserRoles(int $userId,  int $courseId, array $rolesNames)
     {
         // Remove roles that got deleted
+        $rolesToUpdate = [];
         $oldRoles = Role::getUserRoles($userId, $courseId, false);
         foreach ($oldRoles as $oldRole){
             $exists = !empty(array_filter($rolesNames, function ($role) use ($oldRole, $courseId) {
@@ -680,6 +682,7 @@ class Role
             }));
             if (!$exists){
                 self::removeRoleFromUser($userId, $courseId, $oldRole["name"], $oldRole["id"]);
+                $rolesToUpdate[] = $oldRole["name"];
             }
         }
 
@@ -691,8 +694,35 @@ class Role
 
             if (!in_array($roleId, $beforeUpdateRolesIds)) { // add role
                 self::addRoleToUser($userId, $courseId, $role, $roleId);
+                $rolesToUpdate[] = $role;
             }
         }
+
+        $pagesToUpdate = self::getPagesToUpdate($courseId, $rolesToUpdate);
+        if(!empty($pagesToUpdate)) {
+            Page::updateCachePages($courseId, [$userId], $pagesToUpdate);
+        }
+    }
+
+    public static function getPagesToUpdate(int $courseId, array $updatedRoles) {
+        $pagesToUpdate = [];
+
+        $pages = Page::getPages($courseId);
+        foreach ($pages as $page) {
+            $pageRoles = [];
+            $aspects = Aspect::getAspectsInViewTree($page["viewRoot"]);
+            foreach ($aspects as $aspect) {
+                if (isset($aspect["viewerRole"])) $pageRoles[] =  $aspect["viewerRole"];
+                if (isset($aspect["userRole"])) $pageRoles[] =  $aspect["userRole"];
+            }
+
+            foreach ($updatedRoles as $role) {
+                if (in_array($role, $pageRoles)) $pagesToUpdate[] = $page;
+                break;
+            }
+        }
+
+        return $pagesToUpdate;
     }
 
     /**
