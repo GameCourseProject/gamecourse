@@ -910,10 +910,21 @@ class CourseController
         API::requireCourseAdminPermission($course);
 
         $participations = AutoGame::getParticipations($courseId);
-        foreach ($participations as &$participation) {
-            $participation["user"] = User::getUserById($participation["user"])->getName();
-            $participation["evaluatorName"] = $participation["evaluator"] ? User::getUserById($participation["evaluator"])->getName() : "";
+
+        $userIds = array_unique(array_column($participations, 'user'));
+        $evaluatorIds = array_filter(array_unique(array_column($participations, 'evaluator')));
+        $userIds = array_unique(array_merge($userIds, $evaluatorIds));
+
+        $users = [];
+        foreach ($userIds as $userId) {
+            $users[$userId] = User::getUserById($userId)->getName();
         }
+
+        foreach ($participations as &$participation) {
+            $participation["user"] = $users[$participation["user"]];
+            $participation["evaluatorName"] = $participation["evaluator"] ? $users[$participation["evaluator"]] : "";
+        }
+
         API::response($participations);
     }
 
@@ -932,9 +943,17 @@ class CourseController
         API::requireCourseAdminPermission($course);
 
         $awards = (new Awards($course))->getCourseAwards();
-        foreach ($awards as &$award) {
-            $award["user"] = User::getUserById($award["user"])->getName();
+
+        $userIds = array_unique(array_column($awards, "user"));
+        $users = [];
+        foreach ($userIds as $userId) {
+            $users[$userId] = (new User($userId))->getName();
         }
+
+        foreach ($awards as &$award) {
+            $award["user"] = $users[$award["user"]];
+        }
+
         API::response($awards);
     }
 

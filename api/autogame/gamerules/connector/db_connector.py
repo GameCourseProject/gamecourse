@@ -1,7 +1,7 @@
 from gamerules.connector.db_connection import Database
 
-gc_db: Database
-moodle_db: Database
+gc_db: Database = None
+moodle_db: Database = None
 
 
 ### GameCourse

@@ -13,6 +13,7 @@ class RuleSystem:
 		self.__data__ = DataManager(autosave)
 		if path is not None:
 			self.load(path)
+		# import course specific game functions stored in __data__.functions
 		utils.import_gamefunctions(self.__data__.functions)
 
 	def path(self):
@@ -45,17 +46,6 @@ class RuleSystem:
 		for target in targets:
 			for rule in self.rules():
 
-				"""
-				TODO: Should see if section is enabled (if not then continue loop)
-				
-				print(rule)
-				query = "SELECT rs.isActive FROM rule r LEFT JOIN rule_section rs ON r.section=rs.id " \
-						"WHERE r.name = %s AND r.course=%s;"
-
-				table = gc_db.execute_query(query, (rule, course))
-				print("-----")
-				print(table)
-				"""
 				namespace.target = target
 				output = rule.fire(target,scope)
 				if output is False:
@@ -69,6 +59,9 @@ class RuleSystem:
 				else:
 					self.__data__.target_data.add(target,rule,output)
 				rulelogs.append(RuleLog(rule,target,output))
+
+			from gamerules.connector import gamecourse_connector
+			gamecourse_connector.clear_target_preloaded_data(target)
 		# save state and write the new logs to a file
 		if self.__data__.autosave:
 			self.__data__.store_logs(rulelogs)

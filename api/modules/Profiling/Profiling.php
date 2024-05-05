@@ -12,6 +12,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Role\Role;
 use GameCourse\User\CourseUser;
 use GameCourse\User\User;
+use GameCourse\Views\Page\Page;
 use Utils\Utils;
 
 /**
@@ -557,9 +558,11 @@ class Profiling extends Module
         // Update students cluster
         $students = $this->course->getStudents();
         $date = $this->getLastRunUntil();
+        $studentsToUpdate = [];
 
         foreach ($students as $student) {
-            $student = $this->course->getCourseUserById($student["id"]);
+            $studentId = $student["id"];
+            $student = $this->course->getCourseUserById($studentId);
 
             // Remove old cluster
             $oldCluster = Core::database()->select(self::TABLE_PROFILING_USER_PROFILE, [
@@ -568,13 +571,17 @@ class Profiling extends Module
             ], "cluster", "date desc");
             if ($oldCluster) {
                 $student->removeRole(null, $oldCluster);
+                $studentsToUpdate[] = $studentId;
             }
 
             // Assign new cluster
             if ($student->isActive()) {
-                $newCluster = $clusters[$student->getId()];
+                $newCluster = $clusters[$studentId];
                 $newClusterId = Role::getRoleId($newCluster, $this->course->getId());
-                $student->addRole(null, $newClusterId);
+                if (!Role::userHasRole($studentId, $this->getCourse()->getId(), null, $newClusterId)) {
+                    $student->addRole(null, $newClusterId);
+                    $studentsToUpdate[] = $studentId;
+                }
                 Core::database()->insert(self::TABLE_PROFILING_USER_PROFILE, [
                     "course" => $this->course->getId(),
                     "user" => $student->getId(),
@@ -583,6 +590,9 @@ class Profiling extends Module
                 ]);
             }
         }
+
+        Page::updateCachePages($this->course->getId(), $studentsToUpdate);
+
     }
 
     /**
