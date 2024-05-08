@@ -36,11 +36,11 @@ export class ViewsComponent implements OnInit {
 
   course: Course;                 // Specific course in which pages are being manipulated
   pages: Page[] = [];             // All pages to show (course + public from other courses)
-  
+
   coursePages: Page[];            // Course pages
   publicPages: Page[];            // Pages from other courses that are public
   arrangingPages: Page[];         // Copy of coursePages for arranging modal
-  
+
   templates: Template[] = [];     // All templates to show (course + public from other courses)
 
   systemTemplates: Template[];
@@ -65,7 +65,7 @@ export class ViewsComponent implements OnInit {
      { icon: 'jam-upload', description: 'Export', type: 'configuration' },
      { icon: 'jam-files-f', description: 'Duplicate', type: 'configuration' },
       { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }];
-  
+
   // Actions for templates
   templateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
     color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
@@ -77,7 +77,7 @@ export class ViewsComponent implements OnInit {
      { icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }
     ];
-  
+
   // Actions for SYSTEM templates
   coreTemplateActions: { icon: string, description: string, type: 'edit' | 'management' | 'configuration',
     color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
@@ -111,7 +111,7 @@ export class ViewsComponent implements OnInit {
   // Import action
   importData: {file: File, replace: boolean} = { file: null, replace: true };
   @ViewChild('fImport', { static: false }) fImport: NgForm;
-  
+
   user: User;
 
   constructor(
@@ -178,7 +178,7 @@ export class ViewsComponent implements OnInit {
     this.publicTemplates = await this.api.getSharedTemplates().toPromise() as Template[];
     this.calculateTemplates();
   }
-  
+
   calculateTemplates() {
     this.courseTemplates.forEach((temp) => {
       let item = this.publicTemplates.find(e => temp.id === e.id);
@@ -225,7 +225,7 @@ export class ViewsComponent implements OnInit {
     this.loading.action = true;
 
     const newPositions = [];
-    
+
     // Save new positions
     for (let i = 0; i < this.arrangingPages.length; i++){
       // if order hasn't changed, skip the edition step (less accesses to DB)
@@ -234,7 +234,7 @@ export class ViewsComponent implements OnInit {
         newPositions.push({ id: this.arrangingPages[i].id, position: this.arrangingPages[i].position });
       }
     }
-    
+
     await this.api.updatePagePositions(this.course.id, newPositions).toPromise();
 
     this.coursePages = _.cloneDeep(this.arrangingPages);

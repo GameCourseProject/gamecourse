@@ -38,7 +38,8 @@
   <!-- Pages cards -->
   <div *ngIf="!loading.page" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let page of pagesToShow">
-      <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
+      <div class="card card-compact w-60 bg-base-100 shadow-lg my-4 hover:cursor-pointer hover:shadow-2xl transition-all"
+           (click)="chooseAction('edit', page)">
         <figure class="relative w-full aspect-video bg-white">
 
           <img class="absolute w-full" src="{{page.image ?? 'assets/imgs/img-dark.png'}}" alt="{{page.name}} page">
@@ -46,21 +47,21 @@
           <div class="absolute top-1 right-1 -z-999" (mouseenter)="isHovered[page.id] = true" (mouseleave)="isHovered[page.id] = false">
             <ng-container *ngIf="!isHovered[page.id]; else defaultButton">
               <button class="btn btn-sm btn-{{page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle tooltip tooltip-left"
-                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                      data-tip="Make visible/invisible" (click)="$event.stopPropagation(); chooseAction('configure visibility', page)">
                 <ng-icon name="{{page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem">
                 </ng-icon>
               </button>
             </ng-container>
             <ng-template #defaultButton>
               <button class="btn btn-sm btn-{{!page.isVisible ? 'secondary' : 'secondary-content'}} btn-circle tooltip tooltip-left"
-                      data-tip="Make visible/invisible" (click)="chooseAction('configure visibility', page)">
+                      data-tip="Make visible/invisible" (click)="$event.stopPropagation(); chooseAction('configure visibility', page)">
                 <ng-icon name="{{!page.isVisible ? 'tabler-eye' : 'tabler-eye-off'}}" size="1.3rem">
                 </ng-icon>
               </button>
             </ng-template>
           </div>
           <div class="badge badge-sm badge-{{page.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="chooseAction('make public/private', page)">
+            (click)="$event.stopPropagation(); chooseAction('make public/private', page)">
             <ng-icon name="jam-circle-f" size="0.5rem" class="{{page.isPublic ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
             <span class="font-semibold my-0.5">{{page.isPublic ? 'Public' : 'Private'}}</span>
           </div>
@@ -69,7 +70,7 @@
         <div class="card-body -mt-2">
           <div class="flex justify-between items-center">
             <span class="text-lg font-semibold">{{page.name}}</span>
-            <div class="dropdown dropdown-right">
+            <div class="dropdown dropdown-right" (click)="$event.stopPropagation()">
               <div tabindex="0" role="button" class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </div>
@@ -114,17 +115,18 @@
   <!-- Templates cards -->
   <div *ngIf="!loading.template" class="inline-grid justify-between" style="grid-template-columns: repeat(auto-fill, 240px); width: 100%">
     <div *ngFor="let template of templatesToShow">
-      <div class="card card-compact w-60 bg-base-100 shadow-xl my-4">
+      <div class="card card-compact w-60 bg-base-100 shadow-lg my-4 hover:cursor-pointer hover:shadow-2xl transition-all"
+           (click)="chooseTemplateAction('preview', template)">
         <figure class="relative w-full aspect-video bg-white">
 
           <img class="absolute w-full" src="{{template.image ?? 'assets/imgs/img-dark.png'}}" alt="{{template.name}} page">
 
           <div *ngIf="!template.isSystem" class="badge badge-sm badge-{{template.isPublic ? 'success' : 'error'}} absolute bottom-1 left-1 -z-999 hover:cursor-pointer"
-            (click)="chooseTemplateAction('make public/private', template)">
+            (click)="$event.stopPropagation(); chooseTemplateAction('make public/private', template)">
             <ng-icon name="jam-circle-f" size="0.5rem" class="{{template.isPublic ? 'text-green-700' : 'text-red-700'}} fill-green-900 mr-0.5"></ng-icon>
             <span class="font-semibold my-0.5">{{template.isPublic ? 'Public' : 'Private'}}</span>
           </div>
-          <div *ngIf="template.isSystem" class="badge badge-sm absolute bottom-1 left-1 -z-999 hover:cursor-pointer">
+          <div *ngIf="template.isSystem" class="badge badge-sm absolute bottom-1 left-1 -z-999">
             <ng-icon name="jam-circle-f" size="0.5rem" class="text-gray-400 mr-0.5"></ng-icon>
             <span class="font-semibold my-0.5">System</span>
           </div>
@@ -133,24 +135,14 @@
         <div class="card-body -mt-2">
           <div class="flex justify-between items-center">
             <span class="text-lg font-semibold">{{template.name}}</span>
-            <div class="dropdown dropdown-right">
+            <div *ngIf="!template.isSystem" class="dropdown dropdown-right" (click)="$event.stopPropagation()">
               <div tabindex="0" role="button" class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </div>
 
               <!-- Options dropdown -->
-              <ul *ngIf="!template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
                 <li *ngFor="let action of templateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
-                  <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
-                    <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
-                    <span class="font-semibold">{{action.description}}</span>
-                  </div>
-                </li>
-              </ul>
-
-              <!-- Options dropdown FOR SYSTEM TEMPLATES (more restrictive) -->
-              <ul *ngIf="template.isSystem" tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
-                <li *ngFor="let action of coreTemplateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
                     <span class="font-semibold">{{action.description}}</span>
@@ -164,6 +156,7 @@
           <div>
             <!-- <p *ngIf="template.isPublic"><span class="text-xs font-bold uppercase">Shared on:</span> {{calculateDate(template.sharedTimestamp)}}</p> -->
             <p *ngIf="!template.isSystem"><span class="text-xs font-bold uppercase">Last edited:</span> {{calculateDate(template.updateTimestamp)}}</p>
+            <p *ngIf="template.isSystem"><span class="text-xs font-bold uppercase">From Module</span></p>
           </div>
         </div>
 
