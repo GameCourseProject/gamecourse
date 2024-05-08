@@ -1,23 +1,28 @@
 <div class="w-full min-h-full relative flex flex-col">
-  <!-- Header -->
-  <app-header
-    [classList]="'text-md'"
-    [title]="page ? 'Page \'' + page.name + '\''
-        : template ? 'Template \'' + template.name + '\''
-        : coreTemplate ? 'Template \'' + coreTemplate.name + '\''
-        : 'Create new'"
-    [icon]="'jam-pencil-f'"
-    [loading]="loading.action">
-  </app-header>
 
-  <div class="flex flex-wrap items-center -mt-3 mb-2">
+  <div class="flex flex-wrap items-center -mt-4">
     <button type="button" class="btn btn-sm btn-ghost btn-circle" (click)="closeEditor()">
       <ng-icon name="tabler-arrow-narrow-left" size="1.2rem" class="mr-0.5 text-base-content text-opacity-60"></ng-icon>
     </button>
     <span class="text-base-content mt-0.5 text-xs text-opacity-60">Back to <i>'Pages'</i></span>
   </div>
 
-  <div class="navbar bg-base-300 sticky -top-14 z-40 shadow-md rounded-box" *ngIf="editable">
+  <!-- Header -->
+  <div class="prose flex items-center gap-3 mb-6 text-md">
+    <ng-icon [name]="'jam-pencil-f'" [size]="'1.8rem'"
+             class="text-primary"></ng-icon>
+
+    <h2 *ngIf="coreTemplate" class="m-0">{{coreTemplate.name}}</h2>
+    <input *ngIf="!coreTemplate && !page && pageToManage" type="text" placeholder="Create New" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" [(ngModel)]="pageToManage.name"/>
+    <input *ngIf="page" type="text" placeholder="Page Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" value="{{page.name}}" [(ngModel)]="page.name"/>
+    <input *ngIf="template" type="text" placeholder="Template Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" value="{{template.name}}" [(ngModel)]="template.name"/>
+
+    <div *ngIf="template || coreTemplate" class="mt-0 badge badge-outline">Template</div>
+    <div *ngIf="page" class="mt-0 badge badge-outline">Page</div>
+    <app-spinner *ngIf="loading.action" [classList]="'ml-2'"></app-spinner>
+  </div>
+
+  <div class="navbar bg-base-300 sticky -top-14 z-40 shadow-md rounded-box mb-6" *ngIf="editable">
     <!-- Undo Redo -->
     <div class="border-r-base-content/10 border-r-2 mr-4">
       <button class="btn btn-sm btn-ghost gap-2" [ngClass]="{'hover:pointer-events-none text-base-content/30': !history.hasUndo()}" (click)="doAction('Undo')">
@@ -214,13 +219,13 @@
   </div>
 
   <!-- Editor -->
-  <div class="mt-6 grow {{editable ? 'rounded-xl border-2 border-base-content border-opacity-10 p-2' : ''}}">
+  <div class="grow {{editable ? 'rounded-xl border-2 border-base-content border-opacity-10 p-2' : ''}}">
     <bb-any *ngIf="view && !loading.page" [view]="view" id="capture" [isExistingRoot]="!pageToManage"></bb-any>
     <!-- Loader -->
     <app-loader [loading]="loading.page"></app-loader>
   </div>
 
-  <div *ngIf="editable" class="card-actions justify-end py-6">
+  <div *ngIf="editable" class="card-actions justify-end pt-6 pb-5">
     <button class="btn btn-ghost" (click)="closeEditor()">Cancel</button>
 
     <button *ngIf="pageToManage || !template" class="btn btn-primary" (click)="openSaveAsTemplateModal()">
@@ -262,6 +267,7 @@
   [submitBtnText]="'Save'"
   (click)="$event.stopPropagation()"
   (submitBtnClicked)="savePage()"
+  [actionInProgress]="loading.action"
 />
 <ng-template #SAVE_PAGE>
   This page will be added to the course's page library.
@@ -276,6 +282,7 @@
 
 <!-- Save Template Modal -->
 <app-modal
+  *ngIf="pageToManage"
   [id]="'save-template'"
   [templateRef]="SAVE_TEMPLATE"
   [header]="'Save Custom Template'"
@@ -283,11 +290,12 @@
   [submitBtnText]="'Save'"
   (click)="$event.stopPropagation()"
   (submitBtnClicked)="saveTemplate()"
+  [actionInProgress]="loading.action"
 />
 <ng-template #SAVE_TEMPLATE>
   <app-input-text
     [id]="'new-template-name'"
-    [(value)]="newTemplateName"
+    [(value)]="pageToManage.name"
     [topLabel]="'Choose a name for this template:'"
     [required]="true">
   </app-input-text>

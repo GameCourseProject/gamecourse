@@ -3346,12 +3346,13 @@ export class ApiHttpService {
       }));
   }
 
-  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 
@@ -3402,12 +3403,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 

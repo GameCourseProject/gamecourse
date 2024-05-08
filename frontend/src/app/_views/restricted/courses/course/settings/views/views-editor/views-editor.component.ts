@@ -77,7 +77,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   course: Course;                                 // Specific course in which page exists
   user: User;                                     // Logged in user
   page: Page;                                     // page where information will be saved
-  pageToManage: PageManageData;                   // NEW page where information will be saved
+  pageToManage: PageManageData;                   // NEW page where information will be saved, and also used for NEW template NAME
   template: Template;                             // template where information will be saved
   coreTemplate: Template;                         // core template to view
 
@@ -101,7 +101,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   sharedTemplates: { id: number, name: string, sharedTimestamp: string, user: number, view: View }[];
 
   newComponentName: string;                       // Name for custom component to be saved
-  newTemplateName: string;                        // Name for custom template to be saved
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
   templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
@@ -610,6 +609,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async savePage() {
+    if (!this.pageToManage.name) {
+      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+      return;
+    }
+
+    this.loading.action = true;
+
     const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
 
     let image;
@@ -621,9 +627,19 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise(); // FIXME null -> image
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
+
+    this.loading.action = false;
   }
 
   async saveChanges() {
+    if (this.page && !this.page.name) {
+      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+      return;
+    } else if (this.template && !this.template.name) {
+      AlertService.showAlert(AlertType.ERROR, "The template must have a name.")
+      return;
+    }
+
     this.loading.action = true;
 
     const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
@@ -635,13 +651,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       image = null;
     }
     if (this.page) {
-      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
+      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, this.page.name, image).toPromise();
       this.history.clear();
       await this.initView(this.page.id, null, true);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
-      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, image).toPromise();
+      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, this.template.name, image).toPromise();
       this.history.clear();
       await this.initView(this.template.id, "template", true);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
@@ -769,15 +785,24 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   // ----------------------------------------------------------------
 
   async saveTemplate() {
+    if (!this.pageToManage.name) {
+      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+      return;
+    }
+
+    this.loading.action = true;
+
     let image;
     try {
       image = await this.takeScreenshot();
     } catch {
       image = null;
     }
-    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view]), image).toPromise();
+    await this.api.saveCustomTemplate(this.course.id, this.pageToManage.name, buildViewTree([this.view]), image).toPromise();
     await this.closeConfirmed();
     AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+
+    this.loading.action = false;
   }
 
   async shareTemplate() {
