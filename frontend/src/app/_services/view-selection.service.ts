@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {View, ViewMode} from "../_domain/views/view";
 import {exists} from "../_utils/misc/misc";
 
@@ -11,7 +11,6 @@ export class ViewSelectionService {
 
   private selected: View;
   private disabled: boolean;
-  private rearrange: boolean;
 
   constructor() {
   }
@@ -30,15 +29,10 @@ export class ViewSelectionService {
       return;
 
     if (this.isSelected(view)) { // Same view
-      if (this.rearrange) this.switchMode();
       this.selected = null;
     }
     else { // Different view
-      if (this.selected) {
-        if (this.rearrange) this.switchMode();
-      }
       this.selected = view;
-      if (this.rearrange) this.switchMode();
     }
   }
 
@@ -54,17 +48,8 @@ export class ViewSelectionService {
     this.disabled = !this.disabled;
   }
 
-  public setRearrange(state: boolean): void {
-    this.rearrange = state;
-    this.switchMode();
-  }
-
-  private switchMode(): void {
-    if (this.selected?.mode === ViewMode.REARRANGE) {
-      this.selected.mode = ViewMode.EDIT;
-    }
-    else if (this.selected?.mode === ViewMode.EDIT) {
-      this.selected.mode = ViewMode.REARRANGE;
-    }
+  public refresh(): void {
+    if (this.selected.mode === ViewMode.EDIT) this.selected.mode = ViewMode.DISPLAY;
+    else if (this.selected.mode === ViewMode.DISPLAY) this.selected.mode = ViewMode.EDIT;
   }
 }

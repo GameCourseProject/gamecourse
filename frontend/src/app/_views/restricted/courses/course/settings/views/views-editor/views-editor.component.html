@@ -47,8 +47,7 @@
       </div>
 
       <!-- First menu: list for components -->
-      <div [@dropdownAnimation] *ngIf="option.isSelected && option.description !== 'Rearrange'"
-           class="z-50 absolute w-48 rounded-xl bg-base-300 card card-compact shadow-xl top-16 -left-2">
+      <div [@dropdownAnimation] *ngIf="option.isSelected" class="z-50 absolute w-48 rounded-xl bg-base-300 card card-compact shadow-xl top-16 -left-2">
         <div *ngIf="option.description === 'Add Component'" class="p-4 rounded-xl border-2 border-primary">
           <h2 class="text-xl font-semibold text-center text-base-content pt-1">{{option.subMenu.title}}</h2>
           <div class="divider -my-0.5 before:bg-base-content/10 after:bg-base-content/10"></div>

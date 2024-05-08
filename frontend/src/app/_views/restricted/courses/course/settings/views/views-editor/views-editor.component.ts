@@ -142,7 +142,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.route.params.subscribe(async childParams => {
         const prevSegment = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
-        this.selection.setRearrange(false);
 
         if (segment === 'new') {
           this.pageToManage = initPageToManage(courseID);
@@ -478,12 +477,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
             },
           ]
         }
-      },
-      {
-        icon: 'feather-move',
-        iconSelected: 'feather-move',
-        isSelected: false,
-        description: 'Rearrange'
       }
     ];
     this.loading.components = false;
@@ -499,9 +492,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.options[i] !== option && this.options[i].isSelected) {
         this.options[i].isSelected = false;
         this.resetMenus();
-        if (this.options[i].description == 'Rearrange') {
-          this.selection.setRearrange(false);
-        }
       }
     }
 
@@ -511,17 +501,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     // No menus active -> reset all
     if (!option.isSelected) {
       this.resetMenus();
-      if (option.description == 'Rearrange') {
-        this.selection.setRearrange(false);
-      }
-    }
-    else if (option.description == 'Rearrange') {
-      this.selection.setRearrange(true);
     }
 
     // since templates only have a submenu, switch that directly
     if (option.description === 'Choose Template') {
-      option.subMenu.isSelected ? this.resetMenus : this.triggerSubMenu(option.subMenu, 0);
+      if (option.subMenu.isSelected) this.resetMenus();
+      else this.triggerSubMenu(option.subMenu, 0);
     }
   }
 

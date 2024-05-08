@@ -163,9 +163,9 @@ export class BBAnyComponent implements OnInit {
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
     this.visible = false;
-    this.selection.setRearrange(true);
+    this.selection.refresh();
     this.cdr.detectChanges();
-    this.selection.setRearrange(false);
+    this.selection.refresh();
     this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 

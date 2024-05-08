@@ -117,6 +117,7 @@ import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import { MentionModule } from "angular-mentions";
 
 // Icons
@@ -576,6 +577,8 @@ import {
     DataTablesModule,
     NgApexchartsModule,
     ScrollingModule,
+    CdkDrag,
+    CdkDropList,
     MentionModule
   ]
 })

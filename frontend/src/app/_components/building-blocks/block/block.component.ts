@@ -1,8 +1,19 @@
 import {Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
-
+import { asapScheduler, asyncScheduler } from 'rxjs';
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {ViewMode} from "../../../_domain/views/view";
-import { DragDrop, DragRef, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDrag,
+  CdkDropList,
+  moveItemInArray,
+  transferArrayItem,
+  CdkDragEnter,
+  CdkDragExit,
+  CdkDragStart,
+  DragRef,
+  DropListRef,
+} from '@angular/cdk/drag-drop';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 
 @Component({
@@ -17,12 +28,12 @@ export class BBBlockComponent implements OnInit {
   classes: string;
   children: string;
 
-  @ViewChild('dropList', { static: false }) dropListRef: ElementRef;
-  @ViewChildren('dragItem') dragItems: QueryList<ElementRef>;
-  private dragRefs: DragRef[] = new Array<DragRef>();
+  @ViewChildren(CdkDropList)
+  private dlq: QueryList<CdkDropList>;
+
+  public dls: CdkDropList[] = [];
 
   constructor(
-    private dragDropService: DragDrop,
   ) { }
 
   ngOnInit(): void {
@@ -40,37 +51,55 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
-  public ngAfterViewInit() {
-    const dropListRef = this.dragDropService.createDropList(this.dropListRef);
 
-    dropListRef.withOrientation(this.view.direction);
+  ngAfterViewInit() {
+    let ldls: CdkDropList[] = [];
 
-    this.dragItems.toArray().forEach(element => {
-      let dragRef = this.dragDropService.createDrag(element);
-      this.dragRefs.push(dragRef);
+    this.dlq.forEach((dl) => {
+      console.log('found DropList ' + dl.id);
+      ldls.push(dl);
     });
-    
-    dropListRef.withItems(this.dragRefs);
 
-    dropListRef.beforeStarted.subscribe(event => {
-      this.dropListRef.nativeElement.classList.add('cdk-drop-list-dragging');
-      this.dropListRef.nativeElement.classList.add('cdk-drag-animating');
-    });
-    
-    dropListRef.dropped.subscribe(event => {
-      this.drop(event);
-      this.dropListRef.nativeElement.classList.remove('cdk-drop-list-dragging');
-      this.dropListRef.nativeElement.classList.remove('cdk-drag-animating');
+    ldls = ldls.reverse();
+
+    asapScheduler.schedule(() => {
+      this.dls = ldls;
+
+      // one array of siblings (shared for a whole tree)
+      const siblings = this.dls.map((dl) => dl?._dropListRef);
+      // overwrite _getSiblingContainerFromPosition method
+      this.dlq.forEach((dl) => {
+        dl._dropListRef._getSiblingContainerFromPosition = (item, x, y) =>
+          siblings.find((sibling) => sibling._canReceive(item, x, y));
+      });
     });
   }
 
-  drop(event: any) {
-    moveItemInArray(this.view.children, event.previousIndex, event.currentIndex);
-    const group = groupedChildren.get(this.view.id);
-    moveItemInArray(group, event.previousIndex, event.currentIndex);
+  drop(event: any) { //CdkDragDrop<?>
+    if (event.previousContainer === event.container) {
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      const group = groupedChildren.get(this.view.id);
+      moveItemInArray(group, event.previousIndex, event.currentIndex);
+    } else {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      // TODO: move in grouped children
+    }
   }
 
   get ViewMode(): typeof ViewMode {
     return ViewMode;
+  }
+
+  get orientation(): "horizontal" | "vertical" {
+    return this.view.direction as "horizontal" | "vertical";
   }
 }
