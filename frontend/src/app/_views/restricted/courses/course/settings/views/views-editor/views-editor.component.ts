@@ -110,7 +110,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     {name: "By reference", char: "ref"},
     {name: "By value", char: "value"}
   ];
-  optionSelected: "ref" | "value" = null;
+  optionSelected: "ref" | "value" = null;         // mode of adding the Template
 
   _subscription: Subscription;
 
@@ -571,6 +571,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   addTemplateToPage(item: View) {
+    if (!this.optionSelected) {
+      AlertService.showAlert(AlertType.ERROR, "You must choose the way you want to add the template.");
+      return;
+    }
+
+    this.loading.action = true;
+
     // Add child to the selected block
     if (this.selection.get()?.type === ViewType.BLOCK) {
       this.service.add(item, this.selection.get(), this.optionSelected);
@@ -591,6 +598,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.optionSelected = null;
     ModalService.closeModal("add-template");
     this.resetMenus();
+
+    this.loading.action = false;
   }
 
   async savePage() {
@@ -1007,6 +1016,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   openAddTemplateModal(item: any) {
     this.templateToAdd = item;
     ModalService.openModal('add-template');
+  }
+
+  discardAddTemplate() {
+    this.optionSelected = null;
   }
 
   openSaveAsPageModal() {

@@ -354,6 +354,7 @@
   [templateRef]="ADD_TEMPLATE"
   [header]="'Add \'' + templateToAdd.name + '\''"
   [closeBtnText]="'Cancel'"
+  (onClose)="discardAddTemplate()"
   [submitBtnText]="'Add'"
   [submitBtnColor]="'primary'"
   [actionInProgress]="loading.action"
@@ -361,52 +362,41 @@
   (submitBtnClicked)="addTemplateToPage(templateToAdd.view)"
 ></app-modal>
 <ng-template #ADD_TEMPLATE>
-  <div class="w-full flex flex-wrap mb-3">
-    <span class="font-semibold w-full">Choose one of the following options for adding template '{{templateToAdd.name}}'<span class="text-secondary ml-1">*</span>
+  <div class="w-full flex flex-wrap">
+    <span>Choose one of the following options for adding the template '{{templateToAdd.name}}'<span class="text-secondary ml-1">*</span>
     </span>
 
-    <div class="md:w-2/5">
+    <div class="mt-4">
       <app-input-radio
         [id]="'by-reference'"
         [group] = "'duplicate-option'"
         [optionValue] = "duplicateOptions[0].char"
         [color]="'secondary'"
-        [classList]="'mt-2'"
+        [classList]="'text-lg font-semibold'"
         [label]="duplicateOptions[0].name"
         [labelPosition]="'right'"
         [(value)]="optionSelected"
       ></app-input-radio>
+      <p class="pl-[37px] text-sm">
+        Each copy is <strong>individual</strong>.
+        The changes made in the copy version <strong>won't affect</strong> the original, nor vice-versa.
+      </p>
     </div>
-    <div class="md:w-2/5">
+    <div class="mt-8">
       <app-input-radio
         [id]="'by-value'"
         [group] = "'duplicate-option'"
         [optionValue] = "duplicateOptions[1].char"
         [color]="'secondary'"
-        [classList]="'mt-2'"
+        [classList]="'text-lg font-semibold'"
         [label]="duplicateOptions[1].name"
         [labelPosition]="'right'"
         [(value)]="optionSelected"
       ></app-input-radio>
-    </div>
-  </div>
-
-  <!-- Small divider -->
-  <ng-container class="border-b-base-300 border-b-2"></ng-container>
-
-  <div class="mt-6 text-sm">
-    <div>
-      <span class="text-secondary w-full"><strong>Copy by value:</strong></span>
-      <span class="text-opacity-60 w-full">
-        Each copy is <strong>individual</strong>.
-        The changes made in the copy version <strong>won't affect</strong> the original.
-      </span>
-    </div>
-    <div class="mt-1.5">
-      <span class="text-secondary w-full"><strong>Copy by reference:</strong></span>
-      <span class="text-opacity-60 w-full">
-        The changes made in the copy version <strong>will also affect</strong> the original.
-      </span>
+      <p class="pl-[37px] text-sm">
+        The template changes are <strong>propagated</strong>.
+        Changes made in this copy version <strong>will affect</strong> the original, and changes in the original <strong>will affect</strong> this copy.
+      </p>
     </div>
   </div>
 </ng-template>
