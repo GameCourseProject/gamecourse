@@ -44,7 +44,9 @@
          [cdkDropListConnectedTo]="dls"
          [cdkDropListOrientation]="orientation"
     >
-      <div *ngFor="let child of view.children" cdkDrag>
+      <div *ngFor="let child of view.children"
+           cdkDrag [cdkDragDisabled]="cantDrag"
+      >
         <bb-any [view]="child"></bb-any>
       </div>
     </div>

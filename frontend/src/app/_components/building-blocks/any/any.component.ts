@@ -1,4 +1,5 @@
 import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -63,18 +64,18 @@ export class BBAnyComponent implements OnInit {
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
       this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
-
-      if (this.view.mode === ViewMode.EDIT) {
-        addEventListener('keydown', (event: KeyboardEvent) => {
-          if (this.isSelected()) {
-            if (event.key === 'Delete' || event.key === 'Backspace') {
-              event.preventDefault();
-              ModalService.openModal('component-delete-' + this.view.id);
-            }
-          }
-        })
-      }
     });
+
+    if (this.view.mode === ViewMode.EDIT) {
+      addEventListener('keydown', (event: KeyboardEvent) => {
+        if (this.isSelected() && !ModalService.isOpen("component-editor")) {
+          if (event.key === 'Delete' || event.key === 'Backspace') {
+            event.preventDefault();
+            ModalService.openModal('component-delete-' + this.view.id);
+          }
+        }
+      })
+    }
   }
 
   onRightClick(event: MouseEvent) {
@@ -200,7 +201,7 @@ export class BBAnyComponent implements OnInit {
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
   }
@@ -223,7 +224,7 @@ export class BBAnyComponent implements OnInit {
       this.selection.clear();
       this.delete = true;
       this.history.saveState({
-        viewsByAspect: this.service.viewsByAspect,
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
         groupedChildren: groupedChildren
       });
     }
@@ -232,7 +233,7 @@ export class BBAnyComponent implements OnInit {
   duplicateAction() {
     this.service.duplicate(this.view);
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
   }

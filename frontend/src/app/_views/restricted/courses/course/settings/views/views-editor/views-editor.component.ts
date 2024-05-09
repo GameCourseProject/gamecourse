@@ -7,7 +7,7 @@ import {initPageToManage, PageManageData} from "../views/views.component";
 import {ViewType} from "src/app/_domain/views/view-types/view-type";
 import {View, ViewMode} from "src/app/_domain/views/view";
 import {buildView} from "src/app/_domain/views/build-view/build-view";
-import * as _ from "lodash"
+import * as _ from "lodash";
 import {ViewSelectionService} from "src/app/_services/view-selection.service";
 import {ModalService} from 'src/app/_services/modal.service';
 import {AlertService, AlertType} from "src/app/_services/alert.service";
@@ -142,7 +142,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           this.view.switchMode(ViewMode.EDIT);
           initGroupedChildren([]);
           this.history.saveState({
-            viewsByAspect: this.service.viewsByAspect,
+            viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
             groupedChildren: groupedChildren
           });
         }
@@ -157,7 +157,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.templateSettings = { id: null, top: null };
       this.setOptions();
     })
+
     addEventListener('keydown', async (event: KeyboardEvent) => {
+      if (ModalService.isOpen("component-editor")) return;
+
       if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
         (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
       {
@@ -238,7 +241,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
 
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
   }
@@ -562,7 +565,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.service.add(item, this.view, "value");
     }
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
     this.resetMenus();
@@ -589,7 +592,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.service.add(item, this.view, this.optionSelected);
     }
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
 

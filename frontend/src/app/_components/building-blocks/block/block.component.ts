@@ -1,5 +1,5 @@
-import {Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
-import { asapScheduler, asyncScheduler } from 'rxjs';
+import {Component, Input, OnInit, QueryList, ViewChildren} from '@angular/core';
+import { asapScheduler } from 'rxjs';
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {ViewMode} from "../../../_domain/views/view";
 import {
@@ -15,6 +15,11 @@ import {
   DropListRef,
 } from '@angular/cdk/drag-drop';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {HistoryService} from "../../../_services/history.service";
+import {ViewEditorService} from "../../../_services/view-editor.service";
+import * as _ from "lodash";
+import {ModalService} from "../../../_services/modal.service";
+import {ViewSelectionService} from "../../../_services/view-selection.service";
 
 @Component({
   selector: 'bb-block',
@@ -34,6 +39,9 @@ export class BBBlockComponent implements OnInit {
   public dls: CdkDropList[] = [];
 
   constructor(
+    public selection: ViewSelectionService,
+    public service: ViewEditorService,
+    public history: HistoryService
   ) { }
 
   ngOnInit(): void {
@@ -50,7 +58,6 @@ export class BBBlockComponent implements OnInit {
       }
     }
   }
-
 
   ngAfterViewInit() {
     let ldls: CdkDropList[] = [];
@@ -84,6 +91,14 @@ export class BBBlockComponent implements OnInit {
       );
       const group = groupedChildren.get(this.view.id);
       moveItemInArray(group, event.previousIndex, event.currentIndex);
+
+      if (event.previousIndex != event.currentIndex) {
+        this.history.saveState({
+          viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+          groupedChildren: groupedChildren
+        });
+      }
+
     } else {
       transferArrayItem(
         event.previousContainer.data,
@@ -101,5 +116,9 @@ export class BBBlockComponent implements OnInit {
 
   get orientation(): "horizontal" | "vertical" {
     return this.view.direction as "horizontal" | "vertical";
+  }
+
+  get cantDrag(): boolean {
+    return ModalService.isOpen("component-editor");
   }
 }
