@@ -45,6 +45,9 @@ export class BBAnyComponent implements OnInit {
   visible: boolean;
   delete: boolean = false;
 
+  contextMenuVisible = false;
+  contextMenuPos = { x: '0', y: '0' };
+
   constructor(
     private route: ActivatedRoute,
     public selection: ViewSelectionService,
@@ -60,8 +63,27 @@ export class BBAnyComponent implements OnInit {
       this.classes = 'bb-any' + (this.view.events.length > 0 ? ' ' + this.view.events.map(ev => 'ev-' + ev.type).join(' ') : '');
       this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
+
+      if (this.view.mode === ViewMode.EDIT) {
+        addEventListener('keydown', (event: KeyboardEvent) => {
+          if (this.isSelected()) {
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+              event.preventDefault();
+              ModalService.openModal('component-delete-' + this.view.id);
+            }
+          }
+        })
+      }
     });
   }
+
+/*  onRightClick(event) {
+    event.preventDefault();
+
+    this.contextMenuPos.x = event.clientX + 'px';
+    this.contextMenuPos.y = event.clientY + 'px';
+    this.contextMenuVisible = true;
+  }*/
 
 
   /*** ---------------------------------------- ***/
@@ -185,7 +207,8 @@ export class BBAnyComponent implements OnInit {
 
   submitDeleteAction() {
     if (this.isExistingRoot) {
-      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...")
+      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...");
+      ModalService.closeModal('component-delete-' + this.view.id);
     }
     else {
       this.service.delete(this.view);

@@ -70,16 +70,16 @@
         <div class="card-body -mt-2">
           <div class="flex justify-between items-center">
             <span class="text-lg font-semibold">{{page.name}}</span>
-            <div class="dropdown dropdown-right" (click)="$event.stopPropagation()">
+            <div class="dropdown dropdown-end" (click)="$event.stopPropagation()">
               <div tabindex="0" role="button" class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </div>
 
-              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52 -mr-4">
                 <li *ngFor="let action of actions; let i = index" (click)="chooseAction(action.description, page)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
-                    <span class="font-semibold">{{action.description}}</span>
+                    <span>{{action.description}}</span>
                   </div>
                 </li>
               </ul>
@@ -135,17 +135,17 @@
         <div class="card-body -mt-2">
           <div class="flex justify-between items-center">
             <span class="text-lg font-semibold">{{template.name}}</span>
-            <div *ngIf="!template.isSystem" class="dropdown dropdown-right" (click)="$event.stopPropagation()">
+            <div *ngIf="!template.isSystem" class="dropdown dropdown-end" (click)="$event.stopPropagation()">
               <div tabindex="0" role="button" class="btn btn-xs btn-ghost btn-circle h-10 w-10 -mr-4 -my-1">
                 <ng-icon name="feather-more-vertical" size="1.2rem"></ng-icon>
               </div>
 
               <!-- Options dropdown -->
-              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52">
+              <ul tabindex="0" class="dropdown-content z-[1] menu bg-base-300 shadow rounded-box w-52 -mr-4">
                 <li *ngFor="let action of templateActions; let i = index" (click)="chooseTemplateAction(action.description, template)">
                   <div class="flex items-center {{i >= 0 && i < actions.length-1 && action.type !== actions[i+1].type ? 'border-b-base-100 border-b-2' : '' }}">
                     <ng-icon [name]="action.icon" size="1.3rem" class="{{action.color ? 'text-' + action.color : ''}}"></ng-icon>
-                    <span class="font-semibold">{{action.description}}</span>
+                    <span>{{action.description}}</span>
                   </div>
                 </li>
               </ul>
