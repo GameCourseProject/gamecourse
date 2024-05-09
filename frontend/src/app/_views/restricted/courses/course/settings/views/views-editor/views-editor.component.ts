@@ -3,10 +3,8 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
-
 import {initPageToManage, PageManageData} from "../views/views.component";
 import {ViewType} from "src/app/_domain/views/view-types/view-type";
-import {animate, group, style, transition, trigger} from '@angular/animations';
 import {View, ViewMode} from "src/app/_domain/views/view";
 import {buildView} from "src/app/_domain/views/build-view/build-view";
 import * as _ from "lodash"
@@ -158,6 +156,23 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.componentSettings = { id: null, top: null };
       this.templateSettings = { id: null, top: null };
       this.setOptions();
+    })
+    addEventListener('keydown', async (event: KeyboardEvent) => {
+      if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
+        (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
+      {
+        event.preventDefault();
+        await this.doAction('Redo');
+      }
+      else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        await this.doAction('Undo');
+      }
+      else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
+        event.preventDefault();
+        if (this.page || this.template) { await this.saveChanges(); }
+        else if (this.pageToManage) { this.openSaveAsPageModal(); }
+      }
     })
   }
 
