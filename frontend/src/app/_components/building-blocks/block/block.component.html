@@ -35,27 +35,28 @@
 
 <ng-template #EDIT_DEFAULT>
   <div [attr.id]="view.cssId"
-       [classList]="classes">
+       [classList]="classes"
+       cdkDropList [id]="String(view.id)"
+       [cdkDropListData]="view.children"
+       [cdkDropListConnectedTo]="connectedTo"
+       (cdkDropListDropped)="drop($event)"
+       [cdkDropListOrientation]="view.direction">
 
-    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles"
-         cdkDropList
-         [cdkDropListData]="view.children"
-         (cdkDropListDropped)="drop($event)"
-         [cdkDropListConnectedTo]="dls"
-         [cdkDropListOrientation]="orientation"
-    >
-      <div *ngFor="let child of view.children"
-           cdkDrag [cdkDragDisabled]="cantDrag"
-      >
-        <bb-any [view]="child"></bb-any>
-      </div>
+    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
+      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
     </div>
   </div>
 </ng-template>
 
 <ng-template #EDIT_EMPTY>
   <div [attr.id]="view.cssId"
-       [classList]="view.classList + ' p-20'">
+       [classList]="view.classList + ' p-20'"
+       cdkDropList [id]="String(view.id)"
+       [cdkDropListData]="view.children"
+       [cdkDropListConnectedTo]="connectedTo"
+       (cdkDropListDropped)="drop($event)"
+       [cdkDropListOrientation]="view.direction">
+
       (Empty {{view.direction}} block)
   </div>
 </ng-template>

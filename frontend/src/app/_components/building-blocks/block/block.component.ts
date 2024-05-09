@@ -1,7 +1,6 @@
-import {Component, Input, OnInit, QueryList, ViewChildren} from '@angular/core';
-import { asapScheduler } from 'rxjs';
+import {Component, Input, OnInit} from '@angular/core';
 import {ViewBlock} from "../../../_domain/views/view-types/view-block";
-import {ViewMode} from "../../../_domain/views/view";
+import {View, ViewMode} from "../../../_domain/views/view";
 import {
   CdkDragDrop,
   CdkDrag,
@@ -18,7 +17,6 @@ import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-vie
 import {HistoryService} from "../../../_services/history.service";
 import {ViewEditorService} from "../../../_services/view-editor.service";
 import * as _ from "lodash";
-import {ModalService} from "../../../_services/modal.service";
 import {ViewSelectionService} from "../../../_services/view-selection.service";
 
 @Component({
@@ -32,11 +30,6 @@ export class BBBlockComponent implements OnInit {
 
   classes: string;
   children: string;
-
-  @ViewChildren(CdkDropList)
-  private dlq: QueryList<CdkDropList>;
-
-  public dls: CdkDropList[] = [];
 
   constructor(
     public selection: ViewSelectionService,
@@ -59,30 +52,7 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
-  ngAfterViewInit() {
-    let ldls: CdkDropList[] = [];
-
-    this.dlq.forEach((dl) => {
-      console.log('found DropList ' + dl.id);
-      ldls.push(dl);
-    });
-
-    ldls = ldls.reverse();
-
-    asapScheduler.schedule(() => {
-      this.dls = ldls;
-
-      // one array of siblings (shared for a whole tree)
-      const siblings = this.dls.map((dl) => dl?._dropListRef);
-      // overwrite _getSiblingContainerFromPosition method
-      this.dlq.forEach((dl) => {
-        dl._dropListRef._getSiblingContainerFromPosition = (item, x, y) =>
-          siblings.find((sibling) => sibling._canReceive(item, x, y));
-      });
-    });
-  }
-
-  drop(event: any) { //CdkDragDrop<?>
+  drop (event: CdkDragDrop<View[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
@@ -110,15 +80,28 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
+  private getIdsRecursive(item: any): string[] {
+    let ids = [];
+    if ('children' in item) {
+      ids.push(String(item.id));
+      item.children.forEach(childItem => {
+        ids = ids.concat(this.getIdsRecursive(childItem));
+      });
+    }
+    return ids;
+  }
+
+  public get connectedTo(): string[] {
+    let view: View = this.view;
+    while (view.parent) {
+      view = view.parent;
+    }
+    return this.getIdsRecursive(view).reverse();
+  }
+
   get ViewMode(): typeof ViewMode {
     return ViewMode;
   }
 
-  get orientation(): "horizontal" | "vertical" {
-    return this.view.direction as "horizontal" | "vertical";
-  }
-
-  get cantDrag(): boolean {
-    return ModalService.isOpen("component-editor");
-  }
+  protected readonly String = String;
 }

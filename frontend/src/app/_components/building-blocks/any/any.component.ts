@@ -179,6 +179,10 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('save-as-component');
   }
 
+  getCantDrag(): boolean {
+    return ModalService.isOpen("component-editor");
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/

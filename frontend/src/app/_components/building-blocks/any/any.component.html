@@ -11,7 +11,7 @@
 <!-- Edit version -->
 <ng-container *ngIf="!delete && view?.mode === ViewMode.EDIT">
   <div [viewSelection]="view"
-       class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer"
+       class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral/50'}} hover:cursor-pointer"
        (contextmenu)="onRightClick($event)" (mousedown)="selection.close()"
   >
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-30">
@@ -24,7 +24,9 @@
          (click)="onRightClick($event)">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
     </div>
-    <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
+    <div cdkDrag [cdkDragDisabled]="getCantDrag()">
+      <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
+    </div>
   </div>
 </ng-container>
 
