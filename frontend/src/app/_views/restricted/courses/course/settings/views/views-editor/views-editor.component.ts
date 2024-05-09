@@ -42,24 +42,7 @@ import {Subscription} from "rxjs";
 @Component({
   selector: 'app-views-editor',
   templateUrl: './views-editor.component.html',
-  animations: [
-    trigger('dropdownAnimation', [
-      transition(':enter', [
-        style({
-          transformOrigin: 'top',
-          transform: 'scaleY(0.95)',
-          opacity: 0,
-        }),
-        animate('70ms ease-out', style({ transform: 'scaleY(1)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        group([
-          animate('100ms ease-in', style({ opacity: 0 })),
-          animate('100ms ease-in', style({ transform: 'scaleY(0.95)' })),
-        ]),
-      ]),
-    ])
-  ], // FIXME: Could we move this to the scss?
+  styleUrls: ['./views-editor.component.scss']
 })
 export class ViewsEditorComponent implements OnInit, OnDestroy {
 

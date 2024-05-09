@@ -30,7 +30,8 @@ import {AlertService, AlertType} from "../../../_services/alert.service";
 
 @Component({
   selector: 'bb-any',
-  templateUrl: './any.component.html'
+  templateUrl: './any.component.html',
+  styleUrls: ['./any.component.scss']
 })
 export class BBAnyComponent implements OnInit {
 
@@ -45,7 +46,6 @@ export class BBAnyComponent implements OnInit {
   visible: boolean;
   delete: boolean = false;
 
-  contextMenuVisible = false;
   contextMenuPos = { x: '0', y: '0' };
 
   constructor(
@@ -77,14 +77,18 @@ export class BBAnyComponent implements OnInit {
     });
   }
 
-/*  onRightClick(event) {
+  onRightClick(event: MouseEvent) {
     event.preventDefault();
+    event.stopPropagation();
+    this.selection.open(this.view);
 
-    this.contextMenuPos.x = event.clientX + 'px';
+    if (event.clientX + 192 > window.innerWidth) {
+      this.contextMenuPos.x = event.clientX- 192 + 'px';
+    } else {
+      this.contextMenuPos.x = event.clientX + 'px';
+    }
     this.contextMenuPos.y = event.clientY + 'px';
-    this.contextMenuVisible = true;
-  }*/
-
+  }
 
   /*** ---------------------------------------- ***/
   /*** ----------------- Views ---------------- ***/
@@ -164,6 +168,10 @@ export class BBAnyComponent implements OnInit {
 
   isSelected() {
     return this.selection.get() == this.view;
+  }
+
+  isOpen() {
+    return this.isSelected() && this.selection.hasOpen();
   }
 
   openSaveComponentModal() {

@@ -47,7 +47,7 @@
       </div>
 
       <!-- First menu: list for components -->
-      <div [@dropdownAnimation] *ngIf="option.isSelected" class="z-50 absolute w-48 rounded-xl bg-base-300 card card-compact shadow-xl top-16 -left-2">
+      <div *ngIf="option.isSelected" class="z-50 absolute w-48 rounded-xl bg-base-300 card card-compact shadow-xl top-16 -left-2 dropdown-animation">
         <div *ngIf="option.description === 'Add Component'" class="p-4 rounded-xl border-2 border-primary">
           <h2 class="text-xl font-semibold text-center text-base-content pt-1">{{option.subMenu.title}}</h2>
           <div class="divider -my-0.5 before:bg-base-content/10 after:bg-base-content/10"></div>
@@ -62,8 +62,8 @@
         </div>
 
         <!-- Second menu: components/templates themselves -->
-        <div [@dropdownAnimation] *ngIf="activeSubMenu"
-             class="z-50 border-2 border-primary absolute w-96 rounded-xl shadow-xl bg-primary card card-compact
+        <div *ngIf="activeSubMenu"
+             class="z-50 border-2 border-primary absolute w-96 rounded-xl shadow-xl bg-primary card card-compact dropdown-animation
                         {{option.description === 'Add Component' && 'left-[12.5rem]'}}">
           <div>
             <div class="flex flex-row items-center justify-center text-white pb-2 pt-3">
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Custom and Shared Template Settings Pop-up -->
-        <div [@dropdownAnimation] *ngIf="templateSettings?.id" class="absolute z-50 left-[22.5rem]" [ngStyle]="{'top.px': templateSettings.top}">
+        <div *ngIf="templateSettings?.id" class="absolute z-50 left-[22.5rem] dropdown-animation" [ngStyle]="{'top.px': templateSettings.top}">
           <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateTemplate()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareTemplate()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
@@ -163,7 +163,7 @@
         </div>
 
         <!-- Custom and Shared Component Settings Pop-up -->
-        <div [@dropdownAnimation] *ngIf="componentSettings?.id" class="absolute z-50 left-[35rem]" [ngStyle]="{'top.px': componentSettings.top}">
+        <div *ngIf="componentSettings?.id" class="absolute z-50 left-[35rem] dropdown-animation" [ngStyle]="{'top.px': componentSettings.top}">
           <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
