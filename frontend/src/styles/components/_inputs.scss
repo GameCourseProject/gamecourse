@@ -83,22 +83,38 @@
 }
 
 .ss-main {
-  @apply select select-bordered text-base-content border-2 w-full input-md h-auto #{!important};
+  @apply input input-bordered text-base-content border-2 w-full my-0 py-0 #{!important};
 
-  &.ss-open-below {
-    outline: 2px solid hsla(var(--bc) / 0.2);
-    outline-offset: 2px;
+  &.sm {
+    @apply input-sm #{!important};
+  }
+  &.xs {
+    @apply input-xs #{!important};
+  }
+  &.md {
+    @apply input-md #{!important};
+  }
+  &.lg {
+    @apply input-lg #{!important};
   }
 
   .ss-deselect {
-    @apply mr-5 hover:cursor-pointer #{!important};
+    @apply ml-auto hover:cursor-pointer #{!important};
     svg path {
       @apply stroke-secondary #{!important};
     }
   }
 
+  svg path {
+    @apply stroke-base-content #{!important};
+  }
+
   .ss-values {
     @apply flex flex-wrap items-center text-base-content/75 #{!important};
+
+    .ss-single {
+      @apply text-sm text-base-content #{!important};
+    }
 
     .ss-value {
       @apply badge badge-outline border-base-content/75 px-1 #{!important};
@@ -117,10 +133,6 @@
 
   .ss-placeholder {
     @apply h-4 font-normal -ml-1 text-neutral/60 #{!important};
-  }
-
-  .ss-arrow, .ss-add {
-    @apply hidden #{!important};
   }
 
 }

@@ -4,7 +4,7 @@
     [id]="'aux-var-name'"
     [(value)]="newName"
     [topLabel]="'Name:'"
-    [placeholder]="'courseColor'"
+    [placeholder]="'e.g: courseColor'"
     [size]="'sm'"
   ></app-input-text>
   <div *ngIf="!edit && !new" class="w-52 mr-4">
@@ -18,7 +18,7 @@
       [topLabel]="'Expression:'"
       [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
         See the \'Additional Tools\' box for more information.'"
-      [placeholder]="'{courses.getCourseById{%course}.color}'"
+      [placeholder]="'e.g: {courses.getCourseById{%course}.color}'"
       [size]="'sm'"
     ></app-input-text>
     <div *ngIf="!edit && !new">
