@@ -368,12 +368,13 @@
         course. If there are 3 skill trees in the course, the component will be repeated 3 times.'"
       [helperPosition]="'right'"
       [placeholder]="'e.g. {skillTrees.trees}'"
+      [classList]="'mb-6'"
     ></app-input-text>
   </div>
 
   <!-- Events -->
   <ng-container *ngIf="viewToEdit.type !== ViewType.ROW">
-    <div class="flex flex-row mt-6 justify-start items-center gap-2">
+    <div class="flex flex-row justify-start items-center gap-2">
       <app-simple-helper
         [position]="'right'"
         [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
@@ -527,7 +528,7 @@
   </ng-container> <!----------------------------->
 
   <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
-    <button class="ml-auto btn btn-ghost" (click)="initViewToEdit()">Discard</button>
+    <button class="ml-auto btn btn-ghost" (click)="discardView()">Discard</button>
     <button class="btn btn-primary" (click)="saveView()">Save</button>
   </div>
 
