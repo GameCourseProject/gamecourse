@@ -113,7 +113,7 @@
     @apply flex flex-wrap items-center text-base-content/75 #{!important};
 
     .ss-single {
-      @apply text-sm text-base-content #{!important};
+      @apply text-sm text-base-content m-0 #{!important};
     }
 
     .ss-value {
