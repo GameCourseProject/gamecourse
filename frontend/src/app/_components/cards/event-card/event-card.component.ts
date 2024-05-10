@@ -1,8 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Output, EventEmitter } from '@angular/core';
-import { Event } from 'src/app/_domain/views/events/event';
-import { EventType } from 'src/app/_domain/views/events/event-type';
-import { AlertService, AlertType } from 'src/app/_services/alert.service';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Event} from 'src/app/_domain/views/events/event';
+import {EventType} from 'src/app/_domain/views/events/event-type';
+import {AlertService, AlertType} from 'src/app/_services/alert.service';
+import {EventAction, EventActionHelper} from "../../../_domain/views/events/event-action";
 
 @Component({
   selector: 'app-event-card',
@@ -17,23 +17,19 @@ export class EventCardComponent implements OnInit {
   @Output() updateEvent = new EventEmitter<{ type: EventType, expression: string }>();
 
   edit?: boolean = false;
-
-  eventToAdd: { type: EventType, expression: string };
+  refresh?: boolean = false;
+  eventToAdd: { type: EventType, action: EventAction, args: string[] } = { type: null, action: null, args: [] };
 
   constructor(
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     if (this.event) {
-      this.eventToAdd = { type: this.event.type, expression: this.event.expression };
+      this.eventToAdd.type = this.event.type;
+      this.eventToAdd.action = this.event.action;
+      this.eventToAdd.args = this.extractArguments(this.event.expression);
     }
-    else {
-      this.eventToAdd = { type: null, expression: "" };
-    }
-  }
-
-  getEventTypes() {
-    return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
   }
 
   deleteAction() {
@@ -41,13 +37,23 @@ export class EventCardComponent implements OnInit {
   }
 
   addNewAction() {
-    if (this.eventToAdd.type != null && this.eventToAdd.expression != "") {
-      this.createEvent.emit({
-        type: this.eventToAdd.type,
-        expression: this.eventToAdd.expression,
-      });
-      this.eventToAdd.type = null;
-      this.eventToAdd.expression = "";
+    if (this.eventToAdd.type != null && this.eventToAdd.action != null) {
+      this.refresh = true;
+
+      const preparedArguments = this.prepareArgumentsForAction();
+
+      if (preparedArguments != null) {
+        this.createEvent.emit({
+          type: this.eventToAdd.type,
+          expression: "{" + EventActionHelper[this.eventToAdd.action].name + "(" + preparedArguments.join(",") + ")}",
+        });
+        this.event = null;
+        this.eventToAdd = { type: null, action: null, args: [] };
+
+        this.cdr.detectChanges();
+      }
+
+      this.refresh = false;
     }
     else AlertService.showAlert(AlertType.ERROR, "Event must have When and Do");
   }
@@ -57,12 +63,17 @@ export class EventCardComponent implements OnInit {
   }
 
   saveAction() {
-    if (this.eventToAdd.type != null && this.eventToAdd.expression != "") {
-      this.edit = false;
-      this.updateEvent.emit({
-        type: this.eventToAdd.type,
-        expression: this.eventToAdd.expression,
-      });
+    if (this.eventToAdd.type != null && this.eventToAdd.action != null) {
+      const preparedArguments = this.prepareArgumentsForAction();
+
+      if (preparedArguments != null) {
+        this.edit = false;
+
+        this.updateEvent.emit({
+          type: this.eventToAdd.type,
+          expression: "{" + EventActionHelper[this.eventToAdd.action].name + "(" + preparedArguments.join(",") + ")}",
+        });
+      }
     }
     else AlertService.showAlert(AlertType.ERROR, "Event must have When and Do");
   }
@@ -72,4 +83,74 @@ export class EventCardComponent implements OnInit {
     this.ngOnInit();
   }
 
+  getEventTypes() {
+    return Object.values(EventType).map((value) => { return ({ value: value, text: value.capitalize() }) })
+  }
+
+  getActionTypes() {
+    return Object.values(EventAction).map((action) => ({
+      value: action,
+      text: EventActionHelper[action].name
+    }));
+  }
+
+
+  /*-------------------------------------*/
+  /*-------------- Helpers --------------*/
+  /*-------------------------------------*/
+
+  protected readonly EventActionHelper = EventActionHelper;
+
+  prepareArgumentsForAction(): string[] | null {
+    const argsToSend = [];
+
+    let index = 0;
+
+    for (let value of EventActionHelper[this.eventToAdd.action].args) {
+      if (this.eventToAdd.args[index]) {
+        argsToSend.push(this.eventToAdd.args[index]);
+      }
+      else if (!value.containsWord("(optional)")) {
+        AlertService.showAlert(AlertType.ERROR, "Missing mandatory arguments.");
+        return null;
+      }
+      index++;
+    }
+    return argsToSend;
+  }
+
+  extractArguments(str: string): string[] {
+    const start = str.indexOf('(');
+    const end = str.lastIndexOf(')');
+    if (start === -1 || end === -1 || start >= end) return [];
+
+    const argsStr = str.substring(start + 1, end).trim();
+
+    // Split arguments based on commas, ignoring those within parentheses
+    const args = [];
+    let arg = '';
+    let level = 0;
+
+    for (let i = 0; i < argsStr.length; i++) {
+      const char = argsStr[i];
+      if (char === '(') {
+        level++;
+      } else if (char === ')') {
+        level--;
+      }
+
+      if (char === ',' && level === 0) {
+        args.push(arg.trim());
+        arg = '';
+      } else {
+        arg += char;
+      }
+    }
+
+    if (arg.trim() !== '') {
+      args.push(arg.trim());
+    }
+
+    return args;
+  };
 }

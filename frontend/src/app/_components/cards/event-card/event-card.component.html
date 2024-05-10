@@ -1,7 +1,7 @@
-<div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 px-5 {{new || edit ? 'py-2' : 'py-6'}}">
-  <div class="w-36">
+<div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 {{new || edit ? 'py-2 px-5' : 'py-3.5 px-6'}}">
+  <div class="w-fit">
     <app-input-select
-      *ngIf="edit || new"
+      *ngIf="(edit || new) && !refresh"
       [id]="'event-when'"
       [(value)]="eventToAdd.type"
       [options]="getEventTypes()"
@@ -10,21 +10,45 @@
       [search]="false"
       [classList]="'-mt-2'"
       [size]="'sm'"
+      [required]="true"
     ></app-input-select>
-    <div *ngIf="!edit && !new">
-      <span class="block font-semibold text-md">When:</span>{{event.type}}
+    <div *ngIf="!edit && !new" class="mr-4">
+      <span class="block font-semibold text-md">When:</span>{{event.type.capitalize()}}
     </div>
   </div>
-  <div class="grow">
-    <app-input-text
-      *ngIf="edit || new"
-      [id]="'event-do'"
-      [(value)]="eventToAdd.expression"
-      [topLabel]="'Do:'"
-      [placeholder]="'e.g: {actions.goToPage(pages.getPageByName(\'Awards\').id, %user)}'"
-      [classList]="'-mt-2'"
-      [size]="'sm'"
-    ></app-input-text>
+  <div class="w-full flex flex-row items-end">
+    <ng-container *ngIf="edit || new">
+      <span class="text-xl mb-0.5 text-info pr-1">{{"{"}}</span>
+      <div class="w-48">
+        <app-input-select
+          *ngIf="(edit || new) && !refresh"
+          [id]="'event-action'"
+          [(value)]="eventToAdd.action"
+          [options]="getActionTypes()"
+          [placeholder]="'Action'"
+          [search]="false"
+          [classList]="'-mt-2'"
+          [size]="'sm'"
+          [topLabel]="'Do:'"
+          [required]="true"
+        ></app-input-select>
+      </div>
+      <div class="gap-1 pl-1 flex flex-row items-end" *ngIf="eventToAdd.action">
+        <ng-container *ngFor="let arg of EventActionHelper[eventToAdd.action].args; let i = index; let first = first; let last = last">
+          <span *ngIf="first" class="text-xl mb-0.5">(</span>
+          <app-input-text
+            [id]="'event-arg-' + i"
+            [(value)]="eventToAdd.args[i]"
+            [placeholder]="EventActionHelper[eventToAdd.action].args[i]"
+            [classList]="'-mt-2'"
+            [size]="'sm'"
+          ></app-input-text>
+          <span *ngIf="!last" class="text-xl mb-0.5">, </span>
+          <span *ngIf="last" class="text-xl mb-0.5">)</span>
+        </ng-container>
+      </div>
+      <span class="text-xl mb-0.5 text-info pl-1">{{"}"}}</span>
+    </ng-container>
     <div *ngIf="!edit && !new">
       <span class="block font-semibold text-md">Do:</span>{{event.expression}}
     </div>
