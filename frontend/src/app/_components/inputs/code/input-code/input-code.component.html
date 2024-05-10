@@ -46,7 +46,7 @@
       <!-- Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
-          <div class="w-[calc(50%-0.25rem)] h-full flex flex-col">
+          <div class="w-fit h-full flex flex-col">
             <div class="justify-center flex mb-1.5">
               <app-input-search
                 [id] = "'manual'"
@@ -80,21 +80,21 @@
           </div>
 
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content">
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
             <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
               Select a function
             </span>
 
             <div *ngIf="selectedFunction" class="ml-2">
-              <div class="border-b border-gray-200 mb-4">
-                <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
+              <div class="border-base-content/10 border-b-2 mb-4">
+                <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
-                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
-                <div *ngFor="let arg of selectedFunction.args, let i = index">
-                    <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                      {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                <span class="text-secondary">{{selectedFunction.keyword}}</span> (
+                <div *ngFor="let arg of selectedFunction.args, let i = index" class="inline">
+                    <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
+                      {{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
                 </div>
 
                 <span>) : {{selectedFunction.returnType}}</span>

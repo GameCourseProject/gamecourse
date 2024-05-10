@@ -339,59 +339,47 @@
   <div class="prose">
     <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
   </div>
-  <div class="flex flex-row gap-10">
-    <div class="mt-2">
-      <div class="flex flex-row justify-start items-center gap-2">
-        <app-simple-helper
+  <div class="mt-2">
+    <div class="flex flex-row justify-start items-center gap-2">
+      <app-simple-helper
         [position]="'right'"
-        [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'"></app-simple-helper>
-        <span class="block font-semibold text-md">Auxiliary Variables</span>
-      </div>
-
-      <!-- Variables -->
-      <div class="flex flex-col gap-2 mb-2 grow-0">
-        <!-- Existing -->
-        <div *ngFor="let variable of viewToEdit.variables; index as i">
-          <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
-        </div>
-        <!-- New -->
-        <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
-      </div>
-
-      <!-- Data Iteration -->
-      <app-input-text
-        [id]="'data-iter'"
-        [(value)]="viewToEdit.loopData"
-        [topLabel]="'Data Iteration'"
-        [helperText]="'Determines for which items this component will be repeated.
-          \n E.g. {skillTrees.trees} Means that this component will be repeated for each of the skill trees available in this
-          course. If there are 3 skill trees in the course, the component will be repeated 3 times.'"
-        [helperPosition]="'right'"
-        [placeholder]="'e.g. {skillTrees.trees}'"
-      ></app-input-text>
+        [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'">
+      </app-simple-helper>
+      <span class="block font-semibold text-md">Auxiliary Variables</span>
     </div>
 
-    <!-- Additional Tools -->
-    <div class="w-full overflow-x-auto">
-      <app-input-code
-        *ngIf="additionalToolsTabs"
-        [id]="'component-tools'"
-        [title]="'Additional Tools'"
-        [tabs]="additionalToolsTabs"
-      ></app-input-code>
+    <!-- Variables -->
+    <div class="flex flex-col gap-2 mb-4">
+      <!-- Existing -->
+      <div *ngFor="let variable of viewToEdit.variables; index as i">
+        <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
+      </div>
+      <!-- New -->
+      <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
     </div>
+
+    <!-- Data Iteration -->
+    <app-input-text
+      [id]="'data-iter'"
+      [(value)]="viewToEdit.loopData"
+      [topLabel]="'Data Iteration'"
+      [helperText]="'Determines for which items this component will be repeated.
+        \n E.g. {skillTrees.trees} Means that this component will be repeated for each of the skill trees available in this
+        course. If there are 3 skill trees in the course, the component will be repeated 3 times.'"
+      [helperPosition]="'right'"
+      [placeholder]="'e.g. {skillTrees.trees}'"
+    ></app-input-text>
   </div>
 
   <!-- Events -->
-  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW"> <!----------------------------->
-
-    <div class="flex flex-row mt-2 justify-start items-center gap-2">
+  <ng-container *ngIf="viewToEdit.type !== ViewType.ROW">
+    <div class="flex flex-row mt-6 justify-start items-center gap-2">
       <app-simple-helper
         [position]="'right'"
         [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
       <span class="block font-semibold text-md">Events</span>
     </div>
-    <div class="flex flex-col gap-2 mb-2">
+    <div class="flex flex-col gap-2 mb-4">
       <!-- Existing -->
       <div *ngFor="let event of viewToEdit.events; index as i">
         <app-event-card [event]="event" (deleteEvent)="deleteEvent(i)" (updateEvent)="updateEvent($event, i)"/>
@@ -399,8 +387,17 @@
       <!-- New -->
       <app-event-card [new]="true" (createEvent)="addEvent($event)"/>
     </div>
+  </ng-container>
 
-  </ng-container> <!----------------------------->
+  <!-- Additional Tools -->
+  <div class="w-full overflow-x-auto pb-2">
+    <app-input-code
+      *ngIf="additionalToolsTabs"
+      [id]="'component-tools'"
+      [title]="'Additional Tools'"
+      [tabs]="additionalToolsTabs"
+    ></app-input-code>
+  </div>
 
 
   <!--------------------------------------------------->

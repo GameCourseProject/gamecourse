@@ -79,16 +79,18 @@ export class BBAnyComponent implements OnInit {
   }
 
   onRightClick(event: MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.selection.open(this.view);
+    if (!ModalService.isOpen("component-editor")) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.selection.open(this.view);
 
-    if (event.clientX + 192 > window.innerWidth) {
-      this.contextMenuPos.x = event.clientX- 192 + 'px';
-    } else {
-      this.contextMenuPos.x = event.clientX + 'px';
+      if (event.clientX + 192 > window.innerWidth) {
+        this.contextMenuPos.x = event.clientX- 192 + 'px';
+      } else {
+        this.contextMenuPos.x = event.clientX + 'px';
+      }
+      this.contextMenuPos.y = event.clientY + 'px';
     }
-    this.contextMenuPos.y = event.clientY + 'px';
   }
 
   /*** ---------------------------------------- ***/
