@@ -175,43 +175,49 @@
     </div>
 
     <!-- Right side buttons -->
-    <div class="flex flex-row gap-2 ml-auto">
-      <!-- Aspects -->
-      <div class="dropdown dropdown-hover dropdown-end">
-        <label tabindex="0" class="btn btn-sm btn-primary btn-outline gap-2 m-1">
-          {{'Viewer: ' + (service.selectedAspect?.viewerRole ?? 'none') + ' | User: ' + (service.selectedAspect?.userRole ?? 'none')}}
-          <ng-icon [name]="'feather-chevron-down'" size="1.2rem" color="fillCurrent"></ng-icon>
-        </label>
-        <ul tabindex="0" class="dropdown-content p-2 shadow bg-base-300 rounded-box menu menu-vertical block max-h-72 overflow-y-auto min-w-max">
-          <li (click)="doAction('Manage Versions')"><a>Manage Versions</a></li>
-          <div class="divider divider-primary -my-1"></div>
-          <li *ngFor="let aspect of aspects" (click)="switchToAspect(aspect)"><a>
-            <ng-icon [ngClass]="{'invisible' : !aspectIsSelected(aspect)}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
-            {{'Viewer: ' + (aspect.viewerRole ?? 'none') + ' | User: ' + (aspect.userRole ?? 'none')}}
-          </a></li>
-        </ul>
+    <div class="flex flex-row ml-auto">
+      <div class="border-r-base-content/10 border-r-2 mr-6">
+        <span class="mr-3">Version</span>
+        <!-- Aspects -->
+        <div class="dropdown dropdown-hover dropdown-end mr-6">
+          <label tabindex="0" class="btn btn-sm btn-primary btn-outline gap-2">
+            {{'Viewer: ' + (service.selectedAspect?.viewerRole ?? 'none') + ' | User: ' + (service.selectedAspect?.userRole ?? 'none')}}
+            <ng-icon [name]="'feather-chevron-down'" size="1.2rem" color="fillCurrent"></ng-icon>
+          </label>
+          <ul tabindex="0" class="dropdown-content p-2 shadow bg-base-300 rounded-box menu menu-vertical block max-h-72 overflow-y-auto min-w-max">
+            <li (click)="doAction('Manage Versions')"><a>Manage Versions</a></li>
+            <div class="divider divider-primary -my-1"></div>
+            <li *ngFor="let aspect of aspects" (click)="switchToAspect(aspect)"><a>
+              <ng-icon [ngClass]="{'invisible' : !aspectIsSelected(aspect)}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
+              {{'Viewer: ' + (aspect.viewerRole ?? 'none') + ' | User: ' + (aspect.userRole ?? 'none')}}
+            </a></li>
+          </ul>
+        </div>
       </div>
 
-      <!-- Previews -->
-      <div class="dropdown dropdown-hover dropdown-end">
-        <label tabindex="0" class="btn btn-sm btn-ghost gap-2 m-1">
-          Preview
-          <ng-icon [name]="'feather-chevron-down'" size="1.2rem" color="fillCurrent"></ng-icon>
-        </label>
-        <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-300 rounded-box min-w-max">
-          <li (click)="doAction('Raw (default)')"><a>
-            <ng-icon [ngClass]="{'invisible' : 'raw' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
-            Raw (default)
-          </a></li>
-          <li (click)="doAction('Layout preview (mock data)')" class="{{!page ? 'disabled' : ''}}"><a>
-            <ng-icon [ngClass]="{'invisible' : 'mock' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
-            Layout preview (mock data)
-          </a></li>
-          <li (click)="doAction('Final preview (real data)')" class="{{!page ? 'disabled' : ''}}"><a>
-            <ng-icon [ngClass]="{'invisible' : 'real' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
-            Final preview (real data)
-          </a></li>
-        </ul>
+      <div>
+        <span class="mr-3">Preview</span>
+        <!-- Previews -->
+        <div class="dropdown dropdown-hover dropdown-end mr-2">
+          <label tabindex="0" class="btn btn-sm btn-secondary btn-outline justify-between w-24">
+            {{ previewMode.capitalize() }}
+            <ng-icon [name]="'feather-chevron-down'" size="1.2rem" color="fillCurrent"></ng-icon>
+          </label>
+          <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-300 rounded-box min-w-max">
+            <li (click)="doAction('Raw (default)')"><a>
+              <ng-icon [ngClass]="{'invisible' : 'raw' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
+              Raw (default)
+            </a></li>
+            <li (click)="doAction('Layout preview (mock data)')" class="{{!page ? 'disabled' : ''}}"><a>
+              <ng-icon [ngClass]="{'invisible' : 'mock' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
+              Layout preview (mock data)
+            </a></li>
+            <li (click)="doAction('Final preview (real data)')" class="{{!page ? 'disabled' : ''}}"><a>
+              <ng-icon [ngClass]="{'invisible' : 'real' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
+              Final preview (real data)
+            </a></li>
+          </ul>
+        </div>
       </div>
 
     </div>
