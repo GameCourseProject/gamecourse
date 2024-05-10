@@ -46,17 +46,15 @@
       <!-- Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
-          <div class="w-fit h-full flex flex-col">
-            <div class="justify-center flex mb-1.5">
-              <app-input-search
-                [id] = "'manual'"
-                [size]="'sm'"
-                [classList]="'mt-1'"
-                [items] = "originalFunctions"
-                [placeholder]="'Search for function...'"
-                (valueChange)="filterFunctions($event)">
-              </app-input-search>
-            </div>
+          <div class="grow-0 shrink-0 w-60 h-full flex flex-col">
+            <app-input-search
+              [id] = "'manual'"
+              [size]="'sm'"
+              [classList]="'mt-1 mb-1.5'"
+              [items] = "originalFunctions"
+              [placeholder]="'Search for function...'"
+              (valueChange)="filterFunctions($event)">
+            </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
               <div *ngFor="let namespace of tab.namespaces">
                 <ng-container *ngIf="containsFunctions(namespace)">
