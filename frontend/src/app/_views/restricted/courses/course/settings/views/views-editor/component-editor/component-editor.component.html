@@ -391,7 +391,7 @@
   </ng-container>
 
   <!-- Additional Tools -->
-  <div class="w-full overflow-x-auto pb-2">
+  <div class="w-full overflow-x-auto {{ viewToEdit.type === ViewType.ROW ? 'pb-8' : 'pb-2' }}">
     <app-input-code
       *ngIf="additionalToolsTabs"
       [id]="'component-tools'"
@@ -464,7 +464,7 @@
       <app-simple-helper [position]="'right'" [text]="'Use this section to style how the component should look like'"></app-simple-helper>
       <span class="block font-semibold text-lg">Interface Design</span>
     </div>
-    <div class="w-full h-full grid grid-cols-2 gap-8">
+    <div class="w-full h-full grid grid-cols-2 gap-8 {{saveButton ? 'pb-16' : ''}}">
       <div>
         <app-input-text
           [id]="'design-id'"
@@ -527,9 +527,11 @@
 
   </ng-container> <!----------------------------->
 
-  <div *ngIf="saveButton" class="flex w-full gap-2 mt-5">
-    <button class="ml-auto btn btn-ghost" (click)="discardView()">Discard</button>
-    <button class="btn btn-primary" (click)="saveView()">Save</button>
+  <div *ngIf="saveButton" class="flex w-full gap-2 fixed bottom-[92px] left-0">
+    <div class="py-4 mr-[62.8px] ml-[52px] px-4 bg-base-100 w-full flex justify-end border-b-base-300 border-b-[18px]">
+      <button class="ml-auto btn btn-ghost btn-sm" (click)="discardView()">Discard</button>
+      <button class="btn btn-primary btn-sm" (click)="saveView()">Save {{ viewToEdit.type === ViewType.ROW ? 'Row' : 'Cell' }}</button>
+    </div>
   </div>
 
 </div>
@@ -549,7 +551,8 @@
     <button class="btn rounded-b-none border-none text-base-content {{tableSelectedTab == 'Columns' ? 'bg-base-300 hover:bg-base-300' : 'bg-base-100 hover:bg-base-200'}}"
             (click)="tableSelectedTab = 'Columns'">Columns</button>
   </div>
-  <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}">
+  <div class="bg-base-300 rounded-xl p-6 {{tableSelectedTab == 'Overall' && 'rounded-tl-none'}}
+      {{(cellToEdit && tableSelectedTab == 'Columns') || (rowToEdit && tableSelectedTab == 'Rows') ? '-mb-2' : ''}}">
     <ng-container *ngIf="tableSelectedTab == 'Overall'" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 
     <!--------------------- Rows Tab --------------------->

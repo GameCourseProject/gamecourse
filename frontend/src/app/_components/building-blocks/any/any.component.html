@@ -60,7 +60,7 @@
   [header]="'Edit Component'"
   [xButton]="false"
   [closeBtnText]="'Cancel'"
-  [submitBtnText]="'Save'"
+  [submitBtnText]="'Save ' + (view.type === ViewType.TABLE ? 'Table' : '')"
   [size]="'lg'"
   [static]="true"
   (click)="$event.stopPropagation()"
