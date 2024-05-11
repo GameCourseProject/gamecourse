@@ -340,7 +340,7 @@
     <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
   </div>
   <div class="mt-2">
-    <div class="flex flex-row justify-start items-center gap-2">
+    <div class="flex flex-row justify-start items-center gap-2 pb-2">
       <app-simple-helper
         [position]="'right'"
         [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'">
@@ -350,6 +350,21 @@
 
     <!-- Variables -->
     <div class="flex flex-col gap-2 mb-4">
+
+      <!-- Globals -->
+      <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
+        <input type="checkbox" />
+        <div class="collapse-title px-5">
+          <span class="font-semibold">Click</span> to reveal the always available variables
+        </div>
+        <div class="collapse-content">
+          <span class="text-info">%course</span> -> id of the course that the user is manipulating <br>
+          <span class="text-info">%user</span> -> id of the user associated to the page which is being displayed <br>
+          <span class="text-info">%viewer</span> -> id of the user that is currently logged in watching the page <br>
+          <span class="text-info">%item</span> -> used to access the values of the collection being iterated
+        </div>
+      </div>
+
       <!-- Existing -->
       <div *ngFor="let variable of viewToEdit.variables; index as i">
         <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
@@ -362,10 +377,10 @@
     <app-input-text
       [id]="'data-iter'"
       [(value)]="viewToEdit.loopData"
-      [topLabel]="'Data Iteration'"
+      [topLabel]="'List of items to display this component for'"
       [helperText]="'Determines for which items this component will be repeated.
         \n E.g. {skillTrees.trees} Means that this component will be repeated for each of the skill trees available in this
-        course. If there are 3 skill trees in the course, the component will be repeated 3 times.'"
+        course. You can then access each with %item'"
       [helperPosition]="'right'"
       [placeholder]="'e.g. {skillTrees.trees}'"
       [classList]="'mb-6'"
@@ -374,7 +389,7 @@
 
   <!-- Events -->
   <ng-container *ngIf="viewToEdit.type !== ViewType.ROW">
-    <div class="flex flex-row justify-start items-center gap-2">
+    <div class="flex flex-row justify-start items-center gap-2 pb-2">
       <app-simple-helper
         [position]="'right'"
         [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
