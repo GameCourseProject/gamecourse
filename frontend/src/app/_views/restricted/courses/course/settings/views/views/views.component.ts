@@ -59,7 +59,7 @@ export class ViewsComponent implements OnInit {
       'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
     [{ icon: 'jam-pencil-f', description: 'Edit', type: 'edit', color: 'warning' },
      { icon: 'feather-type', description: 'Rename', type: 'management' },
-     { icon: 'tabler-eye', description: 'Preview', type: 'management' },
+     { icon: 'jam-eye-f', description: 'Preview', type: 'management' },
      { icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
      { icon: 'feather-sliders', description: 'Configure visibility', type: 'configuration' },
      { icon: 'jam-upload', description: 'Export', type: 'configuration' },
@@ -73,7 +73,7 @@ export class ViewsComponent implements OnInit {
       'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
     [{ icon: 'jam-pencil-f', description: 'Edit', type: 'edit', color: 'warning' },
      { icon: 'feather-type', description: 'Rename', type: 'management' },
-     { icon: 'tabler-eye', description: 'Preview', type: 'management' },
+     { icon: 'jam-eye-f', description: 'Preview', type: 'management' },
      { icon: 'jam-padlock-f', description: 'Make public/private', type: 'configuration' },
      { icon: 'jam-trash-f', description: 'Delete', type: 'configuration', color: 'error' }
     ];
@@ -83,7 +83,7 @@ export class ViewsComponent implements OnInit {
     color?: 'primary' | 'primary-content' | 'secondary' | 'secondary-content' |
       'accent' | 'accent-content' | 'neutral' | 'neutral-content' | 'info' | 'info-content' |
       'success' | 'success-content' | 'warning' | 'warning-content' | 'error' | 'error-content'  }[] =
-    [{ icon: 'tabler-eye', description: 'Preview', type: 'management' },
+    [{ icon: 'jam-eye-f', description: 'Preview', type: 'management' },
     ];
 
   visibilityCheckbox: boolean;                    // For 'configure-visibility' modal

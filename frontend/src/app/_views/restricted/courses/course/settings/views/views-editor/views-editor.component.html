@@ -158,7 +158,7 @@
           <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateTemplate()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareTemplate()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
-            <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteTemplate()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
+            <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteTemplate()"><a><ng-icon name="jam-trash-f" size="1.5rem" class="text-error"/>Delete</a></li>
           </ul>
         </div>
 
@@ -167,7 +167,7 @@
           <ul tabindex="0" class="menu p-2 shadow bg-base-300 rounded-box w-48">
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Shared'" (click)="makePrivateComponent()"><a><ng-icon name="jam-padlock-f" size="1.5rem"/>Make Private</a></li>
             <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="shareComponent()"><a><ng-icon name="jam-padlock-open-f" size="1.5rem"/>Share</a></li>
-            <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
+            <li *ngIf="getSelectedCategories()[0]['type'] == 'Custom'" (click)="deleteComponent()"><a><ng-icon name="jam-trash-f" size="1.5rem" class="text-error"/>Delete</a></li>
           </ul>
         </div>
 

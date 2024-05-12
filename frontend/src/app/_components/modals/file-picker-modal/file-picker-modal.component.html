@@ -44,10 +44,10 @@
                 <button *ngIf="content.type === ContentType.FILE"
                         class="hidden group-hover:block absolute top-0 right-0 btn btn-error btn-sm py-1 px-2 rounded-full"
                         (click)="delete(content.name)">
-                  <ng-icon name="jamTrashF"/>
+                  <ng-icon name="jam-trash-f"/>
                 </button>
 
-                <ng-icon *ngIf="content.type === ContentType.FOLDER" name="tabler-folder" size="4rem"></ng-icon>
+                <ng-icon *ngIf="content.type === ContentType.FOLDER" name="jam-folder-f" size="4rem"></ng-icon>
 
                 <img *ngIf="content.type === ContentType.FILE && isImage(content)"
                       class="w-[3.75rem] h-[4rem]"

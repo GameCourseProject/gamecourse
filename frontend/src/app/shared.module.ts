@@ -173,7 +173,8 @@ import {
   jamTrashF,
   jamUpload,
   jamBox,
-  jamShuffle
+  jamShuffle,
+  jamFolderF
 } from "@ng-icons/jam-icons";
 
 import {
@@ -206,13 +207,11 @@ import {
   tablerCloudUpload,
   tablerCoin,
   tablerColorSwatch,
-  tablerCopy,
   tablerDeviceDesktop,
   tablerEye,
   tablerEyeOff,
   tablerFlame,
   tablerFlask,
-  tablerFolder,
   tablerGavel,
   tablerGift,
   tablerIdBadge2,
@@ -501,6 +500,7 @@ import {
       jamUpload,
       jamBox,
       jamShuffle,
+      jamFolderF,
 
       tablerAlertTriangle,
       tablerArchive,
@@ -532,10 +532,8 @@ import {
       tablerCoin,
       tablerColorSwatch,
       tablerDeviceDesktop,
-      tablerCopy,
       tablerEye,
       tablerEyeOff,
-      tablerFolder,
       tablerFlame,
       tablerFlask,
       tablerGavel,
