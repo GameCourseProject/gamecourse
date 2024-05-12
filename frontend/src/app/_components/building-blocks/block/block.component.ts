@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {ViewBlock} from "../../../_domain/views/view-types/view-block";
+import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
 import {
   CdkDragDrop,
@@ -104,4 +104,5 @@ export class BBBlockComponent implements OnInit {
   }
 
   protected readonly String = String;
+  protected readonly BlockDirection = BlockDirection;
 }
