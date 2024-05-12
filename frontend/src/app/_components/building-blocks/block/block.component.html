@@ -50,7 +50,7 @@
 
 <ng-template #EDIT_EMPTY>
   <div [attr.id]="view.cssId"
-       class="{{view.classList}} flex {{view.direction === BlockDirection.HORIZONTAL ? 'flex-row' : 'flex-col'}} text-base-content/50 gap-2"
+       class="{{view.classList}} flex {{view.direction === BlockDirection.HORIZONTAL ? 'flex-row space-x-2' : 'flex-col space-y-2'}} text-base-content/50"
        cdkDropList [id]="String(view.id)"
        [cdkDropListData]="view.children"
        [cdkDropListConnectedTo]="connectedTo"
@@ -58,23 +58,23 @@
        [cdkDropListOrientation]="view.direction">
 
     <ng-container *ngIf="view.direction === BlockDirection.HORIZONTAL && !view.columns">
-      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-6">
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-4">
         Block with content displayed horizontally
       </div>
-      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl p-6">
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl p-4">
         <span class="mb-2">...</span>
       </div>
     </ng-container>
 
     <ng-container *ngIf="view.direction === BlockDirection.HORIZONTAL && view.columns">
       <div *ngFor="let col of [].constructor(view.columns); let i = index"
-           class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl p-6">
+           class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-4">
         Column {{i + 1}}
       </div>
     </ng-container>
 
     <ng-container *ngIf="view.direction == BlockDirection.VERTICAL">
-      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl p-6">
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl p-4">
         Block with content displayed vertically
       </div>
       <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl">

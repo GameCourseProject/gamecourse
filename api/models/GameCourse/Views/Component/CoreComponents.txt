@@ -160,12 +160,34 @@
         [
             [{
                 "type": "block",
-                "class": "card card-body bg-base-100 shadow-xl"
+                "class": "card card-body bg-base-100 shadow-xl",
+                "direction": "horizontal",
+                "columns": 2
             }],
             [{
                 "type": "block",
                 "class": "card card-body bg-base-100 shadow-xl",
                 "direction": "horizontal"
+            }],
+            [{
+                "type": "block",
+                "class": "card card-body bg-base-100 shadow-xl"
+            }]
+        ]
+    ],
+    [19,
+        [
+            [{
+                "type": "block",
+                "direction": "horizontal",
+                "columns": 2
+            }],
+            [{
+                "type": "block",
+                "direction": "horizontal"
+            }],
+            [{
+                "type": "block"
             }]
         ]
     ],

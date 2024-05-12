@@ -107,7 +107,7 @@
                   <!-- Custom components list -->
                   <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Custom'" class="flex flex-col gap-2">
                     <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-row w-full justify-between items-center">
-                      <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
+                      <bb-any class="hover:cursor-pointer p-1 transition-all hover:bg-neutral/10 rounded-xl" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
                       <div class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition"
                            (click)="triggerComponentSettings($event, item.id)">
                         <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
@@ -119,7 +119,7 @@
                   <div *ngIf="getSelectedCategories().length > 0 && getSelectedCategories()[0]['type'] == 'Shared'" class="flex flex-col gap-2">
                     <div *ngFor="let item of getSelectedCategoriesItems()" class="flex flex-col w-full">
                       <div class="flex flex-row justify-between items-center">
-                        <bb-any class="hover:cursor-pointer" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
+                        <bb-any class="hover:cursor-pointer p-1 transition-all hover:bg-neutral/10 rounded-xl" [view]="item.view" (click)="addComponentToPage(item.view)"></bb-any>
                         <div *ngIf="item.user == user.id" class="hover:cursor-pointer btn-ghost rounded-full w-7 h-7 flex justify-center items-center transition"
                              (click)="triggerComponentSettings($event, item.id)">
                           <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
@@ -136,7 +136,7 @@
                       <div class="flex flex-wrap">
                         <div
                           *ngFor="let item of subcategory.views"
-                          class="hover:cursor-pointer p-1"
+                          class="hover:cursor-pointer p-1 transition-all hover:bg-neutral/10 rounded-xl {{activeSubMenu.title == ViewType.BLOCK ? 'mb-5' : ''}}"
                           (click)="addComponentToPage(item)"
                           [ngClass]="{'w-full': item.type === ViewType.TABLE}"
                         >
