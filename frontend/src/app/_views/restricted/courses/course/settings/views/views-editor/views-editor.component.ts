@@ -619,8 +619,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     } catch {
       image = null;
     }
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise(); // FIXME null -> image
-    await this.closeConfirmed();
+    const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
+    this.history.clear();
+    this.pageToManage = null;
+    await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
+
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
 
     this.loading.action = false;
@@ -737,7 +740,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildComponent(component)).toPromise();
-    ModalService.closeModal('save-as-component');
+    ModalService.closeModal('save-component');
     AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
     this.resetMenus();
     await this.getComponents();
@@ -872,6 +875,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           await this.previewWithMockData();
         }
       }
+      else if (this.pageToManage) {
+        this.previewMode = 'mock';
+        ModalService.openModal('save-new-before-preview');
+      }
     }
     else if (action === 'Final preview (real data)') {
       if (this.page) {
@@ -882,6 +889,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         else {
           await this.selectUsersToPreview();
         }
+      }
+      else if (this.pageToManage) {
+        this.previewMode = 'real';
+        ModalService.openModal('save-new-before-preview');
       }
     }
   }
@@ -896,6 +907,15 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       }
       else if (this.previewMode === 'real') {
         ModalService.closeModal('save-before-preview');
+        await this.selectUsersToPreview();
+      }
+    }
+    else if (this.pageToManage) {
+      await this.savePage();
+      if (this.previewMode === 'mock') {
+        await this.previewWithMockData();
+      }
+      else if (this.previewMode === 'real') {
         await this.selectUsersToPreview();
       }
     }

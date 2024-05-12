@@ -178,7 +178,7 @@ export class BBAnyComponent implements OnInit {
   }
 
   openSaveComponentModal() {
-    ModalService.openModal('save-as-component');
+    ModalService.openModal('save-component');
   }
 
   getCantDrag(): boolean {

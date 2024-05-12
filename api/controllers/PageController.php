@@ -184,6 +184,8 @@ class PageController
         
         $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
         $page->setImage($image);
+
+        API::response($page->getId());
     }
 
     /**

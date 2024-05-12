@@ -208,11 +208,11 @@
               <ng-icon [ngClass]="{'invisible' : 'raw' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
               Raw (default)
             </a></li>
-            <li (click)="doAction('Layout preview (mock data)')" class="{{!page ? 'disabled' : ''}}"><a>
+            <li (click)="doAction('Layout preview (mock data)')" class="{{template ? 'disabled' : ''}}"><a>
               <ng-icon [ngClass]="{'invisible' : 'mock' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
               Layout preview (mock data)
             </a></li>
-            <li (click)="doAction('Final preview (real data)')" class="{{!page ? 'disabled' : ''}}"><a>
+            <li (click)="doAction('Final preview (real data)')" class="{{template ? 'disabled' : ''}}"><a>
               <ng-icon [ngClass]="{'invisible' : 'real' != previewMode}" [name]="'tabler-check'" size="1rem" color="fillCurrent"></ng-icon>
               Final preview (real data)
             </a></li>
@@ -309,7 +309,7 @@
 
 <!-- Save Component Modal -->
 <app-modal
-  [id]="'save-as-component'"
+  [id]="'save-component'"
   [templateRef]="SAVE_COMPONENT"
   [header]="'Save Custom Component'"
   [closeBtnText]="'Close'"
@@ -407,6 +407,28 @@
   </div>
 </ng-template>
 
+<!-- Preview but Page is new -->
+<app-modal
+  *ngIf="pageToManage"
+  [id]="'save-new-before-preview'"
+  [templateRef]="SAVE_PAGE_TO_PREVIEW"
+  [header]="'Save Before Previewing'"
+  [submitBtnText]="'Save'"
+  (click)="$event.stopPropagation()"
+  (submitBtnClicked)="saveBeforePreview()"
+  [actionInProgress]="loading.action"
+  (onClose)="cancelPreview()"
+  [submitBtnColor]="'success'"
+/>
+<ng-template #SAVE_PAGE_TO_PREVIEW>
+  To preview the page, you must first save it.
+  <app-input-text
+    [id]="'new-page-name'"
+    [(value)]="pageToManage.name"
+    [topLabel]="'Page Name:'"
+    [required]="true">
+  </app-input-text>
+</ng-template>
 
 <!-- Outdated Preview -->
 <app-simple-modal

@@ -41,7 +41,7 @@ export class HistoryService {
         this.states = [];
         this.currentStateIndex = -1;
     }
-    
+
     hasUndo(): boolean {
         if (this.currentStateIndex > 0) return true;
         else return false;
