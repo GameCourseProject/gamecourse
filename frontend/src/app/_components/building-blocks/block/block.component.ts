@@ -1,7 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
-import {moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from "../../../_services/history.service";
 import {ViewEditorService} from "../../../_services/view-editor.service";
@@ -45,8 +45,8 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
-  drop (event: any) {
-    if (event.previousContainer === event.container) {
+  drop (event: CdkDragDrop<View[]>) {
+    if (event.previousContainer === event.container && event.previousIndex != event.currentIndex) {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
@@ -54,17 +54,14 @@ export class BBBlockComponent implements OnInit {
       );
 
       const group = groupedChildren.get(+event.container.id);
+      moveItemInArray(group, event.previousIndex, event.currentIndex);
 
-      if (event.previousIndex != event.currentIndex) {
-        moveItemInArray(group, event.previousIndex, event.currentIndex);
+      this.history.saveState({
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+        groupedChildren: groupedChildren
+      });
 
-        this.history.saveState({
-          viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-          groupedChildren: groupedChildren
-        });
-      }
-
-    } else {
+    } else if (event.previousContainer !== event.container) {
       transferArrayItem(
         event.previousContainer.data,
         event.container.data,
@@ -73,7 +70,12 @@ export class BBBlockComponent implements OnInit {
       );
 
       const prevGroup = groupedChildren.get(+event.previousContainer.id);
-      const newGroup = groupedChildren.get(+event.container.id);
+
+      let newGroup = groupedChildren.get(+event.container.id);
+      if (!newGroup) {
+        newGroup = [];
+        groupedChildren.set(+event.container.id, newGroup);
+      }
 
       transferArrayItem(prevGroup, newGroup, event.previousIndex, event.currentIndex);
       this.view.findView(newGroup[event.currentIndex][0]).parent = this.view;
