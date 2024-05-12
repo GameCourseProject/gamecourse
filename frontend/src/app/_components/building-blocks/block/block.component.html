@@ -35,15 +35,15 @@
 
 <ng-template #EDIT_DEFAULT>
   <div [attr.id]="view.cssId"
-       [classList]="classes"
-       cdkDropList [id]="String(view.id)"
-       [cdkDropListData]="view.children"
-       [cdkDropListConnectedTo]="connectedTo"
-       (cdkDropListDropped)="drop($event)"
-       [cdkDropListOrientation]="view.direction">
+       [classList]="classes">
 
-    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles">
-      <bb-any *ngFor="let child of view.children" [view]="child"></bb-any>
+    <div [classList]="children + ' ' + view.classList" [attr.style]="view.styles"
+         cdkDropList [id]="String(view.id)"
+         [cdkDropListData]="view.children"
+         [cdkDropListConnectedTo]="connectedTo"
+         (cdkDropListDropped)="drop($event)"
+         [cdkDropListOrientation]="view.direction">
+      <bb-any *ngFor="let child of view.children" [view]="child" cdkDrag [cdkDragDisabled]="getCantDrag()"></bb-any>
     </div>
   </div>
 </ng-template>

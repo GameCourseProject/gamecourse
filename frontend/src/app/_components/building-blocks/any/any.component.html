@@ -24,9 +24,7 @@
          (click)="onRightClick($event)">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
     </div>
-    <div cdkDrag [cdkDragDisabled]="getCantDrag()">
-      <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
-    </div>
+    <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
   </div>
 </ng-container>
 

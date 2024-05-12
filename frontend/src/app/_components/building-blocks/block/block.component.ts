@@ -1,23 +1,14 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
-import {
-  CdkDragDrop,
-  CdkDrag,
-  CdkDropList,
-  moveItemInArray,
-  transferArrayItem,
-  CdkDragEnter,
-  CdkDragExit,
-  CdkDragStart,
-  DragRef,
-  DropListRef,
-} from '@angular/cdk/drag-drop';
+import {moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from "../../../_services/history.service";
 import {ViewEditorService} from "../../../_services/view-editor.service";
 import * as _ from "lodash";
 import {ViewSelectionService} from "../../../_services/view-selection.service";
+import {ModalService} from "../../../_services/modal.service";
+import {installPatch} from "./nested-drag-drop-patch";
 
 @Component({
   selector: 'bb-block',
@@ -38,6 +29,8 @@ export class BBBlockComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    installPatch();
+
     this.classes = 'bb-block bb-block-' + this.view.direction;
     if (this.view.columns) this.classes += ' bb-block-cols-' + this.view.columns;
     if (this.view.responsive) this.classes += ' bb-block-responsive'
@@ -52,17 +45,19 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
-  drop (event: CdkDragDrop<View[]>) {
+  drop (event: any) {
     if (event.previousContainer === event.container) {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
         event.currentIndex
       );
-      const group = groupedChildren.get(this.view.id);
-      moveItemInArray(group, event.previousIndex, event.currentIndex);
+
+      const group = groupedChildren.get(+event.container.id);
 
       if (event.previousIndex != event.currentIndex) {
+        moveItemInArray(group, event.previousIndex, event.currentIndex);
+
         this.history.saveState({
           viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
           groupedChildren: groupedChildren
@@ -76,7 +71,17 @@ export class BBBlockComponent implements OnInit {
         event.previousIndex,
         event.currentIndex
       );
-      // TODO: move in grouped children
+
+      const prevGroup = groupedChildren.get(+event.previousContainer.id);
+      const newGroup = groupedChildren.get(+event.container.id);
+
+      transferArrayItem(prevGroup, newGroup, event.previousIndex, event.currentIndex);
+      this.view.findView(newGroup[event.currentIndex][0]).parent = this.view;
+
+      this.history.saveState({
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+        groupedChildren: groupedChildren
+      });
     }
   }
 
@@ -97,6 +102,10 @@ export class BBBlockComponent implements OnInit {
       view = view.parent;
     }
     return this.getIdsRecursive(view).reverse();
+  }
+
+  getCantDrag(): boolean {
+    return ModalService.isOpen("component-editor");
   }
 
   get ViewMode(): typeof ViewMode {
