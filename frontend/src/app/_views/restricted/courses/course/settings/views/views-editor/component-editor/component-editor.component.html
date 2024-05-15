@@ -352,18 +352,36 @@
     <div class="flex flex-col gap-2 mb-4">
 
       <!-- Globals -->
-      <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
-        <input type="checkbox" />
-        <div class="collapse-title px-5">
-          <span class="font-semibold">Click</span> to reveal the always available variables
+      <form autocomplete="off">
+        <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
+          <input type="checkbox" [checked]="getCollapseContext()" (change)="toggleCollapseContext()" autocomplete="off"/>
+          <div class="collapse-title px-5">
+            <span class="font-semibold">Context Variables</span>
+          </div>
+          <div class="collapse-content">
+            <span class="text-info">%course</span> -> id of the course that the user is manipulating <br>
+            <span class="text-info">%user</span> -> id of the user associated to the page which is being displayed <br>
+            <span class="text-info">%viewer</span> -> id of the user that is currently logged in watching the page <br>
+            <span class="text-info">%item</span> -> used to access the values of the collection being iterated
+          </div>
         </div>
-        <div class="collapse-content">
-          <span class="text-info">%course</span> -> id of the course that the user is manipulating <br>
-          <span class="text-info">%user</span> -> id of the user associated to the page which is being displayed <br>
-          <span class="text-info">%viewer</span> -> id of the user that is currently logged in watching the page <br>
-          <span class="text-info">%item</span> -> used to access the values of the collection being iterated
+      </form>
+
+      <!-- Inherited -->
+      <form autocomplete="off">
+        <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
+          <input type="checkbox" [checked]="getCollapseInherited()" (change)="toggleCollapseInherited()" autocomplete="off"/>
+          <div class="collapse-title px-5">
+            <span class="font-semibold">Inherited Variables</span>
+          </div>
+          <div class="collapse-content">
+            <p *ngFor="let variable of view.getAllVariables()">
+              <span class="text-secondary">%{{variable.name}}</span> = {{variable.value}}
+            </p>
+            <p *ngIf="view.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
+          </div>
         </div>
-      </div>
+      </form>
 
       <!-- Existing -->
       <div *ngFor="let variable of viewToEdit.variables; index as i">
