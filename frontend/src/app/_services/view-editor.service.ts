@@ -30,7 +30,7 @@ export class ViewEditorService {
   public selectedAspect: Aspect;  // Selected aspect for previewing and editing
   public rolesHierarchy;
   public aspectsToDelete: Aspect[] = [];
-  public aspectsToAdd: { newAspect: Aspect, aspectToCopy: Aspect }[] = [];
+  public aspectsToAdd: { newAspect: Aspect, viewToCopy: View }[] = [];
   public aspectsToChange: { old: Aspect, newAspect: Aspect }[] = [];
 
   selectedChange: Subject<View> = new Subject<View>();
@@ -95,14 +95,13 @@ export class ViewEditorService {
 
     // Modify roles of existing aspects
     for (let changed of this.aspectsToChange) {
-      if (changed.old.viewerRole === "new" || changed.old.userRole === "new") continue;
       this.changeAspect(changed.old, changed.newAspect);
     }
     this.aspectsToChange = [];
 
     // Create new aspects
     for (let aspect of this.aspectsToAdd) {
-      const view = _.cloneDeep(this.getEntryOfAspect(aspect.aspectToCopy).view); // FIXME: the aspectToCopy might not exist anymore
+      const view = aspect.viewToCopy;
 
       const defaultAspect = new Aspect(null, null)
       const aspectsToReplace = this.viewsByAspect.filter((e) => {
@@ -112,7 +111,7 @@ export class ViewEditorService {
         else return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole) && !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole)
       }).map(e => e.aspect);
 
-      view.modifyAspect(aspectsToReplace, aspect.newAspect);
+      view?.modifyAspect(aspectsToReplace, aspect.newAspect);
       this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];

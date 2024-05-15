@@ -53,12 +53,12 @@ export class AspectCardComponent implements OnInit {
   }
 
   save() {
-    if (this.aspect.viewerRole == "" || this.aspect.viewerRole == "undefined" || this.aspect.viewerRole == "new") this.aspect.viewerRole = null;
-    if (this.aspect.userRole == "" || this.aspect.userRole == "undefined" || this.aspect.userRole == "new") this.aspect.userRole = null;
+    if (this.aspect.viewerRole == "" || this.aspect.viewerRole == "undefined") this.aspect.viewerRole = null;
+    if (this.aspect.userRole == "" || this.aspect.userRole == "undefined") this.aspect.userRole = null;
     const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
 
     if (
-      (this.viewEditorService.viewsByAspect.findIndex(e => _.isEqual(e.aspect, newAspect)) == -1 || this.viewEditorService.aspectsToDelete.findIndex(e => _.isEqual(e, newAspect)) != -1)
+      (!this.viewEditorService.viewsByAspect.find(e => _.isEqual(e, newAspect)) || this.viewEditorService.aspectsToDelete.findIndex(e => _.isEqual(e, newAspect)) != -1)
       && this.viewEditorService.aspectsToAdd.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
       && this.viewEditorService.aspectsToChange.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
     ) {

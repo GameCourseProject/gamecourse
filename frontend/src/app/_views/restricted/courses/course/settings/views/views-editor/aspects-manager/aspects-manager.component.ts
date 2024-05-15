@@ -75,11 +75,11 @@ export class AspectsManagerComponent implements OnInit{
       let [viewerToCopy, userToCopy] = this.aspectToCopy.split(" | ");
       if (viewerToCopy === 'none') viewerToCopy = null;
       if (userToCopy === 'none') userToCopy = null;
-      const aspectToCopy = new Aspect(viewerToCopy, userToCopy);
+      const viewToCopy = _.cloneDeep(this.service.getEntryOfAspect(new Aspect(viewerToCopy, userToCopy)).view);
 
       if (this.aspectsToEdit.findIndex(e => _.isEqual(e, newAspect)) == -1) {
         this.aspectsToEdit.push(newAspect);
-        this.service.aspectsToAdd.push({newAspect: newAspect, aspectToCopy: aspectToCopy});
+        this.service.aspectsToAdd.push({newAspect: newAspect, viewToCopy: viewToCopy});
 
         ModalService.closeModal("create-new-aspect");
 
