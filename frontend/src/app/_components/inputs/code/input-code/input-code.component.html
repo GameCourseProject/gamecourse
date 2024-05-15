@@ -32,13 +32,15 @@
       <!-- Preview code tabs  -->
       <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto">
         <div [id]="getId(i, tab.name)"></div>
-        <button type="button" class="btn btn-secondary btn-sm text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}} rounded-none" (click)="previewExpression(tab)">
-          <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-          <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-          Preview Expression
-        </button>
+        <div class="w-full bg-base-300 flex flex-row items-center gap-2">
+          <button type="button" class="ml-2 btn btn-secondary btn-sm text-secondary-content gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="previewExpression(tab)">
+            <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-inherit"></ng-icon>
+            <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+            Preview Expression
+          </button>
+          <div *ngIf="outputPreview" class="font-semibold">Result:</div>
+        </div>
         <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
-          <div class="text-sm font-semibold h-fit">Result: </div>
           <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
         </div>
       </div>

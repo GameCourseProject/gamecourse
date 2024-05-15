@@ -11,9 +11,9 @@
 </div>
 
 <div class="text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
-  You can either write ordinary text or write expressions to define the fields.
-  To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span><br>
-  For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.
+  <p>You can either write ordinary text or write expressions to define the fields.
+    To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span></p>
+  <p *ngIf="viewToEdit.type !== ViewType.TABLE || tableSelectedTab == 'Overall'">For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.</p>
 </div>
 
 <ng-container *ngIf="!loading && viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
