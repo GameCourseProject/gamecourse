@@ -14,6 +14,7 @@ import {NgForm} from "@angular/forms";
 export class AspectsManagerComponent implements OnInit{
 
   @Input() course: Course;
+  @Input() isNewPage: boolean;
 
   @Input() aspects: Aspect[];                     // Original aspects
   aspectsToEdit: Aspect[];                        // Aspects that show up in modal
@@ -38,7 +39,7 @@ export class AspectsManagerComponent implements OnInit{
 
   ngOnInit(): void {
     this.aspectsToEdit = _.cloneDeep(this.aspects);
-    this.currentAspect = this.service.selectedAspect;
+    this.currentAspect = this.aspectsToEdit.find(e => _.isEqual(e, this.service.selectedAspect));
     this.aspectToSelect = null;
     this.service.aspectsToDelete = [];
     this.service.aspectsToChange = [];
@@ -75,7 +76,7 @@ export class AspectsManagerComponent implements OnInit{
       let [viewerToCopy, userToCopy] = this.aspectToCopy.split(" | ");
       if (viewerToCopy === 'none') viewerToCopy = null;
       if (userToCopy === 'none') userToCopy = null;
-      const viewToCopy = _.cloneDeep(this.service.getEntryOfAspect(new Aspect(viewerToCopy, userToCopy)).view);
+      const viewToCopy = this.service.getEntryOfAspect(new Aspect(viewerToCopy, userToCopy)).view;
 
       if (this.aspectsToEdit.findIndex(e => _.isEqual(e, newAspect)) == -1) {
         this.aspectsToEdit.push(newAspect);
@@ -106,8 +107,8 @@ export class AspectsManagerComponent implements OnInit{
   }
 
   saveAspects() {
-    this.service.applyAspectChanges();
     this.service.selectedAspect = this.currentAspect;
+    this.service.applyAspectChanges();
     this.save.emit();
     ModalService.closeModal('manage-versions');
   }

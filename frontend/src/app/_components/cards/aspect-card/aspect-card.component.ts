@@ -18,6 +18,7 @@ export class AspectCardComponent implements OnInit {
   @ViewChild('f', { static: false }) f: NgForm;
 
   @Input() course: Course;
+  @Input() isNewPage: boolean;
   @Input() aspect: Aspect;
   @Input() editable?: boolean;
   @Input() selected?: boolean;
@@ -77,5 +78,10 @@ export class AspectCardComponent implements OnInit {
     this.aspect.userRole = this.oldUserRole;
     this.aspect.viewerRole = this.oldViewerRole;
     this.edit = false;
+  }
+
+  // can't change the root of an existing page
+  canEdit() {
+    return !_.isEqual(new Aspect(null, null), this.aspect) || this.isNewPage;
   }
 }
