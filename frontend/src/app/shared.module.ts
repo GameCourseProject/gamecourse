@@ -242,7 +242,9 @@ import {
   tablerColumnInsertRight,
   tablerQuote,
   tablerDatabase,
-  tablerBinaryTree
+  tablerBinaryTree,
+  tablerCodeDots,
+  tablerClick
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -567,6 +569,8 @@ import {
       tablerQuote,
       tablerDatabase,
       tablerBinaryTree,
+      tablerCodeDots,
+      tablerClick,
 
       matFaceRetouchingNatural,
 

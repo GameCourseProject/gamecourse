@@ -10,6 +10,12 @@
   </div>
 </div>
 
+<div class="text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
+  You can either write ordinary text or write expressions to define the fields.
+  To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span><br>
+  For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.
+</div>
+
 <ng-container *ngIf="!loading && viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
 <ng-container *ngIf="!loading && viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
 
@@ -26,9 +32,8 @@
 <div class="overflow-x-hidden text-left">
 
   <div class="flex flex-row items-end gap-8">
-    <div class="w-full">
+    <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW && view.parent">
       <app-input-select
-        *ngIf="viewToEdit.type !== ViewType.ROW && view.parent"
         [id]="'type-' + view.id"
         [(value)]="viewToEdit.type"
         [options]="getComponentTypes()"
@@ -38,10 +43,9 @@
         [classList]="'mb-4'"
       ></app-input-select>
     </div>
-    <div class="w-full">
+    <div class="w-full" *ngIf="view.parent && (!saveButton || viewToEdit.type === ViewType.ROW)"><!-- Don't show for root nor table cells -->
       <!-- Data Iteration -->
       <app-input-text
-        *ngIf="view.parent"
         [id]="'data-iter'"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Repeat this component for every item in'"
@@ -336,30 +340,19 @@
   </ng-container>
 
 
-  <div class="text-xs pt-4">
-    You can either write ordinary text or write expressions to define the fields.
-    To write expressions, make sure you encapsulate them with curly brackets: {{ '{' }} {{ '}' }}<br>
-    For more information check the 'Additional Tools' box.
-  </div>
-
   <!--------------------------------------------------->
-  <!--------------------- GENERAL --------------------->
+  <!-------------------- AUX VARS --------------------->
   <!--------------------------------------------------->
-  <div *ngIf="viewToEdit.type !== ViewType.ROW" class="divider"></div>
+  <div class="divider"></div>
   <div class="prose">
-    <h3 class="flex gap-2 items-center"><ng-icon name="tabler-settings" size="1.5rem"/>General Configuration</h3>
+    <h3 class="flex gap-2 items-center"><ng-icon name="tabler-code-dots" size="1.5rem"/>Auxiliary Variables</h3>
   </div>
-
-  <div class="flex flex-row justify-start items-center gap-2 pb-2">
-    <app-simple-helper
-      [position]="'right'"
-      [text]="'Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.'">
-    </app-simple-helper>
-    <span class="block font-semibold text-md">Auxiliary Variables</span>
+  <div class="text-xs mb-4">
+    Define auxiliary variables to simplify the writing of expressions. They will also be available for any children of this component.
   </div>
 
   <!-- Variables -->
-  <div class="flex flex-col gap-2 mb-4">
+  <div class="flex flex-col gap-2 mb-5">
 
     <!-- Globals -->
     <form autocomplete="off">
@@ -401,15 +394,18 @@
     <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
   </div>
 
-  <!-- Events -->
+  <!--------------------------------------------------->
+  <!---------------------- EVENTS --------------------->
+  <!--------------------------------------------------->
   <ng-container *ngIf="viewToEdit.type !== ViewType.ROW">
-    <div class="flex flex-row justify-start items-center gap-2 pb-2">
-      <app-simple-helper
-        [position]="'right'"
-        [text]="'Determine actions that will be triggered whenever an event happens.'"></app-simple-helper>
-      <span class="block font-semibold text-md">Events</span>
+    <div class="divider"></div>
+    <div class="prose">
+      <h3 class="flex gap-2 items-center"><ng-icon name="tabler-click" size="1.5rem"/>Events</h3>
     </div>
-    <div class="flex flex-col gap-2 mb-4">
+    <div class="text-xs mb-4">
+      Determine actions that will be triggered whenever an event happens.
+    </div>
+    <div class="flex flex-col gap-2 mb-5">
       <!-- Existing -->
       <div *ngFor="let event of viewToEdit.events; index as i">
         <app-event-card [event]="event" (deleteEvent)="deleteEvent(i)" (updateEvent)="updateEvent($event, i)"/>
@@ -419,12 +415,18 @@
     </div>
   </ng-container>
 
-  <!-- Additional Tools -->
+
+  <!--------------------------------------------------->
+  <!----------------- Additional Tools ---------------->
+  <!--------------------------------------------------->
+  <div class="divider" #additionalTools></div>
+  <div class="prose mb-4">
+    <h3 class="flex gap-2 items-center"><ng-icon name="tabler-clipboard-list" size="1.5rem"/>Additional Tools</h3>
+  </div>
   <div class="w-full overflow-x-auto {{ viewToEdit.type === ViewType.ROW ? 'pb-8' : 'pb-2' }}">
     <app-input-code
       *ngIf="additionalToolsTabs"
       [id]="'component-tools'"
-      [title]="'Additional Tools'"
       [tabs]="additionalToolsTabs"
     ></app-input-code>
   </div>
@@ -767,32 +769,6 @@
       </div>
     </ng-container>
   </div>
-
-  <!-- TODO: Options for datalabels. Only certain series, and formatting.
-  <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
-    <div class="flex flex-row mt-4 justify-start items-center gap-2">
-      <span class="block font-semibold text-mg pl-1">Data Labels</span>
-    </div>
-    <div class="text-xs pl-1 pb-2">
-      Textual or numeric labels that are associated with individual data points or series on the chart. They provide additional information about the data being displayed, making it easier for viewers to interpret the chart.
-    </div>
-    <app-input-checkbox
-      [id]="'chart-datalabels'"
-      [(value)]="viewToEdit.options.dataLabels"
-      [color]="'primary'"
-      [label]="'Add data labels to this chart'"
-      [labelPosition]="'right'"
-    ></app-input-checkbox>
-    <ng-container *ngIf="viewToEdit.options.dataLabels">
-      <div class="flex flex-col gap-2 mb-2 grow-0">
-        <div *ngFor="let el of viewToEdit.options.dataLabelsOnSeries; index as i">
-          <app-datalabel-card [el]="el" [chartSeries]="viewToEdit.options.series" [serie]="el.serie" [format]="el.format" (deleteEvent)="deleteDataLabel(i)" (updateEvent)="updateDataLabel($event, i)"/>
-        </div>
-        <app-datalabel-card [chartSeries]="viewToEdit.options.series" [new]="true" (createEvent)="addDataLabel($event)"/>
-      </div>
-    </ng-container>
-  </ng-container>
-  -->
 
   <ng-container *ngIf="viewToEdit.chartType !== 'pie'">
     <div class="flex flex-row mt-4 justify-start items-center gap-2">

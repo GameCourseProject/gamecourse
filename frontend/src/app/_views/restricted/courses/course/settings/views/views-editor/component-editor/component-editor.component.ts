@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
   CodeTab,
   CustomFunction,
@@ -51,6 +51,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   courseId: number;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
+  @ViewChild('additionalTools') additionalToolsRef: ElementRef;
 
   viewToEdit: ViewManageData;
   viewToPreview: View;
@@ -115,6 +116,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   // Additional Tools --------------------------------------
   // code from the rules editor
+
+  scroll() {
+    this.additionalToolsRef.nativeElement.scrollIntoView({behavior: 'smooth'});
+  }
 
   prepareAdditionalTools() {
     this.additionalToolsTabs = [
