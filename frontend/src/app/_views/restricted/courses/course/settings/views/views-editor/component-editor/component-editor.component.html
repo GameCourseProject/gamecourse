@@ -50,7 +50,7 @@
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Repeat this component for every item in'"
         [helperText]="'Determines for which items this component will be repeated.
-          \n E.g. {skillTrees.trees} Means that this component will be repeated for each of the skill trees available in this
+          \n E.g. {tree.getSkillTrees()} Means that this component will be repeated for each of the skill trees available in this
           course. You can then access each with %item'"
         [helperPosition]="'bottom'"
         [placeholder]="'e.g. {tree.getSkillTrees()}'"
