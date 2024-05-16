@@ -131,7 +131,8 @@ class AwardsLibrary extends Library
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets badges awards for a given user. Some options available.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "awards.getUserBadgesAwards(%user, true, false)"
             ),
             new DFunction("getUserSkillsAwards",
                 [["name" => "userId", "optional" => false, "type" => "int"],
