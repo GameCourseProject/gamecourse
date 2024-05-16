@@ -361,7 +361,7 @@
         <div class="collapse-title px-5">
           <span class="font-semibold">Context Variables</span>
         </div>
-        <div class="collapse-content">
+        <div class="collapse-content text-sm">
           <span class="text-info">%course</span> -> id of the course that the user is manipulating <br>
           <span class="text-info">%user</span> -> id of the user associated to the page which is being displayed <br>
           <span class="text-info">%viewer</span> -> id of the user that is currently logged in watching the page <br>
@@ -377,7 +377,7 @@
         <div class="collapse-title px-5">
           <span class="font-semibold">Inherited Variables</span>
         </div>
-        <div class="collapse-content">
+        <div class="collapse-content text-sm">
           <p *ngFor="let variable of view.getAllVariables()">
             <span class="text-secondary">%{{variable.name}}</span> = {{variable.value}}
           </p>
@@ -480,7 +480,6 @@
     <div *ngIf="viewToEdit.visibilityType == 'conditional'" class="mb-5">
       <span class="text-xs pl-1">
         Write an expression that makes this component visible.
-        Don't forget that expressions only work when encapsulated with curvy brackets: {{ '{' }} {{ '}' }}
       </span>
       <app-input-text
         [id]="'visibility-condition-expression'"

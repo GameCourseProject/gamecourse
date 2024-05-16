@@ -178,13 +178,15 @@ class BadgesLibrary extends Library
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a badge by its name.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "badges.getBadgeByName('Amphitheatre Lover')"
             ),
             new DFunction("getBadges",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets badges of course. Option to filter by badge state.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "badges.getBadges(true)"
             ),
             new DFunction("getUsersWithBadge",
                 [["name" => "badgeId", "optional" => false, "type" => "int"],
@@ -192,7 +194,8 @@ class BadgesLibrary extends Library
                     ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
                 "Gets users who have earned a given badge up to a certain level. Option to order users by the date they acquired badge level.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+            "badges.getUsersWithBadge(%badge.id, %level.number, true)"
             ),
             new DFunction("getUserBadges",
                 [["name" => "userId", "optional" => false, "type" => "int"],

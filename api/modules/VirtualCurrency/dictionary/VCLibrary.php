@@ -102,7 +102,8 @@ class VCLibrary extends Library
                     ["name" => "extra", "optional" => false, "type" => "bool"]],
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
                 ReturnType::VOID,
-                $this
+                $this,
+                "vc.exchangeTokensForXP(%user, '3:1', 2000, false)"
             )
         ];
     }

@@ -611,11 +611,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getExampleParts(text: string){
-    text = '\n' + text;
-    return (text.split('\n>')).slice(1);
-  }
-
   containsFunctions(namespace: string) {
     let namespaces = this.functionsToShow.map(fx => fx.name);
     return namespaces.includes(namespace)

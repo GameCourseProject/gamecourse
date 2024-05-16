@@ -704,7 +704,7 @@ class Page
      *
      * @throws Exception
      */
-    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId)
+    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId): string
     {
         $viewType = ViewType::getViewTypeById("text");
         $view = ["text" => $expression];

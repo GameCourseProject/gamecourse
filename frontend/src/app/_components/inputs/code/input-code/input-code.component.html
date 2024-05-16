@@ -87,13 +87,13 @@
               Select a function
             </span>
 
-            <div *ngIf="selectedFunction" class="ml-2">
+            <div *ngIf="selectedFunction" class="ml-2 flex flex-col gap-2">
               <div class="border-base-content/10 border-b-2 mb-4">
                 <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
-                <span class="text-secondary">{{selectedFunction.keyword}}</span> (
+                <span class="text-secondary">{{selectedFunction.name}}.{{selectedFunction.keyword}}</span> (
                 <div *ngFor="let arg of selectedFunction.args, let i = index" class="inline">
                     <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
                       {{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
@@ -106,24 +106,24 @@
                 <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
               </div>
 
-              <div><span><strong>Description: </strong>{{selectedFunction.description}}</span></div><br *ngIf="selectedFunction.example">
-              <div *ngIf="selectedFunction.example">
-                <span><strong>Example: </strong></span><br>
-                <span *ngFor="let examplePart of getExampleParts(selectedFunction.example)" class="text-sm">
-                  <div class="ml-4"><strong>></strong> {{examplePart}}</div>
-                </span>
-              </div><br>
+              <div *ngIf="selectedFunction.example"><span><strong>Usage Example: </strong>
+                <span class="italic">{{selectedFunction.example}}</span></span>
+              </div>
+
+              <div class="mb-4"><span><strong>Description: </strong>
+                {{selectedFunction.description}}</span>
+              </div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
-              </div><br *ngIf="selectedFunction.name !== 'gamerules'">
+              </div>
 
               <div *ngIf="selectedFunction.name === 'gamerules'">
                 <span><strong>Args:</strong></span><br>
                 <span *ngFor="let arg of selectedFunction.args, let i = index" class="text-sm">
                   <div class="ml-4"><strong>- {{arg.name}} : </strong>{{arg.description}}</div>
                 </span>
-              </div><br *ngIf="selectedFunction.name === 'gamerules'">
+              </div>
 
               <!-- Replace later when argument's descriptions are added (in backend) -->
               <ng-container *ngIf="selectedFunction.name !== 'gamerules' && selectedFunction.args.length > 0">
@@ -131,7 +131,7 @@
                   <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
                     <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
                   </ng-container>
-                </div><br>
+                </div>
               </ng-container>
 
               <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
