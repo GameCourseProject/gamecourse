@@ -38,7 +38,7 @@
     <!-- Menu of icons (for actions) -->
     <div *ngFor="let option of options; let j = index" class="relative inline-block text-left">
       <div class="tooltip" [attr.data-tip]="option.description">
-        <button class="btn btn-ghost btn-circle" (click)="selectOption(option)">
+        <button class="btn btn-ghost btn-circle {{previewMode != 'raw' ? 'text-base-content/30' : ''}}" (click)="selectOption(option)">
           <ng-icon name="{{option.isSelected ? option.iconSelected : option.icon }}" size="1.7rem"
                    class="tooltip tooltip-right hover:cursor-pointer
                     {{option.isSelected ? 'text-primary' : 'text-dark'}}">

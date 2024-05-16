@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import {Component, Input, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 
 import { ApiHttpService } from "../../../_services/api/api-http.service";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
@@ -34,10 +34,11 @@ export class AspectCardComponent implements OnInit {
     private viewEditorService: ViewEditorService,
   ) { }
 
-  ngOnInit(): void {
-    this.getCourseRolesNames();
+  async ngOnInit() {
+    await this.getCourseRolesNames();
     this.oldUserRole = this.aspect.userRole;
     this.oldViewerRole = this.aspect.viewerRole;
+    this.aspect = _.cloneDeep(this.aspect);
   }
 
   async getCourseRolesNames() {
@@ -54,15 +55,11 @@ export class AspectCardComponent implements OnInit {
   }
 
   save() {
-    if (this.aspect.viewerRole == "" || this.aspect.viewerRole == "undefined") this.aspect.viewerRole = null;
-    if (this.aspect.userRole == "" || this.aspect.userRole == "undefined") this.aspect.userRole = null;
+    if (!this.aspect.viewerRole || this.aspect.viewerRole == "") this.aspect.viewerRole = null;
+    if (!this.aspect.viewerRole || this.aspect.userRole == "") this.aspect.userRole = null;
     const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
 
-    if (
-      (!this.viewEditorService.viewsByAspect.find(e => _.isEqual(e, newAspect)) || this.viewEditorService.aspectsToDelete.findIndex(e => _.isEqual(e, newAspect)) != -1)
-      && this.viewEditorService.aspectsToAdd.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
-      && this.viewEditorService.aspectsToChange.findIndex(e => _.isEqual(e.newAspect, newAspect)) == -1
-    ) {
+    if (this.viewEditorService.getFutureAspects().filter(e => _.isEqual(e, newAspect)).length <= 0) {
       this.viewEditorService.aspectsToChange.push({old: new Aspect(this.oldViewerRole, this.oldUserRole), newAspect: newAspect});
       this.edit = false;
     }

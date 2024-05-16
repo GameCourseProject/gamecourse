@@ -210,7 +210,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.rolesHierarchy = rolesHierarchySmart;
   }
 
-  async initView(id: number, templateType?: 'template' | 'system-template', keepAspect: boolean = false): Promise<void> {
+  async initView(id: number, templateType?: 'template' | 'system-template', aspect?: Aspect): Promise<void> {
     let data;
     if (!templateType) {
       this.page = await this.api.getPageById(id).toPromise();
@@ -234,12 +234,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     initGroupedChildren(data["viewTree"]);
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
-    if (!keepAspect) this.service.selectedAspect = this.aspects[0];
+
+    if (!aspect) this.service.selectedAspect = this.aspects[0];
+    else this.service.selectedAspect = aspect;
+
     this.sortAspects();
 
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
 
+    this.history.clear();
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
@@ -620,9 +624,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       image = null;
     }
     const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
-    this.history.clear();
     this.pageToManage = null;
+    const aspect = this.service.selectedAspect;
     await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
+    await this.initView(pageId, null, aspect);
 
     AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
 
@@ -650,14 +655,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     if (this.page) {
       await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, this.page.name, image).toPromise();
-      this.history.clear();
-      await this.initView(this.page.id, null, true);
+      await this.initView(this.page.id, null, this.service.selectedAspect);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else if (this.template) {
       await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, this.template.name, image).toPromise();
-      this.history.clear();
-      await this.initView(this.template.id, "template", true);
+      await this.initView(this.template.id, "template", this.service.selectedAspect);
       AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
     }
     else {
@@ -968,9 +971,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
     }
     catch (e) {
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong...");
+      AlertService.showAlert(AlertType.ERROR, e);
       this.previewMode = "raw";
-      //console.log(e);
+      console.log(e);
     }
     this.loading.action = false;
   }

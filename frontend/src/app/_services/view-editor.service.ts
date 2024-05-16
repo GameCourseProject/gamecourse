@@ -131,6 +131,21 @@ export class ViewEditorService {
     return higherInHierarchy;
   }
 
+  getFutureAspects(): Aspect[] {
+    // deleted
+    const futureAspects = this.viewsByAspect.filter(e => this.aspectsToDelete.findIndex(toDel => _.isEqual(e.aspect, toDel)) == -1).map(e => e.aspect);
+    // changed
+    for (let changed of this.aspectsToChange) {
+      const found = futureAspects.findIndex(e => _.isEqual(e, changed.old));
+      if (found != -1) futureAspects[found] = changed.newAspect;
+    }
+    // added
+    for (let added of this.aspectsToAdd) {
+      futureAspects.push(added.newAspect);
+    }
+    return futureAspects;
+  }
+
 
   /*********************************** VIEWS ACTIONS  ***********************************/
 
