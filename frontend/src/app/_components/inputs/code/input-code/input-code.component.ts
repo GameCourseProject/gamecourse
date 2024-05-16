@@ -5,8 +5,8 @@ import {SearchCursor} from "@codemirror/search";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
-import {oneDark} from "@codemirror/theme-one-dark";
 import {githubLight} from '@ddietr/codemirror-themes/github-light'
+import {githubDark} from '@ddietr/codemirror-themes/github-dark'
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
@@ -204,7 +204,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let query = tab.highlightQuery;
 
     // Initializes with the device's theme
-    const theme = this.themeService.getTheme() === 'dark' ? oneDark : githubLight;
+    const theme = this.themeService.getTheme() === 'dark' ? githubDark : githubLight;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -639,7 +639,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   loadTheme() {
     for (let i = 0; i < this.tabs.length; i++){
       this.views[i].dispatch({
-        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : oneDark)
+        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : githubDark)
       });
     }
   }

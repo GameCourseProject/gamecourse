@@ -126,7 +126,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       { name: 'Preview Expression', type: "preview", active: true, running: null, debug: false, mode: "el",
         customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
 
-      { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
+      { name: 'Reference Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
     ]
