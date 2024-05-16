@@ -244,7 +244,8 @@ import {
   tablerDatabase,
   tablerBinaryTree,
   tablerCodeDots,
-  tablerClick
+  tablerClick,
+  tablerTools,
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -571,6 +572,7 @@ import {
       tablerBinaryTree,
       tablerCodeDots,
       tablerClick,
+      tablerTools,
 
       matFaceRetouchingNatural,
 
