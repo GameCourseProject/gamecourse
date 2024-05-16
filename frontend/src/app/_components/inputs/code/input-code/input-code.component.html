@@ -39,9 +39,11 @@
             Preview Expression
           </button>
           <div *ngIf="outputPreview" class="font-semibold">Result:</div>
+          <div *ngIf="outputPreviewError" class="font-semibold text-error">Error:</div>
         </div>
         <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
           <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
+          <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
         </div>
       </div>
 

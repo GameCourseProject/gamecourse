@@ -34,7 +34,8 @@ import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
-import {AlertService, AlertType} from "../../../../_services/alert.service";
+import {HttpErrorResponse} from "@angular/common/http";
+import {AlertType} from "../../../../_services/alert.service";
 
 @Component({
   selector: 'app-input-code',
@@ -92,6 +93,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   expressionToPreview: string = "";
   outputPreview: any = null;
+  outputPreviewError: any = null;
 
   constructor(
     private themeService: ThemingService,
@@ -564,9 +566,18 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
 
     try {
+      this.outputPreviewError = null;
       this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
-    } catch {
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong... You might want to check your expression.");
+    } catch (err: unknown) {
+      this.outputPreview = null;
+      if (err instanceof HttpErrorResponse) {
+        // Hide alert since it will be in the console anyway
+        const alert = document.getElementById(AlertType.ERROR + '-alert');
+        alert.classList.add('hidden')
+
+        let errorMessage = err.error.text.replace(/\n/g, "<br>");
+        this.outputPreviewError = errorMessage.replace(/^((<br\s*\/?>)+)/, ''); // Trim leading <br> or <br /> tags
+      }
     }
 
     (tab as PreviewTab).running = false;
