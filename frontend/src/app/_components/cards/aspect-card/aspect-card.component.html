@@ -3,12 +3,12 @@
             {{selected && 'ring-2 ring-primary'}} {{editable && !selected && 'hover:ring-2 hover:ring-neutral'}} {{editable && 'hover:cursor-pointer'}}">
 
   <!-- Actions -->
-  <div class="dropdown dropdown-bottom {{editable ? 'flex' : 'hidden'}}
+  <div *ngIf="canEdit()" class="dropdown dropdown-bottom
               absolute right-2 top-2 rounded-full btn-ghost hover:cursor-pointer w-7 h-7 flex justify-center items-center transition">
     <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
     <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box">
       <li (click)="editAction()"><a><ng-icon name="jam-pencil" size="1.5rem"/>Edit</a></li>
-      <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
+      <li *ngIf="editable" (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
     </ul>
   </div>
 

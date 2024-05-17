@@ -30,7 +30,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() options?: ({value: any, text: string, html?: string, display?: boolean} |           // Options to select from
                       {label: string, options: {value: string, text: string, html?: string}[]}
                      )[];
-  @Input() placeholder: string;                                                     // Message to show by default  FIXME: not working
+  @Input() placeholder: string;                                                     // Message to show by default
 
   @Input() multiple?: boolean;                                                      // Whether to allow multiple selects
   @Input() limit?: number;                                                          // Multiple selection limit
@@ -39,7 +39,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() hideSelectedOption?: boolean = false;                                    // Hide selected option
 
   // Extras
-  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                                 // Size  FIXME: not working
+  @Input() size?: 'xs' | 'sm' | 'md' | 'lg' = 'md';                                 // Size
   @Input() color?: 'ghost' | 'primary' | 'secondary' | 'accent' |                   // Color
     'info' | 'success' | 'warning' | 'error';
   @Input() classList?: string;                                                      // Classes to add
@@ -113,7 +113,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
   }
 
   initSelect() {
-    this.options.unshift({value: "", text: null, display: false}) // Need an empty option for deselect
+    this.options.unshift({value: "", text: null, display: false, html: "<span class='opacity-70 font-normal'>" + this.placeholder + "</span>"}) // Need an empty option for deselect
 
     const options = {
       select: '#' + this.id,
@@ -124,7 +124,6 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
         searchPlaceholder: 'Search...',
         hideSelected: this.hideSelectedOption,
         closeOnSelect: this.closeOnSelect,
-        placeholderText: this.placeholder,
         maxSelected: this.limit,
       },
       events: {

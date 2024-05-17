@@ -24,7 +24,7 @@ export class HistoryService {
     undo(): any {
         if (this.currentStateIndex > 0) {
             this.currentStateIndex--;
-            return this.states[this.currentStateIndex];
+            return _.cloneDeep(this.states[this.currentStateIndex]);
         }
         return null;
     }
@@ -32,7 +32,7 @@ export class HistoryService {
     redo(): any {
         if (this.currentStateIndex < this.states.length - 1) {
             this.currentStateIndex++;
-            return this.states[this.currentStateIndex];
+            return _.cloneDeep(this.states[this.currentStateIndex]);
         }
         return null;
     }
@@ -41,7 +41,7 @@ export class HistoryService {
         this.states = [];
         this.currentStateIndex = -1;
     }
-    
+
     hasUndo(): boolean {
         if (this.currentStateIndex > 0) return true;
         else return false;

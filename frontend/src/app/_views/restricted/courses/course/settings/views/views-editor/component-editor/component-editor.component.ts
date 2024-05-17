@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
   CodeTab,
   CustomFunction,
@@ -51,6 +51,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   courseId: number;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
+  @ViewChild('additionalTools') additionalToolsRef: ElementRef;
 
   viewToEdit: ViewManageData;
   viewToPreview: View;
@@ -86,6 +87,14 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
       this.loading = false;
     })
+
+    if (window.localStorage.getItem('openContext') === null) {
+      window.localStorage.setItem('openContext', JSON.stringify(true));
+    }
+
+    if (!window.localStorage.getItem('openInherited') === null) {
+      window.localStorage.setItem('openInherited', JSON.stringify(true));
+    }
   }
 
   ngOnChanges() {
@@ -108,32 +117,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // Additional Tools --------------------------------------
   // code from the rules editor
 
+  scroll() {
+    this.additionalToolsRef.nativeElement.scrollIntoView({behavior: 'smooth'});
+  }
+
   prepareAdditionalTools() {
-    let helpVariables = "";
-
-    if (this.view.getAllVariables().length > 0) {
-      helpVariables += "# Inherited from the component's parents:\n";
-
-      for (const variable of this.view.getAllVariables()) {
-        helpVariables += "%" + variable.name + " = " + variable.value + "\n";
-      }
-    }
-
-    if (helpVariables.length > 0) helpVariables += '\n';
-
-    helpVariables += "# Globals:" +
-      "\n%course = # id of the course that the user is manipulating" +
-      "\n%user = # id of the user associated to the page which is being displayed" +
-      "\n%viewer = # id of the user that is currently logged in watching the page" +
-      "\n%item = # used to access the values of the collection being iterated";
-
     this.additionalToolsTabs = [
-      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
-
-      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "el",
+      { name: 'Preview Expression', type: "preview", active: true, running: null, debug: false, mode: "el",
         customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
 
-      { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
+      { name: 'Reference Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
     ]
@@ -149,6 +142,22 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.namespaces = Array.from(new Set(names).values())
     moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
   }
+
+  // Variables --------------------------------------
+
+  getCollapseContext(): boolean {
+    return JSON.parse(window.localStorage.getItem('openContext'));
+  }
+  toggleCollapseContext() {
+    window.localStorage.setItem('openContext', JSON.stringify(!this.getCollapseContext()));
+  }
+  getCollapseInherited(): boolean {
+    return JSON.parse(window.localStorage.getItem('openInherited'));
+  }
+  toggleCollapseInherited() {
+    window.localStorage.setItem('openInherited', JSON.stringify(!this.getCollapseInherited()));
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Init -------------------- ***/

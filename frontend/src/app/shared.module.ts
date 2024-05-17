@@ -117,6 +117,7 @@ import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import { MentionModule } from "angular-mentions";
 
 // Icons
@@ -172,7 +173,8 @@ import {
   jamTrashF,
   jamUpload,
   jamBox,
-  jamShuffle
+  jamShuffle,
+  jamFolderF
 } from "@ng-icons/jam-icons";
 
 import {
@@ -205,13 +207,11 @@ import {
   tablerCloudUpload,
   tablerCoin,
   tablerColorSwatch,
-  tablerCopy,
   tablerDeviceDesktop,
   tablerEye,
   tablerEyeOff,
   tablerFlame,
   tablerFlask,
-  tablerFolder,
   tablerGavel,
   tablerGift,
   tablerIdBadge2,
@@ -242,7 +242,10 @@ import {
   tablerColumnInsertRight,
   tablerQuote,
   tablerDatabase,
-  tablerBinaryTree
+  tablerBinaryTree,
+  tablerCodeDots,
+  tablerClick,
+  tablerTools,
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -500,6 +503,7 @@ import {
       jamUpload,
       jamBox,
       jamShuffle,
+      jamFolderF,
 
       tablerAlertTriangle,
       tablerArchive,
@@ -531,10 +535,8 @@ import {
       tablerCoin,
       tablerColorSwatch,
       tablerDeviceDesktop,
-      tablerCopy,
       tablerEye,
       tablerEyeOff,
-      tablerFolder,
       tablerFlame,
       tablerFlask,
       tablerGavel,
@@ -568,6 +570,9 @@ import {
       tablerQuote,
       tablerDatabase,
       tablerBinaryTree,
+      tablerCodeDots,
+      tablerClick,
+      tablerTools,
 
       matFaceRetouchingNatural,
 
@@ -576,6 +581,8 @@ import {
     DataTablesModule,
     NgApexchartsModule,
     ScrollingModule,
+    CdkDrag,
+    CdkDropList,
     MentionModule
   ]
 })

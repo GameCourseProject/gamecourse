@@ -5,8 +5,8 @@ import {SearchCursor} from "@codemirror/search";
 import {ThemingService} from "../../../../_services/theming/theming.service";
 
 // THEMES
-import {oneDark} from "@codemirror/theme-one-dark";
 import {githubLight} from '@ddietr/codemirror-themes/github-light'
+import {githubDark} from '@ddietr/codemirror-themes/github-dark'
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
@@ -34,7 +34,8 @@ import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
-import {AlertService, AlertType} from "../../../../_services/alert.service";
+import {HttpErrorResponse} from "@angular/common/http";
+import {AlertType} from "../../../../_services/alert.service";
 
 @Component({
   selector: 'app-input-code',
@@ -92,6 +93,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   expressionToPreview: string = "";
   outputPreview: any = null;
+  outputPreviewError: any = null;
 
   constructor(
     private themeService: ThemingService,
@@ -142,7 +144,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short",
           "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var",
           "void", "volatile", "while", "with", "yield"];
-        case "el": return ["true", "false"];
+        case "el": return ["true", "false", "%course", "%user", "%viewer", "%item"];
         default: return [];
       }
     }
@@ -202,7 +204,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let query = tab.highlightQuery;
 
     // Initializes with the device's theme
-    const theme = this.themeService.getTheme() === 'dark' ? oneDark : githubLight;
+    const theme = this.themeService.getTheme() === 'dark' ? githubDark : githubLight;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -564,9 +566,18 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
 
     try {
+      this.outputPreviewError = null;
       this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
-    } catch {
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong... You might want to check your expression.");
+    } catch (err: unknown) {
+      this.outputPreview = null;
+      if (err instanceof HttpErrorResponse) {
+        // Hide alert since it will be in the console anyway
+        const alert = document.getElementById(AlertType.ERROR + '-alert');
+        alert.classList.add('hidden')
+
+        let errorMessage = err.error.text.replace(/\n/g, "<br>");
+        this.outputPreviewError = errorMessage.replace(/^((<br\s*\/?>)+)/, ''); // Trim leading <br> or <br /> tags
+      }
     }
 
     (tab as PreviewTab).running = false;
@@ -600,11 +611,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getExampleParts(text: string){
-    text = '\n' + text;
-    return (text.split('\n>')).slice(1);
-  }
-
   containsFunctions(namespace: string) {
     let namespaces = this.functionsToShow.map(fx => fx.name);
     return namespaces.includes(namespace)
@@ -633,7 +639,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   loadTheme() {
     for (let i = 0; i < this.tabs.length; i++){
       this.views[i].dispatch({
-        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : oneDark)
+        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : githubDark)
       });
     }
   }

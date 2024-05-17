@@ -183,7 +183,9 @@ class PageController
         $image = API::getValue("image");
         
         $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
-        $page->setImage($image);
+        if ($image) $page->setImage($image);
+
+        API::response($page->getId());
     }
 
     /**
@@ -205,13 +207,15 @@ class PageController
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
 
+        $name = API::getValue("name");
+
         $image = API::getValue("image");
         if ($image) $page->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
 
-        $page->editPage($page->getName(), $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
+        $page->editPage($name, $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
                 $page->getPosition(), $translatedTree);
     }
 
@@ -221,7 +225,7 @@ class PageController
      */
     public function saveTemplate()
     {
-        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted");
+        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted", "name");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -234,12 +238,14 @@ class PageController
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
 
+        $name = API::getValue("name");
+
         $image = API::getValue("image");
         if ($image) $template->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
-        $template->editTemplate($template->getName(), $translatedTree);
+        $template->editTemplate($name, $translatedTree);
     }
 
     /**

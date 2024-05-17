@@ -97,12 +97,13 @@ class VCLibrary extends Library
             ),
             new DFunction("exchangeTokensForXP",
                 [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "ratio", "optional" => true, "type" => "string"],
-                    ["name" => "threshold", "optional" => true, "type" => "int"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"]],
+                    ["name" => "ratio", "optional" => false, "type" => "string"],
+                    ["name" => "threshold", "optional" => false, "type" => "int"],
+                    ["name" => "extra", "optional" => false, "type" => "bool"]],
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
                 ReturnType::VOID,
-                $this
+                $this,
+                "vc.exchangeTokensForXP(%user, '3:1', 2000, false)"
             )
         ];
     }
@@ -308,7 +309,7 @@ class VCLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, string $ratio, ?int $threshold = null, ?bool $extra = true): ?ValueNode
+    public function exchangeTokensForXP(int $userId, string $ratio, int $threshold, bool $extra): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));

@@ -31,26 +31,48 @@ class ProvidersLibrary extends Library
     {
         return [
 			new DFunction("badgeDistribution",
+                [["name" => "users", "optional" => false, "type" => "array"],
+                    ["name" => "interval", "optional" => true, "type" => "int"],
+                    ["name" => "max", "optional" => true, "type" => "int"],
+                    ["name" => "showAverage", "optional" => true, "type" => "bool"]
+                ],
             	"Provides a distribution of the total number of badges of given users. Option for interval to group badges, max. number of badges and whether to show an average of each interval group.",
             	"collection",
             	$this
         	),
 			new DFunction("XPEvolution",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "time", "optional" => false, "type" => "string"],
+                    ["name" => "compareWith", "optional" => true, "type" => "array"],
+                    ["name" => "compareWithLabel", "optional" => true, "type" => "string"]
+                ],
             	"Provides total XP of a given user over time. Time options: 'day', 'week', 'month'. Option to compare evolution with other users.",
             	"collection",
             	$this
         	),
 			new DFunction("XPDistribution",
+                [["name" => "users", "optional" => false, "type" => "array"],
+                    ["name" => "interval", "optional" => true, "type" => "int"],
+                    ["name" => "max", "optional" => true, "type" => "int"],
+                ],
             	"Provides a distribution of the total XP of given users. Option for interval to group XP, max. XP and whether to show an average of each interval group.",
             	"collection",
             	$this
         	),
 			new DFunction("XPOverview",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "awardTypes", "optional" => true, "type" => "string"],
+                    ["name" => "compareWith", "optional" => true, "type" => "array"],
+                    ["name" => "compareWithLabel", "optional" => true, "type" => "string"]
+                ],
             	"Provides an XP overview for a given user. Award types must follow the format: 'type: label'. Option to compare overview with other users.",
             	"collection",
             	$this
         	),
 			new DFunction("leaderboardEvolution",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "time", "optional" => false, "type" => "string"]
+                ],
             	"Provides leaderboard position of a given user over time. Time options: 'day', 'week', 'month'.",
             	"collection",
             	$this

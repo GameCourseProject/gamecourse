@@ -9,7 +9,8 @@
   },
   "files": [
     "src/main.ts",
-    "src/polyfills.ts"
+    "src/polyfills.ts",
+    "src/app/_components/building-blocks/block/nested-drag-drop-patch.ts"
   ],
   "include": [
     "src/**/*.d.ts"

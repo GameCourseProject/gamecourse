@@ -1,9 +1,14 @@
-import {Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren} from '@angular/core';
-
-import {ViewBlock} from "../../../_domain/views/view-types/view-block";
-import {ViewMode} from "../../../_domain/views/view";
-import { DragDrop, DragRef, moveItemInArray } from '@angular/cdk/drag-drop';
+import {Component, Input, OnInit} from '@angular/core';
+import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
+import {View, ViewMode} from "../../../_domain/views/view";
+import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {HistoryService} from "../../../_services/history.service";
+import {ViewEditorService} from "../../../_services/view-editor.service";
+import * as _ from "lodash";
+import {ViewSelectionService} from "../../../_services/view-selection.service";
+import {ModalService} from "../../../_services/modal.service";
+import {installPatch} from "./nested-drag-drop-patch";
 
 @Component({
   selector: 'bb-block',
@@ -17,15 +22,15 @@ export class BBBlockComponent implements OnInit {
   classes: string;
   children: string;
 
-  @ViewChild('dropList', { static: false }) dropListRef: ElementRef;
-  @ViewChildren('dragItem') dragItems: QueryList<ElementRef>;
-  private dragRefs: DragRef[] = new Array<DragRef>();
-
   constructor(
-    private dragDropService: DragDrop,
+    public selection: ViewSelectionService,
+    public service: ViewEditorService,
+    public history: HistoryService
   ) { }
 
   ngOnInit(): void {
+    installPatch();
+
     this.classes = 'bb-block bb-block-' + this.view.direction;
     if (this.view.columns) this.classes += ' bb-block-cols-' + this.view.columns;
     if (this.view.responsive) this.classes += ' bb-block-responsive'
@@ -40,37 +45,75 @@ export class BBBlockComponent implements OnInit {
     }
   }
 
-  public ngAfterViewInit() {
-    const dropListRef = this.dragDropService.createDropList(this.dropListRef);
+  drop (event: CdkDragDrop<View[]>) {
+    if (event.previousContainer === event.container && event.previousIndex != event.currentIndex) {
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
 
-    dropListRef.withOrientation(this.view.direction);
+      const group = groupedChildren.get(+event.container.id);
+      moveItemInArray(group, event.previousIndex, event.currentIndex);
 
-    this.dragItems.toArray().forEach(element => {
-      let dragRef = this.dragDropService.createDrag(element);
-      this.dragRefs.push(dragRef);
-    });
-    
-    dropListRef.withItems(this.dragRefs);
+      this.history.saveState({
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+        groupedChildren: groupedChildren
+      });
 
-    dropListRef.beforeStarted.subscribe(event => {
-      this.dropListRef.nativeElement.classList.add('cdk-drop-list-dragging');
-      this.dropListRef.nativeElement.classList.add('cdk-drag-animating');
-    });
-    
-    dropListRef.dropped.subscribe(event => {
-      this.drop(event);
-      this.dropListRef.nativeElement.classList.remove('cdk-drop-list-dragging');
-      this.dropListRef.nativeElement.classList.remove('cdk-drag-animating');
-    });
+    } else if (event.previousContainer !== event.container) {
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+
+      const prevGroup = groupedChildren.get(+event.previousContainer.id);
+
+      let newGroup = groupedChildren.get(+event.container.id);
+      if (!newGroup) {
+        newGroup = [];
+        groupedChildren.set(+event.container.id, newGroup);
+      }
+
+      transferArrayItem(prevGroup, newGroup, event.previousIndex, event.currentIndex);
+      this.view.findView(newGroup[event.currentIndex][0]).parent = this.view;
+
+      this.history.saveState({
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+        groupedChildren: groupedChildren
+      });
+    }
   }
 
-  drop(event: any) {
-    moveItemInArray(this.view.children, event.previousIndex, event.currentIndex);
-    const group = groupedChildren.get(this.view.id);
-    moveItemInArray(group, event.previousIndex, event.currentIndex);
+  private getIdsRecursive(item: any): string[] {
+    let ids = [];
+    if ('children' in item) {
+      ids.push(String(item.id));
+      item.children.forEach(childItem => {
+        ids = ids.concat(this.getIdsRecursive(childItem));
+      });
+    }
+    return ids;
+  }
+
+  public get connectedTo(): string[] {
+    let view: View = this.view;
+    while (view.parent) {
+      view = view.parent;
+    }
+    return this.getIdsRecursive(view).reverse();
+  }
+
+  getCantDrag(): boolean {
+    return ModalService.isOpen("component-editor");
   }
 
   get ViewMode(): typeof ViewMode {
     return ViewMode;
   }
+
+  protected readonly String = String;
+  protected readonly BlockDirection = BlockDirection;
 }

@@ -1,4 +1,5 @@
 import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -30,7 +31,8 @@ import {AlertService, AlertType} from "../../../_services/alert.service";
 
 @Component({
   selector: 'bb-any',
-  templateUrl: './any.component.html'
+  templateUrl: './any.component.html',
+  styleUrls: ['./any.component.scss']
 })
 export class BBAnyComponent implements OnInit {
 
@@ -44,6 +46,8 @@ export class BBAnyComponent implements OnInit {
   classes: string;
   visible: boolean;
   delete: boolean = false;
+
+  contextMenuPos = { x: '0', y: '0' };
 
   constructor(
     private route: ActivatedRoute,
@@ -61,8 +65,33 @@ export class BBAnyComponent implements OnInit {
       this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     });
+
+    if (this.view.mode === ViewMode.EDIT) {
+      addEventListener('keydown', (event: KeyboardEvent) => {
+        if (this.isSelected() && !ModalService.isOpen("component-editor")) {
+          if (event.key === 'Delete' || event.key === 'Backspace') {
+            event.preventDefault();
+            ModalService.openModal('component-delete-' + this.view.id);
+          }
+        }
+      })
+    }
   }
 
+  onRightClick(event: MouseEvent) {
+    if (!ModalService.isOpen("component-editor")) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.selection.open(this.view);
+
+      if (event.clientX + 192 > window.innerWidth) {
+        this.contextMenuPos.x = event.clientX- 192 + 'px';
+      } else {
+        this.contextMenuPos.x = event.clientX + 'px';
+      }
+      this.contextMenuPos.y = event.clientY + 'px';
+    }
+  }
 
   /*** ---------------------------------------- ***/
   /*** ----------------- Views ---------------- ***/
@@ -144,8 +173,12 @@ export class BBAnyComponent implements OnInit {
     return this.selection.get() == this.view;
   }
 
+  isOpen() {
+    return this.isSelected() && this.selection.hasOpen();
+  }
+
   openSaveComponentModal() {
-    ModalService.openModal('save-as-component');
+    ModalService.openModal('save-component');
   }
 
 
@@ -163,14 +196,14 @@ export class BBAnyComponent implements OnInit {
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
     this.visible = false;
-    this.selection.setRearrange(true);
+    this.selection.refresh();
     this.cdr.detectChanges();
-    this.selection.setRearrange(false);
+    this.selection.refresh();
     this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
   }
@@ -185,14 +218,15 @@ export class BBAnyComponent implements OnInit {
 
   submitDeleteAction() {
     if (this.isExistingRoot) {
-      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...")
+      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...");
+      ModalService.closeModal('component-delete-' + this.view.id);
     }
     else {
       this.service.delete(this.view);
       this.selection.clear();
       this.delete = true;
       this.history.saveState({
-        viewsByAspect: this.service.viewsByAspect,
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
         groupedChildren: groupedChildren
       });
     }
@@ -201,7 +235,7 @@ export class BBAnyComponent implements OnInit {
   duplicateAction() {
     this.service.duplicate(this.view);
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
       groupedChildren: groupedChildren
     });
   }

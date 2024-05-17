@@ -3346,12 +3346,13 @@ export class ApiHttpService {
       }));
   }
 
-  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 
@@ -3384,7 +3385,7 @@ export class ApiHttpService {
 
   // Pages //////////////////////////////////////////////////////////////////////////
 
-  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<void> {
+  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<number> {
     const data = {
       courseId: courseID,
       name: name,
@@ -3399,15 +3400,16 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 

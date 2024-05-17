@@ -31,14 +31,14 @@
     <div class="flex flex-row gap-4 w-full">
       <div>
         <p class="mb-5">Current Version:</p>
-        <app-aspect-card [aspect]="currentAspect" [course]="course" />
+        <app-aspect-card [aspect]="currentAspect" [course]="course" [isNewPage]="isNewPage" />
       </div>
       <div class="bg-base-200 w-1"></div>
       <div class="w-full overflow-x-auto">
         <p class="mb-2">Other Versions:</p>
         <div class="flex flex-row w-full overflow-x-auto">
           <div *ngFor="let aspect of getUnselectedAspects(); index as i" (click)="selectAspect(aspect)">
-            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" (deleteEvent)="removeAspect(aspect)"/>
+            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" (deleteEvent)="removeAspect(aspect)" [isNewPage]="isNewPage" />
           </div>
         </div>
       </div>
@@ -74,6 +74,7 @@
         [topLabel]="'Viewer Role'"
         [multiple] = false
         [(value)]="viewerRole"
+        [placeholder]="'none'"
       ></app-input-select-role>
       <app-input-select-role
         [form]="f"
@@ -82,6 +83,7 @@
         [topLabel]="'User Role'"
         [multiple] = false
         [(value)]="userRole"
+        [placeholder]="'none'"
       ></app-input-select-role>
     </div>
     <app-input-select

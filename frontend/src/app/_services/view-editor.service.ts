@@ -30,7 +30,7 @@ export class ViewEditorService {
   public selectedAspect: Aspect;  // Selected aspect for previewing and editing
   public rolesHierarchy;
   public aspectsToDelete: Aspect[] = [];
-  public aspectsToAdd: { newAspect: Aspect, aspectToCopy: Aspect }[] = [];
+  public aspectsToAdd: { newAspect: Aspect, viewToCopy: View }[] = [];
   public aspectsToChange: { old: Aspect, newAspect: Aspect }[] = [];
 
   selectedChange: Subject<View> = new Subject<View>();
@@ -71,8 +71,8 @@ export class ViewEditorService {
     // aspects lower in hierarchy and the aspect itself
     const defaultAspect = new Aspect(null, null)
     const aspectsToReplace = this.viewsByAspect.filter((e) => {
-      if (_.isEqual(e.aspect, defaultAspect)) return false;
-      if (e.aspect.userRole === old.userRole) return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole);
+      if (_.isEqual(old, defaultAspect)) return true;
+      else if (e.aspect.userRole === old.userRole) return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole);
       else if (e.aspect.viewerRole === old.viewerRole) return this.isMoreSpecific(old.userRole, e.aspect.userRole);
       else return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole) && this.isMoreSpecific(old.userRole, e.aspect.userRole)
     }).map(e => e.aspect);
@@ -95,14 +95,16 @@ export class ViewEditorService {
 
     // Modify roles of existing aspects
     for (let changed of this.aspectsToChange) {
-      if (changed.old.viewerRole === "new" || changed.old.userRole === "new") continue;
       this.changeAspect(changed.old, changed.newAspect);
+      if (_.isEqual(this.selectedAspect, changed.old)) {
+        this.selectedAspect = changed.newAspect;
+      }
     }
     this.aspectsToChange = [];
 
     // Create new aspects
     for (let aspect of this.aspectsToAdd) {
-      const view = _.cloneDeep(this.getEntryOfAspect(aspect.aspectToCopy).view); // FIXME: the aspectToCopy might not exist anymore
+      const view = _.cloneDeep(aspect.viewToCopy);
 
       const defaultAspect = new Aspect(null, null)
       const aspectsToReplace = this.viewsByAspect.filter((e) => {
@@ -112,7 +114,7 @@ export class ViewEditorService {
         else return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole) && !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole)
       }).map(e => e.aspect);
 
-      view.modifyAspect(aspectsToReplace, aspect.newAspect);
+      view?.modifyAspect(aspectsToReplace, aspect.newAspect);
       this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];
@@ -127,6 +129,21 @@ export class ViewEditorService {
     );
 
     return higherInHierarchy;
+  }
+
+  getFutureAspects(): Aspect[] {
+    // deleted
+    const futureAspects = this.viewsByAspect.filter(e => this.aspectsToDelete.findIndex(toDel => _.isEqual(e.aspect, toDel)) == -1).map(e => e.aspect);
+    // changed
+    for (let changed of this.aspectsToChange) {
+      const found = futureAspects.findIndex(e => _.isEqual(e, changed.old));
+      if (found != -1) futureAspects[found] = changed.newAspect;
+    }
+    // added
+    for (let added of this.aspectsToAdd) {
+      futureAspects.push(added.newAspect);
+    }
+    return futureAspects;
   }
 
 

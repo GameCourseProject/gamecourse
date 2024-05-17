@@ -12,14 +12,16 @@ class DFunction
     private $description;
     private $returnType;
     private $library;
+    private $example;
 
-    public function __construct(string $name, array $args, string $description, string $returnType, Library $library)
+    public function __construct(string $name, array $args, string $description, string $returnType, Library $library, string $example = null)
     {
         $this->name = $name;
         $this->args = $args;
         $this->description = $description;
         $this->returnType = $returnType;
         $this->library = $library;
+        $this->example = $example;
     }
 
 
@@ -50,5 +52,10 @@ class DFunction
     public function getLibrary(): Library
     {
         return $this->library;
+    }
+
+    public function getExample(): ?string
+    {
+        return $this->example;
     }
 }

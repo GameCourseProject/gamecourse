@@ -10,7 +10,10 @@
 
 <!-- Edit version -->
 <ng-container *ngIf="!delete && view?.mode === ViewMode.EDIT">
-  <div [viewSelection]="view" class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral'}} hover:cursor-pointer">
+  <div [viewSelection]="view"
+       class="relative outline-2 rounded-xl transition {{isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral/50'}} hover:cursor-pointer"
+       (contextmenu)="onRightClick($event)" (mousedown)="selection.close()"
+  >
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-30">
       {{view.type.capitalize()}}
     </div>
@@ -18,25 +21,8 @@
     <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}}
                 absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-30
                 hover:cursor-pointer hover:bg-secondary-focus transition-all"
-         (click)="$event.stopPropagation()">
+         (click)="onRightClick($event)">
       <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
-      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-300 rounded-box text-base font-normal no-underline w-48">
-        <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.5rem" class="text-warning"/>Edit</a></li>
-        <li (click)="duplicateAction()"><a><ng-icon name="tabler-copy" size="1.5rem"/>Duplicate</a></li>
-        <li (click)="selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.5rem"/>Select Parent</a></li>
-        <li (click)="openSaveComponentModal()"><a><ng-icon name="tabler-folder" size="1.5rem"/>Save</a></li>
-        <li (click)="deleteAction()"><a><ng-icon name="feather-X" size="1.5rem" class="text-error"/>Delete</a></li>
-      </ul>
-    </div>
-    <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
-  </div>
-</ng-container>
-
-<!-- Rearrange version -->
-<ng-container *ngIf="view?.mode === ViewMode.REARRANGE">
-  <div class="relative outline-2 rounded-xl transition outline outline-primary hover:cursor-pointer">
-    <div class="block absolute -top-4 left-0 bg-primary rounded-full py-1 px-2 text-white text-xs z-30">
-      {{view.type.capitalize()}}
     </div>
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
   </div>
@@ -72,7 +58,7 @@
   [header]="'Edit Component'"
   [xButton]="false"
   [closeBtnText]="'Cancel'"
-  [submitBtnText]="'Save'"
+  [submitBtnText]="'Save ' + (view.type === ViewType.TABLE ? 'Table' : '')"
   [size]="'lg'"
   [static]="true"
   (click)="$event.stopPropagation()"
@@ -82,6 +68,7 @@
 />
 <ng-template #COMPONENT_EDITOR>
   <app-component-editor
+    *ngIf="isSelected()"
     [view]="view"
   ></app-component-editor>
 </ng-template>
@@ -100,3 +87,16 @@
   [static]="true"
   (click)="$event.stopPropagation()"
 ></app-simple-modal>
+
+
+<!-- Context Menu -->
+<ul *ngIf="isOpen()" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()"
+    (clickedOutside)="selection.close()"
+    tabindex="0" [style.left]="contextMenuPos.x" [style.top]="contextMenuPos.y"
+    class="fixed z-50 menu shadow bg-base-300 rounded-box text-sm font-normal no-underline w-48 dropdown-animation">
+  <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.3rem" class="text-warning"/>Edit</a></li>
+  <li (click)="duplicateAction()" *ngIf="view.parent"><a><ng-icon name="jam-files-f" size="1.3rem"/>Duplicate</a></li>
+  <li (click)="openSaveComponentModal()"><a><ng-icon name="jam-folder-f" size="1.3rem"/>Save as Custom</a></li>
+  <li (click)="$event.stopPropagation(); selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.3rem"/>Highlight Parent</a></li>
+  <li (click)="deleteAction()"><a><ng-icon name="feather-x" size="1.3rem" class="text-error"/>Delete</a></li>
+</ul>

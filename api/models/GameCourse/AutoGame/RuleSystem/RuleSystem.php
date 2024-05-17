@@ -351,9 +351,6 @@ abstract class RuleSystem
         foreach ($libraries as $library) {
             $libraryId = $library->getId();
 
-            // Libraries not needed for rule editor
-            if ($libraryId === 'actions' || $libraryId === 'providers') continue;
-
             $myLibrary = $dictionary->getLibraryById($library->getId());
             $functions = $myLibrary->getFunctions();
 
@@ -363,6 +360,7 @@ abstract class RuleSystem
                 $myFunction["args"] = $function->getArgs();
                 $myFunction["description"] = $function->getDescription();
                 $myFunction["returnType"] = $function->getReturnType();
+                $myFunction["example"] = $function->getExample();
                 array_push($myFunctions, $myFunction);
             }
 

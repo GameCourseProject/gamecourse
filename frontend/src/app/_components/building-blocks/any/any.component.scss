@@ -1,10 +1,10 @@
 @keyframes dropdownEnter {
   from {
-    transform: scaleY(0.95);
+    transform: scale(0.95);
     opacity: 0;
   }
   to {
-    transform: scaleY(1);
+    transform: scale(1);
     opacity: 1;
   }
 }

@@ -32,31 +32,33 @@
       <!-- Preview code tabs  -->
       <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto">
         <div [id]="getId(i, tab.name)"></div>
-        <button type="button" class="btn btn-secondary btn-sm text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}} rounded-none" (click)="previewExpression(tab)">
-          <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-          <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-          Preview Expression
-        </button>
+        <div class="w-full bg-base-300 flex flex-row items-center gap-2">
+          <button type="button" class="ml-2 btn btn-secondary btn-sm text-secondary-content gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="previewExpression(tab)">
+            <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-inherit"></ng-icon>
+            <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+            Preview Expression
+          </button>
+          <div *ngIf="outputPreview" class="font-semibold">Result:</div>
+          <div *ngIf="outputPreviewError" class="font-semibold text-error">Error:</div>
+        </div>
         <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
-          <div class="text-sm font-semibold h-fit">Result: </div>
           <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
+          <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
         </div>
       </div>
 
       <!-- Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
-          <div class="w-[calc(50%-0.25rem)] h-full flex flex-col">
-            <div class="justify-center flex mb-1.5">
-              <app-input-search
-                [id] = "'manual'"
-                [size]="'sm'"
-                [classList]="'mt-1'"
-                [items] = "originalFunctions"
-                [placeholder]="'Search for function...'"
-                (valueChange)="filterFunctions($event)">
-              </app-input-search>
-            </div>
+          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+            <app-input-search
+              [id] = "'manual'"
+              [size]="'sm'"
+              [classList]="'mt-1 mb-1.5'"
+              [items] = "originalFunctions"
+              [placeholder]="'Search for function...'"
+              (valueChange)="filterFunctions($event)">
+            </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
               <div *ngFor="let namespace of tab.namespaces">
                 <ng-container *ngIf="containsFunctions(namespace)">
@@ -80,21 +82,21 @@
           </div>
 
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content">
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
             <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
               Select a function
             </span>
 
-            <div *ngIf="selectedFunction" class="ml-2">
-              <div class="border-b border-gray-200 mb-4">
-                <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
+            <div *ngIf="selectedFunction" class="ml-2 flex flex-col gap-2">
+              <div class="border-base-content/10 border-b-2 mb-4">
+                <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
-                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
-                <div *ngFor="let arg of selectedFunction.args, let i = index">
-                    <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                      {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                <span class="text-secondary">{{selectedFunction.name}}.{{selectedFunction.keyword}}</span> (
+                <div *ngFor="let arg of selectedFunction.args, let i = index" class="inline">
+                    <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
+                      {{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
                 </div>
 
                 <span>) : {{selectedFunction.returnType}}</span>
@@ -104,24 +106,24 @@
                 <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
               </div>
 
-              <div><span><strong>Description: </strong>{{selectedFunction.description}}</span></div><br *ngIf="selectedFunction.example">
-              <div *ngIf="selectedFunction.example">
-                <span><strong>Example: </strong></span><br>
-                <span *ngFor="let examplePart of getExampleParts(selectedFunction.example)" class="text-sm">
-                  <div class="ml-4"><strong>></strong> {{examplePart}}</div>
-                </span>
-              </div><br>
+              <div *ngIf="selectedFunction.example"><span><strong>Usage Example: </strong>
+                <span class="italic">{{selectedFunction.example}}</span></span>
+              </div>
+
+              <div class="mb-4"><span><strong>Description: </strong>
+                {{selectedFunction.description}}</span>
+              </div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
-              </div><br *ngIf="selectedFunction.name !== 'gamerules'">
+              </div>
 
               <div *ngIf="selectedFunction.name === 'gamerules'">
                 <span><strong>Args:</strong></span><br>
                 <span *ngFor="let arg of selectedFunction.args, let i = index" class="text-sm">
                   <div class="ml-4"><strong>- {{arg.name}} : </strong>{{arg.description}}</div>
                 </span>
-              </div><br *ngIf="selectedFunction.name === 'gamerules'">
+              </div>
 
               <!-- Replace later when argument's descriptions are added (in backend) -->
               <ng-container *ngIf="selectedFunction.name !== 'gamerules' && selectedFunction.args.length > 0">
@@ -129,7 +131,7 @@
                   <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
                     <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
                   </ng-container>
-                </div><br>
+                </div>
               </ng-container>
 
               <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
