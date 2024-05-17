@@ -351,9 +351,6 @@ abstract class RuleSystem
         foreach ($libraries as $library) {
             $libraryId = $library->getId();
 
-            // Libraries not needed for rule editor
-            if ($libraryId === 'providers') continue;
-
             $myLibrary = $dictionary->getLibraryById($library->getId());
             $functions = $myLibrary->getFunctions();
 
