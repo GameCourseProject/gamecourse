@@ -575,7 +575,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         const alert = document.getElementById(AlertType.ERROR + '-alert');
         alert.classList.add('hidden')
 
-        let errorMessage = err.error.text.replace(/\n/g, "<br>");
+        // Get only parts before stack trace, and replace \n with <br>
+        let errorMessage = err.error.text.split(" in ")[0].replace(/\n/g, "<br>");
+
+        // Remove initial 'Fatal error: Uncaught Exception'
+        const startIndex = errorMessage.indexOf('<b>Fatal error</b>:  Uncaught Exception: ');
+        if (startIndex !== -1) {
+          errorMessage = errorMessage.substring(startIndex + '<b>Fatal error</b>:  Uncaught Exception: '.length).trim();
+        }
+
         this.outputPreviewError = errorMessage.replace(/^((<br\s*\/?>)+)/, ''); // Trim leading <br> or <br /> tags
       }
     }
