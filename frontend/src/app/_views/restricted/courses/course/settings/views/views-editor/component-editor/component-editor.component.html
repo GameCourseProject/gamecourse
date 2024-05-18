@@ -378,10 +378,10 @@
           <span class="font-semibold">Inherited Variables</span>
         </div>
         <div class="collapse-content text-sm">
-          <p *ngFor="let variable of view.getAllVariables()">
+          <p *ngFor="let variable of view.parent?.getAllVariables()">
             <span class="text-secondary">%{{variable.name}}</span> = {{variable.value}}
           </p>
-          <p *ngIf="view.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
+          <p *ngIf="view.parent?.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
         </div>
       </div>
     </form>
