@@ -3,6 +3,7 @@ import {basicSetup, EditorView} from "codemirror";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
 import {ThemingService} from "../../../../_services/theming/theming.service";
+import {Clipboard} from '@angular/cdk/clipboard';
 
 // THEMES
 import {githubLight} from '@ddietr/codemirror-themes/github-light'
@@ -35,7 +36,7 @@ import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {HttpErrorResponse} from "@angular/common/http";
-import {AlertType} from "../../../../_services/alert.service";
+import {AlertService, AlertType} from "../../../../_services/alert.service";
 
 @Component({
   selector: 'app-input-code',
@@ -98,7 +99,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   constructor(
     private themeService: ThemingService,
     private updateService: UpdateService,
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private clipboard: Clipboard
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -551,19 +553,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Preview ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   async previewExpression(tab: PreviewTab){
     (tab as PreviewTab).running = true;
 
-    let toPreview = this.expressionToPreview
-      .replace(/#.*/g, '') // Remove comments
-      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
-      .replace(/(\s*:\s*)/g, ':') // Replace ' : ', ' :' and ': ' with ':'
-      .trim(); // Trim any trailing whitespace or newline characters
-
-    // Put expression between {} if it isn't already
-    if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
-      toPreview = `{${toPreview.trim()}}`;
-    }
+    const toPreview = this.formatExpressionToPreview();
 
     try {
       this.outputPreviewError = null;
@@ -589,6 +586,25 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
 
     (tab as PreviewTab).running = false;
+  }
+
+  copyToClipboard() {
+    this.clipboard.copy(this.formatExpressionToPreview());
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  formatExpressionToPreview(): string {
+    let toPreview = this.expressionToPreview
+      .replace(/#.*/g, '') // Remove comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/(\s*:\s*)/g, ':') // Replace ' : ', ' :' and ': ' with ':'
+      .trim(); // Trim any trailing whitespace or newline characters
+
+    // Put expression between {} if it isn't already
+    if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
+      toPreview = `{${toPreview.trim()}}`;
+    }
+    return toPreview;
   }
 
   /*** --------------------------------------------- ***/

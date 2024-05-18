@@ -29,8 +29,8 @@
         <div [id]="getId(i, tab.name)"></div>
       </div>
 
-      <!-- Preview code tabs  -->
-      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto">
+      <!-- Preview expression tabs  -->
+      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto relative">
         <div [id]="getId(i, tab.name)"></div>
         <div class="w-full bg-base-300 flex flex-row items-center gap-2">
           <button type="button" class="ml-2 btn btn-secondary btn-sm text-secondary-content gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="previewExpression(tab)">
@@ -44,6 +44,11 @@
         <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
           <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
           <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
+        </div>
+        <div class="absolute tooltip tooltip-left top-1 right-1" [attr.data-tip]="'Copy'">
+          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyToClipboard()">
+            <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
+          </button>
         </div>
       </div>
 
