@@ -43,7 +43,7 @@
          [cdkDropListConnectedTo]="connectedTo"
          (cdkDropListDropped)="drop($event)"
          [cdkDropListOrientation]="view.direction">
-      <bb-any *ngFor="let child of view.children" [view]="child" cdkDrag [cdkDragDisabled]="getCantDrag()"></bb-any>
+      <bb-any *ngFor="let child of view.children" [view]="child" cdkDrag [cdkDragDisabled]="getCantDrag()" (addComponentEvent)="addComponentEvent.emit()"></bb-any>
     </div>
   </div>
 </ng-template>
@@ -61,8 +61,10 @@
       <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-4">
         Block with content displayed horizontally
       </div>
-      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl p-4">
-        <span class="mb-2">...</span>
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl">
+        <button class="btn btn-circle btn-ghost" (click)="addComponent()">
+          <ng-icon name="jam-plus-circle" size="1.7rem" />
+        </button>
       </div>
     </ng-container>
 
@@ -77,8 +79,10 @@
       <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl p-4">
         Block with content displayed vertically
       </div>
-      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl">
-        <span class="mb-2">...</span>
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl">
+        <button class="btn btn-circle btn-ghost" (click)="addComponent()">
+          <ng-icon name="jam-plus-circle" size="1.7rem" />
+        </button>
       </div>
     </ng-container>
   </div>

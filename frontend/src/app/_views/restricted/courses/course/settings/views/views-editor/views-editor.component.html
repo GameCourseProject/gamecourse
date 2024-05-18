@@ -225,7 +225,7 @@
 
   <!-- Editor -->
   <div class="grow {{editable ? 'rounded-xl border-2 border-base-content border-opacity-10 p-2' : ''}}">
-    <bb-any *ngIf="view && !loading.page" [view]="view" id="capture" [isExistingRoot]="!pageToManage"></bb-any>
+    <bb-any *ngIf="view && !loading.page" [view]="view" id="capture" [isExistingRoot]="!pageToManage" (addComponentEvent)="selectOption(options[0])"></bb-any>
     <!-- Loader -->
     <app-loader [loading]="loading.page"></app-loader>
   </div>

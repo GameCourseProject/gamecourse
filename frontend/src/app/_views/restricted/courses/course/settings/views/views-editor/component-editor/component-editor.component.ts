@@ -2,7 +2,8 @@ import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, View
 import {
   CodeTab,
   CustomFunction,
-  OutputTab, PreviewTab,
+  OutputTab,
+  PreviewTab,
   ReferenceManualTab
 } from "src/app/_components/inputs/code/input-code/input-code.component";
 import {View, ViewMode} from "src/app/_domain/views/view";
@@ -29,7 +30,8 @@ import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
 import {
-  addToGroupedChildren, addVariantToGroupedChildren,
+  addToGroupedChildren,
+  addVariantToGroupedChildren,
   getFakeId,
   groupedChildren,
   viewsDeleted
@@ -193,15 +195,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
     }
-    else if (this.view instanceof ViewBlock) {
-      viewToEdit.direction = this.view.direction;
-      viewToEdit.responsive = this.view.responsive;
-      viewToEdit.columns = this.view.columns;
-    }
     else if (this.view instanceof ViewCollapse) {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
+    }
+
+    if (this.view instanceof ViewBlock) {
+      viewToEdit.direction = this.view.direction;
+      viewToEdit.responsive = this.view.responsive;
+      viewToEdit.columns = this.view.columns;
+    } else { // needed in case user changes type to block
+      viewToEdit.direction = BlockDirection.VERTICAL;
     }
 
     if (this.view instanceof ViewChart) {

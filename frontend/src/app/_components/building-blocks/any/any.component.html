@@ -38,10 +38,10 @@
       [showTooltip]="{event: getEvent(EventAction.SHOW_TOOLTIP) | as : ShowTooltipEvent, view}"
       [exchangeTokens]="{event: getEvent(EventAction.EXCHANGE_TOKENS) | as : ExchangeTokensEvent, view}">
 
-    <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    ></bb-block>
+    <bb-block    *ngIf="view.type === ViewType.BLOCK"    [view]="view | as : ViewBlock"    (addComponentEvent)="addComponentEvent.emit()"></bb-block>
     <bb-button   *ngIf="view.type === ViewType.BUTTON"   [view]="view | as : ViewButton"   ></bb-button>
     <bb-chart    *ngIf="view.type === ViewType.CHART"    [view]="view | as : ViewChart"    ></bb-chart>
-    <bb-collapse *ngIf="view.type === ViewType.COLLAPSE" [view]="view | as : ViewCollapse" ></bb-collapse>
+    <bb-collapse *ngIf="view.type === ViewType.COLLAPSE" [view]="view | as : ViewCollapse" (addComponentEvent)="addComponentEvent.emit()"></bb-collapse>
     <bb-icon     *ngIf="view.type === ViewType.ICON"     [view]="view | as : ViewIcon"     ></bb-icon>
     <bb-image    *ngIf="view.type === ViewType.IMAGE"    [view]="view | as : ViewImage"    ></bb-image>
     <bb-table    *ngIf="view.type === ViewType.TABLE"    [view]="view | as : ViewTable"    ></bb-table>

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
@@ -38,7 +38,7 @@ export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
   @Input() isExistingRoot: boolean = false;
-
+  @Output() addComponentEvent = new EventEmitter<void>();
   @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
 
   courseID: number;
