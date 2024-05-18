@@ -107,7 +107,7 @@ export class BBBlockComponent implements OnInit {
   }
 
   getCantDrag(): boolean {
-    return ModalService.isOpen("component-editor");
+    return ModalService.isAnyOpen();
   }
 
   get ViewMode(): typeof ViewMode {

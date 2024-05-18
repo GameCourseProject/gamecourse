@@ -61,7 +61,6 @@
   [submitBtnText]="'Save ' + (view.type === ViewType.TABLE ? 'Table' : '')"
   [size]="'lg'"
   [static]="true"
-  (click)="$event.stopPropagation()"
   (submitBtnClicked)="submitEditAction()"
   (closeBtnClicked)="cancelEditAction()"
   [classList]="'overflow-x-hidden'"
