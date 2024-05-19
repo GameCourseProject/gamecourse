@@ -68,7 +68,7 @@ import {
   GameElementManageData,
   QuestionnaireManageData
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
-import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
+import {CookbookRecipe, CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
@@ -1903,6 +1903,19 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res));
+  }
+
+  public getCookbook(courseID: number): Observable<CookbookRecipe[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCookbook');
+      qs.push('courseId', courseID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
   }
 
   public previewRule(ruleData: RuleManageData): Observable<void> {

@@ -889,6 +889,10 @@ class PageController
         API::response($page->previewPage($viewerId, $userId));
     }
 
+    /*** --------------------------------------------- ***/
+    /*** ---------------- Editor Tools --------------- ***/
+    /*** --------------------------------------------- ***/
+
     /**
      * Previews an expression of the Language Expression as Text.
      *
@@ -908,6 +912,24 @@ class PageController
         $viewerId = Core::getLoggedUser()->getId();
 
         API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId));
+    }
+
+    /**
+     * Returns the additional information to help users use the
+     * Expression Language of each module.
+     *
+     * @throws Exception
+     */
+    public function getCookbook()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response(Page::getCookbook($course));
     }
 
 

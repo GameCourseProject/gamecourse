@@ -699,6 +699,10 @@ class Page
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, true);
     }
 
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Editor Tools ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
     /**
      * Previews an expression of the Language Expression as Text.
      *
@@ -714,6 +718,24 @@ class Page
         $viewType->evaluate($view, $visitor);
 
         return $view["text"];
+    }
+
+    /**
+     * Gets the cookbooks of modules
+     * @throws Exception
+     */
+    public static function getCookbook(Course $course): array {
+        $content = [];
+
+        // Modules
+        $moduleIds = $course->getModules(true, true);
+
+        foreach ($moduleIds as $moduleId) {
+            $recipe = MODULES_FOLDER . "/" . $moduleId . "/cookbook.html";
+            if (file_exists($recipe))
+                $content = array_merge($content, [["moduleId" => $moduleId, "content" => file_get_contents($recipe)]]);
+        }
+        return $content;
     }
 
 

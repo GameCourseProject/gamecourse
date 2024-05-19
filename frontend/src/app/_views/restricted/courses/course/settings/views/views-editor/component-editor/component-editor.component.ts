@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
-  CodeTab,
+  CodeTab, CookbookRecipe, CookbookTab,
   CustomFunction,
   OutputTab,
   PreviewTab,
@@ -68,8 +68,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
 
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[];
   ELfunctions: CustomFunction[];
+  cookbook: CookbookRecipe[];
   namespaces: string[];
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
@@ -85,6 +86,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.route.parent.params.subscribe(async params => {
       this.courseId = parseInt(params.id);
       await this.getCustomFunctions(this.courseId);
+      await this.getCookbook(this.courseId);
       this.prepareAdditionalTools();
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
       this.loading = false;
@@ -131,6 +133,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       { name: 'Reference Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
+
+      { name: 'Cookbook', type: "cookbook", active: false, documentation: this.cookbook
+      }
     ]
   }
 
@@ -143,6 +148,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
     this.namespaces = Array.from(new Set(names).values())
     moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
+  }
+
+  async getCookbook(courseID: number) {
+    this.cookbook = await this.api.getCookbook(courseID).toPromise();
   }
 
   // Variables --------------------------------------

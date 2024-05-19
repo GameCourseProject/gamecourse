@@ -92,7 +92,7 @@
               Select a function
             </span>
 
-            <div *ngIf="selectedFunction" class="ml-2 flex flex-col gap-2">
+            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2">
               <div class="border-base-content/10 border-b-2 mb-4">
                 <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
@@ -140,6 +140,49 @@
               </ng-container>
 
               <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cookbook -->
+      <div *ngIf="tab.type === 'cookbook' && tab.active" class="h-full overflow-y-clip">
+        <div class="w-full flex h-full">
+          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+            <app-input-search
+              [id] = "'manual'"
+              [size]="'sm'"
+              [classList]="'mt-1 mb-1.5'"
+              [items] = "originalRecipes"
+              [placeholder]="'Search for module...'"
+              (valueChange)="filterRecipes($event)">
+            </app-input-search>
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
+              <div *ngFor="let recipe of recipesToShow">
+                <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
+                    {{ recipe == selectedRecipe ? 'badge-outline' : '' }}" (click)="selectedRecipe = recipe">
+                  {{ recipe.moduleId }}
+                </div>
+              </div>
+
+              <span *ngIf="recipesToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex">
+                Nothing found.
+              </span>
+
+            </div>
+          </div>
+
+
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
+            <span *ngIf="!selectedRecipe" class="text-base-content text-opacity-50 ml-5">
+              Select a module
+            </span>
+
+            <div *ngIf="selectedRecipe" class="px-4 flex flex-col gap-2">
+              <div class="border-base-content/10 border-b-2 mb-4">
+                <span class="text-xl font-bold">{{selectedRecipe.moduleId}}</span>
+              </div>
+              <div class="mb-14" [innerHTML]="selectedRecipe.content"></div>
             </div>
           </div>
         </div>

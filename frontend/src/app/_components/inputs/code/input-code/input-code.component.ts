@@ -56,7 +56,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
 
-  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[] = [
+  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[] = [
     { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false, debugOutput: false }];
 
@@ -86,6 +86,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   functionsToShow: CustomFunction[] = [];
   filteredFunctions: CustomFunction[] = [];
 
+  // COOKBOOK
+  originalRecipes: CookbookRecipe[] = [];
+  recipesToShow: CookbookRecipe[] = [];
+  filteredRecipes: CookbookRecipe[] = [];
+  selectedRecipe: CookbookRecipe = null;
+
   // REFERENCE MANUAL
   namespaces: Set<string>;
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
@@ -114,10 +120,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       if (this.tabs[i].type === 'code' || this.tabs[i].type === 'preview'){
         this.setUpKeywords((this.tabs[i] as CodeTab));
-
-      } else if (this.tabs[i].type === 'manual') {
+      }
+      else if (this.tabs[i].type === 'manual') {
         this.filteredFunctions = (this.tabs[i] as ReferenceManualTab).customFunctions;
         this.functionsToShow = (this.tabs[i] as ReferenceManualTab).customFunctions;
+      }
+      else if (this.tabs[i].type === 'cookbook') {
+        this.filteredRecipes = (this.tabs[i] as CookbookTab).documentation;
+        this.recipesToShow = (this.tabs[i] as CookbookTab).documentation;
       }
     }
     this.views = views;
@@ -631,6 +641,25 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  reduceRecipesList(query?: string): void {
+    this.reduce.search(this.originalRecipes, query);
+  }
+
+  filterRecipes(searchQuery?: string) {
+    if (searchQuery) {
+      let functions: CookbookRecipe[] = [];
+      for (let i = 0; i < this.filteredRecipes.length; i++){
+        if (((this.filteredRecipes[i].moduleId).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          functions.push(this.filteredRecipes[i]);
+        }
+      }
+      this.recipesToShow = functions;
+    }
+    else {
+      this.recipesToShow = this.filteredRecipes;
+    }
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
@@ -720,13 +749,19 @@ export interface OutputTab {
   tooltip?: string,                          // Message to show by default
 }
 
-
 export interface ReferenceManualTab {
   name: string,                              // Name of the tab that will appear above
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: CustomFunction[],        // Personalized functions
   namespaces?: string[]                      // Namespaces of functions
+}
+
+export interface CookbookTab {
+  name: string,                              // Name of the tab that will appear above
+  type: "cookbook",                          // Specifies type of tab in editor
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
+  documentation?: CookbookRecipe[],          // Personalized documentation
 }
 
 export interface CustomFunction {
@@ -737,4 +772,9 @@ export interface CustomFunction {
   example?: string
   args: {name: string, optional: boolean, type: string, description: string}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
+}
+
+export interface CookbookRecipe {
+  moduleId: string,
+  content: string
 }
