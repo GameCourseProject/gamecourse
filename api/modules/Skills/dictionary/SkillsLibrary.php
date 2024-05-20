@@ -36,45 +36,52 @@ class SkillsLibrary extends Library
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's id.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+            "%skill.id"
             ),
             new DFunction("name",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%skill.name"
             ),
             new DFunction("color",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's color.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%skill.color"
             ),
             new DFunction("dependencies",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's dependencies.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "%skill.dependencies"
             ),
             new DFunction("isCollab",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "True if the skill is collaborative.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%skill.isCollab"
             ),
             new DFunction("getUserSkillAttempts",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "skillId", "optional" => false, "type" => "int"]],
                 "Gets a skill's cost for a user by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+            "skills.getUserSkillAttempts(%user, %skill.id)"
             ),
             new DFunction("getUserSkillCost",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "skillId", "optional" => false, "type" => "int"]],
                 "Gets a skill's cost for a user by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "skills.getUserSkillCost(%user, %skill.id)"
             ),
             new DFunction("isSkillAvailableForUser",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
@@ -82,14 +89,16 @@ class SkillsLibrary extends Library
                     ["name" => "skillTreeId", "optional" => false, "type" => "int"]],
                 "Gets if a skill is available for a user given its ID.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "skills.isSkillAvailableForUser(%user, %skill.id, %skillTree.id)"
             ),
             new DFunction("isSkillCompletedByUser",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "skillId", "optional" => false, "type" => "int"]],
                 "Gets if a skill is completed by a user given its ID.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "skills.isSkillCompletedByUser(%user, %skill.id)"
             ),
             new DFunction("getUserTotalAvailableWildcards",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
@@ -97,7 +106,8 @@ class SkillsLibrary extends Library
                 ],
                 "Gets the number of available Wildcards of a student.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "skills.getUserTotalAvailableWildcards(%user, %skillTree.id)"
             ),
             new DFunction("getUserSkillUsedWildcards",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
@@ -105,7 +115,8 @@ class SkillsLibrary extends Library
                 ],
                 "Gets the number of used Wildcards by a student on a skill.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "skills.getUserSkillUsedWildcards(%user, %skillTree.id)"
             )
         ];
     }

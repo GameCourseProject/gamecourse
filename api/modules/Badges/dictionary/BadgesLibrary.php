@@ -100,79 +100,92 @@ class BadgesLibrary extends Library
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+            "%badge.id"
             ),
             new DFunction("name",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%badge.name"
             ),
             new DFunction("description",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%badge.description"
             ),
             new DFunction("image",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's image.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%badge.image"
             ),
             new DFunction("levels",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's levels.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "%badge.levels"
             ),
             new DFunction("isExtra",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is extra credit.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%badge.isExtra"
             ),
             new DFunction("isBragging",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is bragging.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%badge.isBragging"
             ),
             new DFunction("isBasedOnCounts",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is based on counting occurrences of a given type.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%badge.isBasedOnCounts"
             ),
             new DFunction("isBasedOnPoints",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is based on earning a certain amount of points.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%badge.isBasedOnPoints"
             ),
             new DFunction("getMaxXP",
                 [],
                 "Gets maximum XP each student can earn with badges.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badges.getMaxXP()"
             ),
             new DFunction("getMaxExtraCredit",
                 [],
                 "Gets maximum extra credit each student can earn with badges.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badges.getMaxExtraCredit()"
             ),
             new DFunction("getBlankImage",
                 [],
                 "Gets blank badge image.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "badges.getBlankImage()"
             ),
             new DFunction("getBadgeById",
                 [["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets a badge by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+            "badges.getBadgeById(%badge.id)"
             ),
             new DFunction("getBadgeByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
@@ -205,35 +218,40 @@ class BadgesLibrary extends Library
                     ["name" => "isPoint", "optional" => true, "type" => "bool"]],
                 "Gets badges earned by a given user.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+            "badges.getUserBadges(%user, false, false, true)"
             ),
             new DFunction("getUserBadgeProgression",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets user progression on a given badge.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badges.getUserBadgeProgression(%user, %badge.id)"
             ),
             new DFunction("getUserBadgeProgressionInfo",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets user progression information on a given badge, e.g. description and links to posts.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "badges.getUserBadgeProgressionInfo(%user, %badge.id)"
             ),
             new DFunction("getUserBadgeLevel",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets level earned by a given user on a specific badge.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badges.getUserBadgeLevel(%user, %badge.id)"
             ),
             new DFunction("getUserBadgeNextLevel",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets the next level user can earn on a specific badge.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badges.getUserBadgeNextLevel(%user, %badge.id)"
             )
         ];
     }

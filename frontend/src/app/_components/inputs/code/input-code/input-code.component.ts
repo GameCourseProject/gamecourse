@@ -82,13 +82,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // SEARCH AND FILTER
   // NOTE: Because there can only be 1 tab active at a time, we can take these variables as 'global' for the entire component
   reduce = new Reduce();
-  originalFunctions: CustomFunction[] = [];
-  functionsToShow: CustomFunction[] = [];
-  filteredFunctions: CustomFunction[] = [];
+  originalFunctions: { [name: string]: CustomFunction[] } = {};
+  filteredFunctions: { [name: string]: CustomFunction[] } = {};
 
   // COOKBOOK
   originalRecipes: CookbookRecipe[] = [];
-  recipesToShow: CookbookRecipe[] = [];
   filteredRecipes: CookbookRecipe[] = [];
   selectedRecipe: CookbookRecipe = null;
 
@@ -122,12 +120,12 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         this.setUpKeywords((this.tabs[i] as CodeTab));
       }
       else if (this.tabs[i].type === 'manual') {
-        this.filteredFunctions = (this.tabs[i] as ReferenceManualTab).customFunctions;
-        this.functionsToShow = (this.tabs[i] as ReferenceManualTab).customFunctions;
+        this.originalFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.filteredFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
       }
       else if (this.tabs[i].type === 'cookbook') {
+        this.originalRecipes = (this.tabs[i] as CookbookTab).documentation;
         this.filteredRecipes = (this.tabs[i] as CookbookTab).documentation;
-        this.recipesToShow = (this.tabs[i] as CookbookTab).documentation;
       }
     }
     this.views = views;
@@ -621,28 +619,30 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** -------------- Search & Filter -------------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string): void {
-    this.reduce.search(this.originalFunctions, query);
-  }
+  groupBy(xs, key) {
+    return xs.reduce(function(rv, x) {
+      (rv[x[key]] = rv[x[key]] || []).push(x);
+      return rv;
+    }, {});
+  };
 
-  filterFunctions(searchQuery?: string) {
+  filterFunctions(searchQuery?: string): void {
     if (searchQuery) {
-      let functions: CustomFunction[] = [];
-      for (let i = 0; i < this.filteredFunctions.length; i++){
-        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())
-          ||this.filteredFunctions[i].name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          functions.push(this.filteredFunctions[i]);
+      this.filteredFunctions = {};
+      Object.keys(this.originalFunctions).forEach(namespace => {
+        const filteredFunctions = this.originalFunctions[namespace].filter(func => {
+          // Check if either the function name or keyword matches the search string
+          return func.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            func.keyword.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+        if (filteredFunctions.length > 0) {
+          this.filteredFunctions[namespace] = filteredFunctions;
         }
-      }
-      this.functionsToShow = functions;
+      });
     }
     else {
-      this.functionsToShow = this.filteredFunctions;
+      this.filteredFunctions = this.originalFunctions;
     }
-  }
-
-  reduceRecipesList(query?: string): void {
-    this.reduce.search(this.originalRecipes, query);
   }
 
   filterRecipes(searchQuery?: string) {
@@ -653,21 +653,16 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           functions.push(this.filteredRecipes[i]);
         }
       }
-      this.recipesToShow = functions;
+      this.filteredRecipes = functions;
     }
     else {
-      this.recipesToShow = this.filteredRecipes;
+      this.filteredRecipes = this.originalRecipes;
     }
   }
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
-
-  containsFunctions(namespace: string) {
-    let namespaces = this.functionsToShow.map(fx => fx.name);
-    return namespaces.includes(namespace)
-  }
 
   isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
@@ -703,6 +698,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  protected readonly Object = Object;
 }
 
 export interface CodeTab {

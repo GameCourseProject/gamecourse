@@ -57,21 +57,21 @@
         <div class="w-full flex h-full">
           <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
             <app-input-search
-              [id] = "'manual'"
+              [id]="'manual'"
               [size]="'sm'"
               [classList]="'mt-1 mb-1.5'"
-              [items] = "originalFunctions"
+              [items]="Object.values(originalFunctions)"
               [placeholder]="'Search for function...'"
               (valueChange)="filterFunctions($event)">
             </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let namespace of tab.namespaces">
-                <ng-container *ngIf="containsFunctions(namespace)">
-                  <span class="text-sm"><strong>{{ namespace !== 'gamerules' ? 'Namespace: ' : 'Others: ' }}</strong>
-                    <i>{{ namespace !== 'gamerules' ? namespace : '' }}</i>
+              <div *ngFor="let entry of filteredFunctions | keyvalue">
+                <ng-container>
+                  <span class="text-sm"><strong>Namespace: </strong>
+                    <i>{{entry.key}}</i>
                   </span>
-                  <div *ngFor="let fx of functionsToShow">
-                    <div *ngIf="fx.name === namespace" class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
+                  <div *ngFor="let fx of entry.value">
+                    <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
                         {{ isSelected(fx) ? 'badge-outline' : '' }}" (click)="selectedFunction = fx">
                       {{ fx.keyword }}
                     </div>
@@ -79,7 +79,7 @@
                 </ng-container>
               </div>
 
-              <span *ngIf="functionsToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex">
+              <span *ngIf="Object.values(filteredFunctions).length === 0" class="text-base-content text-opacity-50 justify-center flex">
                 Nothing found.
               </span>
 
@@ -111,13 +111,15 @@
                 <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
               </div>
 
-              <div *ngIf="selectedFunction.example"><span><strong>Usage Example: </strong>
-                <span class="italic">{{selectedFunction.example}}</span></span>
-              </div>
-
-              <div class="mb-4"><span><strong>Description: </strong>
+              <div><span><strong>Description: </strong>
                 {{selectedFunction.description}}</span>
               </div>
+
+              <div *ngIf="selectedFunction.example" class="flex flex-row items-center gap-2"><div><strong>Usage Example: </strong></div>
+                <div><pre><code>{{selectedFunction.example}}</code></pre></div>
+              </div>
+
+              <div class="mb-2"></div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
@@ -150,22 +152,22 @@
         <div class="w-full flex h-full">
           <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
             <app-input-search
-              [id] = "'manual'"
+              [id]="'manual'"
               [size]="'sm'"
               [classList]="'mt-1 mb-1.5'"
-              [items] = "originalRecipes"
+              [items]="originalRecipes"
               [placeholder]="'Search for module...'"
               (valueChange)="filterRecipes($event)">
             </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let recipe of recipesToShow">
+              <div *ngFor="let recipe of filteredRecipes">
                 <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
                     {{ recipe == selectedRecipe ? 'badge-outline' : '' }}" (click)="selectedRecipe = recipe">
                   {{ recipe.moduleId }}
                 </div>
               </div>
 
-              <span *ngIf="recipesToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex">
+              <span *ngIf="filteredRecipes.length === 0" class="text-base-content text-opacity-50 justify-center flex">
                 Nothing found.
               </span>
 

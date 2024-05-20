@@ -73,43 +73,50 @@ class TreeLibrary extends Library
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's id.",
                 ReturnType::TEXT,
-                $this
+                $this,
+            "%tree.id"
             ),
             new DFunction("name",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+            "%tree.name"
             ),
             new DFunction("maxReward",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's maximum reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+            "%tree.maxReward"
             ),
             new DFunction("tiers",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's tiers.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+            "%tree.tiers"
             ),
             new DFunction("getSkillTreeById",
                 [["name" => "skillTreeId", "optional" => false, "type" => "int"]],
                 "Gets a skill tree by its ID in the system.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+            "tree.getSkillTreeById(1)"
             ),
             new DFunction("getSkillTreeByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a skill tree by its name.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+            "tree.getSkillTreeByName('Media Challenges')"
             ),
             new DFunction("getSkillTrees",
                 [],
                 "Gets all skill trees of course.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "tree.getSkillTrees()"
             )
         ];
     }

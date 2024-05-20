@@ -127,15 +127,15 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   prepareAdditionalTools() {
     this.additionalToolsTabs = [
-      { name: 'Preview Expression', type: "preview", active: true, running: null, debug: false, mode: "el",
-        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
-
-      { name: 'Reference Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
+      { name: 'Reference Manual', type: "manual", active: true, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
 
       { name: 'Cookbook', type: "cookbook", active: false, documentation: this.cookbook
-      }
+      },
+
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "el",
+        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." }
     ]
   }
 
