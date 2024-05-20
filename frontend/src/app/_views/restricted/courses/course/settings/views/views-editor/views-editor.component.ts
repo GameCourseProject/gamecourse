@@ -996,9 +996,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async previewWithRealData() {
     this.loading.action = true;
-
-    this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
-
+    try {
+      this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
+    }
+    catch {
+        this.previewMode = "raw";
+    }
     this.loading.action = false;
     ModalService.closeModal('preview-as');
   }
@@ -1008,8 +1011,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
     }
-    catch (e) {
-      AlertService.showAlert(AlertType.ERROR, e);
+    catch {
       this.previewMode = "raw";
     }
     this.loading.action = false;
