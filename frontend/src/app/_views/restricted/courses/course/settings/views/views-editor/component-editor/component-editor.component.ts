@@ -146,8 +146,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     // set namespaces of functions
     let names = this.ELfunctions
       .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
-    this.namespaces = Array.from(new Set(names).values())
-    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
+    this.namespaces = Array.from(new Set(names).values()).sort();
   }
 
   async getCookbook(courseID: number) {

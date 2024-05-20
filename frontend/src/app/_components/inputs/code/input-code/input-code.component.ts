@@ -671,7 +671,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
   isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
-      return this.selectedFunction.keyword === fx.keyword;
+      return this.selectedFunction.keyword === fx.keyword && this.selectedFunction.name === fx.name;
     }
     return false;
   }
