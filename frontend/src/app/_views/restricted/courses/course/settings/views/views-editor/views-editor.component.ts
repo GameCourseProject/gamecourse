@@ -607,7 +607,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.loading.action = false;
   }
 
-  async savePage() {
+  async savePage(): Promise<void | "error"> {
     if (!this.pageToManage.name) {
       AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
       return;
@@ -623,18 +623,27 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     } catch {
       image = null;
     }
-    const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
-    this.pageToManage = null;
-    const aspect = this.service.selectedAspect;
-    await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
-    await this.initView(pageId, null, aspect);
 
-    AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
+    try {
+      const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
+      this.pageToManage = null;
+      const aspect = this.service.selectedAspect;
+      await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
+      await this.initView(pageId, null, aspect);
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
+    }
+    catch (e) {
+      this.recoverFromFail();
+      ModalService.closeModal('save-page');
+      this.loading.action = false;
+      return "error";
+    }
 
     this.loading.action = false;
   }
 
-  async saveChanges() {
+  async saveChanges(): Promise<void | "error"> {
     if (this.page && !this.page.name) {
       AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
       return;
@@ -653,21 +662,30 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     } catch {
       image = null;
     }
-    if (this.page) {
-      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, this.page.name, image).toPromise();
-      await this.initView(this.page.id, null, this.service.selectedAspect);
-      AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+
+    try {
+      if (this.page) {
+        await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, this.page.name, image).toPromise();
+        await this.initView(this.page.id, null, this.service.selectedAspect);
+        AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+      }
+      else if (this.template) {
+        await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, this.template.name, image).toPromise();
+        await this.initView(this.template.id, "template", this.service.selectedAspect);
+        AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+      }
+      else {
+        AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+      }
+
+      this.loading.action = false;
     }
-    else if (this.template) {
-      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, this.template.name, image).toPromise();
-      await this.initView(this.template.id, "template", this.service.selectedAspect);
-      AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
-    }
-    else {
-      AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+    catch (e) {
+      this.recoverFromFail();
+      this.loading.action = false;
+      return "error";
     }
 
-    this.loading.action = false;
   }
 
   async takeScreenshot() {
@@ -799,9 +817,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     } catch {
       image = null;
     }
-    await this.api.saveCustomTemplate(this.course.id, this.pageToManage.name, buildViewTree([this.view]), image).toPromise();
-    await this.closeConfirmed();
-    AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+
+    try {
+      await this.api.saveCustomTemplate(this.course.id, this.pageToManage.name, buildViewTree([this.view]), image).toPromise();
+      await this.closeConfirmed();
+      AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+    }
+    catch {
+      this.recoverFromFail();
+      ModalService.closeModal('save-template');
+    }
 
     this.loading.action = false;
   }
@@ -902,7 +927,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async saveBeforePreview() {
     if (this.page) {
-      await this.saveChanges();
+      const res = await this.saveChanges();
+
+      if (res === "error") {
+        this.previewMode = "raw";
+        ModalService.closeModal('save-before-preview');
+        return;
+      }
 
       if (this.previewMode === 'mock') {
         await this.previewWithMockData();
@@ -913,12 +944,19 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         await this.selectUsersToPreview();
       }
     }
+
     else if (this.pageToManage) {
-      await this.savePage();
+      const res = await this.savePage();
+
+      if (res === "error") {
+        this.previewMode = "raw";
+        ModalService.closeModal('save-new-before-preview');
+        return;
+      }
+
       if (this.previewMode === 'mock') {
         await this.previewWithMockData();
-      }
-      else if (this.previewMode === 'real') {
+      } else if (this.previewMode === 'real') {
         await this.selectUsersToPreview();
       }
     }
@@ -973,7 +1011,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     catch (e) {
       AlertService.showAlert(AlertType.ERROR, e);
       this.previewMode = "raw";
-      console.log(e);
     }
     this.loading.action = false;
   }
@@ -982,6 +1019,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  recoverFromFail() {
+    const backup = this.history.getMostRecent();
+    this.service.viewsByAspect = backup.viewsByAspect;
+    setGroupedChildren(backup.groupedChildren);
+    this.view = this.service.getSelectedView();
+  }
 
   get ViewType(): typeof ViewType {
     return ViewType;
