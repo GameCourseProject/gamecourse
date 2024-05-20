@@ -1,8 +1,9 @@
 import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
-  CodeTab,
+  CodeTab, CookbookRecipe, CookbookTab,
   CustomFunction,
-  OutputTab, PreviewTab,
+  OutputTab,
+  PreviewTab,
   ReferenceManualTab
 } from "src/app/_components/inputs/code/input-code/input-code.component";
 import {View, ViewMode} from "src/app/_domain/views/view";
@@ -29,7 +30,8 @@ import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
 import {
-  addToGroupedChildren, addVariantToGroupedChildren,
+  addToGroupedChildren,
+  addVariantToGroupedChildren,
   getFakeId,
   groupedChildren,
   viewsDeleted
@@ -66,8 +68,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
 
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[];
   ELfunctions: CustomFunction[];
+  cookbook: CookbookRecipe[];
   namespaces: string[];
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
@@ -83,6 +86,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.route.parent.params.subscribe(async params => {
       this.courseId = parseInt(params.id);
       await this.getCustomFunctions(this.courseId);
+      await this.getCookbook(this.courseId);
       this.prepareAdditionalTools();
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
       this.loading = false;
@@ -123,12 +127,15 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   prepareAdditionalTools() {
     this.additionalToolsTabs = [
-      { name: 'Preview Expression', type: "preview", active: true, running: null, debug: false, mode: "el",
-        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
-
-      { name: 'Reference Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
+      { name: 'Reference Manual', type: "manual", active: true, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
+
+      { name: 'Cookbook', type: "cookbook", active: false, documentation: this.cookbook
+      },
+
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "el",
+        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." }
     ]
   }
 
@@ -139,8 +146,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     // set namespaces of functions
     let names = this.ELfunctions
       .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
-    this.namespaces = Array.from(new Set(names).values())
-    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
+    this.namespaces = Array.from(new Set(names).values()).sort();
+  }
+
+  async getCookbook(courseID: number) {
+    this.cookbook = await this.api.getCookbook(courseID).toPromise();
   }
 
   // Variables --------------------------------------
@@ -193,15 +203,18 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
     }
-    else if (this.view instanceof ViewBlock) {
-      viewToEdit.direction = this.view.direction;
-      viewToEdit.responsive = this.view.responsive;
-      viewToEdit.columns = this.view.columns;
-    }
     else if (this.view instanceof ViewCollapse) {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
+    }
+
+    if (this.view instanceof ViewBlock) {
+      viewToEdit.direction = this.view.direction;
+      viewToEdit.responsive = this.view.responsive;
+      viewToEdit.columns = this.view.columns;
+    } else { // needed in case user changes type to block
+      viewToEdit.direction = BlockDirection.VERTICAL;
     }
 
     if (this.view instanceof ViewChart) {

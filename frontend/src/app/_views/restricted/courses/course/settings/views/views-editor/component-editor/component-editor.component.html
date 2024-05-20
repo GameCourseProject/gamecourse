@@ -32,8 +32,9 @@
 <div class="overflow-x-hidden text-left">
 
   <div class="flex flex-row items-end gap-8">
-    <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW && view.parent">
+    <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW">
       <app-input-select
+        [disabled]="!view.parent"
         [id]="'type-' + view.id"
         [(value)]="viewToEdit.type"
         [options]="getComponentTypes()"
@@ -43,9 +44,10 @@
         [classList]="'mb-4'"
       ></app-input-select>
     </div>
-    <div class="w-full" *ngIf="view.parent && (!saveButton || viewToEdit.type === ViewType.ROW)"><!-- Don't show for root nor table cells -->
+    <div class="w-full" *ngIf="!saveButton || viewToEdit.type === ViewType.ROW">
       <!-- Data Iteration -->
       <app-input-text
+        [disabled]="!view.parent"
         [id]="'data-iter'"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Repeat this component for every item in'"
@@ -57,6 +59,9 @@
         [classList]="'mb-4'"
       ></app-input-text>
     </div>
+  </div>
+  <div *ngIf="!view.parent" class="text-warning text-xs -mt-2 mb-2">
+    The fields above are not available in the root of a page/template.
   </div>
 
   <!--------------------- Chart options ---------------------->
@@ -378,10 +383,10 @@
           <span class="font-semibold">Inherited Variables</span>
         </div>
         <div class="collapse-content text-sm">
-          <p *ngFor="let variable of view.getAllVariables()">
+          <p *ngFor="let variable of view.parent?.getAllVariables()">
             <span class="text-secondary">%{{variable.name}}</span> = {{variable.value}}
           </p>
-          <p *ngIf="view.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
+          <p *ngIf="view.parent?.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
         </div>
       </div>
     </form>
@@ -557,8 +562,8 @@
 
   </ng-container> <!----------------------------->
 
-  <div *ngIf="saveButton" class="flex w-full gap-2 fixed bottom-[92px] left-0">
-    <div class="py-4 mr-[62.8px] ml-[52px] px-4 bg-base-100 w-full flex justify-end border-b-base-300 border-b-[18px]">
+  <div *ngIf="saveButton" class="flex w-full fixed bottom-[92px] left-0">
+    <div class="py-4 mr-[62.8px] ml-[52px] px-4 bg-base-100 w-full flex justify-end border-b-base-300 border-b-[18px] gap-2">
       <button class="ml-auto btn btn-ghost btn-sm" (click)="discardView()">Discard</button>
       <button class="btn btn-primary btn-sm" (click)="saveView()">Save {{ viewToEdit.type === ViewType.ROW ? 'Row' : 'Cell' }}</button>
     </div>

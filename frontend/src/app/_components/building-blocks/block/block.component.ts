@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
@@ -18,6 +18,7 @@ import {installPatch} from "./nested-drag-drop-patch";
 export class BBBlockComponent implements OnInit {
 
   @Input() view: ViewBlock;
+  @Output() addComponentEvent = new EventEmitter<void>();
 
   classes: string;
   children: string;
@@ -44,6 +45,10 @@ export class BBBlockComponent implements OnInit {
       }
     }
   }
+
+  /*** ------------------------------------------------ ***/
+  /*** ----------------- Drag and Drop ---------------- ***/
+  /*** ------------------------------------------------ ***/
 
   drop (event: CdkDragDrop<View[]>) {
     if (event.previousContainer === event.container && event.previousIndex != event.currentIndex) {
@@ -107,7 +112,16 @@ export class BBBlockComponent implements OnInit {
   }
 
   getCantDrag(): boolean {
-    return ModalService.isOpen("component-editor");
+    return ModalService.isAnyOpen();
+  }
+
+
+  /*** ------------------------------------------------ ***/
+  /*** -------------------- Helpers ------------------- ***/
+  /*** ------------------------------------------------ ***/
+
+  addComponent(): void {
+    this.addComponentEvent.emit();
   }
 
   get ViewMode(): typeof ViewMode {

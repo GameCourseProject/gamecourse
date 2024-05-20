@@ -35,19 +35,22 @@ class TiersLibrary extends Library
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%tier.name"
             ),
             new DFunction("reward",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+            "%tier.reward"
             ),
             new DFunction("skills",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's skills.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+            "%tier.skills"
             )
         ];
     }

@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
@@ -38,7 +38,7 @@ export class BBAnyComponent implements OnInit {
 
   @Input() view: View;
   @Input() isExistingRoot: boolean = false;
-
+  @Output() addComponentEvent = new EventEmitter<void>();
   @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
 
   courseID: number;
@@ -68,7 +68,7 @@ export class BBAnyComponent implements OnInit {
 
     if (this.view.mode === ViewMode.EDIT) {
       addEventListener('keydown', (event: KeyboardEvent) => {
-        if (this.isSelected() && !ModalService.isOpen("component-editor")) {
+        if (this.isSelected() && !ModalService.isAnyOpen()) {
           if (event.key === 'Delete' || event.key === 'Backspace') {
             event.preventDefault();
             ModalService.openModal('component-delete-' + this.view.id);
@@ -79,7 +79,7 @@ export class BBAnyComponent implements OnInit {
   }
 
   onRightClick(event: MouseEvent) {
-    if (!ModalService.isOpen("component-editor")) {
+    if (!ModalService.isAnyOpen()) {
       event.preventDefault();
       event.stopPropagation();
       this.selection.open(this.view);

@@ -30,4 +30,10 @@ export class ModalService {
     const modal = document.getElementById(id) as HTMLInputElement;
     return modal?.checked;
   }
+
+  static isAnyOpen(): boolean {
+    const modals = document.getElementsByClassName('modal-toggle');
+    const modalArray = Array.from(modals) as HTMLInputElement[];
+    return modalArray.some(e => e.checked == true);
+  }
 }

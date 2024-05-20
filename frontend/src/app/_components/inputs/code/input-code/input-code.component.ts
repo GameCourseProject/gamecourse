@@ -3,6 +3,7 @@ import {basicSetup, EditorView} from "codemirror";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
 import {ThemingService} from "../../../../_services/theming/theming.service";
+import {Clipboard} from '@angular/cdk/clipboard';
 
 // THEMES
 import {githubLight} from '@ddietr/codemirror-themes/github-light'
@@ -35,7 +36,7 @@ import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {HttpErrorResponse} from "@angular/common/http";
-import {AlertType} from "../../../../_services/alert.service";
+import {AlertService, AlertType} from "../../../../_services/alert.service";
 
 @Component({
   selector: 'app-input-code',
@@ -55,7 +56,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
 
-  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[] = [
+  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[] = [
     { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false, debugOutput: false }];
 
@@ -81,9 +82,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // SEARCH AND FILTER
   // NOTE: Because there can only be 1 tab active at a time, we can take these variables as 'global' for the entire component
   reduce = new Reduce();
-  originalFunctions: CustomFunction[] = [];
-  functionsToShow: CustomFunction[] = [];
-  filteredFunctions: CustomFunction[] = [];
+  originalFunctions: { [name: string]: CustomFunction[] } = {};
+  filteredFunctions: { [name: string]: CustomFunction[] } = {};
+
+  // COOKBOOK
+  originalRecipes: CookbookRecipe[] = [];
+  filteredRecipes: CookbookRecipe[] = [];
+  selectedRecipe: CookbookRecipe = null;
 
   // REFERENCE MANUAL
   namespaces: Set<string>;
@@ -98,7 +103,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   constructor(
     private themeService: ThemingService,
     private updateService: UpdateService,
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private clipboard: Clipboard
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -112,10 +118,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       if (this.tabs[i].type === 'code' || this.tabs[i].type === 'preview'){
         this.setUpKeywords((this.tabs[i] as CodeTab));
-
-      } else if (this.tabs[i].type === 'manual') {
-        this.filteredFunctions = (this.tabs[i] as ReferenceManualTab).customFunctions;
-        this.functionsToShow = (this.tabs[i] as ReferenceManualTab).customFunctions;
+      }
+      else if (this.tabs[i].type === 'manual') {
+        this.originalFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.filteredFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+      }
+      else if (this.tabs[i].type === 'cookbook') {
+        this.originalRecipes = (this.tabs[i] as CookbookTab).documentation;
+        this.filteredRecipes = (this.tabs[i] as CookbookTab).documentation;
       }
     }
     this.views = views;
@@ -551,19 +561,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Preview ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   async previewExpression(tab: PreviewTab){
     (tab as PreviewTab).running = true;
 
-    let toPreview = this.expressionToPreview
-      .replace(/#.*/g, '') // Remove comments
-      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
-      .replace(/(\s*:\s*)/g, ':') // Replace ' : ', ' :' and ': ' with ':'
-      .trim(); // Trim any trailing whitespace or newline characters
-
-    // Put expression between {} if it isn't already
-    if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
-      toPreview = `{${toPreview.trim()}}`;
-    }
+    const toPreview = this.formatExpressionToPreview();
 
     try {
       this.outputPreviewError = null;
@@ -575,7 +580,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         const alert = document.getElementById(AlertType.ERROR + '-alert');
         alert.classList.add('hidden')
 
-        let errorMessage = err.error.text.replace(/\n/g, "<br>");
+        // Get only parts before stack trace, and replace \n with <br>
+        let errorMessage = err.error.text.split(" in ")[0].replace(/\n/g, "<br>");
+
+        // Remove initial 'Fatal error: Uncaught Exception'
+        const startIndex = errorMessage.indexOf('<b>Fatal error</b>:  Uncaught Exception: ');
+        if (startIndex !== -1) {
+          errorMessage = errorMessage.substring(startIndex + '<b>Fatal error</b>:  Uncaught Exception: '.length).trim();
+        }
+
         this.outputPreviewError = errorMessage.replace(/^((<br\s*\/?>)+)/, ''); // Trim leading <br> or <br /> tags
       }
     }
@@ -583,27 +596,67 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     (tab as PreviewTab).running = false;
   }
 
+  copyToClipboard() {
+    this.clipboard.copy(this.formatExpressionToPreview());
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  formatExpressionToPreview(): string {
+    let toPreview = this.expressionToPreview
+      .replace(/#.*/g, '') // Remove comments
+      .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
+      .replace(/(\s*:\s*)/g, ':') // Replace ' : ', ' :' and ': ' with ':'
+      .trim(); // Trim any trailing whitespace or newline characters
+
+    // Put expression between {} if it isn't already
+    if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
+      toPreview = `{${toPreview.trim()}}`;
+    }
+    return toPreview;
+  }
+
   /*** --------------------------------------------- ***/
   /*** -------------- Search & Filter -------------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string): void {
-    this.reduce.search(this.originalFunctions, query);
-  }
+  groupBy(xs, key) {
+    return xs.reduce(function(rv, x) {
+      (rv[x[key]] = rv[x[key]] || []).push(x);
+      return rv;
+    }, {});
+  };
 
-  filterFunctions(searchQuery?: string) {
+  filterFunctions(searchQuery?: string): void {
     if (searchQuery) {
-      let functions: CustomFunction[] = [];
-      for (let i = 0; i < this.filteredFunctions.length; i++){
-        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())
-          ||this.filteredFunctions[i].name.toLowerCase().includes(searchQuery.toLowerCase())) {
-          functions.push(this.filteredFunctions[i]);
+      this.filteredFunctions = {};
+      Object.keys(this.originalFunctions).forEach(namespace => {
+        const filteredFunctions = this.originalFunctions[namespace].filter(func => {
+          // Check if either the function name or keyword matches the search string
+          return func.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            func.keyword.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+        if (filteredFunctions.length > 0) {
+          this.filteredFunctions[namespace] = filteredFunctions;
         }
-      }
-      this.functionsToShow = functions;
+      });
     }
     else {
-      this.functionsToShow = this.filteredFunctions;
+      this.filteredFunctions = this.originalFunctions;
+    }
+  }
+
+  filterRecipes(searchQuery?: string) {
+    if (searchQuery) {
+      let functions: CookbookRecipe[] = [];
+      for (let i = 0; i < this.filteredRecipes.length; i++){
+        if (((this.filteredRecipes[i].moduleId).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          functions.push(this.filteredRecipes[i]);
+        }
+      }
+      this.filteredRecipes = functions;
+    }
+    else {
+      this.filteredRecipes = this.originalRecipes;
     }
   }
 
@@ -611,14 +664,9 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  containsFunctions(namespace: string) {
-    let namespaces = this.functionsToShow.map(fx => fx.name);
-    return namespaces.includes(namespace)
-  }
-
   isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
-      return this.selectedFunction.keyword === fx.keyword;
+      return this.selectedFunction.keyword === fx.keyword && this.selectedFunction.name === fx.name;
     }
     return false;
   }
@@ -650,6 +698,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  protected readonly Object = Object;
 }
 
 export interface CodeTab {
@@ -696,13 +745,19 @@ export interface OutputTab {
   tooltip?: string,                          // Message to show by default
 }
 
-
 export interface ReferenceManualTab {
   name: string,                              // Name of the tab that will appear above
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: CustomFunction[],        // Personalized functions
   namespaces?: string[]                      // Namespaces of functions
+}
+
+export interface CookbookTab {
+  name: string,                              // Name of the tab that will appear above
+  type: "cookbook",                          // Specifies type of tab in editor
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
+  documentation?: CookbookRecipe[],          // Personalized documentation
 }
 
 export interface CustomFunction {
@@ -713,4 +768,9 @@ export interface CustomFunction {
   example?: string
   args: {name: string, optional: boolean, type: string, description: string}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
+}
+
+export interface CookbookRecipe {
+  moduleId: string,
+  content: string
 }

@@ -51,4 +51,8 @@ export class HistoryService {
         if (this.currentStateIndex < this.states.length - 1) return true;
         else return false;
     }
+
+    getMostRecent() {
+      return _.cloneDeep(this.states[this.currentStateIndex]);
+    }
 }
