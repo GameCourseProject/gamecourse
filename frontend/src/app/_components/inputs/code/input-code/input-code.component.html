@@ -126,11 +126,8 @@
                 {{selectedFunction.description}}</span>
               </div>
 
-              <div *ngIf="selectedFunction.example" class="flex flex-row items-center gap-2"><div><strong>Usage Example: </strong></div>
-                <div><pre><code>{{selectedFunction.example}}</code></pre></div>
-              </div>
-
-              <div class="mb-2"></div>
+              <div *ngIf="selectedFunction.example" class="my-2"><strong>Usage Example: </strong>
+              <pre><code>{{selectedFunction.example}}</code></pre></div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
