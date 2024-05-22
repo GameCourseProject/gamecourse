@@ -14,10 +14,14 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
-  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
+  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none rounded-xl items-center">
     <ng-container *ngFor="let tab of tabs, let i = index">
-      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
+      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}} hover:bg-base-100/20 transition" (click)="toggleTabs(i)">{{tab.name}}</a>
     </ng-container>
+    <button class="ml-auto text-base-200 hover:text-primary transition flex items-center tooltip tooltip-left mr-1" [attr.data-tip]="'Expand'" (click)="expand()">
+      <ng-icon *ngIf="size === 'md'" name="tabler-window-maximize" size="1.3rem" class="text-inherit" />
+      <ng-icon *ngIf="size === 'lg'" name="tabler-window-minimize" size="1.3rem" class="text-inherit" />
+    </button>
   </div>
 
   <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto bg-base-200

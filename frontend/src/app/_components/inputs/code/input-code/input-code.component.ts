@@ -670,6 +670,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
+  expand() {
+    this.size = this.size === 'lg' ? 'md' : 'lg';
+  }
+
   isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
       return this.selectedFunction.keyword === fx.keyword && this.selectedFunction.name === fx.name;
