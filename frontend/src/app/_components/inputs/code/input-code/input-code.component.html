@@ -46,14 +46,14 @@
           <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
         </div>
         <div class="absolute tooltip tooltip-left top-1 right-1" [attr.data-tip]="'Copy'">
-          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyToClipboard()">
+          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyPreviewToClipboard()">
             <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
           </button>
         </div>
       </div>
 
       <!-- Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
+      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip relative">
         <div class="w-full flex h-full">
           <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
             <app-input-search
@@ -87,13 +87,20 @@
           </div>
 
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
-            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto text-base-content w-full">
+            <div *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5 mt-2">
               Select a function
-            </span>
+            </div>
 
-            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2">
-              <div class="border-base-content/10 border-b-2 mb-4">
+            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 relative">
+
+              <div class="absolute tooltip tooltip-left top-1 right-2" [attr.data-tip]="'Copy Function Formula'">
+                <button class="btn btn-sm btn-ghost btn-circle" (click)="copyReferenceToClipboard()">
+                  <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
+                </button>
+              </div>
+
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
                 <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 

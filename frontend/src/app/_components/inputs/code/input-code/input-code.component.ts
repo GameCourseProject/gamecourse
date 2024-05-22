@@ -596,8 +596,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     (tab as PreviewTab).running = false;
   }
 
-  copyToClipboard() {
+  copyPreviewToClipboard() {
     this.clipboard.copy(this.formatExpressionToPreview());
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  copyReferenceToClipboard() {
+    this.clipboard.copy("{ " + this.selectedFunction.name + "." + this.selectedFunction.keyword + "(" +
+      this.selectedFunction.args.map(e => e.name).join(", ") + ") }");
     AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
   }
 
