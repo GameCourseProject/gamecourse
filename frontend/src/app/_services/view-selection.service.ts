@@ -24,7 +24,11 @@ export class ViewSelectionService {
     return this.selected;
   }
 
-  public update(view: View, target?: HTMLElement) {
+  public set(view: View) {
+    this.selected = view;
+  }
+
+  public update(view: View) {
     this.openContext = false;
 
     if (this.isSelected(view)) { // Same view
