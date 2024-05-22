@@ -31,14 +31,16 @@ class ActionsLibrary extends Library
                  ["name" => "userId", "optional" => true, "type" => "int"]],
                 "Navigates to a given course page. Option for user param for page.",
                 ReturnType::VOID,
-                $this
+                $this,
+                "actions.goToPage(pages.getPageByName(\"Profile\").id, %user)"
             ),
             new DFunction("showTooltip",
                 [[ "name" => "text", "optional" => false, "type" => "string"],
                  ["name" => "position", "optional" => true, "type" => "string"]],
                 "Shows a tooltip with a given text and position.",
                 ReturnType::VOID,
-                $this
+                $this,
+                "actions.showTooltip('Can be earned multiple times')"
             )
         ];
     }

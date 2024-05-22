@@ -38,25 +38,29 @@ class MathLibrary extends Library
                 [[ "name" => "value1", "optional" => false, "type" => "int"], [ "name" => "value2", "optional" => false, "type" => "int"]],
                 "Returns the smallest number between two numbers.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.min(5, 10)"
             ),
             new DFunction("max",
                 [[ "name" => "value1", "optional" => false, "type" => "int"], [ "name" => "value2", "optional" => false, "type" => "int"]],
                 "Returns the greatest number between two numbers.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.max(5, 10)"
             ),
             new DFunction("floor",
                 [[ "name" => "value", "optional" => false, "type" => "int"]],
                 "Returns the next lower number by rounding down if necessary.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.floor(5.95)"
             ),
             new DFunction("ceil",
                 [[ "name" => "value", "optional" => false, "type" => "int"]],
                 "Returns the next highest number by rounding up if necessary.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.ceil(5.95)"
             )
         ];
     }

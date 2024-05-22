@@ -139,7 +139,7 @@ class SkillsLibrary extends Library
             new DFunction("getUsersWithSkill",
                 [["name" => "skillId", "optional" => false, "type" => "int"]],
                 "Gets users who have earned a given skill.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this,
                 "skills.getUsersWithSkill(%skill.id)"
             )

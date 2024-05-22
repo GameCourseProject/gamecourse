@@ -36,7 +36,8 @@ class SystemLibrary extends Library
                  ["name" => "ifFalse", "optional" => false, "type" => "any"]],
                 "Checks a condition and returns the 2nd argument if true, or the 3rd if false.",
                 ReturnType::MIXED,
-                $this
+                $this,
+                "system.if(%user > 0, 'valid', 'invalid')"
             ),
             new DFunction("time",
                 [],

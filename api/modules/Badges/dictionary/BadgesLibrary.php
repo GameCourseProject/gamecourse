@@ -127,7 +127,7 @@ class BadgesLibrary extends Library
             new DFunction("levels",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's levels.",
-                ReturnType::COLLECTION,
+                ReturnType::BADGE_LEVELS_COLLECTION,
                 $this,
                 "%badge.levels"
             ),
@@ -197,7 +197,7 @@ class BadgesLibrary extends Library
             new DFunction("getBadges",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets badges of course. Option to filter by badge state.",
-                ReturnType::COLLECTION,
+                ReturnType::BADGES_COLLECTION,
                 $this,
                 "badges.getBadges(true)"
             ),
@@ -206,7 +206,7 @@ class BadgesLibrary extends Library
                     ["name" => "level", "optional" => false, "type" => "int"],
                     ["name" => "orderByDate", "optional" => true, "type" => "bool"]],
                 "Gets users who have earned a given badge up to a certain level. Option to order users by the date they acquired badge level.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this,
             "badges.getUsersWithBadge(%badge.id, %level.number, true)"
             ),
@@ -217,7 +217,7 @@ class BadgesLibrary extends Library
                     ["name" => "isCount", "optional" => true, "type" => "bool"],
                     ["name" => "isPoint", "optional" => true, "type" => "bool"]],
                 "Gets badges earned by a given user.",
-                ReturnType::COLLECTION,
+                ReturnType::BADGES_COLLECTION,
                 $this,
             "badges.getUserBadges(%user, false, false, true)"
             ),

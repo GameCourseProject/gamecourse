@@ -170,7 +170,7 @@ class UsersLibrary extends Library
             new DFunction("getUsers",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets users of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this,
                 "users.getUsers()"
             ),
@@ -178,35 +178,39 @@ class UsersLibrary extends Library
                 [["name" => "roleName", "optional" => false, "type" => "string"],
                  ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets users with a given role. Option to filter by user state.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this
             ),
             new DFunction("getStudents",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets students of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this,
                 "users.getStudents()"
             ),
             new DFunction("getTeachers",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets teachers of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this,
                 "users.getTeachers()"
             ),
+            /*  FIXME: aren't working?
             new DFunction("isStudent",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Checks whether a given user is a student.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%someUser.isStudent"
             ),
             new DFunction("isTeacher",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Checks whether a given user is a teacher.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "%someUser.isTeacher"
             )
+            */
         ];
     }
 

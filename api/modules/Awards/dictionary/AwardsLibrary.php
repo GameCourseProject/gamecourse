@@ -48,43 +48,50 @@ class AwardsLibrary extends Library
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%award.id"
             ),
             new DFunction("description",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%award.description"
             ),
             new DFunction("type",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's type.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%award.type"
             ),
             new DFunction("instance",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's module instance.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%award.instance"
             ),
             new DFunction("reward",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%award.reward"
             ),
             new DFunction("date",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's date.",
                 ReturnType::TIME,
-                $this
+                $this,
+                "%award.date"
             ),
             new DFunction("icon",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's icon.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%award.icon"
             ),
             new DFunction("image",
                 [["name" => "award", "optional" => false, "type" => "any"],
@@ -92,13 +99,15 @@ class AwardsLibrary extends Library
                     ["name" => "\"jpg\" | \"svg\"", "optional" => true, "type" => "string"]],
                 "Gets a given award's image URL.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%award.image"
             ),
             new DFunction("getIconOfType",
                 [["name" => "type", "optional" => false, "type" => "string"]],
                 "Gets icon for a given type of award.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "awards.getIconOfType('streak')"
             ),
             new DFunction("getImageOfType",
                 [["name" => "type", "optional" => false, "type" => "string"],
@@ -106,21 +115,24 @@ class AwardsLibrary extends Library
                     ["name" => "\"jpg\" | \"svg\"", "optional" => true, "type" => "string"]],
                 "Gets image for a given type of award.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "awards.getImageOfType('quiz')"
             ),
             new DFunction("getUserAwards",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets awards for a given user.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "awards.getUserAwards(%user)"
             ),
             new DFunction("getUserAwardsByType",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "type", "optional" => false, "type" => "string"],
                     ["name" => "instance", "optional" => true, "type" => "int"]],
                 "Gets awards for a given user of a specific type of award.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "awards.getUserAwardsByType(%user, 'presentation')"
             ),
             new DFunction("getUserBadgesAwards",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -130,7 +142,7 @@ class AwardsLibrary extends Library
                     ["name" => "point", "optional" => true, "type" => "bool"],
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets badges awards for a given user. Some options available.",
-                ReturnType::COLLECTION,
+                ReturnType::AWARDS_COLLECTION,
                 $this,
                 "awards.getUserBadgesAwards(%user, true, false)"
             ),
@@ -140,17 +152,19 @@ class AwardsLibrary extends Library
                     ["name" => "extra", "optional" => true, "type" => "bool"],
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets badges awards for a given user. Some options available.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "awards.getUserSkillsAwards(%user, false, false, true)"
             ),
             new DFunction("getUserStreaksAwards",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "repeatable", "optional" => true, "type" => "bool"],
                     ["name" => "extra", "optional" => true, "type" => "bool"],
                     ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets badges awards for a given user. Some options available.",
-                ReturnType::COLLECTION,
-                $this
+                "Gets streaks awards for a given user. Some options available.",
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "awards.getUserStreaksAwards(%user)"
             ),
             new DFunction("getUserTotalRewardByType",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -158,7 +172,8 @@ class AwardsLibrary extends Library
                     ["name" => "instance", "optional" => true, "type" => "int"]],
                 "Gets total reward for a given user of a specific type of award.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "awards.getUserTotalRewardByType(%user, 'tokens')"
             ),
             new DFunction("getUserBadgesTotalReward",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -169,7 +184,8 @@ class AwardsLibrary extends Library
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets total badges reward for a given user. Some options available.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "awards.getUserBadgesTotalReward(%user, false, false, true, true, true)"
             ),
             new DFunction("getUserSkillsTotalReward",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -178,7 +194,8 @@ class AwardsLibrary extends Library
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets total skills reward for a given user. Some options available.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "awards.getUserSkillsTotalReward(%user, false, false, true)"
             ),
             new DFunction("getUserStreaksTotalReward",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -187,7 +204,8 @@ class AwardsLibrary extends Library
                     ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets total streaks reward for a given user. Some options available.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "awards.getUserStreaksTotalReward(%user, false, false, true)"
             )
         ];
     }

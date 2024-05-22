@@ -20,4 +20,16 @@ class ReturnType
     const MIXED = "mixed";
     const VOID = "void";
     // NOTE: insert here new return types
+
+    // Specific Collections
+    const AWARDS_COLLECTION = "collection of awards";
+    const USERS_COLLECTION = "collection of users";
+    const BADGES_COLLECTION = "collection of badges";
+    const BADGE_LEVELS_COLLECTION = "collection of badge levels";
+    const SKILLS_COLLECTION = "collection of skills";
+    const TIERS_COLLECTION = "collection of tiers";
+    const TREES_COLLECTION = "collection of trees";
+    const STREAKS_COLLECTION = "collection of streaks";
+    const SPENDING_COLLECTION = "collection of spending";
+    const LEVELS_COLLECTION = "collection of levels";
 }

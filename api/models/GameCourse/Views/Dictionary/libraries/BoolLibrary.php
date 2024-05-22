@@ -31,13 +31,15 @@ class BoolLibrary extends Library
                 [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Gets the opposite bool value of a given value.",
             ReturnType::BOOLEAN,
-                $this
+                $this,
+                "bool.not(true)"
             ),
             new DFunction("exists",
                 [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Checks whether a given value exists.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "bool.exists(%user)"
             )
         ];
     }

@@ -93,7 +93,7 @@ class TreeLibrary extends Library
             new DFunction("tiers",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's tiers.",
-                ReturnType::COLLECTION,
+                ReturnType::TIERS_COLLECTION,
                 $this,
             "%tree.tiers"
             ),
@@ -114,7 +114,7 @@ class TreeLibrary extends Library
             new DFunction("getSkillTrees",
                 [],
                 "Gets all skill trees of course.",
-                ReturnType::COLLECTION,
+                ReturnType::TREES_COLLECTION,
                 $this,
                 "tree.getSkillTrees()"
             )

@@ -36,7 +36,8 @@ class CollectionLibrary extends Library
                  ["name" => "index", "optional" => false, "type" => "int"]],
                 "Gets a given collection's item on a specific index.",
                 ReturnType::MIXED,
-                $this
+                $this,
+                "%students.item(0)"
             ),
             new DFunction("index",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
@@ -44,20 +45,23 @@ class CollectionLibrary extends Library
                     ["name" => "key", "optional" => true, "type" => "string"]],
                 "Gets the index of an item on a given collection. For items that are not basic types like text, numbers, etc., a search key should be given.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%students.index(%viewer, \"id\")"
             ),
             new DFunction("count",
                 [[ "name" => "collection", "optional" => false, "type" => "array"]],
                 "Counts the number of elements in a given collection.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%students.count"
             ),
             new DFunction("sort",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
                  ["name" => "orderKeyPairs", "optional" => true, "type" => "string"]],
                 "Sorts a given collection. Order key pairs format: 'order: param'. Order options: 'ASC', 'DESC', 'asc', 'desc', 'ascending', 'descending'.",
             ReturnType::COLLECTION,
-                $this
+                $this,
+                "%userAwards.sort(\"DESC: date\")"
             ),
             new DFunction("crop",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
@@ -65,7 +69,8 @@ class CollectionLibrary extends Library
                  ["name" => "end", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning items between start and end indexes.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "%userAwards.crop(0, 10)"
             ),
             new DFunction("getKNeighbors",
                 [["name" => "collection", "optional" => false, "type" => "array"],
@@ -73,13 +78,16 @@ class CollectionLibrary extends Library
                  ["name" => "k", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning an item and its K neighbors.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "%students.getKNeighbors(%students.index(%viewer, \"id\"), 3)"
             ),
             new DFunction("generate",
                 [["name" => "size", "optional" => false, "type" => "int"]],
-                "Generates a collection of given size.",
+                "Generates a collection of given size. This is useful when you want to repeat a component in a page 
+                a given number of times, with no interest in the actual content of each item.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "collection.generate(%streakProgress)"
             )
         ];
     }
