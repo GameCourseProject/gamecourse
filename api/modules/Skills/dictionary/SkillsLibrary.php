@@ -15,6 +15,24 @@ class SkillsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    {
+        return [
+            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => $email ? $email : Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(5),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "theme" => null,
+            "username" => $email ? $email : Core::dictionary()->faker()->email(),
+            "image" => null,
+            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "landingPage" => null,
+            "isActive" => true
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -117,6 +135,13 @@ class SkillsLibrary extends Library
                 ReturnType::NUMBER,
                 $this,
                 "skills.getUserSkillUsedWildcards(%user, %skillTree.id)"
+            ),
+            new DFunction("getUsersWithSkill",
+                [["name" => "skillId", "optional" => false, "type" => "int"]],
+                "Gets users who have earned a given skill.",
+                ReturnType::COLLECTION,
+                $this,
+                "skills.getUsersWithSkill(%skill.id)"
             )
         ];
     }
@@ -353,5 +378,31 @@ class SkillsLibrary extends Library
         }
 
         return new ValueNode($used, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets users who have earned a skill.
+     *
+     * @param int $skillId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUsersWithSkill(int $skillId): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $users = array_map(function () {
+                return $this->mockUser();
+            }, range(1, Core::dictionary()->faker()->numberBetween(0, 5)));
+
+        } else {
+            $skillsModule = new Skills($course);
+            $users = $skillsModule->getUsersWithSkill($skillId);
+        }
+        return new ValueNode($users, Core::dictionary()->getLibraryById(UsersLibrary::ID));
     }
 }
