@@ -206,7 +206,6 @@ export class RulesComponent implements OnInit {
     }
 
     this.ELfunctions = await this.api.getELFunctions().toPromise();
-    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
 
     // set namespaces of functions
     let names = this.functions.concat(this.ELfunctions)

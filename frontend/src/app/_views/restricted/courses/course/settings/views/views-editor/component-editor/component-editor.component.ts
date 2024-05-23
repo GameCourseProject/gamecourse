@@ -141,7 +141,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   async getCustomFunctions(courseID: number){
     this.ELfunctions = await this.api.getELFunctions().toPromise();
-    //this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
 
     // set namespaces of functions
     let names = this.ELfunctions

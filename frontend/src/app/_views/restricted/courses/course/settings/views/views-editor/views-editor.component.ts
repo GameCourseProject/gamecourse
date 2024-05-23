@@ -928,6 +928,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async saveBeforePreview() {
     if (this.page) {
+      this.loading.action = true;
+
       const res = await this.saveChanges();
 
       if (res === "error") {
@@ -947,6 +949,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     else if (this.pageToManage) {
+      this.loading.action = true;
+
       const res = await this.savePage();
 
       if (res === "error") {

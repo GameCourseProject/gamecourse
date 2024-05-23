@@ -140,7 +140,6 @@ export class NotificationsComponent implements OnInit {
 
     async getELFunctions() {
       this.ELfunctions = await this.api.getELFunctions().toPromise();
-      this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
     }
 
 
