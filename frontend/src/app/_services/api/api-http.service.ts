@@ -3555,6 +3555,7 @@ export class ApiHttpService {
       if (aspect.viewerRole) {
         qs.push('viewerRole', aspect.viewerRole);
       }
+      qs.push('_', Date.now().toString());
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
@@ -3570,6 +3571,7 @@ export class ApiHttpService {
       qs.push('pageId', pageID);
       qs.push('viewerId', viewerID);
       qs.push('userId', userID);
+      qs.push('_', Date.now().toString());
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

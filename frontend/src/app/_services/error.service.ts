@@ -30,10 +30,17 @@ export class ErrorService {
 
     if (error instanceof HttpErrorResponse) { // server error
       this.error.full = error.error.text ?? error.error.error;
-      let matches = this.error.full.matchAll(/<b>Fatal error<\/b>:(\w|\s)+:(.*) in ((.|\s)+)/g);
-      for (const match of matches) { this.error.message = match[2]; }
-      matches = this.error.full.matchAll(/Stack trace:(.|\s)+ on line(.|\s)+<\/b>/g);
-      for (const match of matches) { this.error.stack = match[0].replaceAll('\n', '<br>'); }
+
+      // Extract error message and stack trace
+      const matchFatalError = /<b>Fatal error<\/b>:\s*(.*?)\s+in\s+(.*)/s.exec(this.error.full);
+      if (matchFatalError) {
+        this.error.message = matchFatalError[1];
+        this.error.stack = matchFatalError[2].replaceAll('\n', '<br>');
+      } else {
+        // If no fatal error format matches, fallback to the full error message
+        this.error.message = this.error.full;
+        this.error.stack = '';
+      }
 
     } else { // simple string
       this.error.message = error;
