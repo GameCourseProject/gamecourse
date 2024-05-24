@@ -1765,7 +1765,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getELFunctions(): Observable<CustomFunction[]> {
+  public getELFunctions(): Observable<{ namespaces: { [name: string]: string }, functions: CustomFunction[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getELFunctions');

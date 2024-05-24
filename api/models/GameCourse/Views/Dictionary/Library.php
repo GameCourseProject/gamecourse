@@ -75,6 +75,17 @@ abstract class Library
     }
 
     /**
+     * Gets library metadata. This is useful for
+     * the Reference Manual.
+     * TODO: Each getNamespaceDocumentation from library should include its description
+     * @return string|null
+     */
+    public function getNamespaceDocumentation(): ?string
+    {
+        return null;
+    }
+
+    /**
      * Adds a new function to the library.
      * NOTE: only core libraries can be extended.
      *

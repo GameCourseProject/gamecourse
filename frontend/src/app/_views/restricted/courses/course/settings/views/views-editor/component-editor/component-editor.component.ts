@@ -71,7 +71,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[];
   ELfunctions: CustomFunction[];
   cookbook: CookbookRecipe[];
-  namespaces: string[];
+  namespaces: { [name: string]: string };
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
 
@@ -140,12 +140,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   async getCustomFunctions(courseID: number){
-    this.ELfunctions = await this.api.getELFunctions().toPromise();
-
-    // set namespaces of functions
-    let names = this.ELfunctions
-      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
-    this.namespaces = Array.from(new Set(names).values()).sort();
+    const res = await this.api.getELFunctions().toPromise();
+    this.ELfunctions = res.functions;
+    this.namespaces = res.namespaces;
   }
 
   async getCookbook(courseID: number) {

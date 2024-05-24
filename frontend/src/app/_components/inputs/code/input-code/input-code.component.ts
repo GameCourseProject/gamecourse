@@ -84,6 +84,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   reduce = new Reduce();
   originalFunctions: { [name: string]: CustomFunction[] } = {};
   filteredFunctions: { [name: string]: CustomFunction[] } = {};
+  namespaces: { [name: string]: string } = {};
 
   // COOKBOOK
   originalRecipes: CookbookRecipe[] = [];
@@ -91,10 +92,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   selectedRecipe: CookbookRecipe = null;
 
   // REFERENCE MANUAL
-  namespaces: Set<string>;
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
-
-  //selection: string
+  selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
   expressionToPreview: string = "";
   outputPreview: any = null;
@@ -122,6 +121,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       else if (this.tabs[i].type === 'manual') {
         this.originalFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
         this.filteredFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.namespaces = (this.tabs[i] as ReferenceManualTab).namespaces;
       }
       else if (this.tabs[i].type === 'cookbook') {
         this.originalRecipes = (this.tabs[i] as CookbookTab).documentation;
@@ -760,7 +760,7 @@ export interface ReferenceManualTab {
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: CustomFunction[],        // Personalized functions
-  namespaces?: string[]                      // Namespaces of functions
+  namespaces?: { [name: string]: string }    // Namespaces of functions
 }
 
 export interface CookbookTab {

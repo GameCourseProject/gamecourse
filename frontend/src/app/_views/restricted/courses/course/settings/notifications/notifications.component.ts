@@ -29,7 +29,6 @@ export class NotificationsComponent implements OnInit {
         schedule: false,
         send: false
     }
-    refreshing: boolean = true;
 
     course: Course;
     isAdminOrTeacher: boolean = false;
@@ -45,12 +44,12 @@ export class NotificationsComponent implements OnInit {
     notificationToSend: string = "";
     receiverRoles: string[] = [];
     schedule: string;
-    predictions: boolean;
 
     notificationToRead: string;                 // To display fully in pop up
 
     manualTab: ReferenceManualTab[];
     ELfunctions: CustomFunction[];
+    namespaces: { [name: string]: string };
 
     @ViewChild('fSend', { static: false }) fSend: NgForm;
     @ViewChild('fModules', { static: false }) fModules: NgForm;
@@ -85,14 +84,12 @@ export class NotificationsComponent implements OnInit {
 
                 // Setup Manual
                 await this.getELFunctions();
-                const names = this.ELfunctions.map(fn => fn.name).sort((a, b) => a.localeCompare(b)); // order by name
-                const namespaces = Array.from(new Set(names).values())
                 this.manualTab = [{
                   name: 'Manual',
                   type: "manual",
                   active: true,
                   customFunctions: this.ELfunctions,
-                  namespaces: namespaces,
+                  namespaces: this.namespaces,
                 }]
             }
 
@@ -139,7 +136,9 @@ export class NotificationsComponent implements OnInit {
     }
 
     async getELFunctions() {
-      this.ELfunctions = await this.api.getELFunctions().toPromise();
+      const res = await this.api.getELFunctions().toPromise();
+      this.ELfunctions = res.functions;
+      this.namespaces = res.namespaces;
     }
 
 

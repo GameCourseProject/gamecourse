@@ -59,7 +59,7 @@
       <!-- Editor reference manual tabs -->
       <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip relative">
         <div class="w-full flex h-full">
-          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col">
             <app-input-search
               [id]="'manual'"
               [size]="'sm'"
@@ -68,19 +68,25 @@
               [placeholder]="'Search for function...'"
               (valueChange)="filterFunctions($event)">
             </app-input-search>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let entry of filteredFunctions | keyvalue">
-                <ng-container>
-                  <span class="text-sm"><strong>Namespace: </strong>
-                    <i>{{entry.key}}</i>
-                  </span>
-                  <div *ngFor="let fx of entry.value">
-                    <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                        {{ isSelected(fx) ? 'badge-outline' : '' }}" (click)="selectedFunction = fx">
-                      {{ fx.keyword }}
-                    </div>
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
+
+              <!-- Namespaces -->
+              <div *ngFor="let entry of filteredFunctions | keyvalue" class="mb-2">
+                <button class="pl-2 p-0.5 hover:bg-base-content/20 transition text-sm flex flex-row justify-start items-center w-full font-light gap-1"
+                        (click)="selectedFunction = null; selectedNamespace = entry.key">
+                  <ng-icon name="tabler-code" size="1rem"/>Namespace<span class="font-semibold">{{entry.key}}</span>
+                </button>
+                <div class="flex flex-col gap-1 ml-2">
+
+                  <!-- Functions -->
+                  <div *ngFor="let fx of entry.value"
+                       class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
+                        {{ isSelected(fx) ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+                       (click)="selectedNamespace = null; selectedFunction = fx">
+                    {{ fx.keyword }}
                   </div>
-                </ng-container>
+
+                </div>
               </div>
 
               <span *ngIf="Object.values(filteredFunctions).length === 0" class="text-base-content text-opacity-50 justify-center flex">
@@ -92,8 +98,15 @@
 
 
           <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto text-base-content w-full">
-            <div *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5 mt-2">
-              Select a function
+            <div *ngIf="!selectedFunction && !selectedNamespace" class="text-base-content text-opacity-50 ml-5 mt-2">
+              Select a function or namespace
+            </div>
+
+            <div *ngIf="selectedNamespace" class="px-4 flex flex-col gap-2">
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">{{selectedNamespace}}</span>
+              </div>
+              <div class="mb-14" [innerHTML]="namespaces[selectedNamespace]"></div>
             </div>
 
             <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 relative">
@@ -157,7 +170,7 @@
       <!-- Cookbook -->
       <div *ngIf="tab.type === 'cookbook' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
-          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col">
             <app-input-search
               [id]="'manual'"
               [size]="'sm'"
@@ -166,12 +179,12 @@
               [placeholder]="'Search for module...'"
               (valueChange)="filterRecipes($event)">
             </app-input-search>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let recipe of filteredRecipes">
-                <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                    {{ recipe == selectedRecipe ? 'badge-outline' : '' }}" (click)="selectedRecipe = recipe">
-                  {{ recipe.moduleId }}
-                </div>
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto flex flex-col gap-1 ml-2">
+              <div *ngFor="let recipe of filteredRecipes"
+                   class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
+                        {{ recipe == selectedRecipe ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+                   (click)="selectedRecipe = recipe">
+                {{ recipe.moduleId }}
               </div>
 
               <span *ngIf="filteredRecipes.length === 0" class="text-base-content text-opacity-50 justify-center flex">
