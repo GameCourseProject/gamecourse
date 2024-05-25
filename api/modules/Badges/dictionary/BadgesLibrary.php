@@ -36,7 +36,7 @@ class BadgesLibrary extends Library
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{badges.getBadges()}</code></pre>
         </div>
-        <p>in the field <span class="text-primary">"Repeat this component for every item in"</span>.</p><br>
+        <p>in the field <span class="text-primary">Repeat this component for every item in</span>.</p><br>
         <p>This repeats the block for each Badge, but how do you actually show information about each Badge now?</p>
         <p>When using the Repetition field, the variable <span class="text-info">%item</span> becomes available for the component. We recommend also creating your own
           Auxiliary Variable, named <span class="text-secondary">badge</span>, with the value <span class="text-secondary">{%item}</span>, for clarity and to not create confusion

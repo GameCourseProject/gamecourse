@@ -26,9 +26,9 @@ class ActionsLibrary extends Library
     {
         return <<<HTML
         <p>This namespace provides utilities for interactions on a page. Most of the time, you will want
-        to use expression from this library in the <span class="text-primary">Events</span> field.<p><br>
+        to use expressions from this library in the <span class="text-primary">Events</span> field.<p><br>
         <p>For example, you can make a user move to their Profile page when clicking on a button, by having
-        a Button component in a page, and on its Events section creating an On Click event with the expression:</p>
+        a Button component in a page, and on its Events section creating an on Click event with the expression:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{actions.goToPage(pages.getPageByName("Profile").id, %user)}</code></pre>
         </div>
@@ -45,11 +45,13 @@ class ActionsLibrary extends Library
         return [
             new DFunction("goToPage",
                 [[ "name" => "pageId", "optional" => false, "type" => "int"],
-                 ["name" => "userId", "optional" => true, "type" => "int"]],
-                "Navigates to a given course page. Option for user param for page.",
+                 ["name" => "userId", "optional" => true, "type" => "int"],
+                 ["name" => "isSkill", "optional" => true, "type" => "bool"]],
+                "Navigates to a given course page. Option for user param for page. If the page
+                corresponds to a Skill, the third option must be set to true.",
                 ReturnType::VOID,
                 $this,
-                "actions.goToPage(pages.getPageByName(\"Profile\").id, %user)"
+                "actions.goToPage(10)"
             ),
             new DFunction("showTooltip",
                 [[ "name" => "text", "optional" => false, "type" => "string"],
