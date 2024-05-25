@@ -655,7 +655,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     if (searchQuery) {
       let functions: CookbookRecipe[] = [];
       for (let i = 0; i < this.filteredRecipes.length; i++){
-        if (((this.filteredRecipes[i].moduleId).toLowerCase()).includes(searchQuery.toLowerCase())) {
+        if (((this.filteredRecipes[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
           functions.push(this.filteredRecipes[i]);
         }
       }
@@ -781,6 +781,6 @@ export interface CustomFunction {
 }
 
 export interface CookbookRecipe {
-  moduleId: string,
+  name: string,
   content: string
 }

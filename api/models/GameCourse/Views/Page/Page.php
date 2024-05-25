@@ -721,19 +721,31 @@ class Page
     }
 
     /**
-     * Gets the cookbooks of modules
+     * Gets the recipes from the cookbook that are
+     * useful for the page editor
+     *
      * @throws Exception
      */
     public static function getCookbook(Course $course): array {
         $content = [];
 
-        // Modules
-        $moduleIds = $course->getModules(true, true);
+        $folderPath = COOKBOOK_FOLDER . "/pages";
+        if (!is_dir($folderPath) || !is_readable($folderPath)) {
+            throw new Exception("Cookbook folder not found or not readable");
+        }
 
-        foreach ($moduleIds as $moduleId) {
-            $recipe = MODULES_FOLDER . "/" . $moduleId . "/cookbook.html";
-            if (file_exists($recipe))
-                $content = array_merge($content, [["moduleId" => $moduleId, "content" => file_get_contents($recipe)]]);
+        $folderContents = scandir($folderPath);
+        foreach ($folderContents as $fileName) {
+            // Skip current and parent directory entries
+            if ($fileName === "." || $fileName === "..") {
+                continue;
+            }
+
+            $path = $folderPath . "/" . $fileName;
+            $fileContent = file_get_contents($path);
+            $name = pathinfo($fileName, PATHINFO_FILENAME);
+
+            $content[] = ["name" => $name, "content" => $fileContent];
         }
         return $content;
     }
