@@ -10,7 +10,6 @@ class ActionsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
-
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
@@ -18,6 +17,24 @@ class ActionsLibrary extends Library
     const ID = "actions";    // NOTE: must match the name of the class
     const NAME = "Actions";
     const DESCRIPTION = "Library to be used only on EVENTS. These functions define the response action to event triggers.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace provides utilities for interactions on a page. Most of the time, you will want
+        to use expression from this library in the <span class="text-primary">Events</span> field.<p><br>
+        <p>For example, you can make a user move to their Profile page when clicking on a button, by having
+        a Button component in a page, and on its Events section creating an On Click event with the expression:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{actions.goToPage(pages.getPageByName("Profile").id, %user)}</code></pre>
+        </div>
+        HTML;
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/

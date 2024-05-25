@@ -15,13 +15,23 @@ class BadgesLibrary extends Library
     }
 
     /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "badges";    // NOTE: must match the name of the class
+    const NAME = "Badges";
+    const DESCRIPTION = "Provides access to information regarding badges.";
+
+
+    /*** ----------------------------------------------- ***/
     /*** --------------- Documentation ----------------- ***/
     /*** ----------------------------------------------- ***/
+
     public function getNamespaceDocumentation(): ?string
     {
         return <<<HTML
         <p>This namespace allows you to create pages displaying the Badges configured for this course. Here's a general guideline on how to use it:</p><br>
-        <p>Create a new page with a block. Inside that block, create another one. You can then edit the inner one, to make it repeat for each of the badges!
+        <p>Create a new page with a Block. Inside that block, create another one. You can then edit the inner one, to make it repeat for each of the badges!
         To do this, use the expression</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{badges.getBadges()}</code></pre>
@@ -30,7 +40,7 @@ class BadgesLibrary extends Library
         <p>This repeats the block for each Badge, but how do you actually show information about each Badge now?</p>
         <p>When using the Repetition field, the variable <span class="text-info">%item</span> becomes available for the component. We recommend also creating your own
           Auxiliary Variable, named <span class="text-secondary">badge</span>, with the value <span class="text-secondary">{%item}</span>, for clarity and to not create confusion
-          if you ever decide to have a Repetition inside another Repetition. You will notice that, if you add components inside the repeated block, your custom variable will
+          if you ever decide to have a Repetition inside another Repetition. You will notice that if you add components inside the repeated block, your custom variable will
           show up in the Inherited Variables section of those components.
         </p><br>
         <p>This means that you can now use the variable. For example, to show the name of the Badge, it's as simple as adding a Text component,
@@ -41,7 +51,7 @@ class BadgesLibrary extends Library
         <p>Check out the manual to see the other attributes of a Badge!</p>
         <br>
         <p>It might be interesting to show, for example, which users have obtained level 1 of the Badge. To do so, we can use the same logic of creating a new component and
-          filling its Repetition field, now with the expression
+          filling its Repetition field, now with the expression</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{badges.getUsersWithBadge(%badge.id, 1)}</code></pre>
         </div>
@@ -117,15 +127,6 @@ class BadgesLibrary extends Library
             "link" => null
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "badges";    // NOTE: must match the name of the class
-    const NAME = "Badges";
-    const DESCRIPTION = "Provides access to information regarding badges.";
 
 
     /*** ----------------------------------------------- ***/

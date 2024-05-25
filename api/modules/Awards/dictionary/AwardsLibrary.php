@@ -13,6 +13,48 @@ class AwardsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "awards";    // NOTE: must match the name of the class
+    const NAME = "Awards";
+    const DESCRIPTION = "Provides access to information regarding awards.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to access the awards earned by students. You can do so with the generic function:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{awards.getUserAwards(%viewer)}</code></pre>
+        </div>
+        <p>In this case, since we are using the context variable <span class="text-info">%viewer</span>,
+         it returns all awards of the user viewing the page. However, you can use any other user - for this matter,
+         it might be interesting to check out the <span class="text-secondary">users</span> namespace.</p><br>
+        <p>If instead of all awards, you only wish to obtain awards of a certain type, you can use:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{awards.getUserAwardsByType(%user, 'presentation')}</code></pre>
+        </div>
+        <p>Where the second argument is the award type.</p><br>
+        <p>Aside from the generic functions above, you can also use more specific functions available in this library, such as:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{awards.getUserBadgesAwards(%user)}</code></pre>
+        </div>
+        <p>Each of these specific functions also come with several optional arguments that are relevant for that award type.
+        For example, you can choose when obtaining the Badges awards to filter them by only the ones that count towards extra XP.</p><br>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockAward($userId) : array
     {
         return [
@@ -26,15 +68,6 @@ class AwardsLibrary extends Library
             "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "awards";    // NOTE: must match the name of the class
-    const NAME = "Awards";
-    const DESCRIPTION = "Provides access to information regarding awards.";
 
 
     /*** ----------------------------------------------- ***/

@@ -106,7 +106,7 @@
               <div class="border-base-content/10 border-b-2 mb-4 mt-2">
                 <span class="text-xl font-bold">{{selectedNamespace}}</span>
               </div>
-              <div class="mb-14" [innerHTML]="namespaces[selectedNamespace]"></div>
+              <div class="mb-8" [innerHTML]="namespaces[selectedNamespace]"></div>
             </div>
 
             <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 relative">
@@ -142,7 +142,10 @@
               <pre><code>{{selectedFunction.example}}</code></pre></div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
-                <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
+                <strong>Namespace: </strong>
+                <span class="link link-primary" (click)="selectedNamespace = selectedFunction.name; selectedFunction = null">
+                  {{selectedFunction.name}}
+                </span><br>
               </div>
 
               <div *ngIf="selectedFunction.name === 'gamerules'">
@@ -204,7 +207,7 @@
               <div class="border-base-content/10 border-b-2 mb-4">
                 <span class="text-xl font-bold">{{selectedRecipe.moduleId}}</span>
               </div>
-              <div class="mb-14" [innerHTML]="selectedRecipe.content"></div>
+              <div class="mb-8" [innerHTML]="selectedRecipe.content"></div>
             </div>
           </div>
         </div>
