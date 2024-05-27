@@ -14,6 +14,50 @@ class UsersLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "users";    // NOTE: must match the name of the class
+    const NAME = "Users";
+    const DESCRIPTION = "Provides access to information regarding users.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to obtain users and certain information about them. For instance, to obtain
+        a collection with the students of the current course you can simply do:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getStudents()}</code></pre>
+        </div>
+        <p>There's also a similar function for Teachers, and it's possible to filter by state in order to obtain
+        only the active (or inactive) users of this type.</p><br>
+        <p>However, GameCourse doesn't have only the roles Student and Teacher. You can have your own Roles, and some
+        modules add other Roles too. Nevertheless, this namespace comes prepared for this! Just use the generic function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getUsersWithRole(%roleName)}</code></pre>
+        </div>
+        <p>replacing the first argument with your desired role name!</p><br>
+        <p>Each user is an "object", meaning that they have several attributes. Some of them are <span class="text-secondary">id</span>,
+        <span class="text-secondary">name</span>, <span class="text-secondary">email</span>, ... All of these are also displayed in
+        this namespace's functions. If, for example, we wanted to obtain the major of the user with id = 1, we could use:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getUserById(1).major}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
     {
         return [
@@ -32,15 +76,6 @@ class UsersLibrary extends Library
             "avatar" => null
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "users";    // NOTE: must match the name of the class
-    const NAME = "Users";
-    const DESCRIPTION = "Provides access to information regarding users.";
 
 
     /*** ----------------------------------------------- ***/

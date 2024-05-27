@@ -25,6 +25,61 @@ class CollectionLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>Collections are, as the name suggests, groups of multiple items. All of those items should, however, be of the same type.
+        An example of a collection could be:</p>
+        <div class="bg-base-100 rounded-box px-4 py-2 my-2">
+          <pre><code>
+            {
+              "id": 1,
+              "name": "Mary",
+              "major": "MEIC"
+            },
+            {
+              "id": 2,
+              "name": "John",
+              "major": "MEIC"
+            },
+            {
+              "id": 3,
+              "name": "Jane",
+              "major": null
+            }
+          </code></pre>
+        </div><br>
+        <p>Other namespaces, such as <span class="text text-primary">users</span>, have functions that return a collection, such as
+        <span class="text-secondary">getStudents</span>. Thus, while this namespace can be used alone, it is mostly used to
+        manipulate and retrieve information from existing collections.</p><br>
+        <p>Going back to the previous example, assuming that the collection is saved in the variable 
+        <span class="text-secondary">%collection</span>, the expression:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%collection.item(0)}</code></pre>
+        </div>
+        would return
+        <div class="bg-base-100 rounded-box px-4 py-2 my-2">
+          <pre><code>
+            {
+              "id": 1,
+              "name": "Mary",
+              "major": "MEIC"
+            }
+          </code></pre>
+        </div><br>
+        <p>Another useful utility is to sort a collection, for example:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%collection.sort("DESC: name")}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -87,7 +142,7 @@ class CollectionLibrary extends Library
                 a given number of times, with no interest in the actual content of each item.",
                 ReturnType::COLLECTION,
                 $this,
-                "collection.generate(%streakProgress)"
+                "collection.generate(5)"
             )
         ];
     }

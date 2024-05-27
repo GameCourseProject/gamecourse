@@ -706,6 +706,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.tabs.length; i++){
       this.tabs[i].active = i === index;
     }
+    this.filteredFunctions = this.originalFunctions;
+    this.filteredRecipes = this.originalRecipes;
   }
 
   protected readonly Object = Object;
