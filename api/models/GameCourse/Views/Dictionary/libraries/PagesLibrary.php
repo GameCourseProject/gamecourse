@@ -34,13 +34,15 @@ class PagesLibrary extends Library
                 [["name" => "page", "optional" => false, "type" => "Page"]],
                 "Gets a given page's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "%page.id"
             ),
             new DFunction("getPageByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a page by its name.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "pages.getPageByName('Streaks')"
             )
         ];
     }

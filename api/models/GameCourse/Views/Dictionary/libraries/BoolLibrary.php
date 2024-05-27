@@ -21,6 +21,19 @@ class BoolLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>A bool represents a truth value: <span class="text-secondary">true</span> or <span class="text-secondary">false</span>.</p><br>
+        <p>This namespace provides some basic operators over booleans, and functions that return a boolean.</p>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -31,13 +44,15 @@ class BoolLibrary extends Library
                 [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Gets the opposite bool value of a given value.",
             ReturnType::BOOLEAN,
-                $this
+                $this,
+                "bool.not(true)"
             ),
             new DFunction("exists",
                 [[ "name" => "value", "optional" => false, "type" => "bool"]],
                 "Checks whether a given value exists.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "bool.exists(%user)"
             )
         ];
     }

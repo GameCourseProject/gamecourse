@@ -52,54 +52,62 @@ class StreaksLibrary extends Library
                 [],
                 "Gets maximum XP each student can earn with streaks.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "streaks.getMaxXP()"
             ),
             new DFunction("getMaxExtraCredit",
                 [],
                 "Gets maximum extra credit each student can earn with streaks.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "streaks.getMaxExtraCredit()"
             ),
             new DFunction("getStreaks",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets streaks of course.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::STREAKS_COLLECTION,
+                $this,
+                "streaks.getStreaks(true)"
             ),
             new DFunction("getUsersWithStreak",
                 [["name" => "streakId", "optional" => false, "type" => "int"]],
                 "Gets users who have earned a given streak at least once.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::USERS_COLLECTION,
+                $this,
+                "streaks.getUsersWithStreak(%streak.id)"
             ),
             new DFunction("getUserStreaks",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "isExtra", "optional" => true, "type" => "bool"],
                     ["name" => "isRepeatable", "optional" => true, "type" => "bool"]],
                 "Gets streaks earned by a given user.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::STREAKS_COLLECTION,
+                $this,
+                "streaks.getUserStreaks(%user)"
             ),
             new DFunction("getUserStreakProgression",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "streakId", "optional" => false, "type" => "int"]],
                 "Gets user progression on a given streak.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "streaks.getUserStreakProgression(%user, %streak.id)"
             ),
             new DFunction("getUserStreakCompletions",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "streakId", "optional" => false, "type" => "int"]],
                 "Gets how many times a given user has completed a specific streak.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "streaks.getUserStreakCompletions(%user, %streak.id)"
             ),
             new DFunction("getUserStreakDeadline",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "streakId", "optional" => false, "type" => "int"]],
                 "Gets streak deadline for a given user.",
                 ReturnType::TIME,
-                $this
+                $this,
+                "streaks.getUserStreakDeadline(%user, %streak.id)"
             )
         ];
     }

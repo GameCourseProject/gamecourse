@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
 import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
@@ -34,7 +34,7 @@ import {AlertService, AlertType} from "../../../_services/alert.service";
   templateUrl: './any.component.html',
   styleUrls: ['./any.component.scss']
 })
-export class BBAnyComponent implements OnInit {
+export class BBAnyComponent implements OnInit, OnDestroy {
 
   @Input() view: View;
   @Input() isExistingRoot: boolean = false;
@@ -67,14 +67,21 @@ export class BBAnyComponent implements OnInit {
     });
 
     if (this.view.mode === ViewMode.EDIT) {
-      addEventListener('keydown', (event: KeyboardEvent) => {
-        if (this.isSelected() && !ModalService.isAnyOpen()) {
-          if (event.key === 'Delete' || event.key === 'Backspace') {
-            event.preventDefault();
-            ModalService.openModal('component-delete-' + this.view.id);
-          }
-        }
-      })
+      this.handleKeyDown = this.handleKeyDown.bind(this);
+      addEventListener('keydown', this.handleKeyDown);
+    }
+  }
+
+  ngOnDestroy() {
+    removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  handleKeyDown(event: KeyboardEvent) {
+    if (this.isSelected() && !ModalService.isAnyOpen()) {
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        ModalService.openModal('component-delete-' + this.view.id);
+      }
     }
   }
 
@@ -190,8 +197,8 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('component-editor');
   }
 
-  submitEditAction() {
-    this.componentEditor.saveView();
+  async submitEditAction() {
+    await this.componentEditor.saveView();
 
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
@@ -199,7 +206,7 @@ export class BBAnyComponent implements OnInit {
     this.selection.refresh();
     this.cdr.detectChanges();
     this.selection.refresh();
-    this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+    this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({

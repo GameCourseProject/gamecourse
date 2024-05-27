@@ -32,7 +32,8 @@ class TextLibrary extends Library
                 [["name" => "text", "optional" => false, "type" => "string"]],
                 "Removes all whitespace from a text.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "text.strip('hello world')"
             )
         ];
     }

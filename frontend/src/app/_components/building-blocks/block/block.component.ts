@@ -120,7 +120,9 @@ export class BBBlockComponent implements OnInit {
   /*** -------------------- Helpers ------------------- ***/
   /*** ------------------------------------------------ ***/
 
-  addComponent(): void {
+  addComponent(event: any): void {
+    event.stopPropagation();
+    this.selection.set(this.view);
     this.addComponentEvent.emit();
   }
 

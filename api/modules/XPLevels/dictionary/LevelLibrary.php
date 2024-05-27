@@ -92,7 +92,7 @@ class LevelLibrary extends Library
             new DFunction("getLevels",
                 [["name" => "orderBy", "optional" => true, "type" => "string"]],
                 "Gets levels of course. Option to order by a given parameter.",
-                ReturnType::COLLECTION,
+                ReturnType::LEVELS_COLLECTION,
                 $this
             )
         ];

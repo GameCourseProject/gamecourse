@@ -84,6 +84,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   reduce = new Reduce();
   originalFunctions: { [name: string]: CustomFunction[] } = {};
   filteredFunctions: { [name: string]: CustomFunction[] } = {};
+  namespaces: { [name: string]: string } = {};
 
   // COOKBOOK
   originalRecipes: CookbookRecipe[] = [];
@@ -91,10 +92,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   selectedRecipe: CookbookRecipe = null;
 
   // REFERENCE MANUAL
-  namespaces: Set<string>;
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
-
-  //selection: string
+  selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
   expressionToPreview: string = "";
   outputPreview: any = null;
@@ -122,6 +121,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       else if (this.tabs[i].type === 'manual') {
         this.originalFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
         this.filteredFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.namespaces = (this.tabs[i] as ReferenceManualTab).namespaces;
       }
       else if (this.tabs[i].type === 'cookbook') {
         this.originalRecipes = (this.tabs[i] as CookbookTab).documentation;
@@ -596,8 +596,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     (tab as PreviewTab).running = false;
   }
 
-  copyToClipboard() {
+  copyPreviewToClipboard() {
     this.clipboard.copy(this.formatExpressionToPreview());
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  copyReferenceToClipboard() {
+    this.clipboard.copy("{ " + this.selectedFunction.name + "." + this.selectedFunction.keyword + "(" +
+      this.selectedFunction.args.map(e => e.name).join(", ") + ") }");
     AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
   }
 
@@ -649,7 +655,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     if (searchQuery) {
       let functions: CookbookRecipe[] = [];
       for (let i = 0; i < this.filteredRecipes.length; i++){
-        if (((this.filteredRecipes[i].moduleId).toLowerCase()).includes(searchQuery.toLowerCase())) {
+        if (((this.filteredRecipes[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
           functions.push(this.filteredRecipes[i]);
         }
       }
@@ -663,6 +669,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  expand() {
+    this.size = this.size === 'lg' ? 'md' : 'lg';
+  }
 
   isSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
@@ -696,6 +706,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.tabs.length; i++){
       this.tabs[i].active = i === index;
     }
+    this.filteredFunctions = this.originalFunctions;
+    this.filteredRecipes = this.originalRecipes;
   }
 
   protected readonly Object = Object;
@@ -750,7 +762,7 @@ export interface ReferenceManualTab {
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: CustomFunction[],        // Personalized functions
-  namespaces?: string[]                      // Namespaces of functions
+  namespaces?: { [name: string]: string }    // Namespaces of functions
 }
 
 export interface CookbookTab {
@@ -771,6 +783,6 @@ export interface CustomFunction {
 }
 
 export interface CookbookRecipe {
-  moduleId: string,
+  name: string,
   content: string
 }

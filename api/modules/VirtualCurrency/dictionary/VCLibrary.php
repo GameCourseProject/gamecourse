@@ -80,7 +80,7 @@ class VCLibrary extends Library
             new DFunction("getUserSpending",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets spending for a given user.",
-                ReturnType::COLLECTION,
+                ReturnType::SPENDING_COLLECTION,
                 $this
             ),
             new DFunction("getUserTotalSpending",

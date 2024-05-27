@@ -34,13 +34,15 @@ class CoursesLibrary extends Library
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given courses's color.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "%someCourse.color"
             ),
             new DFunction("getCourseById",
                 [["name" => "courseId", "optional" => false, "type" => "int"]],
                 "Gets a course by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "courses.getCourseById(1)"
             )
         ];
     }

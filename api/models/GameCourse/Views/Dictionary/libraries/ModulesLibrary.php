@@ -33,7 +33,8 @@ class ModulesLibrary extends Library
                 [["name" => "moduleId", "optional" => false, "type" => "string"]],
                 "Checks whether a given module is enabled.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "modules.isEnabled('QR')"
             ),
         ];
     }

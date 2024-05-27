@@ -14,10 +14,14 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
-  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
+  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none rounded-xl items-center">
     <ng-container *ngFor="let tab of tabs, let i = index">
-      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
+      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}} hover:bg-base-100/20 transition" (click)="toggleTabs(i)">{{tab.name}}</a>
     </ng-container>
+    <button class="ml-auto text-base-200 hover:text-primary transition flex items-center tooltip tooltip-left mr-1" [attr.data-tip]="'Expand'" (click)="expand()">
+      <ng-icon *ngIf="size === 'md'" name="tabler-window-maximize" size="1.3rem" class="text-inherit" />
+      <ng-icon *ngIf="size === 'lg'" name="tabler-window-minimize" size="1.3rem" class="text-inherit" />
+    </button>
   </div>
 
   <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto bg-base-200
@@ -46,16 +50,16 @@
           <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
         </div>
         <div class="absolute tooltip tooltip-left top-1 right-1" [attr.data-tip]="'Copy'">
-          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyToClipboard()">
+          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyPreviewToClipboard()">
             <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
           </button>
         </div>
       </div>
 
       <!-- Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip">
+      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip relative">
         <div class="w-full flex h-full">
-          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col">
             <app-input-search
               [id]="'manual'"
               [size]="'sm'"
@@ -64,19 +68,25 @@
               [placeholder]="'Search for function...'"
               (valueChange)="filterFunctions($event)">
             </app-input-search>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let entry of filteredFunctions | keyvalue">
-                <ng-container>
-                  <span class="text-sm"><strong>Namespace: </strong>
-                    <i>{{entry.key}}</i>
-                  </span>
-                  <div *ngFor="let fx of entry.value">
-                    <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                        {{ isSelected(fx) ? 'badge-outline' : '' }}" (click)="selectedFunction = fx">
-                      {{ fx.keyword }}
-                    </div>
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
+
+              <!-- Namespaces -->
+              <div *ngFor="let entry of filteredFunctions | keyvalue" class="mb-2">
+                <button class="pl-2 p-0.5 hover:bg-base-content/20 transition text-sm flex flex-row justify-start items-center w-full font-light gap-1"
+                        (click)="selectedFunction = null; selectedNamespace = entry.key">
+                  <ng-icon name="tabler-code" size="1rem"/>Namespace<span class="font-semibold">{{entry.key}}</span>
+                </button>
+                <div class="flex flex-col gap-1 ml-2">
+
+                  <!-- Functions -->
+                  <div *ngFor="let fx of entry.value"
+                       class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
+                        {{ isSelected(fx) ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+                       (click)="selectedNamespace = null; selectedFunction = fx">
+                    {{ fx.keyword }}
                   </div>
-                </ng-container>
+
+                </div>
               </div>
 
               <span *ngIf="Object.values(filteredFunctions).length === 0" class="text-base-content text-opacity-50 justify-center flex">
@@ -87,42 +97,55 @@
           </div>
 
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
-            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
-              Select a function
-            </span>
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto text-base-content w-full">
+            <div *ngIf="!selectedFunction && !selectedNamespace" class="text-base-content text-opacity-50 ml-5 mt-2">
+              Select a function or namespace
+            </div>
 
-            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2">
-              <div class="border-base-content/10 border-b-2 mb-4">
+            <div *ngIf="selectedNamespace" class="px-4 flex flex-col gap-2">
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">{{selectedNamespace}}</span>
+              </div>
+              <div class="mb-8 w-full" [innerHTML]="namespaces[selectedNamespace]"></div>
+            </div>
+
+            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 relative">
+
+              <div class="absolute tooltip tooltip-left top-1 right-2" [attr.data-tip]="'Copy Function Formula'">
+                <button class="btn btn-sm btn-ghost btn-circle" (click)="copyReferenceToClipboard()">
+                  <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
+                </button>
+              </div>
+
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
                 <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
                 <span class="text-secondary">{{selectedFunction.name}}.{{selectedFunction.keyword}}</span> (
                 <div *ngFor="let arg of selectedFunction.args, let i = index" class="inline">
-                    <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                      {{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
+                    <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{': ' + arg.name}}{{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
                 </div>
 
-                <span>) : {{selectedFunction.returnType}}</span>
+                <span> ) -> {{selectedFunction.returnType}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length === 0" class="mb-4">
-                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
+                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () -> {{selectedFunction.returnType}}</div>
               </div>
 
               <div><span><strong>Description: </strong>
                 {{selectedFunction.description}}</span>
               </div>
 
-              <div *ngIf="selectedFunction.example" class="flex flex-row items-center gap-2"><div><strong>Usage Example: </strong></div>
-                <div><pre><code>{{selectedFunction.example}}</code></pre></div>
-              </div>
-
-              <div class="mb-2"></div>
+              <div *ngIf="selectedFunction.example" class="my-2"><strong>Usage Example: </strong>
+              <pre><code>{{selectedFunction.example}}</code></pre></div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
-                <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
+                <strong>Namespace: </strong>
+                <span class="link link-primary" (click)="selectedNamespace = selectedFunction.name; selectedFunction = null">
+                  {{selectedFunction.name}}
+                </span><br>
               </div>
 
               <div *ngIf="selectedFunction.name === 'gamerules'">
@@ -150,21 +173,21 @@
       <!-- Cookbook -->
       <div *ngIf="tab.type === 'cookbook' && tab.active" class="h-full overflow-y-clip">
         <div class="w-full flex h-full">
-          <div class="grow-0 shrink-0 w-60 max-w-[45%] h-full flex flex-col">
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col">
             <app-input-search
               [id]="'manual'"
               [size]="'sm'"
               [classList]="'mt-1 mb-1.5'"
               [items]="originalRecipes"
-              [placeholder]="'Search for module...'"
+              [placeholder]="'Search for recipe...'"
               (valueChange)="filterRecipes($event)">
             </app-input-search>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto pl-1">
-              <div *ngFor="let recipe of filteredRecipes">
-                <div class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                    {{ recipe == selectedRecipe ? 'badge-outline' : '' }}" (click)="selectedRecipe = recipe">
-                  {{ recipe.moduleId }}
-                </div>
+            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto flex flex-col gap-1 ml-2">
+              <div *ngFor="let recipe of filteredRecipes"
+                   class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
+                        {{ recipe == selectedRecipe ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+                   (click)="selectedRecipe = recipe">
+                {{ recipe.name }}
               </div>
 
               <span *ngIf="filteredRecipes.length === 0" class="text-base-content text-opacity-50 justify-center flex">
@@ -182,9 +205,9 @@
 
             <div *ngIf="selectedRecipe" class="px-4 flex flex-col gap-2">
               <div class="border-base-content/10 border-b-2 mb-4">
-                <span class="text-xl font-bold">{{selectedRecipe.moduleId}}</span>
+                <span class="text-xl font-bold">{{selectedRecipe.name}}</span>
               </div>
-              <div class="mb-14" [innerHTML]="selectedRecipe.content"></div>
+              <div class="mb-8 w-full" [innerHTML]="selectedRecipe.content"></div>
             </div>
           </div>
         </div>

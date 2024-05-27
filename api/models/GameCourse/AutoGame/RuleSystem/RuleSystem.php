@@ -343,15 +343,20 @@ abstract class RuleSystem
      * Gets functions from the EL dictionary
      * @throws Exception
      */
-    public static function getELFunctions(): array{
+    public static function getELFunctions(): array {
+        $myFunctions = [];
+        $myNamespaces = [];
+
         $dictionary = new Dictionary();
         $libraries = $dictionary->getLibraries();
-        $myFunctions = [];
 
         foreach ($libraries as $library) {
             $libraryId = $library->getId();
-
             $myLibrary = $dictionary->getLibraryById($library->getId());
+
+            $namespace = $myLibrary->getNamespaceDocumentation();
+            $myNamespaces[$libraryId] = $namespace ?? "Coming Soon";
+
             $functions = $myLibrary->getFunctions();
 
             foreach ($functions as $function) {
@@ -361,11 +366,10 @@ abstract class RuleSystem
                 $myFunction["description"] = $function->getDescription();
                 $myFunction["returnType"] = $function->getReturnType();
                 $myFunction["example"] = $function->getExample();
-                array_push($myFunctions, $myFunction);
+                $myFunctions[] = $myFunction;
             }
-
         }
-        return $myFunctions ?? [];
+        return ["namespaces" => $myNamespaces, "functions" => $myFunctions];
     }
 
     /**

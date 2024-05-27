@@ -36,6 +36,7 @@ import html2canvas from "html2canvas";
 import {HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-views-editor',
@@ -927,6 +928,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async saveBeforePreview() {
     if (this.page) {
+      this.loading.action = true;
+
       const res = await this.saveChanges();
 
       if (res === "error") {
@@ -946,6 +949,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     else if (this.pageToManage) {
+      this.loading.action = true;
+
       const res = await this.savePage();
 
       if (res === "error") {
@@ -999,8 +1004,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
     }
-    catch {
-        this.previewMode = "raw";
+    catch (err) {
+      if (!(err instanceof HttpErrorResponse)) AlertService.showAlert(AlertType.ERROR, err);
+      this.previewMode = "raw";
     }
     this.loading.action = false;
     ModalService.closeModal('preview-as');
@@ -1011,7 +1017,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
     }
-    catch {
+    catch (err) {
+      if (!(err instanceof HttpErrorResponse)) AlertService.showAlert(AlertType.ERROR, err);
       this.previewMode = "raw";
     }
     this.loading.action = false;

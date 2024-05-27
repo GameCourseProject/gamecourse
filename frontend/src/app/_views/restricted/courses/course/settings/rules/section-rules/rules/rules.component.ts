@@ -61,7 +61,7 @@ export class RulesComponent implements OnInit {
   debugSelection: string;
   functions: CustomFunction[];
   ELfunctions: CustomFunction[];
-  namespaces: string[];
+  namespaces: { [name: string]: string };
   isCompleted: boolean;
 
   // Input-select for assigning rules to tags
@@ -205,14 +205,9 @@ export class RulesComponent implements OnInit {
       this.functions[i].returnType = "-> " + this.functions[i].returnType;
     }
 
-    this.ELfunctions = await this.api.getELFunctions().toPromise();
-    this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
-
-    // set namespaces of functions
-    let names = this.functions.concat(this.ELfunctions)
-      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
-    this.namespaces = Array.from(new Set(names).values())
-    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
+    const res = await this.api.getELFunctions().toPromise();
+    this.ELfunctions = res.functions;
+    this.namespaces = res.namespaces;
   }
 
   async getSection(sectionID: number): Promise<void> {
