@@ -197,8 +197,8 @@ export class BBAnyComponent implements OnInit, OnDestroy {
     ModalService.openModal('component-editor');
   }
 
-  submitEditAction() {
-    this.componentEditor.saveView();
+  async submitEditAction() {
+    await this.componentEditor.saveView();
 
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
@@ -206,7 +206,7 @@ export class BBAnyComponent implements OnInit, OnDestroy {
     this.selection.refresh();
     this.cdr.detectChanges();
     this.selection.refresh();
-    this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+    this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({

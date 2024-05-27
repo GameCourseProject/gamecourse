@@ -75,6 +75,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
 
+  // Helpers for collapse
+  newHeaderType: ViewType;
+  newContentType: ViewType;
+
   constructor(
     private api: ApiHttpService,
     private route: ActivatedRoute,
@@ -203,6 +207,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
+      this.newHeaderType = this.view.header.type;
+      this.newContentType = this.view.content.type;
     }
 
     if (this.view instanceof ViewBlock) {

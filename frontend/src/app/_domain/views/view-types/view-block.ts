@@ -6,11 +6,12 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {
+  addToGroupedChildren,
+  addVariantToGroupedChildren,
   getFakeId,
   groupedChildren,
-  viewTree,
   viewsAdded,
-  addVariantToGroupedChildren, addToGroupedChildren
+  viewTree
 } from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 
@@ -206,7 +207,9 @@ export class ViewBlock extends View {
    * Gets a default block view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
-    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
+    const block = new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
+    block.visibilityType = VisibilityType.VISIBLE;
+    return block;
   }
 
   /**

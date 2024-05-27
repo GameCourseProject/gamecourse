@@ -245,25 +245,27 @@
       <div class="grow">
         <app-input-select
           [id]="'collapse-header-type-' + view.id"
-          [(value)]="viewToEdit.header.type"
+          [(value)]="newHeaderType"
           [options]="getComponentTypes()"
           [placeholder]="'Select component type'"
           [topLabel]="'Header Component Type'"
           [helperText]="'Select the type of component you want to be showing.'"
           [helperPosition]="'right'"
-          [required]="true">
+          [required]="true"
+          (valueChange)="viewToEdit.header = changeComponentType(viewToEdit.header, newHeaderType)">
         </app-input-select>
       </div>
       <div class="grow">
         <app-input-select
           [id]="'collapse-content-type-' + view.id"
-          [(value)]="viewToEdit.content.type"
+          [(value)]="newContentType"
           [options]="getComponentTypes()"
           [placeholder]="'Select component type'"
           [topLabel]="'Content Component Type'"
           [helperText]="'Select the type of component you want as content.'"
           [helperPosition]="'right'"
-          [required]="true">
+          [required]="true"
+          (valueChange)="viewToEdit.content = changeComponentType(viewToEdit.content, newContentType)">
         </app-input-select>
       </div>
     </div>
