@@ -5,7 +5,7 @@
 
 <!-- Preview version -->
 <ng-container *ngIf="view.mode === ViewMode.PREVIEW">
-  <ng-container [ngTemplateOutlet]="EDIT_EMPTY"></ng-container>
+  <ng-container [ngTemplateOutlet]="PREVIEW_DEFAULT"></ng-container>
 </ng-container>
 
 <!-- Edit version -->
@@ -83,6 +83,46 @@
         <button class="btn btn-circle btn-ghost" (click)="addComponent($event)">
           <ng-icon name="jam-plus-circle" size="1.7rem" />
         </button>
+      </div>
+    </ng-container>
+  </div>
+</ng-template>
+
+
+<!------------------------------------------------>
+<!-------------- PREVIEW VARIATIONS -------------->
+<!------------------------------------------------>
+
+<ng-template #PREVIEW_DEFAULT>
+  <div [attr.id]="view.cssId"
+       class="{{view.classList}} flex {{view.direction === BlockDirection.HORIZONTAL ? 'flex-row space-x-2' : 'flex-col space-y-2'}} text-base-content/50">
+
+    <ng-container *ngIf="view.direction === BlockDirection.HORIZONTAL && !view.columns">
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-4">
+        Block with content displayed horizontally
+      </div>
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl">
+        <div class="p-2 flex flex-row items-center">
+          <ng-icon name="jam-plus-circle" size="1.7rem" />
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="view.direction === BlockDirection.HORIZONTAL && view.columns">
+      <div *ngFor="let col of [].constructor(view.columns); let i = index"
+           class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center flex-1 rounded-xl p-4">
+        Column {{i + 1}}
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="view.direction == BlockDirection.VERTICAL">
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center h-full w-full rounded-xl p-4">
+        Block with content displayed vertically
+      </div>
+      <div class="border-dashed border-2 border-base-content/50 flex flex-row items-center justify-center rounded-xl">
+        <div class="p-2 flex flex-row items-center">
+          <ng-icon name="jam-plus-circle" size="1.7rem" />
+        </div>
       </div>
     </ng-container>
   </div>
