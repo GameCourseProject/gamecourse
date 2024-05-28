@@ -72,19 +72,19 @@
 
               <!-- Namespaces -->
               <div *ngFor="let entry of filteredFunctions | keyvalue" class="mb-2">
-                <button class="pl-2 p-0.5 hover:bg-base-content/20 transition text-sm flex flex-row justify-start items-center w-full font-light gap-1"
+                <button class="pl-2 p-0.5 hover:bg-base-content/10 transition text-sm flex flex-row justify-start items-center w-full font-light gap-1"
                         (click)="selectedFunction = null; selectedNamespace = entry.key">
                   <ng-icon name="tabler-code" size="1rem"/>Namespace<span class="font-semibold">{{entry.key}}</span>
                 </button>
                 <div class="flex flex-col gap-1 ml-2">
 
                   <!-- Functions -->
-                  <div *ngFor="let fx of entry.value"
-                       class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
-                        {{ isSelected(fx) ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+                  <button *ngFor="let fx of entry.value"
+                       class="badge badge-secondary
+                        {{ isSelected(fx) ? 'badge-outline' : 'hover:badge-outline' }}"
                        (click)="selectedNamespace = null; selectedFunction = fx">
                     {{ fx.keyword }}
-                  </div>
+                  </button>
 
                 </div>
               </div>
@@ -183,12 +183,12 @@
               (valueChange)="filterRecipes($event)">
             </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto flex flex-col gap-1 ml-2">
-              <div *ngFor="let recipe of filteredRecipes"
-                   class="text-sm rounded-box bg-secondary transition px-2 text-secondary-content w-fit hover:cursor-pointer
-                        {{ recipe == selectedRecipe ? 'bg-opacity-100' : 'bg-opacity-40 hover:bg-opacity-100' }}"
+              <button *ngFor="let recipe of filteredRecipes"
+                   class="badge badge-secondary
+                        {{ recipe == selectedRecipe ? 'badge-outline' : 'hover:badge-outline' }}"
                    (click)="selectedRecipe = recipe">
                 {{ recipe.name }}
-              </div>
+              </button>
 
               <span *ngIf="filteredRecipes.length === 0" class="text-base-content text-opacity-50 justify-center flex">
                 Nothing found.
