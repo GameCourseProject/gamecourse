@@ -900,7 +900,7 @@ class PageController
      */
     public function previewExpression()
     {
-        API::requireValues('courseId', 'expression');
+        API::requireValues('courseId', 'expression', 'auxVars');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -908,10 +908,11 @@ class PageController
         API::requireCourseAdminPermission($course);
 
         $expression = API::getValue("expression", "string");
+        $auxVars = API::getValue("auxVars", "array");
 
         $viewerId = Core::getLoggedUser()->getId();
 
-        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId));
+        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId, $auxVars));
     }
 
     /**

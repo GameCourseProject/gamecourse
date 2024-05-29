@@ -65,7 +65,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // Errors
   @Input() requiredErrorMessage?: string;                         // Message for required error
 
-
   @Output() valueChange = new EventEmitter<string>();
   @Output() isCompleted = new EventEmitter<boolean>();
   @Output() runOutput = new EventEmitter<any>();
@@ -95,6 +94,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
   selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
+  @Input() auxVars?: {[name: string]: string};
   expressionToPreview: string = "";
   outputPreview: any = null;
   outputPreviewError: any = null;
@@ -572,7 +572,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
     try {
       this.outputPreviewError = null;
-      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
+      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview, this.auxVars).toPromise();
     } catch (err: unknown) {
       this.outputPreview = null;
       if (err instanceof HttpErrorResponse) {

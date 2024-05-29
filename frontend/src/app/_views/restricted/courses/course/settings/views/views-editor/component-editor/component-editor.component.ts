@@ -167,6 +167,33 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   toggleCollapseInherited() {
     window.localStorage.setItem('openInherited', JSON.stringify(!this.getCollapseInherited()));
   }
+  getAuxVarsToPreview() {
+    const viewVars = this.view.parent?.getAllVariablesForPreview() ?? {};
+
+    // Add %item for this view
+    const loopedView = this.viewToEdit.loopData ? this.viewToEdit : this.view.parent?.getViewWithLoop();
+    if (loopedView) {
+      let loopExpression = loopedView.loopData;
+      if (loopExpression.startsWith("{") && loopExpression.endsWith("}")) {
+        loopExpression = loopExpression.slice(1, -1).trim();
+      }
+      viewVars["item"] = loopExpression + ".item(0)";
+      viewVars["index"] = "0";
+    }
+
+    for (let auxVar of this.viewToEdit.variables) {
+      let value = auxVar.value;
+
+      // Remove outer '{' and '}'
+      if (value.startsWith("{") && value.endsWith("}")) {
+        value = value.slice(1, -1).trim();
+      }
+
+      viewVars[auxVar.name] = value;
+    }
+
+    return viewVars;
+  }
 
 
   /*** --------------------------------------------- ***/
