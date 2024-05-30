@@ -578,7 +578,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
       // Gets the tree, but only the path for the current view
       const full = _.cloneDeep(this.service.getSelectedView());
       let current = full.findView(this.currentViewId);
-      full.replaceWithFakeIds();
       current.children = [];
       let child = null;
 

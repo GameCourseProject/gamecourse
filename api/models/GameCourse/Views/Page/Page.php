@@ -714,8 +714,8 @@ class Page
         Core::dictionary()->setVisitor($visitor);
 
         // Process the tree to obtain knowledge of the variables
-        ViewHandler::compileTempView($tree);
-        ViewHandler::evaluateTempView($tree, $visitor);
+        ViewHandler::compileReducedView($tree);
+        ViewHandler::evaluateReducedView($tree, $visitor);
 
         // Compile and evaluate the desired expression
         $viewType = ViewType::getViewTypeById("text");

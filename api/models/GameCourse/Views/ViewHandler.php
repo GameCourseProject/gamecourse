@@ -596,7 +596,14 @@ class ViewHandler
         $viewType->compile($view);
     }
 
-    public static function compileTempView(array &$view)
+    /**
+     * Stripped-down version of the above, that only compiles
+     * the fields needed for other expressions.
+     *
+     * @param array $view
+     * @throws Exception
+     */
+    public static function compileReducedView(array &$view)
     {
         // Store view information on the dictionary
         Core::dictionary()->storeView($view);
@@ -624,7 +631,7 @@ class ViewHandler
 
         if (isset($view["children"])) {
             foreach ($view["children"] as &$child) {
-                ViewHandler::compileTempView($child);
+                self::compileReducedView($child);
             }
         }
     }
@@ -692,14 +699,14 @@ class ViewHandler
     }
 
     /**
-     * Evaluates a view which processes each of its parameters to
-     * a certain value.
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
      *
      * @param array $view
      * @param EvaluateVisitor $visitor
      * @throws Exception
      */
-    public static function evaluateTempView(array &$view, EvaluateVisitor $visitor)
+    public static function evaluateReducedView(array &$view, EvaluateVisitor $visitor)
     {
         if (isset($view["variables"])) {
             foreach ($view["variables"] as $variable) {
@@ -711,11 +718,13 @@ class ViewHandler
             $childrenEvaluated = [];
             foreach ($view["children"] as &$child) {
                 if (isset($child["loopData"])) {
-                    ViewHandler::evaluateTempLoop($child, $visitor);
+                    self::evaluateReducedLoop($child, $visitor);
                     $childrenEvaluated = array_merge($childrenEvaluated, $child);
+
+                } else {
+                    self::evaluateReducedView($child, $visitor);
+                    if ($child) $childrenEvaluated[] = $child;
                 }
-                ViewHandler::evaluateTempView($child, $visitor);
-                if ($child) $childrenEvaluated[] = $child;
             }
             $view["children"] = $childrenEvaluated;
         }
@@ -786,7 +795,16 @@ class ViewHandler
         $view = $repeatedViews;
     }
 
-    public static function evaluateTempLoop(array &$view, EvaluateVisitor $visitor)
+    /**
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
+     * Sets item and index to the first element of the collection.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateReducedLoop(array &$view, EvaluateVisitor $visitor)
     {
         Core::dictionary()->storeViewIdAsViewWithLoopData($view["id"]);
 
@@ -804,10 +822,25 @@ class ViewHandler
         // Transform to sequential array
         $collection = array_values($collection);
 
+        // If inner loop, replace item params
+        if ($visitor->hasParam("item")) {
+            $viewIdsWithLoopData = Core::dictionary()->getViewIdsWithLoopData();
+            $newItemKey = "item" . str_repeat("N", count($viewIdsWithLoopData) - 1);
+            foreach (Core::dictionary()->getView($viewIdsWithLoopData[count($viewIdsWithLoopData) - 2])["variables"] as $variable) {
+                $newValue = str_replace("%item", "%$newItemKey", $variable["value"]);
+                self::compileExpression($newValue);
+                $visitor->addParam($variable["name"], $newValue);
+            }
+            $visitor->addParam($newItemKey, $visitor->getParam("item"));
+        }
+
         // Update visitor params with %item and %index
-        $visitor->addParam("item", new ValueNode($collection[0], $collection[0]["libraryOfItem"]));
-        $visitor->addParam("index", 0);
-        Core::dictionary()->setVisitor($visitor);
+        if (isset($collection[0])) {
+            $visitor->addParam("item", new ValueNode($collection[0], $collection[0]["libraryOfItem"]));
+            $visitor->addParam("index", 0);
+        }
+
+        self::evaluateReducedView($view, $visitor);
     }
 
     /**
