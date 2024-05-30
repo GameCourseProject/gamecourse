@@ -1889,11 +1889,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res));
   }
 
-  public previewExpression(courseID: number, expression: string, auxVars: {[name: string]: string}): Observable<void> {
+  public previewExpression(courseID: number, expression: string, tree: any): Observable<void> {
     const data = {
       courseId: courseID,
       expression: expression,
-      auxVars: auxVars
+      tree: tree
     };
 
     const params = (qs: QueryStringParameters) => {

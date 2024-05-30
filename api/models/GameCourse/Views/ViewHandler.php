@@ -596,6 +596,39 @@ class ViewHandler
         $viewType->compile($view);
     }
 
+    public static function compileTempView(array &$view)
+    {
+        // Store view information on the dictionary
+        Core::dictionary()->storeView($view);
+
+        // Compile basic parameters
+        if (isset($view["loopData"])) {
+            // Ignore % that are not variables, e.g. 'width: 100%'
+            $pattern = "/(\d+)%/";
+            preg_match_all($pattern, $view["loopData"], $matches);
+            if (!empty($matches) && count($matches) == 2) {
+                foreach ($matches[0] as $i => $v) {
+                    $view["loopData"] = preg_replace("/$v/", $matches[1][$i] . "?", $view["loopData"]);
+                }
+            }
+
+            self::compileExpression($view["loopData"]);
+        }
+
+        // Compile variables
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as &$variable) {
+                self::compileExpression($variable["value"]);
+            }
+        }
+
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                ViewHandler::compileTempView($child);
+            }
+        }
+    }
+
     /**
      * Compiles an expression which puts it in an appropriate format to
      * be evaluated.
@@ -656,6 +689,32 @@ class ViewHandler
         // Evaluate view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
         $viewType->evaluate($view, $visitor);
+    }
+
+    /**
+     * Evaluates a view which processes each of its parameters to
+     * a certain value.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateTempView(array &$view, EvaluateVisitor $visitor)
+    {
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+
+        if (isset($view["children"])) {
+            $childrenEvaluated = [];
+            foreach ($view["children"] as &$child) {
+                ViewHandler::evaluateTempView($child, $visitor);
+                if ($child) $childrenEvaluated[] = $child;
+            }
+            $view["children"] = $childrenEvaluated;
+        }
     }
 
     /**

@@ -708,52 +708,20 @@ class Page
      *
      * @throws Exception
      */
-    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId, array $auxVars)
+    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId, array $tree)
     {
-        // FIXME not working when there's a "sort" because of circular dependencies
-        // Check for circular dependencies
-        $safeAuxVars = [];
-        foreach ($auxVars as $key => $value) {
-            // Check if $value contains references to other variables
-            $isSafe = true;
-            foreach ($auxVars as $innerKey => $innerValue) {
-                if (strpos($value, "%$innerKey") !== false) {
-                    $isSafe = false;
-                    break;
-                }
-            }
-            if ($isSafe) {
-                // Add variable to safe list if no circular dependencies found
-                $safeAuxVars[$key] = $value;
-            } else {
-                // Handle circular dependency, e.g., log warning or skip variable
-                // For simplicity, we'll just skip it
-                echo "Warning: Circular dependency detected for variable $key. Skipping...\n";
-            }
-        }
-        ///////////////////////////////////
+        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
 
-        // Replace auxiliary variables
-        $continue = true;
-        $countsPerVar = [];
-        while ($continue) {
-            $totalReplacements = 0;
-            foreach ($auxVars as $key => $value) {
-                $expression = str_replace("%$key", $value, $expression, $count);
-                $countsPerVar[$key] = $count;
-                $totalReplacements += $count;
-            }
-            if ($totalReplacements == 0) $continue = false;
-        }
+        // Process the tree to obtain knowledge of the variables
+        ViewHandler::compileTempView($tree);
+        ViewHandler::evaluateTempView($tree, $visitor);
+        Core::dictionary()->setVisitor($visitor);
 
-        // Compile and evaluate the expression
+        // Compile and evaluate the desired expression
         $viewType = ViewType::getViewTypeById("text");
         $view = ["text" => $expression];
         $viewType->compile($view);
-        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
-        Core::dictionary()->setVisitor($visitor);
         $viewType->evaluate($view, $visitor);
-
         return $view["text"];
     }
 
