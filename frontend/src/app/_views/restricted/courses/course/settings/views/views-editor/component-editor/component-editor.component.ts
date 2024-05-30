@@ -26,7 +26,6 @@ import {BBAnyComponent} from "src/app/_components/building-blocks/any/any.compon
 import {ViewImage} from "src/app/_domain/views/view-types/view-image";
 import {RowType, ViewRow} from "src/app/_domain/views/view-types/view-row";
 import {ApiHttpService} from "src/app/_services/api/api-http.service";
-import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
 import {
@@ -166,10 +165,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
   toggleCollapseInherited() {
     window.localStorage.setItem('openInherited', JSON.stringify(!this.getCollapseInherited()));
-  }
-  getTreeForPreview() {
-    const copy = _.cloneDeep(this.service.getSelectedView());
-    return copy;
   }
 
 

@@ -711,11 +711,11 @@ class Page
     public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId, array $tree)
     {
         $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
+        Core::dictionary()->setVisitor($visitor);
 
         // Process the tree to obtain knowledge of the variables
         ViewHandler::compileTempView($tree);
         ViewHandler::evaluateTempView($tree, $visitor);
-        Core::dictionary()->setVisitor($visitor);
 
         // Compile and evaluate the desired expression
         $viewType = ViewType::getViewTypeById("text");

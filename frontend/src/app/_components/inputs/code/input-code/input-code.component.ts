@@ -38,6 +38,9 @@ import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {HttpErrorResponse} from "@angular/common/http";
 import {AlertService, AlertType} from "../../../../_services/alert.service";
 
+import * as _ from "lodash";
+import {ViewEditorService} from "../../../../_services/view-editor.service";
+
 @Component({
   selector: 'app-input-code',
   templateUrl: './input-code.component.html'
@@ -94,7 +97,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
   selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
-  @Input() tree?: any;
+  @Input() currentViewId?: number;
   expressionToPreview: string = "";
   outputPreview: any = null;
   outputPreviewError: any = null;
@@ -103,7 +106,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     private themeService: ThemingService,
     private updateService: UpdateService,
     private api: ApiHttpService,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    public service: ViewEditorService
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -571,9 +575,30 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     const toPreview = this.formatExpressionToPreview();
 
     try {
+      // Gets the tree, but only the path for the current view
+      const full = _.cloneDeep(this.service.getSelectedView());
+      let current = full.findView(this.currentViewId);
+      full.replaceWithFakeIds();
+      current.children = [];
+      let child = null;
+
+      while (current) {
+        const tempChild = {
+          id: current.id,
+          type: current.type,
+          variables: current.variables.map(e => ({ name: e.name, value: e.value })),
+          loopData: current.loopData,
+          children: child ? [child] : []
+        };
+
+        child = tempChild;
+        current = current.parent;
+      }
+
       this.outputPreviewError = null;
-      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview, this.tree).toPromise();
-    } catch (err: unknown) {
+      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview, child).toPromise();
+    }
+    catch (err: unknown) {
       this.outputPreview = null;
       if (err instanceof HttpErrorResponse) {
         // Hide alert since it will be in the console anyway

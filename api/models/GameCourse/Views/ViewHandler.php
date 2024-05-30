@@ -710,6 +710,10 @@ class ViewHandler
         if (isset($view["children"])) {
             $childrenEvaluated = [];
             foreach ($view["children"] as &$child) {
+                if (isset($child["loopData"])) {
+                    ViewHandler::evaluateTempLoop($child, $visitor);
+                    $childrenEvaluated = array_merge($childrenEvaluated, $child);
+                }
                 ViewHandler::evaluateTempView($child, $visitor);
                 if ($child) $childrenEvaluated[] = $child;
             }
@@ -780,6 +784,30 @@ class ViewHandler
             if ($newView) $repeatedViews[] = $newView;
         }
         $view = $repeatedViews;
+    }
+
+    public static function evaluateTempLoop(array &$view, EvaluateVisitor $visitor)
+    {
+        Core::dictionary()->storeViewIdAsViewWithLoopData($view["id"]);
+
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+        self::evaluateNode($view["loopData"], $visitor);
+        $collection = $view["loopData"];
+        unset($view["loopData"]);
+        if (is_null($collection)) $collection = [];
+        if (!is_array($collection)) throw new Exception("Loop data must be a collection");
+
+        // Transform to sequential array
+        $collection = array_values($collection);
+
+        // Update visitor params with %item and %index
+        $visitor->addParam("item", new ValueNode($collection[0], $collection[0]["libraryOfItem"]));
+        $visitor->addParam("index", 0);
+        Core::dictionary()->setVisitor($visitor);
     }
 
     /**
