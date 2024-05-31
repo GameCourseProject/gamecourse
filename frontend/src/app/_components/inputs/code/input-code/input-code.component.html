@@ -138,9 +138,6 @@
                 {{selectedFunction.description}}</span>
               </div>
 
-              <div *ngIf="selectedFunction.example" class="my-2"><strong>Usage Example: </strong>
-              <pre><code>{{selectedFunction.example}}</code></pre></div>
-
               <div *ngIf="selectedFunction.name !== 'gamerules'">
                 <strong>Namespace: </strong>
                 <span class="link link-primary" (click)="selectedNamespace = selectedFunction.name; selectedFunction = null">
@@ -164,7 +161,10 @@
                 </div>
               </ng-container>
 
-              <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
+              <div><strong>Return type:</strong> {{selectedFunction.returnType}}</div>
+
+              <div *ngIf="selectedFunction.example" class="mb-8 mt-4"><strong>Usage Example: </strong>
+                <pre><code>{{selectedFunction.example}}</code></pre></div>
             </div>
           </div>
         </div>
