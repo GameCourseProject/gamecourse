@@ -605,7 +605,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         alert.classList.add('hidden')
 
         // Get only parts before stack trace, and replace \n with <br>
-        let errorMessage = err.error.text.split(" in ")[0].replace(/\n/g, "<br>");
+        let errorMessage = err.error.text.split("Stack trace:")[0].replace(/\n/g, "<br>");
+
+        // Remove file path
+        const endIndex = errorMessage.lastIndexOf(" in ");
+        if (endIndex !== -1) {
+          errorMessage = errorMessage.substring(0, endIndex);
+        }
 
         // Remove initial 'Fatal error: Uncaught Exception'
         const startIndex = errorMessage.indexOf('<b>Fatal error</b>:  Uncaught Exception: ');

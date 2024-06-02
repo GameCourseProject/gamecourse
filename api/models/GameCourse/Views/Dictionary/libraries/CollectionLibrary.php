@@ -118,6 +118,16 @@ class CollectionLibrary extends Library
                 $this,
                 "%userAwards.sort(\"DESC: date\")"
             ),
+            new DFunction("filter",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "key", "optional" => false, "type" => "string"],
+                 ["name" => "value", "optional" => false, "type" => "string"],
+                 ["name" => "operation", "optional" => false, "type" => "= | < | >"]],
+                "Returns the collection only with objects that have the variable key that satisfy the operation with a specific value.",
+            ReturnType::COLLECTION,
+                $this,
+                "%userAwards.filter(\"reward\", \"100\", \">\")\nReturns the items of the collection %userAwards that have a reward higher than 100."
+            ),
             new DFunction("crop",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
                  ["name" => "start", "optional" => false, "type" => "int"],
@@ -303,6 +313,30 @@ class CollectionLibrary extends Library
             });
         }
 
+        return new ValueNode($collection, $this);
+    }
+
+    /**
+     * Returns the collection only with objects that have the variable key that satisfy the operation with a specific value.
+     *
+     * @param array $collection
+     * @param string $orderKeyPairs
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function filter(array $collection, string $key, string $value, string $operation = "=" | "<" | ">"): ValueNode
+    {
+        $filter =
+            function($var) use ($key, $value, $operation) {
+                if (!isset($var[$key])) $this->throwError("filter", "key '" . $key . "' doesn't exist in the collection items");
+
+                if ($operation == '=') return $var[$key] == $value;
+                else if ($operation == '<') return $var[$key] < $value;
+                else if ($operation == '>') return $var[$key] > $value;
+                else $this->throwError("filter", "operation '" . $operation . "' invalid: must be '=', '<' or '>'");
+            };
+
+        $collection = array_filter($collection, $filter);
         return new ValueNode($collection, $this);
     }
 
