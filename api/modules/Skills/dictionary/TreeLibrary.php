@@ -46,6 +46,8 @@ class TreeLibrary extends Library
             "name" => Core::dictionary()->faker()->text(20),
             "color" => Core::dictionary()->faker()->hexColor(),
             "isCollab" => Core::dictionary()->faker()->boolean(),
+            "isExtra" => Core::dictionary()->faker()->boolean(),
+            "isActive" => Core::dictionary()->faker()->boolean(),
             "dependencies" => array_map(function () {
                 return ["name" => Core::dictionary()->faker()->text(20)];
             }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
