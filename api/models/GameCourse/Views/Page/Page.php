@@ -722,7 +722,9 @@ class Page
         $view = ["text" => $expression];
         $viewType->compile($view);
         $viewType->evaluate($view, $visitor);
-        return $view["text"];
+
+        if (is_object($view["text"])) return $view["text"]->getData();
+        else return $view["text"];
     }
 
     /**

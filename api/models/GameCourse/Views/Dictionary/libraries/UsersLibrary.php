@@ -644,8 +644,13 @@ class UsersLibrary extends Library
      */
     public function isStudent($user): ValueNode
     {
-        // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $isStudent = Core::dictionary()->faker()->boolean();
+        if (Core::dictionary()->mockData()) {
+            $isStudent = Core::dictionary()->faker()->boolean();
+        }
+        else if (is_array($user)) {
+            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+            $isStudent = $courseUser->isStudent();
+        }
         else {
             $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
             $isStudent = $courseUser->isStudent();
@@ -662,8 +667,13 @@ class UsersLibrary extends Library
      */
     public function isTeacher($user): ValueNode
     {
-        // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $isTeacher = Core::dictionary()->faker()->boolean();
+        if (Core::dictionary()->mockData()) {
+            $isTeacher = Core::dictionary()->faker()->boolean();
+        }
+        else if (is_array($user)) {
+            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+            $isTeacher = $courseUser->isTeacher();
+        }
         else {
             $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
             $isTeacher = $courseUser->isTeacher();

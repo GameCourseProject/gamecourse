@@ -294,7 +294,8 @@ class SkillsLibrary extends Library
             $dependencies = $skill["dependencies"];
 
         } else {
-            $skill = new Skill($skill["id"]);
+            if (is_array($skill)) $skill = new Skill($skill["id"]);
+            else $skill = new Skill($skill->getId());
             $dependencies = [];
             foreach ($skill->getDependencies() as $combo) {
                 $str = '';
