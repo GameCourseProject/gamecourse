@@ -15,6 +15,7 @@ class SkillsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
     /*** ----------------------------------------------- ***/
