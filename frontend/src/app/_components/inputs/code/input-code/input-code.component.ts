@@ -38,6 +38,9 @@ import {ApiHttpService} from "../../../../_services/api/api-http.service";
 import {HttpErrorResponse} from "@angular/common/http";
 import {AlertService, AlertType} from "../../../../_services/alert.service";
 
+import * as _ from "lodash";
+import {ViewEditorService} from "../../../../_services/view-editor.service";
+
 @Component({
   selector: 'app-input-code',
   templateUrl: './input-code.component.html'
@@ -64,7 +67,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() required?: boolean;                                    // Make it required
   // Errors
   @Input() requiredErrorMessage?: string;                         // Message for required error
-
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() isCompleted = new EventEmitter<boolean>();
@@ -95,6 +97,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
   selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
+  @Input() currentViewId?: number;
   expressionToPreview: string = "";
   outputPreview: any = null;
   outputPreviewError: any = null;
@@ -103,7 +106,8 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     private themeService: ThemingService,
     private updateService: UpdateService,
     private api: ApiHttpService,
-    private clipboard: Clipboard
+    private clipboard: Clipboard,
+    public service: ViewEditorService
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -571,9 +575,29 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     const toPreview = this.formatExpressionToPreview();
 
     try {
+      // Gets the tree, but only the path for the current view
+      const full = _.cloneDeep(this.service.getSelectedView());
+      let current = full.findView(this.currentViewId);
+      current.children = [];
+      let child = null;
+
+      while (current) {
+        const tempChild = {
+          id: current.id,
+          type: current.type,
+          variables: current.variables.map(e => ({ name: e.name, value: e.value })),
+          loopData: current.loopData,
+          children: child ? [child] : []
+        };
+
+        child = tempChild;
+        current = current.parent;
+      }
+
       this.outputPreviewError = null;
-      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
-    } catch (err: unknown) {
+      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview, child).toPromise();
+    }
+    catch (err: unknown) {
       this.outputPreview = null;
       if (err instanceof HttpErrorResponse) {
         // Hide alert since it will be in the console anyway
@@ -581,7 +605,13 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
         alert.classList.add('hidden')
 
         // Get only parts before stack trace, and replace \n with <br>
-        let errorMessage = err.error.text.split(" in ")[0].replace(/\n/g, "<br>");
+        let errorMessage = err.error.text.split("Stack trace:")[0].replace(/\n/g, "<br>");
+
+        // Remove file path
+        const endIndex = errorMessage.lastIndexOf(" in ");
+        if (endIndex !== -1) {
+          errorMessage = errorMessage.substring(0, endIndex);
+        }
 
         // Remove initial 'Fatal error: Uncaught Exception'
         const startIndex = errorMessage.indexOf('<b>Fatal error</b>:  Uncaught Exception: ');

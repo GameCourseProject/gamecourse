@@ -597,6 +597,46 @@ class ViewHandler
     }
 
     /**
+     * Stripped-down version of the above, that only compiles
+     * the fields needed for other expressions.
+     *
+     * @param array $view
+     * @throws Exception
+     */
+    public static function compileReducedView(array &$view)
+    {
+        // Store view information on the dictionary
+        Core::dictionary()->storeView($view);
+
+        // Compile basic parameters
+        if (isset($view["loopData"])) {
+            // Ignore % that are not variables, e.g. 'width: 100%'
+            $pattern = "/(\d+)%/";
+            preg_match_all($pattern, $view["loopData"], $matches);
+            if (!empty($matches) && count($matches) == 2) {
+                foreach ($matches[0] as $i => $v) {
+                    $view["loopData"] = preg_replace("/$v/", $matches[1][$i] . "?", $view["loopData"]);
+                }
+            }
+
+            self::compileExpression($view["loopData"]);
+        }
+
+        // Compile variables
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as &$variable) {
+                self::compileExpression($variable["value"]);
+            }
+        }
+
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                self::compileReducedView($child);
+            }
+        }
+    }
+
+    /**
      * Compiles an expression which puts it in an appropriate format to
      * be evaluated.
      *
@@ -656,6 +696,38 @@ class ViewHandler
         // Evaluate view of a specific type
         $viewType = ViewType::getViewTypeById($view["type"]);
         $viewType->evaluate($view, $visitor);
+    }
+
+    /**
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateReducedView(array &$view, EvaluateVisitor $visitor)
+    {
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+
+        if (isset($view["children"])) {
+            $childrenEvaluated = [];
+            foreach ($view["children"] as &$child) {
+                if (isset($child["loopData"])) {
+                    self::evaluateReducedLoop($child, $visitor);
+                    $childrenEvaluated = array_merge($childrenEvaluated, $child);
+
+                } else {
+                    self::evaluateReducedView($child, $visitor);
+                    if ($child) $childrenEvaluated[] = $child;
+                }
+            }
+            $view["children"] = $childrenEvaluated;
+        }
     }
 
     /**
@@ -721,6 +793,54 @@ class ViewHandler
             if ($newView) $repeatedViews[] = $newView;
         }
         $view = $repeatedViews;
+    }
+
+    /**
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
+     * Sets item and index to the first element of the collection.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateReducedLoop(array &$view, EvaluateVisitor $visitor)
+    {
+        Core::dictionary()->storeViewIdAsViewWithLoopData($view["id"]);
+
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+        self::evaluateNode($view["loopData"], $visitor);
+        $collection = $view["loopData"];
+        unset($view["loopData"]);
+        if (is_null($collection)) $collection = [];
+        if (!is_array($collection)) throw new Exception("Loop data must be a collection");
+
+        // Transform to sequential array
+        $collection = array_values($collection);
+
+        // If inner loop, replace item params
+        if ($visitor->hasParam("item")) {
+            $viewIdsWithLoopData = Core::dictionary()->getViewIdsWithLoopData();
+            $newItemKey = "item" . str_repeat("N", count($viewIdsWithLoopData) - 1);
+            foreach (Core::dictionary()->getView($viewIdsWithLoopData[count($viewIdsWithLoopData) - 2])["variables"] as $variable) {
+                $newValue = str_replace("%item", "%$newItemKey", $variable["value"]);
+                self::compileExpression($newValue);
+                $visitor->addParam($variable["name"], $newValue);
+            }
+            $visitor->addParam($newItemKey, $visitor->getParam("item"));
+        }
+
+        // Update visitor params with %item and %index
+        if (isset($collection[0])) {
+            $visitor->addParam("item", new ValueNode($collection[0], $collection[0]["libraryOfItem"]));
+            $visitor->addParam("index", 0);
+        }
+
+        self::evaluateReducedView($view, $visitor);
     }
 
     /**

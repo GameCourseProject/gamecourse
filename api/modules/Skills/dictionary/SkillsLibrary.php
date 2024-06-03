@@ -15,24 +15,6 @@ class SkillsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
-    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
-    {
-        return [
-            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
-            "name" => Core::dictionary()->faker()->name(),
-            "email" => $email ? $email : Core::dictionary()->faker()->email(),
-            "major" => Core::dictionary()->faker()->text(5),
-            "nickname" => Core::dictionary()->faker()->text(10),
-            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
-            "theme" => null,
-            "username" => $email ? $email : Core::dictionary()->faker()->email(),
-            "image" => null,
-            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
-            "landingPage" => null,
-            "isActive" => true
-        ];
-    }
-
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Metadata ------------------- ***/
@@ -41,6 +23,83 @@ class SkillsLibrary extends Library
     const ID = "skills";    // NOTE: must match the name of the class
     const NAME = "Skills";
     const DESCRIPTION = "Provides access to information regarding skills.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to obtain information of Skills. A skill has the following structure:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 1,
+            "course": 1,
+            "tier": 6,
+            "name": "Album Cover",
+            "color": "#FF76BC",
+            "page": "&lt;p&gt;Content of the page, html!&lt;/p&gt;",
+            "isCollab": false,
+            "isExtra": false,
+            "isActive": false,
+            "position": 0,
+            "rule": 99,
+            "dependencies": []
+        }</code></pre>
+        </div><br>
+        <p>You can obtain a specific skill by its id or by its name, and then access its attributes. For example:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{skills.getSkillById(1).name}</code></pre>
+        </div>
+        <p>would return "Album Cover".</p><br>
+        <p>With this namespace you can also obtain every single skill available in the course, using the function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{skills.getSkills()}</code></pre>
+        </div>
+        <p>This returns every single skill in the course; however the function allows you to filter by active, extra, and
+        collaborative skills using optional arguments. This is detailed in the documentation of the function!</p>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    {
+        return [
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => $email ?: Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(5),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => $studentNumber ?: Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "theme" => null,
+            "username" => $email ?: Core::dictionary()->faker()->email(),
+            "image" => null,
+            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "landingPage" => null,
+            "isActive" => true
+        ];
+    }
+
+    private function mockSkill(int $id, string $name = null, bool $active = null, bool $extra = null, bool $collab = null) : array
+    {
+        return [
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => $name ?: Core::dictionary()->faker()->text(20),
+            "color" => Core::dictionary()->faker()->hexColor(),
+            "isCollab" => $collab ?: Core::dictionary()->faker()->boolean(),
+            "isExtra" => $extra ?: Core::dictionary()->faker()->boolean(),
+            "isActive" => $active ?: Core::dictionary()->faker()->boolean(),
+            "dependencies" => array_map(function () {
+                return ["name" => Core::dictionary()->faker()->text(20)];
+            }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
+        ];
+    }
 
 
     /*** ----------------------------------------------- ***/
@@ -84,6 +143,36 @@ class SkillsLibrary extends Library
                 ReturnType::TEXT,
                 $this,
                 "%skill.isCollab"
+            ),
+            new DFunction("isExtra",
+                [["name" => "skill", "optional" => false, "type" => "skill"]],
+                "True if the skill is extra.",
+                ReturnType::TEXT,
+                $this,
+                "%skill.isExtra"
+            ),
+            new DFunction("getSkillById",
+                [["name" => "skillId", "optional" => false, "type" => "int"]],
+                "Gets a skill by its ID.",
+                ReturnType::OBJECT,
+                $this,
+                "skills.getSkillById(%skill.id)"
+            ),
+            new DFunction("getSkillByName",
+                [["name" => "name", "optional" => false, "type" => "string"]],
+                "Gets a skill by its name.",
+                ReturnType::OBJECT,
+                $this,
+                "skills.getSkillByName('Audiobook')"
+            ),
+            new DFunction("getSkills",
+                [["name" => "active", "optional" => true, "type" => "bool"],
+                 ["name" => "extra", "optional" => true, "type" => "bool"],
+                 ["name" => "collab", "optional" => true, "type" => "bool"]],
+                "Gets skills of course. Option to filter by skill state, if it counts towards extra XP or not, and for collaborative.",
+                ReturnType::SKILLS_COLLECTION,
+                $this,
+                "skills.getSkills(true)"
             ),
             new DFunction("getUserSkillAttempts",
                 [   ["name" => "userId", "optional" => false, "type" => "int"],
@@ -206,7 +295,8 @@ class SkillsLibrary extends Library
             $dependencies = $skill["dependencies"];
 
         } else {
-            $skill = new Skill($skill["id"]);
+            if (is_array($skill)) $skill = new Skill($skill["id"]);
+            else $skill = new Skill($skill->getId());
             $dependencies = [];
             foreach ($skill->getDependencies() as $combo) {
                 $str = '';
@@ -220,7 +310,7 @@ class SkillsLibrary extends Library
     }
 
     /**
-     * Gets skill's name.
+     * Gets skill's isCollab.
      *
      * @param $skill
      * @return ValueNode
@@ -231,11 +321,92 @@ class SkillsLibrary extends Library
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $isCollab = $skill["isCollab"];
         else $isCollab = $skill->isCollab();
-        return new ValueNode($isCollab, Core::dictionary()->getLibraryById(MathLibrary::ID));
+        return new ValueNode($isCollab, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
+
+    /**
+     * Gets skill's isExtra.
+     *
+     * @param $skill
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function isExtra($skill): ValueNode
+    {
+        // NOTE: on mock data, skill will be mocked
+        if (is_array($skill)) $isExtra = $skill["isExtra"];
+        else $isExtra = $skill->isExtra();
+        return new ValueNode($isExtra, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
     
     /*** --------- General ---------- ***/
+
+    /**
+     * Gets a skill by its ID.
+     *
+     * @param int $skillId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getSkillById(int $skillId): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $skill = $this->mockSkill($skillId);
+
+        } else $skill = Skill::getSkillById($skillId);
+        return new ValueNode($skill, $this);
+    }
+
+    /**
+     * Gets a skill by its name.
+     *
+     * @param string $name
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getSkillByName(string $name): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $skill = $this->mockSkill(null, $name);
+
+        } else $skill = Skill::getSkillByName($courseId, $name);
+        return new ValueNode($skill, $this);
+    }
+
+    /**
+     * Gets skills of course.
+     *
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getSkills(bool $active = null, bool $extra = null, bool $collab = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $skills = array_map(function () use ($active, $extra, $collab) {
+                return $this->mockSkill(null, null, $active, $extra, $collab);
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
+
+        } else $skills = Skill::getSkills($courseId, $active, $extra, $collab);
+
+        return new ValueNode($skills, $this);
+    }
 
     /**
      * Gets a skill's attempts for a user by their IDs in the system.

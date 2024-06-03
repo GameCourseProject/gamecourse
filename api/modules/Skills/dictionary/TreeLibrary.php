@@ -14,6 +14,20 @@ class TreeLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "tree";    // NOTE: must match the name of the class
+    const NAME = "Skill Tree";
+    const DESCRIPTION = "Provides access to information regarding skill trees.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockTree(int $id = null, string $name = null) : array
     {
         return [
@@ -31,8 +45,10 @@ class TreeLibrary extends Library
     private function mockTier() : array
     {
         return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
             "name" => Core::dictionary()->faker()->text(5),
             "reward" => Core::dictionary()->faker()->numberBetween(200, 2000),
+            "isActive" => Core::dictionary()->faker()->boolean(),
             "skills" => array_map(function () {
                 return $this->mockSkill();
             }, range(1, Core::dictionary()->faker()->numberBetween(3, 7)))
@@ -46,20 +62,13 @@ class TreeLibrary extends Library
             "name" => Core::dictionary()->faker()->text(20),
             "color" => Core::dictionary()->faker()->hexColor(),
             "isCollab" => Core::dictionary()->faker()->boolean(),
+            "isExtra" => Core::dictionary()->faker()->boolean(),
+            "isActive" => Core::dictionary()->faker()->boolean(),
             "dependencies" => array_map(function () {
                 return ["name" => Core::dictionary()->faker()->text(20)];
             }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "tree";    // NOTE: must match the name of the class
-    const NAME = "Skill Tree";
-    const DESCRIPTION = "Provides access to information regarding skill trees.";
 
 
     /*** ----------------------------------------------- ***/

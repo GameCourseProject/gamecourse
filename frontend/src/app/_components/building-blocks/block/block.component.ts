@@ -9,6 +9,7 @@ import * as _ from "lodash";
 import {ViewSelectionService} from "../../../_services/view-selection.service";
 import {ModalService} from "../../../_services/modal.service";
 import {installPatch} from "./nested-drag-drop-patch";
+import {ViewCollapse} from "../../../_domain/views/view-types/view-collapse";
 
 @Component({
   selector: 'bb-block',
@@ -94,7 +95,11 @@ export class BBBlockComponent implements OnInit {
 
   private getIdsRecursive(item: any): string[] {
     let ids = [];
-    if ('children' in item) {
+    if (item instanceof ViewCollapse) {
+      ids = ids.concat(this.getIdsRecursive(item.content));
+      ids = ids.concat(this.getIdsRecursive(item.header));
+    }
+    else if ('children' in item) {
       ids.push(String(item.id));
       item.children.forEach(childItem => {
         ids = ids.concat(this.getIdsRecursive(childItem));

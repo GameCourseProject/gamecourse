@@ -708,16 +708,23 @@ class Page
      *
      * @throws Exception
      */
-    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId)
+    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId, array $tree)
     {
+        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
+        Core::dictionary()->setVisitor($visitor);
+
+        // Process the tree to obtain knowledge of the variables
+        ViewHandler::compileReducedView($tree);
+        ViewHandler::evaluateReducedView($tree, $visitor);
+
+        // Compile and evaluate the desired expression
         $viewType = ViewType::getViewTypeById("text");
         $view = ["text" => $expression];
         $viewType->compile($view);
-        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
-        Core::dictionary()->setVisitor($visitor);
         $viewType->evaluate($view, $visitor);
 
-        return $view["text"];
+        if (is_object($view["text"])) return $view["text"]->getData();
+        else return $view["text"];
     }
 
     /**
