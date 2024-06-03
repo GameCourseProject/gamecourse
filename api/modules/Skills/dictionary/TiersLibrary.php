@@ -114,6 +114,13 @@ class TiersLibrary extends Library
                 $this,
                 "tiers.getTierByName(%skillTree.id, 'Wildcard')"
             ),
+            new DFunction("getTiers",
+                [["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets all tiers of course. Option to filter by state.",
+                ReturnType::TIERS_COLLECTION,
+                $this,
+                "tiers.getTiers() Returns all tiers in course\ntiers.getTiers(true) Returns only the active tiers\ntiers.getTiers(false) Returns the inactive tiers"
+            )
         ];
     }
 
@@ -242,5 +249,28 @@ class TiersLibrary extends Library
 
         } else $tier = Tier::getTierByName($skillTreeId, $name);
         return new ValueNode($tier, $this);
+    }
+
+    /**
+     * Gets all tiers of course.
+     *
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getTiers(bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $tiers = array_map(function () {
+                return $this->mockTier();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 4)));
+
+        } else $tiers = Tier::getTiers($courseId, $active);
+        return new ValueNode($tiers, $this);
     }
 }
