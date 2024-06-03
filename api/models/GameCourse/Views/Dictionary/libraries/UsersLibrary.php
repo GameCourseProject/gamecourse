@@ -230,7 +230,6 @@ class UsersLibrary extends Library
                 $this,
                 "users.getTeachers()"
             ),
-            /*  FIXME: aren't working?
             new DFunction("isStudent",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Checks whether a given user is a student.",
@@ -245,7 +244,6 @@ class UsersLibrary extends Library
                 $this,
                 "%someUser.isTeacher"
             )
-            */
         ];
     }
 
@@ -647,8 +645,11 @@ class UsersLibrary extends Library
     public function isStudent($user): ValueNode
     {
         // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $user = CourseUser::getUserById($user["id"]);
-        $isStudent = $user->isStudent();
+        if (is_array($user)) $isStudent = Core::dictionary()->faker()->boolean();
+        else {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
+            $isStudent = $courseUser->isStudent();
+        }
         return new ValueNode($isStudent, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -662,8 +663,11 @@ class UsersLibrary extends Library
     public function isTeacher($user): ValueNode
     {
         // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $user = CourseUser::getUserById($user["id"]);
-        $isTeacher = $user->isTeacher();
+        if (is_array($user)) $isTeacher = Core::dictionary()->faker()->boolean();
+        else {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
+            $isTeacher = $courseUser->isTeacher();
+        }
         return new ValueNode($isTeacher, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 }
