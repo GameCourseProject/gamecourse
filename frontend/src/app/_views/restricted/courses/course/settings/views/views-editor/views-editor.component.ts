@@ -620,7 +620,14 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.loading.action = true;
 
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      this.loading.action = false;
+      return "error";
+    }
 
     let image;
     try {
@@ -659,7 +666,14 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.loading.action = true;
 
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      this.loading.action = false;
+      return "error";
+    }
 
     let image;
     try {
