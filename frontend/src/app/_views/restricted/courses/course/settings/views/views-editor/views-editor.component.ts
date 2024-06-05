@@ -542,9 +542,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   addComponentToPage(item: View) {
+    const selected = this.selection.get();
+
     // Add child to the selected block
-    if (this.selection.get()?.type === ViewType.BLOCK) {
-      this.service.add(item, this.selection.get(), "value");
+    if (selected?.type === ViewType.BLOCK) {
+      this.service.add(item, selected, "value");
+    } else if (selected) {
+      this.service.add(item, selected.parent, "value");
     }
     // If the page is empty, need to add a block first
     else if (!this.service.getSelectedView()) {
