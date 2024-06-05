@@ -1,6 +1,8 @@
 import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
-  CodeTab, CookbookRecipe, CookbookTab,
+  CodeTab,
+  CookbookRecipe,
+  CookbookTab,
   CustomFunction,
   OutputTab,
   PreviewTab,
@@ -202,12 +204,17 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
     }
-    else if (this.view instanceof ViewCollapse) {
+
+    if (this.view instanceof ViewCollapse) {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
       this.newHeaderType = this.view.header.type;
       this.newContentType = this.view.content.type;
+    } else { // needed in case user changes type to collapse
+      viewToEdit.collapseIcon = CollapseIcon.ARROW;
+      viewToEdit.header = ViewText.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
+      viewToEdit.content = ViewBlock.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
     }
 
     if (this.view instanceof ViewBlock) {
@@ -344,6 +351,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.direction = from.direction;
       to.responsive = from.responsive;
       to.columns = from.columns;
+
+      to.children = [];
+      if (from.header) {
+        from.header.parent = to;
+        to.children.push(from.header);
+      }
+      if (from.content) {
+        from.content.parent = to;
+        to.children.push(from.content);
+      }
     }
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
