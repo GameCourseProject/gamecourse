@@ -398,7 +398,7 @@
       <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
     </div>
     <!-- New -->
-    <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)"/>
+    <app-aux-var-card [new]="true" (createEvent)="addAuxVar($event)" #newAuxVar />
   </div>
 
   <!--------------------------------------------------->

@@ -197,6 +197,14 @@ export class BBAnyComponent implements OnInit, OnDestroy {
     ModalService.openModal('component-editor');
   }
 
+  async trySubmitEditAction() {
+    await this.componentEditor.trySaveView();
+  }
+
+  async cancelSubmitEditAction() {
+    ModalService.closeModal('unadded-aux-var');
+  }
+
   async submitEditAction() {
     await this.componentEditor.saveView();
 

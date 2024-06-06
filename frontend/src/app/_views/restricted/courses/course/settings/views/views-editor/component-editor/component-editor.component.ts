@@ -39,6 +39,7 @@ import {
 } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Aspect} from "../../../../../../../../_domain/views/aspects/aspect";
+import {AuxVarCardComponent} from "../../../../../../../../_components/cards/aux-var-card/aux-var-card.component";
 
 @Component({
   selector: 'app-component-editor',
@@ -55,6 +56,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
   @ViewChild('additionalTools') additionalToolsRef: ElementRef;
+  @ViewChild('newAuxVar') newAuxVar: AuxVarCardComponent;
 
   viewToEdit: ViewManageData;
   viewToPreview: View;
@@ -293,8 +295,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   changeComponentType(view: View, type: ViewType): View {
     let newView;
+
     if (type === ViewType.BLOCK) {
       newView = ViewBlock.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+      if (view instanceof ViewCollapse) {
+        if (view.header) {
+          newView.children.push(view.header);
+        }
+        if (view.content) {
+          newView.children.push(view.content);
+        }
+      } else if (view instanceof ViewBlock) {
+        newView.children = view.children;
+      }
+      for (let child of newView.children) child.parent = newView;
     }
     else if (type === ViewType.BUTTON) {
       newView = ViewButton.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
@@ -304,6 +318,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else if (type === ViewType.COLLAPSE) {
       newView = ViewCollapse.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+
+      if (view instanceof ViewBlock) {
+        for (let child of view.children) {
+          child.parent = newView.content;
+          newView.content.children.push(child);
+        }
+      }
     }
     else if (type === ViewType.ICON) {
       newView = ViewIcon.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
@@ -352,28 +373,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.direction = from.direction;
       to.responsive = from.responsive;
       to.columns = from.columns;
-
-      to.children = [];
-      if (from.header) {
-        from.header.parent = to;
-        to.children.push(from.header);
-      }
-      if (from.content) {
-        from.content.parent = to;
-        to.children.push(from.content);
-      }
     }
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
-      to.header = from.header;
-      to.header.parent = to;
-      to.content = from.content;
-      to.content.parent = to;
-
-      if (from.children && to.content instanceof ViewBlock) {
-        to.content.children = from.children;
-        for (let child of to.content.children) child.parent = to.content;
-      }
     }
     else if (to instanceof ViewTable) {
       to.headerRows = from.headerRows;
@@ -468,6 +470,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  async trySaveView() {
+    if (this.newAuxVar.isFilled()) {
+      ModalService.openModal('unadded-aux-var');
+      return;
+    }
+    else {
+      await this.saveView();
+    }
+  }
 
   async saveView() {
     // Changing the type requires creating a new instance of the new class

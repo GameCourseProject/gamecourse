@@ -49,6 +49,18 @@
   </div>
 </ng-template>
 
+<!-- Context Menu -->
+<ul *ngIf="isOpen()" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()"
+    (clickedOutside)="selection.close()"
+    tabindex="0" [style.left]="contextMenuPos.x" [style.top]="contextMenuPos.y"
+    class="fixed z-50 menu shadow bg-base-300 rounded-box text-sm font-normal no-underline w-48 dropdown-animation">
+  <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.3rem" class="text-warning"/>Edit</a></li>
+  <li (click)="duplicateAction()" *ngIf="view.parent"><a><ng-icon name="jam-files-f" size="1.3rem"/>Duplicate</a></li>
+  <li (click)="openSaveComponentModal()"><a><ng-icon name="jam-folder-f" size="1.3rem"/>Save as Custom</a></li>
+  <li (click)="$event.stopPropagation(); selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.3rem"/>Highlight Parent</a></li>
+  <li (click)="deleteAction()"><a><ng-icon name="feather-x" size="1.3rem" class="text-error"/>Delete</a></li>
+</ul>
+
 
 <!-- Edit Modal -->
 <app-modal
@@ -60,7 +72,7 @@
   [submitBtnText]="'Save ' + (view.type === ViewType.TABLE ? 'Table' : '')"
   [size]="'lg'"
   [static]="true"
-  (submitBtnClicked)="submitEditAction()"
+  (submitBtnClicked)="trySubmitEditAction()"
   (closeBtnClicked)="cancelEditAction()"
   [classList]="'overflow-x-hidden'"
 />
@@ -70,7 +82,6 @@
     [view]="view"
   ></app-component-editor>
 </ng-template>
-
 
 <!-- Delete Modal -->
 <app-simple-modal
@@ -86,15 +97,13 @@
   (click)="$event.stopPropagation()"
 ></app-simple-modal>
 
-
-<!-- Context Menu -->
-<ul *ngIf="isOpen()" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()"
-    (clickedOutside)="selection.close()"
-    tabindex="0" [style.left]="contextMenuPos.x" [style.top]="contextMenuPos.y"
-    class="fixed z-50 menu shadow bg-base-300 rounded-box text-sm font-normal no-underline w-48 dropdown-animation">
-  <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.3rem" class="text-warning"/>Edit</a></li>
-  <li (click)="duplicateAction()" *ngIf="view.parent"><a><ng-icon name="jam-files-f" size="1.3rem"/>Duplicate</a></li>
-  <li (click)="openSaveComponentModal()"><a><ng-icon name="jam-folder-f" size="1.3rem"/>Save as Custom</a></li>
-  <li (click)="$event.stopPropagation(); selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.3rem"/>Highlight Parent</a></li>
-  <li (click)="deleteAction()"><a><ng-icon name="feather-x" size="1.3rem" class="text-error"/>Delete</a></li>
-</ul>
+<!-- Confirm save without var -->
+<app-simple-modal
+  [id]="'unadded-aux-var'"
+  [title]="'Variable Not Added'"
+  [text]="'Are you sure you want to save the component? You have written a variable, but not added it, so it won\'t be saved!'"
+  [submitBtnText]="'Go Back'"
+  (submitBtnClicked)="cancelSubmitEditAction()"
+  [closeBtn]="false"
+  [actionInProgress]="true">
+</app-simple-modal>
