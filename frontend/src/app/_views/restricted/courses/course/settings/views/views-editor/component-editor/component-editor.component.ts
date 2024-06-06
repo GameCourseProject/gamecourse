@@ -221,6 +221,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.direction = this.view.direction;
       viewToEdit.responsive = this.view.responsive;
       viewToEdit.columns = this.view.columns;
+      viewToEdit.children = this.view.children;
     } else { // needed in case user changes type to block
       viewToEdit.direction = BlockDirection.VERTICAL;
     }
@@ -365,7 +366,14 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
       to.header = from.header;
+      to.header.parent = to;
       to.content = from.content;
+      to.content.parent = to;
+
+      if (from.children && to.content instanceof ViewBlock) {
+        to.content.children = from.children;
+        for (let child of to.content.children) child.parent = to.content;
+      }
     }
     else if (to instanceof ViewTable) {
       to.headerRows = from.headerRows;
@@ -744,6 +752,7 @@ export interface ViewManageData {
   size?: string,
   header?: View,
   content?: View,
+  children?: View[],
   collapseIcon?: CollapseIcon,
   direction?: BlockDirection,
   responsive?: boolean,

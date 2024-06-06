@@ -168,6 +168,15 @@ export class ViewCollapse extends View {
   }
 
   replaceView(viewId: number, view: View) {
+    if (this.header.id === viewId) {
+      this.header = view;
+    }
+    this.header.replaceView(viewId, view);
+
+    if (this.content.id === viewId) {
+      this.content = view;
+    }
+    this.content.replaceView(viewId, view);
   }
 
   switchMode(mode: ViewMode) {
@@ -207,8 +216,17 @@ export class ViewCollapse extends View {
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewCollapse {
     const defaultAspect = new Aspect(null, null);
-    return new ViewCollapse(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, CollapseIcon.ARROW,
-      [ViewText.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect), ViewBlock.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect)]);
+
+    const header = ViewText.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect);
+    const content = ViewBlock.getDefault(parent, viewRoot, getFakeId(), aspect ?? defaultAspect)
+
+    const collapse = new ViewCollapse(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? defaultAspect, CollapseIcon.ARROW,
+      [header, content]);
+
+    header.parent = collapse;
+    content.parent = collapse;
+
+    return collapse;
   }
 
   /**

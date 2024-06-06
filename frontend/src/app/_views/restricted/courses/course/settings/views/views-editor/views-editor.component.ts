@@ -624,6 +624,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
+      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
       this.loading.action = false;
       return "error";
@@ -670,6 +671,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
+      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
       this.loading.action = false;
       return "error";
