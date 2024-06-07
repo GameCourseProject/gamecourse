@@ -72,9 +72,8 @@
   [submitBtnText]="'Save ' + (view.type === ViewType.TABLE ? 'Table' : '')"
   [size]="'lg'"
   [static]="true"
-  (submitBtnClicked)="trySubmitEditAction()"
+  (submitBtnClicked)="submitEditAction()"
   (closeBtnClicked)="cancelEditAction()"
-  [classList]="'overflow-x-hidden'"
 />
 <ng-template #COMPONENT_EDITOR>
   <app-component-editor
@@ -96,14 +95,3 @@
   [static]="true"
   (click)="$event.stopPropagation()"
 ></app-simple-modal>
-
-<!-- Confirm save without var -->
-<app-simple-modal
-  [id]="'unadded-aux-var'"
-  [title]="'Variable Not Added'"
-  [text]="'Are you sure you want to save the component? You have written a variable, but not added it, so it won\'t be saved!'"
-  [submitBtnText]="'Go Back'"
-  (submitBtnClicked)="cancelSubmitEditAction()"
-  [closeBtn]="false"
-  [actionInProgress]="true">
-</app-simple-modal>

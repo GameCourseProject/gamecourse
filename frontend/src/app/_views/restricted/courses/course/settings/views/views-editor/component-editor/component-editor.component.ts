@@ -471,14 +471,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async trySaveView() {
-    if (this.newAuxVar.isFilled()) {
-      ModalService.openModal('unadded-aux-var');
-      return;
-    }
-    else {
-      await this.saveView();
-    }
+  async hasUnsavedAuxVar() {
+    return this.newAuxVar.isFilled();
   }
 
   async saveView() {

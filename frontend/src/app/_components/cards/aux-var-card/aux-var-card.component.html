@@ -25,7 +25,7 @@
       <span class="block font-semibold text-md">Expression:</span>{{newValue}}
     </div>
   </div>
-  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()">Add</button>
+  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()" [disabled]="newName == '' || newValue == ''">Add</button>
   <div *ngIf="edit" class="flex flex-col">
     <button class="btn btn-sm btn-ghost px-0.5" (click)="cancelAction()">Cancel</button>
     <button class="btn btn-sm btn-secondary px-0.5" (click)="saveAction()">Save</button>
