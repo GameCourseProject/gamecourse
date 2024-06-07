@@ -213,7 +213,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.content = this.view.content;
       this.newHeaderType = this.view.header.type;
       this.newContentType = this.view.content.type;
-    } else { // needed in case user changes type to collapse
+    } else { // be prepared in case user switches type to collapse
       viewToEdit.collapseIcon = CollapseIcon.ARROW;
       viewToEdit.header = ViewText.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
       viewToEdit.content = ViewBlock.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
@@ -224,7 +224,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.responsive = this.view.responsive;
       viewToEdit.columns = this.view.columns;
       viewToEdit.children = this.view.children;
-    } else { // needed in case user changes type to block
+    } else { // be prepared in case user switches type to block
       viewToEdit.direction = BlockDirection.VERTICAL;
     }
 
@@ -247,7 +247,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
       else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
-    else { // needed in case user changes type to chart
+    else { // be prepared in case user switches type to chart
       viewToEdit.options = {colors: [], datalabels: [], tooltip: true};
       viewToEdit.chartType = ChartType.LINE;
       viewToEdit.progressData = {value: "", max: null};
@@ -275,7 +275,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
         row.fakeIndex = rowIndex + 1;
       })
     }
-    else { // have rows prepared in case user switches type to table
+    else { // be prepared in case user switches type to table
+      viewToEdit.orderingByType = "ASC";
+      viewToEdit.orderingByIndex = "0";
       viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
       viewToEdit.bodyRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY)];
       viewToEdit.headerRows[0].children = [ViewText.getDefault(viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header")];
