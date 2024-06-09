@@ -6,7 +6,6 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
-use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;

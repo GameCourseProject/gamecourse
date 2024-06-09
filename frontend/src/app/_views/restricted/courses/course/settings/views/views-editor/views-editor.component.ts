@@ -32,11 +32,11 @@ import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/vie
 import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
 import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
 import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
-import html2canvas from "html2canvas";
 import {HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
+import { domToPng } from 'modern-screenshot'
 
 @Component({
   selector: 'app-views-editor',
@@ -710,9 +710,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async takeScreenshot() {
-    return await html2canvas(document.querySelector("#capture")).then(canvas => {
-      return canvas.toDataURL('image/png');
-    });
+    return await domToPng(document.querySelector("#capture"))
+      .then(dataURL => {
+        return dataURL;
+      });
   }
 
   // ---------------------------------------------------------------
