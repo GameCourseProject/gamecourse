@@ -37,7 +37,8 @@
         <p class="mb-2">Other Versions:</p>
         <div class="flex flex-row w-full overflow-x-auto">
           <div *ngFor="let aspect of getUnselectedAspects(); index as i" (click)="selectAspect(aspect)">
-            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" (deleteEvent)="removeAspect(aspect)" [isNewPage]="isNewPage" />
+            <app-aspect-card [aspect]="aspect" [course]="course" [selected]="isAspectSelected(aspect)" [editable]="true" [isNewPage]="isNewPage"
+                             (deleteEvent)="removeAspect(aspect)" (editEvent)="updateAspect($event)" />
           </div>
         </div>
       </div>

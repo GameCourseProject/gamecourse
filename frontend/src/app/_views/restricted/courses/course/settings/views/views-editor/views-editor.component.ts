@@ -742,6 +742,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.previewMode = 'raw';
 
     this.sortAspects();
+    this.selection.clear();
   }
 
   switchToAspect(aspect: Aspect) {
@@ -754,6 +755,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     this.manageAspects = false;
+    this.selection.clear();
   }
 
   aspectIsSelected(aspect: Aspect) {

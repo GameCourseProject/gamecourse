@@ -23,6 +23,7 @@ export class AspectCardComponent implements OnInit {
   @Input() editable?: boolean;
   @Input() selected?: boolean;
   @Output() deleteEvent = new EventEmitter<string>();
+  @Output() editEvent = new EventEmitter<{ old: Aspect, new: Aspect }>();
 
   oldUserRole?: string;
   oldViewerRole?: string;
@@ -57,11 +58,13 @@ export class AspectCardComponent implements OnInit {
   save() {
     if (!this.aspect.viewerRole || this.aspect.viewerRole == "") this.aspect.viewerRole = null;
     if (!this.aspect.viewerRole || this.aspect.userRole == "") this.aspect.userRole = null;
+    const oldAspect = new Aspect(this.oldViewerRole, this.oldUserRole);
     const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
 
     if (this.viewEditorService.getFutureAspects().filter(e => _.isEqual(e, newAspect)).length <= 0) {
-      this.viewEditorService.aspectsToChange.push({old: new Aspect(this.oldViewerRole, this.oldUserRole), newAspect: newAspect});
+      this.viewEditorService.aspectsToChange.push({old: oldAspect, newAspect: newAspect});
       this.edit = false;
+      this.editEvent.emit({old: oldAspect, new: newAspect});
     }
     else {
       this.aspect.userRole = this.oldUserRole;
