@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, Input, OnChanges, OnInit, ViewChild} from '@angular/core';
 
 import { ApiHttpService } from "../../../_services/api/api-http.service";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
@@ -13,7 +13,7 @@ import {AlertService, AlertType} from "../../../_services/alert.service";
   selector: 'app-aspect-card',
   templateUrl: './aspect-card.component.html'
 })
-export class AspectCardComponent implements OnInit {
+export class AspectCardComponent implements OnInit, OnChanges {
 
   @ViewChild('f', { static: false }) f: NgForm;
 
@@ -25,8 +25,12 @@ export class AspectCardComponent implements OnInit {
   @Output() deleteEvent = new EventEmitter<string>();
   @Output() editEvent = new EventEmitter<{ old: Aspect, new: Aspect }>();
 
+  userRole?: string;
+  viewerRole?: string;
+
   oldUserRole?: string;
   oldViewerRole?: string;
+
   roles: { value: string, text: string }[];
   edit: boolean = false;
 
@@ -37,10 +41,23 @@ export class AspectCardComponent implements OnInit {
 
   async ngOnInit() {
     await this.getCourseRolesNames();
+    this.initRoles();
+  }
+
+  ngOnChanges() {
+    this.initRoles();
+  }
+
+  initRoles() {
+    this.userRole = this.aspect.userRole;
+    this.viewerRole = this.aspect.viewerRole;
     this.oldUserRole = this.aspect.userRole;
     this.oldViewerRole = this.aspect.viewerRole;
-    this.aspect = _.cloneDeep(this.aspect);
   }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Actions ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   async getCourseRolesNames() {
     const roles = await this.api.getRoles(this.course.id, true).toPromise();
@@ -56,10 +73,10 @@ export class AspectCardComponent implements OnInit {
   }
 
   save() {
-    if (!this.aspect.viewerRole || this.aspect.viewerRole == "") this.aspect.viewerRole = null;
-    if (!this.aspect.viewerRole || this.aspect.userRole == "") this.aspect.userRole = null;
+    if (this.viewerRole == "") this.viewerRole = null;
+    if (this.userRole == "") this.userRole = null;
     const oldAspect = new Aspect(this.oldViewerRole, this.oldUserRole);
-    const newAspect = new Aspect(this.aspect.viewerRole, this.aspect.userRole);
+    const newAspect = new Aspect(this.viewerRole, this.userRole);
 
     if (this.viewEditorService.getFutureAspects().filter(e => _.isEqual(e, newAspect)).length <= 0) {
       this.viewEditorService.aspectsToChange.push({old: oldAspect, newAspect: newAspect});
@@ -67,18 +84,19 @@ export class AspectCardComponent implements OnInit {
       this.editEvent.emit({old: oldAspect, new: newAspect});
     }
     else {
-      this.aspect.userRole = this.oldUserRole;
-      this.aspect.viewerRole = this.oldViewerRole;
-      this.edit = true;
       AlertService.showAlert(AlertType.ERROR, "A version with these roles already exists.");
     }
   }
 
   cancel() {
-    this.aspect.userRole = this.oldUserRole;
-    this.aspect.viewerRole = this.oldViewerRole;
+    this.userRole = this.oldUserRole;
+    this.viewerRole = this.oldViewerRole;
     this.edit = false;
   }
+
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
   // can't change the root of an existing page
   canEdit() {
