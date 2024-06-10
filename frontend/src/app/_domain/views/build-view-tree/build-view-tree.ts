@@ -104,7 +104,8 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
   // Clean up nonexistent ids
   // This is specially useful if an aspect was deleted, since while building the tree
   // it won't find a matching view for the ids
-  recursiveRemoveNonexistent(viewTree[0]);
+  viewTree.forEach(tree => recursiveRemoveNonexistent(tree));
+
   function recursiveRemoveNonexistent(view: any) {
     if ('children' in view) {
       for (let group of view.children) {
@@ -121,5 +122,6 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
       }
     }
   }
+
   return viewTree;
 }

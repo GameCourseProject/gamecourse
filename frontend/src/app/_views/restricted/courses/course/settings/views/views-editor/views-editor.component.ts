@@ -32,11 +32,11 @@ import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/vie
 import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
 import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
 import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
-import html2canvas from "html2canvas";
 import {HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
+import { domToPng } from 'modern-screenshot'
 
 @Component({
   selector: 'app-views-editor',
@@ -542,9 +542,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   addComponentToPage(item: View) {
+    const selected = this.selection.get();
+
     // Add child to the selected block
-    if (this.selection.get()?.type === ViewType.BLOCK) {
-      this.service.add(item, this.selection.get(), "value");
+    if (selected?.type === ViewType.BLOCK) {
+      this.service.add(item, selected, "value");
+    } else if (selected) {
+      this.service.add(item, selected.parent, "value");
     }
     // If the page is empty, need to add a block first
     else if (!this.service.getSelectedView()) {
@@ -616,7 +620,15 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.loading.action = true;
 
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      console.log(e);
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      this.loading.action = false;
+      return "error";
+    }
 
     let image;
     try {
@@ -655,7 +667,15 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
     this.loading.action = true;
 
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      console.log(e);
+      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      this.loading.action = false;
+      return "error";
+    }
 
     let image;
     try {
@@ -690,9 +710,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async takeScreenshot() {
-    return await html2canvas(document.querySelector("#capture")).then(canvas => {
-      return canvas.toDataURL('image/png');
-    });
+    return await domToPng(document.querySelector("#capture"))
+      .then(dataURL => {
+        return dataURL;
+      });
   }
 
   // ---------------------------------------------------------------
@@ -721,6 +742,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.previewMode = 'raw';
 
     this.sortAspects();
+    this.selection.clear();
   }
 
   switchToAspect(aspect: Aspect) {
@@ -733,6 +755,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     this.manageAspects = false;
+    this.selection.clear();
   }
 
   aspectIsSelected(aspect: Aspect) {

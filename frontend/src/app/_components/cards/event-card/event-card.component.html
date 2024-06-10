@@ -53,7 +53,7 @@
       <span class="block font-semibold text-md">Do:</span>{{event.expression}}
     </div>
   </div>
-  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()">Add</button>
+  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()" [disabled]="!eventToAdd.type || !eventToAdd.action">Add</button>
   <div *ngIf="edit" class="flex flex-col">
     <button class="btn btn-xs btn-ghost" (click)="cancelAction()">Cancel</button>
     <button class="btn btn-xs btn-secondary" (click)="saveAction()">Save</button>

@@ -124,6 +124,10 @@ export class AspectsManagerComponent implements OnInit{
     this.aspectToSelect = null;
   }
 
+  updateAspect(event: { old: Aspect, new: Aspect }) {
+    this.aspectsToEdit = this.aspectsToEdit.map(e => _.isEqual(e, event.old) ? event.new : e);
+  }
+
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/

@@ -209,6 +209,8 @@ export class ViewBlock extends View {
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
     const block = new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
     block.visibilityType = VisibilityType.VISIBLE;
+    block.events = [];
+    block.variables = [];
     return block;
   }
 
@@ -271,8 +273,8 @@ export class ViewBlock extends View {
       visibilityType: obj.visibilityType,
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events.map(event => Event.toDatabase(event)),
+      variables: obj.variables?.map(variable => Variable.toDatabase(variable)) ?? [],
+      events: obj.events?.map(event => Event.toDatabase(event)) ?? [],
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,

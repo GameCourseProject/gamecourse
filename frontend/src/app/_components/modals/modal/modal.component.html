@@ -53,7 +53,7 @@
 
       <!-- Submit button (right) -->
       <button *ngIf="submitBtnText" class="btn {{submitBtnOutline ? 'btn-outline' : ''}} {{submitBtnColor ? colors[submitBtnColor].btn : ''}}"
-              [disabled]="submitBtnDisabled" type="button" (click)="btnClicked = 'submit'; submitBtnClicked.emit()">
+              [disabled]="submitBtnDisabled" type="button" (click)="$event.stopPropagation(); btnClicked = 'submit'; submitBtnClicked.emit()">
         <!-- Spinner -->
         <ng-container *ngIf="actionInProgress && btnClicked == 'submit'">
           <app-spinner [size]="'sm'" [color]="submitBtnOutline ? submitBtnColor : colors[submitBtnColor].btnText" [classList]="'mr-3'"></app-spinner>

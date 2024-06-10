@@ -198,6 +198,11 @@ export class BBAnyComponent implements OnInit, OnDestroy {
   }
 
   async submitEditAction() {
+    if (await this.componentEditor.hasUnsavedAuxVar()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      return;
+    }
+
     await this.componentEditor.saveView();
 
     // Force rerender to show changes

@@ -10,7 +10,7 @@ export class ModalComponent implements OnInit {
   @Input() classList?: string;                                        // Classes to append
   @Input() templateRef: TemplateRef<any>;                             // Custom template for modal
 
-  @Input() size?: 'sm' | 'md' | 'lg' | 'xl' | string = 'sm';                 // Modal width
+  @Input() size?: 'sm' | 'md' | 'lg' | 'xl' | string = 'sm';          // Modal width
   @Input() static?: boolean = false;                                  // Disable closing when clicked outside
   @Input() responsive?: boolean = true;                               // Modal goes bottom on mobile & middle on desktop
 

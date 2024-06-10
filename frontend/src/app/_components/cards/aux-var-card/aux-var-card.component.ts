@@ -28,11 +28,16 @@ export class AuxVarCardComponent implements OnChanges {
     this.newName = this.variable?.name ?? "";
     this.newValue = this.variable?.value ?? "";
   }
-  
+
+  isFilled() {
+    if (this.newName != '' || this.newValue != '') return true;
+    else return false;
+  }
+
   deleteAction() {
     this.deleteEvent.emit();
   }
-  
+
   addNewAction() {
     if (this.newName != "" && this.newValue != "") {
       this.createEvent.emit({
@@ -48,7 +53,7 @@ export class AuxVarCardComponent implements OnChanges {
   editAction() {
     this.edit = true;
   }
-  
+
   saveAction() {
     if (this.newName != "" && this.newValue != "") {
       this.edit = false;
@@ -59,10 +64,10 @@ export class AuxVarCardComponent implements OnChanges {
     }
     else AlertService.showAlert(AlertType.ERROR, "Auxiliary Variable must have Name and Expression");
   }
-  
+
   cancelAction() {
     this.edit = false;
     this.ngOnChanges();
   }
-  
+
 }

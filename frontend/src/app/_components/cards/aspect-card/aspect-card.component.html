@@ -15,12 +15,12 @@
   <div class="card-body p-6 text-center">
 
     <p class="font-semibold">Viewer's Role:</p>
-    <i *ngIf="!edit">{{aspect.viewerRole ?? "none"}}</i>
+    <i *ngIf="!edit">{{viewerRole ?? "none"}}</i>
     <app-input-select
       *ngIf="edit"
       [id]="'viewerRole'"
       [form]="f"
-      [(value)]="aspect.viewerRole"
+      [(value)]="viewerRole"
       [options]="roles"
       [placeholder]="'Viewer Role'"
       [search]="false">
@@ -29,12 +29,12 @@
     <div class="divider my-1"></div>
 
     <p class="font-semibold">User's Role:</p>
-    <i *ngIf="!edit">{{aspect.userRole ?? "none"}}</i>
+    <i *ngIf="!edit">{{userRole ?? "none"}}</i>
     <app-input-select
       *ngIf="edit"
       [id]="'userRole'"
       [form]="f"
-      [(value)]="aspect.userRole"
+      [(value)]="userRole"
       [options]="roles"
       [placeholder]="'User Role'"
       [search]="false">
