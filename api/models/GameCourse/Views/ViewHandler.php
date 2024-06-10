@@ -943,7 +943,7 @@ class ViewHandler
             // Move view
             // WARNING: this isn't creating logs, it's moving the views immediately
             // I needed this to not lose track of the positions when moving to an already occupied position
-            if (isset($parent["parent"])) {
+            if ( isset($parent["parent"]) && !empty(Core::database()->select(self::TABLE_VIEW, ["id" => $parent["parent"]])) ) {
                 $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]], "child");
 
                 // If the position is occupied, move the occupying one out temporarily

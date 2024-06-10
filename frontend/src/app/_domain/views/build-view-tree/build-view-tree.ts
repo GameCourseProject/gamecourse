@@ -122,6 +122,6 @@ export function buildViewTree(viewsOfAspects: View[]): ViewDatabase[] {
       }
     }
   }
-  console.log(viewTree)
+
   return viewTree;
 }
