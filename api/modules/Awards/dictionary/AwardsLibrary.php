@@ -55,14 +55,14 @@ class AwardsLibrary extends Library
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    private function mockAward($userId) : array
+    private function mockAward($userId, $type = null) : array
     {
         return [
             "id" => Core::dictionary()->faker()->numberBetween(0, 100),
             "course" => 0,
             "user" => $userId,
             "description" => Core::dictionary()->faker()->text(20),
-            "type" => Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "type" => $type ?: Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
             "moduleInstance" => null,
             "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
             "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
@@ -444,8 +444,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId, $type) {
+                return $this->mockAward($userId, $type);
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -479,14 +480,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $awards = [
-                [
-                    "id" => 2,
-                    "description" => "Badge 1 (level 1)",
-                    "type" => "badge",
-                    "moduleInstance" => 1
-                ]
-            ];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "badge");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -518,8 +514,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "skill");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -551,8 +548,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "streak");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
