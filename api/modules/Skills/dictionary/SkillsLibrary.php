@@ -86,7 +86,7 @@ class SkillsLibrary extends Library
         ];
     }
 
-    private function mockSkill(int $id, string $name = null, bool $active = null, bool $extra = null, bool $collab = null) : array
+    private function mockSkill(int $id = null, string $name = null, bool $active = null, bool $extra = null, bool $collab = null) : array
     {
         return [
             "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
