@@ -375,7 +375,7 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $username = $user["username"];
-        elseif (is_object($user) && method_exists($user, 'getUsername')) $user->getUsername();
+        elseif (is_object($user) && method_exists($user, 'getUsername')) $username = $user->getUsername();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($username, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
