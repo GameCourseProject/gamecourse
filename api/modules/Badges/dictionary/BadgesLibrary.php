@@ -43,12 +43,7 @@ class BadgesLibrary extends Library
             "isCount": true,
             "isPoint": false,
             "isActive": true,
-            "rule": 58,
-            "image": "http://localhost/gamecourse/api/course_data/1-Multimedia_Content_Production/badges/Lab_King/badge.png",
-            "desc1": "Have the highest grade in the labs",
-            "goal1": 1,
-            "reward1": 80,
-            "tokens1": 0
+            "image": "http://localhost/gamecourse/api/course_data/1-Multimedia_Content_Production/badges/Lab_King/badge.png"
         }</code></pre>
         </div><br>
         <p>To obtain all badges of a course, you can simply use:</p>

@@ -213,6 +213,12 @@ class Dictionary
         // Add context
         if ($context !== null) array_unshift($args, $context);
 
+        // Check number of arguments
+        $ref = $library->getFunctionReflection($funcName);
+        if (count($args) < $ref->getNumberOfRequiredParameters()) {
+            throw new Exception("Function '$funcName' requires more arguments than provided.");
+        }
+
         // Add course
         if ($course) $this->course = $course;
 
