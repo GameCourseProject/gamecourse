@@ -2,10 +2,10 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
-use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class UsersLibrary extends Library
 {
@@ -58,17 +58,17 @@ class UsersLibrary extends Library
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    private function mockUser(int $id = null, string $email = null, int $studentNumber = null) : array
     {
         return [
-            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
             "name" => Core::dictionary()->faker()->name(),
-            "email" => $email ? $email : Core::dictionary()->faker()->email(),
+            "email" => $email ?: Core::dictionary()->faker()->email(),
             "major" => Core::dictionary()->faker()->text(5),
             "nickname" => Core::dictionary()->faker()->text(10),
-            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "studentNumber" => $studentNumber ?: Core::dictionary()->faker()->numberBetween(11111, 99999),
             "theme" => null,
-            "username" => $email ? $email : Core::dictionary()->faker()->email(),
+            "username" => $email ?: Core::dictionary()->faker()->email(),
             "image" => null,
             "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
             "landingPage" => null,
@@ -263,7 +263,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $userId = $user["id"];
-        else $userId = $user->getId();
+        elseif (is_object($user) && method_exists($user, 'getId')) $userId = $user->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($userId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -278,7 +279,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $name = $user["name"];
-        else $name = $user->getName();
+        elseif (is_object($user) && method_exists($user, 'getName')) $name = $user->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -293,7 +295,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $email = $user["email"];
-        else $email = $user->getEmail();
+        elseif (is_object($user) && method_exists($user, 'getEmail')) $email = $user->getEmail();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($email, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -308,7 +311,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $major = $user["major"];
-        else $major = $user->getMajor();
+        elseif (is_object($user) && method_exists($user, 'getMajor')) $major = $user->getMajor();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($major, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -323,7 +327,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $nickname = $user["nickname"];
-        else $nickname = $user->getNickname();
+        elseif (is_object($user) && method_exists($user, 'getNickname')) $nickname = $user->getNickname();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($nickname, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -338,7 +343,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $studentNumber = $user["studentNumber"];
-        else $studentNumber = $user->getStudentNumber();
+        elseif (is_object($user) && method_exists($user, 'getStudentNumber')) $studentNumber = $user->getStudentNumber();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($studentNumber, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -353,7 +359,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $theme = $user["theme"];
-        else $theme = $user->getTheme();
+        elseif (is_object($user) && method_exists($user, 'getTheme')) $theme = $user->getTheme();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($theme, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -368,7 +375,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $username = $user["username"];
-        else $username = $user->getUsername();
+        elseif (is_object($user) && method_exists($user, 'getUsername')) $username = $user->getUsername();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($username, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -383,7 +391,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $image = $user["image"];
-        else $image = $user->getImage();
+        elseif (is_object($user) && method_exists($user, 'getImage')) $image = $user->getImage();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -398,11 +407,12 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $avatar = $user["avatar"];
-        else {
-            if (Core::dictionary()->getCourse()->avatars() === true)
+        elseif (is_object($user) && method_exists($user, 'getAvatar')) {
+            if (Core::dictionary()->getCourse()->getAvatars() === true)
                 $avatar = $user->getAvatar();
             else $avatar = null;
         }
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($avatar, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -417,7 +427,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $lastActivity = $user["lastActivity"];
-        else $lastActivity = $user->getLastActivity();
+        elseif (is_object($user) && method_exists($user, 'getLastActivity')) $lastActivity = $user->getLastActivity();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($lastActivity, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
 
@@ -432,7 +443,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $landingPage = $user["landingPage"];
-        else $landingPage = $user->getLandingPage();
+        elseif (is_object($user) && method_exists($user, 'getLandingPage')) $landingPage = $user->getLandingPage();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($landingPage, Core::dictionary()->getLibraryById(PagesLibrary::ID));
     }
 
@@ -447,7 +459,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $isActive = $user["isActiveInCourse"];
-        else $isActive = $user->isActive();
+        elseif (is_object($user) && method_exists($user, 'isActive')) $isActive = $user->isActive();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($isActive, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 

@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class AwardsLibrary extends Library
 {
@@ -29,7 +30,20 @@ class AwardsLibrary extends Library
     public function getNamespaceDocumentation(): ?string
     {
         return <<<HTML
-        <p>This namespace allows you to access the awards earned by students. You can do so with the generic function:</p>
+        <p>This namespace allows you to access the awards earned by students. An award is characterized by the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 4,
+            "user": 3,
+            "course": 1,
+            "description": "Token(s) exchange",
+            "type": "bonus",
+            "moduleInstance": null,
+            "reward": 1000,
+            "date": "2024-04-08 09:30:51"
+        }</code></pre>
+        </div><br>
+        <p>You can obtain all the awards of a user using the generic function:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{awards.getUserAwards(%viewer)}</code></pre>
         </div>
@@ -55,14 +69,14 @@ class AwardsLibrary extends Library
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    private function mockAward($userId) : array
+    private function mockAward($userId, $type = null) : array
     {
         return [
             "id" => Core::dictionary()->faker()->numberBetween(0, 100),
             "course" => 0,
             "user" => $userId,
             "description" => Core::dictionary()->faker()->text(20),
-            "type" => Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "type" => $type ?: Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
             "moduleInstance" => null,
             "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
             "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
@@ -259,6 +273,7 @@ class AwardsLibrary extends Library
     public function id($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $awardId = $award["id"];
         return new ValueNode($awardId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -273,6 +288,7 @@ class AwardsLibrary extends Library
     public function description($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $description = $award["description"];
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -287,6 +303,7 @@ class AwardsLibrary extends Library
     public function type($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $type = $award["type"];
         return new ValueNode($type, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -301,6 +318,7 @@ class AwardsLibrary extends Library
     public function instance($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $instance = $award["moduleInstance"];
         return new ValueNode($instance, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -315,6 +333,7 @@ class AwardsLibrary extends Library
     public function reward($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $reward = $award["reward"];
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -329,6 +348,7 @@ class AwardsLibrary extends Library
     public function date($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $date = $award["date"];
         return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
@@ -343,6 +363,8 @@ class AwardsLibrary extends Library
     public function icon($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
+
         $awardsModule = new Awards(Core::dictionary()->getCourse());
         $icon = $awardsModule->getIconOfType($award["type"]);
         return new ValueNode($icon, Core::dictionary()->getLibraryById(TextLibrary::ID));
@@ -360,6 +382,8 @@ class AwardsLibrary extends Library
     public function image($award, string $style = "outline" | "solid", string $extension = "jpg" | "svg"): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
+
         $awardsModule = new Awards(Core::dictionary()->getCourse());
         $image = $awardsModule->getImageOfType($award["type"], $style, $extension);
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
@@ -444,8 +468,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId, $type) {
+                return $this->mockAward($userId, $type);
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -479,14 +504,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            $awards = [
-                [
-                    "id" => 2,
-                    "description" => "Badge 1 (level 1)",
-                    "type" => "badge",
-                    "moduleInstance" => 1
-                ]
-            ];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "badge");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -518,8 +538,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "skill");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);
@@ -551,8 +572,9 @@ class AwardsLibrary extends Library
         $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
 
         if (Core::dictionary()->mockData()) {
-            // TODO: mock awards
-            $awards = [];
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "streak");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
 
         } else {
             $awardsModule = new Awards($course);

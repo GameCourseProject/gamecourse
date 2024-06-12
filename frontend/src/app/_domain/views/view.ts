@@ -49,13 +49,13 @@ export abstract class View {
     this.classList = classList;
     this.styles = styles;
 
-    this.visibilityType = visibilityType;
+    this.visibilityType = visibilityType ?? VisibilityType.VISIBLE;
     this.visibilityCondition = visibilityCondition;
 
     this.loopData = loopData;
 
-    this.variables = variables;
-    this.events = events;
+    this.variables = variables ?? [];
+    this.events = events ?? [];
   }
 
 

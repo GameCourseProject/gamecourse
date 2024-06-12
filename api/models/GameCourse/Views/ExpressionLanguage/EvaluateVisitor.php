@@ -96,7 +96,12 @@ class EvaluateVisitor extends Visitor
             if (!$library) {
                 if (is_array($contextVal) && (empty($contextVal) || Utils::isSequentialArray($contextVal)))
                     $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);
-                else $library = $context->getLibrary();
+                else {
+                    $library = $context->getLibrary();
+                    if (!$library) {
+                        throw new Exception('Calling function \'' . $funcName . '\' on incorrect argument type.');
+                    }
+                }
                 $node->setLibrary($library);
             }
         } else $contextVal = null;

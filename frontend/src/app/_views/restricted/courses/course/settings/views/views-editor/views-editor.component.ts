@@ -36,7 +36,7 @@ import {HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
-import { domToPng } from 'modern-screenshot'
+import {domToPng} from 'modern-screenshot'
 
 @Component({
   selector: 'app-views-editor',
@@ -1027,6 +1027,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async previewWithRealData() {
+    if (!this.viewerToPreview || !this.userToPreview) {
+      AlertService.showAlert(AlertType.ERROR, "Both user fields are required.");
+      return;
+    }
+
     this.loading.action = true;
     try {
       this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();

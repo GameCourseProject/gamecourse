@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class TreeLibrary extends Library
 {
@@ -147,7 +148,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $id = $skillTree["id"];
-        else $id = $skillTree->getId();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getId')) $id = $skillTree->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($id, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -162,7 +164,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $name = $skillTree["name"];
-        else $name = $skillTree->getName();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getName')) $name = $skillTree->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -177,7 +180,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $maxReward = $skillTree["maxReward"];
-        else $maxReward = $skillTree->getMaxReward();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getMaxReward')) $maxReward = $skillTree->getMaxReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($maxReward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -190,12 +194,14 @@ class TreeLibrary extends Library
      */
     public function tiers($skillTree): ValueNode
     {
+        if (!is_array($skillTree)) throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
+
         if (Core::dictionary()->mockData()) {
             $tiers = $skillTree["tiers"];
 
         } else {
             $tiers = Tier::getTiersOfSkillTree($skillTree["id"]);
-        };
+        }
         return new ValueNode($tiers, Core::dictionary()->getLibraryById(TiersLibrary::ID));
     }
 

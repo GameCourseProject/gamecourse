@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Tier;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class TiersLibrary extends Library
 {
@@ -140,7 +141,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["id"];
-        else $name = $tier->getId();
+        elseif (is_object($tier) && method_exists($tier, 'getId')) $name = $tier->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -155,7 +157,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["name"];
-        else $name = $tier->getName();
+        elseif (is_object($tier) && method_exists($tier, 'getName')) $name = $tier->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -170,7 +173,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["reward"];
-        else $name = $tier->getReward();
+        elseif (is_object($tier) && method_exists($tier, 'getReward')) $name = $tier->getReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -183,12 +187,13 @@ class TiersLibrary extends Library
      */
     public function skills($tier): ValueNode
     {
+        if (!is_array($tier)) throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
+
         if (Core::dictionary()->mockData()) {
             $skills = $tier["skills"];
-
         } else {
             $skills = Skill::getSkillsOfTier($tier["id"]);
-        };
+        }
         return new ValueNode($skills, Core::dictionary()->getLibraryById(SkillsLibrary::ID));
     }
 
@@ -203,7 +208,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["isActive"];
-        else $name = $tier->isActive();
+        elseif (is_object($tier) && method_exists($tier, 'isActive')) $name = $tier->isActive();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
