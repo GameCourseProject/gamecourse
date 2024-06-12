@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Awards\Awards;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class AwardsLibrary extends Library
 {
@@ -259,6 +260,7 @@ class AwardsLibrary extends Library
     public function id($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $awardId = $award["id"];
         return new ValueNode($awardId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -273,6 +275,7 @@ class AwardsLibrary extends Library
     public function description($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $description = $award["description"];
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -287,6 +290,7 @@ class AwardsLibrary extends Library
     public function type($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $type = $award["type"];
         return new ValueNode($type, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -301,6 +305,7 @@ class AwardsLibrary extends Library
     public function instance($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $instance = $award["moduleInstance"];
         return new ValueNode($instance, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -315,6 +320,7 @@ class AwardsLibrary extends Library
     public function reward($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $reward = $award["reward"];
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -329,6 +335,7 @@ class AwardsLibrary extends Library
     public function date($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
         $date = $award["date"];
         return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
@@ -343,6 +350,8 @@ class AwardsLibrary extends Library
     public function icon($award): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
+
         $awardsModule = new Awards(Core::dictionary()->getCourse());
         $icon = $awardsModule->getIconOfType($award["type"]);
         return new ValueNode($icon, Core::dictionary()->getLibraryById(TextLibrary::ID));
@@ -360,6 +369,8 @@ class AwardsLibrary extends Library
     public function image($award, string $style = "outline" | "solid", string $extension = "jpg" | "svg"): ValueNode
     {
         // NOTE: on mock data, award will be mocked
+        if (!is_array($award)) throw new InvalidArgumentException("Invalid type for first argument: expected an award.");
+
         $awardsModule = new Awards(Core::dictionary()->getCourse());
         $image = $awardsModule->getImageOfType($award["type"], $style, $extension);
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));

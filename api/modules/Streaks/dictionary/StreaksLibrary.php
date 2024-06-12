@@ -7,6 +7,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class StreaksLibrary extends Library
 {
@@ -128,7 +129,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, badge will be mocked
         if (is_array($streak)) $streakId = $streak["id"];
-        else $streakId = $streak->getId();
+        elseif (is_object($streak) && method_exists($streak, 'getId')) $streakId = $streak->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($streakId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -143,7 +145,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $name = $streak["name"];
-        else $name = $streak->getName();
+        elseif (is_object($streak) && method_exists($streak, 'getName')) $name = $streak->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -158,7 +161,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $goal = $streak["goal"];
-        else $goal = $streak->getGoal();
+        elseif (is_object($streak) && method_exists($streak, 'getGoal')) $goal = $streak->getGoal();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($goal, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -173,7 +177,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $description = $streak["description"];
-        else $description = $streak->getDescription();
+        elseif (is_object($streak) && method_exists($streak, 'getDescription')) $description = $streak->getDescription();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -188,7 +193,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $color = $streak["color"];
-        else $color = $streak->getColor();
+        elseif (is_object($streak) && method_exists($streak, 'getColor')) $color = $streak->getColor();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -203,7 +209,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $reward = $streak["reward"];
-        else $reward = $streak->getReward();
+        elseif (is_object($streak) && method_exists($streak, 'getReward')) $reward = $streak->getReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($reward, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -218,7 +225,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $tokens = $streak["tokens"];
-        else $tokens = $streak->getTokens();
+        elseif (is_object($streak) && method_exists($streak, 'getTokens')) $tokens = $streak->getTokens();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($tokens, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -233,7 +241,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $repeatable = $streak["isRepeatable"];
-        else $repeatable = $streak->isRepeatable();
+        elseif (is_object($streak) && method_exists($streak, 'isRepeatable')) $repeatable = $streak->isRepeatable();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($repeatable, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -248,7 +257,8 @@ class StreaksLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $extra = $streak["isExtra"];
-        else $extra = $streak->isRepeatable();
+        elseif (is_object($streak) && method_exists($streak, 'isExtra')) $extra = $streak->isExtra();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
         return new ValueNode($extra, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 

@@ -7,6 +7,7 @@ use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Course\Course;
+use InvalidArgumentException;
 
 class SkillsLibrary extends Library
 {
@@ -248,7 +249,8 @@ class SkillsLibrary extends Library
     {
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $id = $skill["id"];
-        else $id = $skill->getId();
+        elseif (is_object($skill) && method_exists($skill, 'getId')) $id = $skill->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($id, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -263,7 +265,8 @@ class SkillsLibrary extends Library
     {
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $name = $skill["name"];
-        else $name = $skill->getName();
+        elseif (is_object($skill) && method_exists($skill, 'getName')) $name = $skill->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -278,7 +281,8 @@ class SkillsLibrary extends Library
     {
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $color = $skill["color"];
-        else $color = $skill->getColor();
+        elseif (is_object($skill) && method_exists($skill, 'getColor')) $color = $skill->getColor();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -296,7 +300,9 @@ class SkillsLibrary extends Library
 
         } else {
             if (is_array($skill)) $skill = new Skill($skill["id"]);
-            else $skill = new Skill($skill->getId());
+            elseif (is_object($skill) && method_exists($skill, 'getId')) $skill = new Skill($skill->getId());
+            else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
+
             $dependencies = [];
             foreach ($skill->getDependencies() as $combo) {
                 $str = '';
@@ -320,7 +326,8 @@ class SkillsLibrary extends Library
     {
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $isCollab = $skill["isCollab"];
-        else $isCollab = $skill->isCollab();
+        elseif (is_object($skill) && method_exists($skill, 'isCollab')) $isCollab = $skill->isCollab();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($isCollab, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -335,7 +342,8 @@ class SkillsLibrary extends Library
     {
         // NOTE: on mock data, skill will be mocked
         if (is_array($skill)) $isExtra = $skill["isExtra"];
-        else $isExtra = $skill->isExtra();
+        elseif (is_object($skill) && method_exists($skill, 'isExtra')) $isExtra = $skill->isExtra();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($isExtra, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 

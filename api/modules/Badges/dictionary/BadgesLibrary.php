@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class BadgesLibrary extends Library
 {
@@ -324,7 +325,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, badge will be mocked
         if (is_array($badge)) $badgeId = $badge["id"];
-        else $badgeId = $badge->getId();
+        elseif (is_object($badge) && method_exists($badge, 'getId')) $badgeId = $badge->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($badgeId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -339,7 +341,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $name = $badge["name"];
-        else $name = $badge->getName();
+        elseif (is_object($badge) && method_exists($badge, 'getName')) $name = $badge->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -354,7 +357,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $description = $badge["description"];
-        else $description = $badge->getDescription();
+        elseif (is_object($badge) && method_exists($badge, 'getDescription')) $description = $badge->getDescription();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -369,7 +373,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, badge will be mocked
         if (is_array($badge)) $image = $badge["image"];
-        else $image = $badge->getImage();
+        elseif (is_object($badge) && method_exists($badge, 'getImage')) $image = $badge->getImage();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -382,13 +387,15 @@ class BadgesLibrary extends Library
      */
     public function levels($badge): ValueNode
     {
-        // NOTE: on mock data, badge will be mocked
         if (Core::dictionary()->mockData()) {
             $levels = $badge["levels"];
-
-        } else {
-            if (is_array($badge)) $badge = Badge::getBadgeById($badge["id"]);
+        } elseif (is_array($badge)) {
+            $badge = Badge::getBadgeById($badge["id"]);
             $levels = $badge->getLevels();
+        } elseif (is_object($badge) && method_exists($badge, 'getLevels')) {
+            $levels = $badge->getLevels();
+        } else {
+            throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         }
         return new ValueNode($levels, Core::dictionary()->getLibraryById(BadgeLevelsLibrary::ID));
     }
@@ -404,7 +411,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isExtra = $badge["isExtra"];
-        else $isExtra = $badge->isExtra();
+        elseif (is_object($badge) && method_exists($badge, 'isExtra')) $isExtra = $badge->isExtra();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($isExtra, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -419,7 +427,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isBragging = $badge["isBragging"];
-        else $isBragging = $badge->isBragging();
+        elseif (is_object($badge) && method_exists($badge, 'isBragging')) $isBragging = $badge->isBragging();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($isBragging, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -434,7 +443,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isCount = $badge["isCount"];
-        else $isCount= $badge->isCount();
+        elseif (is_object($badge) && method_exists($badge, 'isCount')) $isCount = $badge->isCount();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($isCount, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -449,7 +459,8 @@ class BadgesLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($badge)) $isPoint= $badge["isPoint"];
-        else $isPoint = $badge->isPoint();
+        elseif (is_object($badge) && method_exists($badge, 'isPoint')) $isPoint = $badge->isPoint();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a badge.");
         return new ValueNode($isPoint, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
