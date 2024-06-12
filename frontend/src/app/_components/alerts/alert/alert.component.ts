@@ -1,5 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {AlertType} from "../../../_services/alert.service";
+import {NavigationEnd, Router} from "@angular/router";
 
 @Component({
   selector: 'app-alert',
@@ -21,9 +22,22 @@ export class AlertComponent implements OnInit {
     return AlertType;
   }
 
-  constructor() { }
+  constructor(
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
+    // Auto hide alert when user moves to different page
+    this.router.events.subscribe((val) => {
+      if (val instanceof NavigationEnd) {
+        this.closeAlert();
+      }
+    })
+  }
+
+  closeAlert() {
+    const alert = document.getElementById(this.type + '-alert');
+    alert.classList.add('hidden');
   }
 
 }

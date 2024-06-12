@@ -23,7 +23,7 @@ export class AlertService {
     alert.classList.remove('hidden');
 
     // Hide alert automatically
-    setTimeout(() => alert.classList.add('hidden'), duration ?? 5000);
+    if (type != AlertType.ERROR) setTimeout(() => alert.classList.add('hidden'), duration ?? 5000);
   }
 
   static showErrorAlert(error: {message: string, stack: string, full: string}) {
