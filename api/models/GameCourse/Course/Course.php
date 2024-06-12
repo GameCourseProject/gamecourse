@@ -110,7 +110,7 @@ class Course
         return $this->getData("isVisible");
     }
 
-    public function avatars(): bool
+    public function getAvatars(): bool
     {
         return $this->getData("avatars");
     }

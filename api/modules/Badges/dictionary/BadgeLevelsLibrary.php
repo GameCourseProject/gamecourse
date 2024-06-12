@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class BadgeLevelsLibrary extends Library
 {
@@ -112,6 +113,7 @@ class BadgeLevelsLibrary extends Library
     public function number($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $number = $level["number"] ?? 0;
         return new ValueNode($number, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -126,6 +128,7 @@ class BadgeLevelsLibrary extends Library
     public function goal($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $goal = $level["goal"];
         return new ValueNode($goal, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -140,6 +143,7 @@ class BadgeLevelsLibrary extends Library
     public function description($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $description = $level["description"];
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -154,6 +158,7 @@ class BadgeLevelsLibrary extends Library
     public function reward($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $reward = $level["reward"];
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -168,6 +173,7 @@ class BadgeLevelsLibrary extends Library
     public function tokens($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $tokens = $level["tokens"];
         return new ValueNode($tokens, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

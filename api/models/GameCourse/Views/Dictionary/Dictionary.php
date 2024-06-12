@@ -213,6 +213,28 @@ class Dictionary
         // Add context
         if ($context !== null) array_unshift($args, $context);
 
+        // Check number and types of arguments
+        $ref = $library->getFunctionReflection($funcName);
+        if (count($args) < $ref->getNumberOfRequiredParameters()) {
+            throw new Exception("Function '$funcName' requires more arguments than provided.");
+        }
+        foreach ($ref->getParameters() as $index => $parameter) {
+            if (isset($args[$index])) {
+                $expectedType = $parameter->getType();
+                $actualType = get_debug_type($args[$index]);
+
+                if ($expectedType) {
+                    $expectedTypeName = $expectedType->getName();
+
+                    if ($expectedTypeName == "bool" && $actualType == "int") continue;
+
+                    if ($expectedTypeName !== $actualType && !is_a($args[$index], $expectedTypeName)) {
+                        throw new Exception("Argument " . ($index + 1) . " passed to function '" . $funcName . "' must be of the type " . $expectedTypeName . ", " . $actualType . " given.");
+                    }
+                }
+            }
+        }
+
         // Add course
         if ($course) $this->course = $course;
 

@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\XPLevels\Level;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class LevelLibrary extends Library
 {
@@ -114,7 +115,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $levelId = $level["id"];
-        else $levelId = $level->getId();
+        elseif (is_object($level) && method_exists($level, 'getId')) $levelId = $level->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($levelId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -129,7 +131,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $minXP = $level["minXP"];
-        else $minXP = $level->getMinXP();
+        elseif (is_object($level) && method_exists($level, 'getMinXP')) $minXP = $level->getMinXP();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($minXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -144,7 +147,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $description = $level["description"];
-        else $description = $level->getDescription();
+        elseif (is_object($level) && method_exists($level, 'getDescription')) $description = $level->getDescription();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -159,7 +163,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $number = $level["number"];
-        else $number = $level->getNumber();
+        elseif (is_object($level) && method_exists($level, 'getNumber')) $number = $level->getNumber();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($number, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 

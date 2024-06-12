@@ -68,6 +68,7 @@ export class BBBlockComponent implements OnInit {
       });
 
     } else if (event.previousContainer !== event.container) {
+      // TODO: Aspects
       transferArrayItem(
         event.previousContainer.data,
         event.container.data,

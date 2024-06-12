@@ -207,11 +207,7 @@ export class ViewBlock extends View {
    * Gets a default block view.
    */
   static getDefault(parent: View, viewRoot: number, id?: number, aspect?: Aspect): ViewBlock {
-    const block = new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
-    block.visibilityType = VisibilityType.VISIBLE;
-    block.events = [];
-    block.variables = [];
-    return block;
+    return new ViewBlock(ViewMode.EDIT, id ?? getFakeId(), viewRoot, parent, aspect ?? new Aspect(null, null), BlockDirection.VERTICAL, null, true, []);
   }
 
   /**

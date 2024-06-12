@@ -473,8 +473,15 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  async hasUnsavedAuxVar() {
-    return this.newAuxVar.isFilled();
+  hasUnsavedAuxVar() {
+    return this.newAuxVar?.isFilled() ?? false;
+  }
+
+  async trySaveView() {
+    if (this.hasUnsavedAuxVar()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable in the Cell but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      return;
+    } else await this.saveView();
   }
 
   async saveView() {

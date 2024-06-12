@@ -13,9 +13,12 @@
              class="text-primary"></ng-icon>
 
     <h2 *ngIf="coreTemplate" class="m-0">{{coreTemplate.name}}</h2>
-    <input *ngIf="!coreTemplate && !page && pageToManage" type="text" placeholder="Create New" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" [(ngModel)]="pageToManage.name"/>
-    <input *ngIf="page" type="text" placeholder="Page Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" value="{{page.name}}" [(ngModel)]="page.name"/>
-    <input *ngIf="template" type="text" placeholder="Template Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10" value="{{template.name}}" [(ngModel)]="template.name"/>
+    <input *ngIf="!coreTemplate && !page && pageToManage" type="text" placeholder="Create New" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10"
+           [(ngModel)]="pageToManage.name" (keydown)="$event.stopPropagation()"/>
+    <input *ngIf="page" type="text" placeholder="Page Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10"
+           value="{{page.name}}" [(ngModel)]="page.name" (keydown)="$event.stopPropagation()"/>
+    <input *ngIf="template" type="text" placeholder="Template Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10"
+           value="{{template.name}}" [(ngModel)]="template.name" (keydown)="$event.stopPropagation()"/>
 
     <div *ngIf="template || coreTemplate" class="mt-0 badge badge-outline">Template</div>
     <div *ngIf="page" class="mt-0 badge badge-outline">Page</div>
@@ -85,7 +88,7 @@
               </div>
 
               <div class="overflow-y-auto overflow-x-auto my-2 mx-3 gap-5 max-h-72 w-full">
-                <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm ml-3">Select category</span>
+                <span *ngIf="getSelectedCategories().length == 0" class="text-base-content text-opacity-50 text-sm">Select category</span>
 
                 <!-- Templates -->
                 <div *ngIf="getSelectedCategories().length > 0 && option.description === 'Choose Template'" class="flex flex-col">
@@ -100,6 +103,7 @@
                       <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                     </div>
                   </div>
+                  <span *ngIf="getSelectedCategoriesItems().length <= 0" class="text-base-content text-opacity-50 text-sm">There are no Templates here yet</span>
                 </div>
 
                 <!-- Components -->
@@ -113,6 +117,7 @@
                         <ng-icon tabindex="0" name="tabler-dots-vertical" size="1.2rem" />
                       </div>
                     </div>
+                    <span *ngIf="getSelectedCategoriesItems().length <= 0" class="text-base-content text-opacity-50 text-sm">There are no Components here yet</span>
                   </div>
 
                   <!-- Shared components list -->
@@ -127,6 +132,7 @@
                       </div>
                       <div class="text-xs mt-1">Shared: {{item.sharedTimestamp}}</div>
                     </div>
+                    <span *ngIf="getSelectedCategoriesItems().length <= 0" class="text-base-content text-opacity-50 text-sm">There are no Components here yet</span>
                   </div>
 
                   <!-- System components, divided into subcategories -->
@@ -144,6 +150,7 @@
                         </div>
                       </div>
                     </div>
+                    <span *ngIf="getSubcategories().length <= 0" class="text-base-content text-opacity-50 text-sm">There are no Components here yet</span>
                   </div>
                 </ng-container>
 

@@ -13,6 +13,7 @@ import {Subject} from 'rxjs';
 import {ViewTable} from '../_domain/views/view-types/view-table';
 import {buildView} from "../_domain/views/build-view/build-view";
 import {ViewBlock} from "../_domain/views/view-types/view-block";
+import {ViewCollapse} from "../_domain/views/view-types/view-collapse";
 
 
 /**
@@ -60,7 +61,38 @@ export class ViewEditorService {
   }
 
   deleteAspect(aspect: Aspect) {
-    this.viewsByAspect = this.viewsByAspect.filter(e => e.aspect.userRole !== aspect.userRole || e.aspect.viewerRole !== aspect.viewerRole);
+    const oldEntry = this.getEntryOfAspect(aspect);
+    this.viewsByAspect = this.viewsByAspect.filter(e => !_.isEqual(e, oldEntry));
+
+    this.viewsByAspect.forEach(e => {
+      e.view?.modifyAspect([aspect], e.aspect);
+    });
+
+    this.recursivelyAddToViewsDeleted(oldEntry.view);
+  }
+  recursivelyAddToViewsDeleted(item: View) {
+    // View doesn't exist anymore in any tree -> delete from database
+    if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
+      viewsDeleted.push(item.id);
+      return; // adding the parent is enough, backend will delete all dependants too
+    }
+    else if (item instanceof ViewBlock) {
+      for (let child of item.children) {
+        this.recursivelyAddToViewsDeleted(child);
+      }
+    }
+    else if (item instanceof ViewCollapse) {
+      this.recursivelyAddToViewsDeleted(item.header);
+      this.recursivelyAddToViewsDeleted(item.content);
+    }
+    else if (item instanceof ViewTable) {
+      for (let row of item.headerRows) {
+        this.recursivelyAddToViewsDeleted(row);
+      }
+      for (let row of item.bodyRows) {
+        this.recursivelyAddToViewsDeleted(row);
+      }
+    }
   }
 
   createAspect(aspect: Aspect, view: View) {
