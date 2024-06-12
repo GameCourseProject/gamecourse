@@ -99,7 +99,7 @@ class EvaluateVisitor extends Visitor
                 else {
                     $library = $context->getLibrary();
                     if (!$library) {
-                        throw new Exception('On function \'' . $funcName . '\': ' . $contextVal . ' isn\'t a valid library item.');
+                        throw new Exception('Calling function \'' . $funcName . '\' on incorrect argument type.');
                     }
                 }
                 $node->setLibrary($library);

@@ -58,17 +58,17 @@ class UsersLibrary extends Library
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
+    private function mockUser(int $id = null, string $email = null, int $studentNumber = null) : array
     {
         return [
-            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
             "name" => Core::dictionary()->faker()->name(),
-            "email" => $email ? $email : Core::dictionary()->faker()->email(),
+            "email" => $email ?: Core::dictionary()->faker()->email(),
             "major" => Core::dictionary()->faker()->text(5),
             "nickname" => Core::dictionary()->faker()->text(10),
-            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "studentNumber" => $studentNumber ?: Core::dictionary()->faker()->numberBetween(11111, 99999),
             "theme" => null,
-            "username" => $email ? $email : Core::dictionary()->faker()->email(),
+            "username" => $email ?: Core::dictionary()->faker()->email(),
             "image" => null,
             "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
             "landingPage" => null,
