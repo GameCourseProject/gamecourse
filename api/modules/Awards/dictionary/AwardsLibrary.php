@@ -30,7 +30,20 @@ class AwardsLibrary extends Library
     public function getNamespaceDocumentation(): ?string
     {
         return <<<HTML
-        <p>This namespace allows you to access the awards earned by students. You can do so with the generic function:</p>
+        <p>This namespace allows you to access the awards earned by students. An award is characterized by the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 4,
+            "user": 3,
+            "course": 1,
+            "description": "Token(s) exchange",
+            "type": "bonus",
+            "moduleInstance": null,
+            "reward": 1000,
+            "date": "2024-04-08 09:30:51"
+        }</code></pre>
+        </div><br>
+        <p>You can obtain all the awards of a user using the generic function:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{awards.getUserAwards(%viewer)}</code></pre>
         </div>
