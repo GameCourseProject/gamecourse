@@ -1,11 +1,11 @@
-<nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-50 pl-2 pr-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
+<nav class="navbar sticky flex flex-col justify-center w-full bg-primary z-50 px-3 shadow-lg {{!isInCourse() ? 'h-20' : 'h-[7rem] lg:h-20'}}"
      [ngStyle]="{'background-color': getNavbarColor()}">
 
   <div class="flex justify-between w-full">
     <!-- Left -->
-    <div class="flex justify-start gap-2 lg:ml-72">
+    <div class="flex justify-start gap-2 lg:pl-72 mr-4 transition-all" id="navbar-left-container">
 
-      <!-- Hamburger Menu -->
+      <!-- Hamburger Menu - Mobile -->
       <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
         <!-- this hidden checkbox controls the state -->
         <input id="sidebar-toggler" type="checkbox" (click)="sidebar.toggle()"/>
@@ -15,6 +15,18 @@
 
         <!-- close icon -->
         <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
+      </label>
+
+      <!-- Hamburger Menu - PC -->
+      <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content hidden lg:inline-grid">
+        <!-- this hidden checkbox controls the state -->
+        <input id="sidebar-toggler" type="checkbox" (click)="sidebar.togglePC()"/>
+
+        <!-- open icon -->
+        <ng-icon name="tabler-layout-sidebar-right-collapse" size="1.7rem" color="fillCurrent" class="swap-on"></ng-icon>
+
+        <!-- close icon -->
+        <ng-icon name="tabler-layout-sidebar-left-collapse" size="1.7rem" color="fillCurrent" class="swap-off"></ng-icon>
       </label>
 
     </div>

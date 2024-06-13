@@ -250,6 +250,8 @@ import {
   tablerCodeDots,
   tablerClick,
   tablerTools,
+  tablerLayoutSidebarLeftCollapse,
+  tablerLayoutSidebarRightCollapse
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -581,6 +583,8 @@ import {
       tablerCodeDots,
       tablerClick,
       tablerTools,
+      tablerLayoutSidebarLeftCollapse,
+      tablerLayoutSidebarRightCollapse,
 
       matFaceRetouchingNatural,
 
