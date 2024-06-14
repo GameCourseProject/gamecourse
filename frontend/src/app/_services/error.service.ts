@@ -34,7 +34,7 @@ export class ErrorService {
       // Extract error message and stack trace
       const matchFatalError = /<b>(?:Fatal error|Warning)<\/b>:\s*(.*?)\s+in\s+(.*)/s.exec(this.error.full);
       if (matchFatalError) {
-        this.error.message = matchFatalError[1];
+        this.error.message = matchFatalError[1].replace("Uncaught Exception", "Error");
         this.error.stack = matchFatalError[2].replaceAll('\n', '<br>');
       } else {
         // If no fatal error format matches, fallback to the full error message

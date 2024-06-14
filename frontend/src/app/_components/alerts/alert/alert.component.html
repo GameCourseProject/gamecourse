@@ -1,4 +1,4 @@
-<div id="{{type}}-alert" class="hidden alert {{alerts[type].alert}} w-[calc(100vw-1rem)] sm:w-[26rem] mb-2 shadow-lg gap-2">
+<div id="{{type}}-alert" class="hidden alert {{alerts[type].alert}} w-[calc(100vw-1rem)] sm:w-[26rem] mb-2 shadow-lg gap-2 items-start">
   <!-- Message -->
   <div class="items-start">
     <ng-icon [name]="alerts[type].icon" size="1.3rem" class="{{alerts[type].text}} mt-0.5"></ng-icon>
@@ -9,8 +9,8 @@
   <div *ngIf="type === AlertType.ERROR" class="flex flex-col items-end">
     <div class="btn btn-sm btn-circle btn-ghost" (click)="closeAlert()"><ng-icon name="feather-x" size="1.3rem"/></div>
 
-    <div id="{{type}}-alert-btn" class="hidden flex-none text-nowrap">
-      <label [for]="'error-modal'" class="btn btn-sm btn-ghost modal-button">More info</label>
+    <div id="{{type}}-alert-btn" class="hidden flex-none">
+      <label [for]="'error-modal'" class="btn btn-sm btn-ghost modal-button">More<br>info</label>
     </div>
   </div>
 </div>

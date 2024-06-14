@@ -694,8 +694,16 @@ class ViewHandler
         }
 
         // Evaluate view of a specific type
-        $viewType = ViewType::getViewTypeById($view["type"]);
-        $viewType->evaluate($view, $visitor);
+        try {
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->evaluate($view, $visitor);
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if (strpos($message, " component.") === false) {
+                $message .= " On " . $view["type"] . " component.";
+            }
+            throw new Exception($message);
+        }
     }
 
     /**

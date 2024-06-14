@@ -227,7 +227,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       data = await this.api.renderCoreTemplateInEditor(this.coreTemplate.id, this.course.id).toPromise();
     }
     else {
-      AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+      AlertService.showAlert(AlertType.ERROR, 'Error: Couldn\'t identify as a valid template type (should be either system or custom)');
       return;
     }
 
@@ -613,6 +613,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async savePage(): Promise<void | "error"> {
+    AlertService.clear(AlertType.ERROR);
+
     if (!this.pageToManage.name) {
       AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
       return;
@@ -625,7 +627,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
       console.log(e);
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
     }
@@ -657,6 +659,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async saveChanges(): Promise<void | "error"> {
+    AlertService.clear(AlertType.ERROR);
+
     if (this.page && !this.page.name) {
       AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
       return;
@@ -672,7 +676,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
       console.log(e);
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong while building the tree.");
+      AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
     }
@@ -696,7 +700,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
       }
       else {
-        AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+        AlertService.showAlert(AlertType.ERROR, 'Error: Couldn\'t detect if this is a page or a template');
       }
 
       this.loading.action = false;
@@ -922,6 +926,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.page) {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
+          AlertService.clear(AlertType.ERROR);
           ModalService.openModal('save-before-preview');
         } else {
           await this.previewWithMockData();
@@ -936,6 +941,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.page) {
         this.previewMode = 'real';
         if (this.history.hasUndo()) {
+          AlertService.clear(AlertType.ERROR);
           ModalService.openModal('save-before-preview');
         }
         else {
@@ -944,6 +950,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       }
       else if (this.pageToManage) {
         this.previewMode = 'real';
+        AlertService.clear(AlertType.ERROR);
         ModalService.openModal('save-new-before-preview');
       }
     }
@@ -1003,6 +1010,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.viewerToPreview = this.viewersToPreview.find(e => e.value == this.user.id)?.value;
     this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
 
+    AlertService.clear(AlertType.ERROR);
     ModalService.openModal('preview-as');
   }
 
@@ -1045,6 +1053,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   async previewWithMockData() {
+    AlertService.clear(AlertType.ERROR);
+
     this.loading.action = true;
     try {
       this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
