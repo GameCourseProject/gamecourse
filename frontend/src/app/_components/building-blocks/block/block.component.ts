@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
-import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {groupedChildren, viewsDeleted} from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from "../../../_services/history.service";
 import {ViewEditorService} from "../../../_services/view-editor.service";
 import * as _ from "lodash";
@@ -64,7 +64,8 @@ export class BBBlockComponent implements OnInit {
 
       this.history.saveState({
         viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-        groupedChildren: groupedChildren
+        groupedChildren: groupedChildren,
+        viewsDeleted: viewsDeleted
       });
 
     } else if (event.previousContainer !== event.container) {
@@ -89,7 +90,8 @@ export class BBBlockComponent implements OnInit {
 
       this.history.saveState({
         viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-        groupedChildren: groupedChildren
+        groupedChildren: groupedChildren,
+        viewsDeleted: viewsDeleted
       });
     }
   }

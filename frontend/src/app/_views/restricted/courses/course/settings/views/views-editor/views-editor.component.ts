@@ -19,7 +19,7 @@ import {
   getFakeId,
   groupedChildren,
   initGroupedChildren,
-  setGroupedChildren,
+  setGroupedChildren, setViewsDeleted,
   viewsDeleted
 } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {Role} from "src/app/_domain/roles/role";
@@ -144,7 +144,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           initGroupedChildren([]);
           this.history.saveState({
             viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-            groupedChildren: groupedChildren
+            groupedChildren: groupedChildren,
+            viewsDeleted: viewsDeleted
           });
         }
         else {
@@ -247,7 +248,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.history.clear();
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-      groupedChildren: groupedChildren
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 
@@ -575,7 +577,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-      groupedChildren: groupedChildren
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
     this.resetMenus();
   }
@@ -602,7 +605,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-      groupedChildren: groupedChildren
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
 
     this.optionSelected = null;
@@ -903,6 +907,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         const res = this.history.undo();
         this.service.viewsByAspect = res.viewsByAspect;
         setGroupedChildren(res.groupedChildren);
+        setViewsDeleted(res.viewsByAspect);
+
         this.view = this.service.getSelectedView();
       }
     }
@@ -911,6 +917,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         const res = this.history.redo();
         this.service.viewsByAspect = res.viewsByAspect;
         setGroupedChildren(res.groupedChildren);
+        setViewsDeleted(res.viewsByAspect);
+
         this.view = this.service.getSelectedView();
       }
     }
@@ -1075,6 +1083,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     const backup = this.history.getMostRecent();
     this.service.viewsByAspect = backup.viewsByAspect;
     setGroupedChildren(backup.groupedChildren);
+    setViewsDeleted(backup.viewsByAspect);
+
     this.view = this.service.getSelectedView();
   }
 
