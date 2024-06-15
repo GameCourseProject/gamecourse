@@ -181,18 +181,6 @@ class AwardsLibrary extends Library
                 $this,
                 "awards.getUserAwardsByType(%user, 'presentation')"
             ),
-            new DFunction("getUserBadgesAwards",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "bragging", "optional" => true, "type" => "bool"],
-                    ["name" => "count", "optional" => true, "type" => "bool"],
-                    ["name" => "point", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets badges awards for a given user. Some options available.",
-                ReturnType::AWARDS_COLLECTION,
-                $this,
-                "awards.getUserBadgesAwards(%user, true, false)"
-            ),
             new DFunction("getUserSkillsAwards",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "collab", "optional" => true, "type" => "bool"],
@@ -221,18 +209,6 @@ class AwardsLibrary extends Library
                 ReturnType::NUMBER,
                 $this,
                 "awards.getUserTotalRewardByType(%user, 'tokens')"
-            ),
-            new DFunction("getUserBadgesTotalReward",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "bragging", "optional" => true, "type" => "bool"],
-                    ["name" => "count", "optional" => true, "type" => "bool"],
-                    ["name" => "point", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets total badges reward for a given user. Some options available.",
-                ReturnType::NUMBER,
-                $this,
-                "awards.getUserBadgesTotalReward(%user, false, false, true, true, true)"
             ),
             new DFunction("getUserSkillsTotalReward",
                 [["name" => "userId", "optional" => false, "type" => "int"],
@@ -480,42 +456,6 @@ class AwardsLibrary extends Library
     }
 
     /**
-     * Gets badges awards for a given user.
-     * Option for extra credit:
-     *  - if null --> gets awards for all badges
-     *  - if false --> gets awards only for badges that are not extra credit
-     *  - if true --> gets awards only for badges that are extra credit
-     * (same for other options)
-     *
-     * @param int $userId
-     * @param bool|null $extra
-     * @param bool|null $bragging
-     * @param bool|null $count
-     * @param bool|null $point
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserBadgesAwards(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                        bool $point = null, bool $active = null): ValueNode
-    {
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $awards = array_map(function () use ($userId) {
-                return $this->mockAward($userId, "badge");
-            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
-
-        } else {
-            $awardsModule = new Awards($course);
-            $awards = $awardsModule->getUserBadgesAwards($userId, $extra, $bragging, $count, $point, $active);
-        }
-        return new ValueNode($awards, $this);
-    }
-
-    /**
      * Gets skill awards for a given user.
      * Option for collaborative:
      *  - if null --> gets total reward for all skills
@@ -608,41 +548,6 @@ class AwardsLibrary extends Library
         } else {
             $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserTotalRewardByType($userId, $type, $instance);
-        }
-        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
-    }
-
-    /**
-     * Gets total badges reward for a given user.
-     * Option for extra credit:
-     *  - if null --> gets total reward for all badges
-     *  - if false --> gets total reward only for badges that are not extra credit
-     *  - if true --> gets total reward only for badges that are extra credit
-     * (same for other options)
-     *
-     * @param int $userId
-     * @param bool|null $extra
-     * @param bool|null $bragging
-     * @param bool|null $count
-     * @param bool|null $point
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserBadgesTotalReward(int $userId, bool $extra = null, bool $bragging = null, bool $count = null,
-                                             bool $point = null, bool $active = null): ValueNode
-    {
-        // Check permissions
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
-
-        } else {
-            $awardsModule = new Awards($course);
-            $reward = $awardsModule->getUserBadgesTotalReward($userId, $extra, $bragging, $count, $point, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

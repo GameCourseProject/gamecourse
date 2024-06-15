@@ -226,7 +226,8 @@ class Dictionary
                 if ($expectedType) {
                     $expectedTypeName = $expectedType->getName();
 
-                    if ($expectedTypeName == "bool" && $actualType == "int") continue;
+                    if ($expectedTypeName == "bool" && ($args[$index] == 1 || $args[$index] == 0)) continue;
+                    if ($expectedTypeName == "float" && $actualType == "int") continue;
 
                     if ($expectedTypeName !== $actualType && !is_a($args[$index], $expectedTypeName)) {
                         throw new Exception("Argument " . ($index + 1) . " passed to function '" . $funcName . "' must be of the type " . $expectedTypeName . ", " . $actualType . " given.");
