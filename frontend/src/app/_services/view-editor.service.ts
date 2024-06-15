@@ -20,8 +20,9 @@ import {ViewCollapse} from "../_domain/views/view-types/view-collapse";
  * This service can keep information about and manipulate the
  * several views/aspects of a page/template
  *
- * IMPORTANT NOTE: the edit action is inside the component-editor
- * component, not here, due to its complexity
+ * IMPORTANT NOTES:
+ * the edit action is inside the component-editor component, not here, due to its complexity;
+ * the reorder action is inside the block component since that's where the drag and drop is
  */
 @Injectable({
   providedIn: 'root'
@@ -232,8 +233,11 @@ export class ViewEditorService {
 
   /*
    * Deletes a view
+   * Returns the new parent, needed for the reordering
    */
-  delete(item: View) {
+  delete(item: View): ViewBlock | null {
+    let newBlock; // the new parent block
+
     const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
 
     const lowerInHierarchy = viewsWithThis.filter((e) =>
@@ -249,7 +253,7 @@ export class ViewEditorService {
 
     // if there is any aspect above, we need to create a new version of the parent, without the item, for this aspect
     if (higherInHierarchy.length > 0 && item.parent) {
-      const newBlock = _.cloneDeep(item.parent);
+      newBlock = _.cloneDeep(item.parent);
       newBlock.removeChildView(item.id);
       newBlock.replaceWithFakeIds();
       newBlock.aspect = this.selectedAspect;
@@ -263,7 +267,7 @@ export class ViewEditorService {
 
         for (let el of lowerInHierarchy) {
           let view = el.view.findView(item.parent.id);
-          view.parent.replaceView(view.id, newBlock);
+          view.parent.replaceView(view.id, _.cloneDeep(newBlock));
         }
       }
       // make a new block with the original content, so the parent has the two alternatives (original and new) as child
@@ -297,7 +301,6 @@ export class ViewEditorService {
               for (let el of otherBlock.children) {
                 el.parent = otherBlock
               }
-              otherBlock.parent = item.parent;
             }
           }
 
@@ -349,6 +352,8 @@ export class ViewEditorService {
     if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
       viewsDeleted.push(item.id);
     }
+
+    return newBlock;
   }
 
   /*
