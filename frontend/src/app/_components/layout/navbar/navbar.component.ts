@@ -2,11 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {NavigationEnd, PRIMARY_OUTLET, Router} from "@angular/router";
 import {DomSanitizer} from "@angular/platform-browser";
 import {environment} from "../../../../environments/environment.prod";
-import {of} from "rxjs";
 
 import {ApiHttpService} from "../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../_services/api/api-endpoints.service";
-import {ThemingService} from "../../../_services/theming/theming.service";
 import {UpdateService, UpdateType} from "../../../_services/update.service";
 import {SidebarService} from "../../../_services/sidebar.service";
 

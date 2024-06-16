@@ -149,7 +149,9 @@ import {
   featherVolume2,
   featherX,
   featherXCircle,
-  featherChevronDown
+  featherChevronDown,
+  featherChevronLeft,
+  featherChevronRight
 } from "@ng-icons/feather-icons";
 
 import {
@@ -249,9 +251,7 @@ import {
   tablerCode,
   tablerCodeDots,
   tablerClick,
-  tablerTools,
-  tablerLayoutSidebarLeftCollapse,
-  tablerLayoutSidebarRightCollapse
+  tablerTools
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -487,6 +487,8 @@ import {
       featherX,
       featherXCircle,
       featherChevronDown,
+      featherChevronLeft,
+      featherChevronRight,
 
       jamCircleF,
       jamDownload,
@@ -583,8 +585,6 @@ import {
       tablerCodeDots,
       tablerClick,
       tablerTools,
-      tablerLayoutSidebarLeftCollapse,
-      tablerLayoutSidebarRightCollapse,
 
       matFaceRetouchingNatural,
 

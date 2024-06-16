@@ -16,7 +16,7 @@ export class SidebarService {
     this.sidebar.classList.toggle('lg:translate-x-0');
     this.sidebar.classList.toggle('lg:-translate-x-[110%]');
     this.main.classList.toggle('lg:pl-80');
-    this.navbar.classList.toggle('lg:pl-72');
+    this.navbar.classList.toggle('lg:pl-[278px]');
   }
 
   open() {

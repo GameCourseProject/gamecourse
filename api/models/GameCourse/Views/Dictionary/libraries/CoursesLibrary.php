@@ -62,6 +62,7 @@ class CoursesLibrary extends Library
             "color" => Core::dictionary()->faker()->hexColor(),
             "theme" => Core::dictionary()->faker()->text(10),
             "avatars" => Core::dictionary()->faker()->boolean(),
+            "nicknames" => Core::dictionary()->faker()->boolean(),
             "year" => date("Y"),
             "startDate" => $fakeStart->format("Y-m-d H:m:s"),
             "endDate" => $fakeStart->modify('+6 month')->format("Y-m-d H:m:s")
@@ -117,6 +118,13 @@ class CoursesLibrary extends Library
                 ReturnType::BOOLEAN,
                 $this,
                 "%someCourse.avatars\nReturns true or false."
+            ),
+            new DFunction("nicknames",
+                [["name" => "course", "optional" => false, "type" => "Course"]],
+                "Returns whether the nicknames are enabled in the course or not.",
+                ReturnType::BOOLEAN,
+                $this,
+                "%someCourse.nicknames\nReturns true or false."
             ),
             new DFunction("getCourseById",
                 [["name" => "courseId", "optional" => false, "type" => "int"]],
@@ -223,10 +231,26 @@ class CoursesLibrary extends Library
     public function avatars($course): ValueNode
     {
         // NOTE: on mock data, course will be mocked
-        if (is_array($course)) $color = $course["avatars"];
-        elseif (is_object($course) && method_exists($course, 'getAvatars')) $color = $course->getAvatars();
+        if (is_array($course)) $avatars = $course["avatars"];
+        elseif (is_object($course) && method_exists($course, 'getAvatars')) $avatars = $course->getAvatars();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a course.");
-        return new ValueNode($color, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+        return new ValueNode($avatars, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
+
+    /**
+     * Returns whether the avatars are enabled in the course or not.
+     *
+     * @param $course
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function nicknames($course): ValueNode
+    {
+        // NOTE: on mock data, course will be mocked
+        if (is_array($course)) $nicknames = $course["nicknames"];
+        elseif (is_object($course) && method_exists($course, 'getNicknames')) $nicknames = $course->getNicknames();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a course.");
+        return new ValueNode($nicknames, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
 
