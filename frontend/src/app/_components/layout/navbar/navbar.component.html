@@ -3,7 +3,7 @@
 
   <div class="flex justify-between w-full">
     <!-- Left -->
-    <div class="flex justify-start gap-2 lg:pl-72 mr-4 transition-all" id="navbar-left-container">
+    <div class="flex justify-start gap-2 lg:pl-[278px] mr-4 transition-all" id="navbar-left-container">
 
       <!-- Hamburger Menu - Mobile -->
       <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
@@ -18,15 +18,15 @@
       </label>
 
       <!-- Hamburger Menu - PC -->
-      <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content hidden lg:inline-grid">
+      <label class="-ml-[25px] py-3.5 pr-1 pl-4 bg-base-100 hover:bg-base-200 transition rounded-r-full rounded-l-none shadow-xl swap swap-rotate text-primary-content hidden lg:inline-grid">
         <!-- this hidden checkbox controls the state -->
         <input id="sidebar-toggler" type="checkbox" (click)="sidebar.togglePC()"/>
 
         <!-- open icon -->
-        <ng-icon name="tabler-layout-sidebar-right-collapse" size="1.7rem" color="fillCurrent" class="swap-on"></ng-icon>
+        <ng-icon name="feather-chevron-right" size="1.3rem" class="swap-on text-base-content"></ng-icon>
 
         <!-- close icon -->
-        <ng-icon name="tabler-layout-sidebar-left-collapse" size="1.7rem" color="fillCurrent" class="swap-off"></ng-icon>
+        <ng-icon name="feather-chevron-left" size="1.3rem" class="swap-off text-base-content"></ng-icon>
       </label>
 
     </div>
