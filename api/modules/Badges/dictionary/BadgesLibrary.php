@@ -328,7 +328,7 @@ class BadgesLibrary extends Library
                     ["name" => "count", "optional" => true, "type" => "bool"],
                     ["name" => "point", "optional" => true, "type" => "bool"],
                     ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets badges awards for a given user. Some filtering options available.",
+                "Gets awards of type 'badge' obtained by a given user. Some options available.",
                 ReturnType::AWARDS_COLLECTION,
                 $this,
                 "badges.getUserBadgesAwards(%user, true, false)"
@@ -340,7 +340,7 @@ class BadgesLibrary extends Library
                     ["name" => "count", "optional" => true, "type" => "bool"],
                     ["name" => "point", "optional" => true, "type" => "bool"],
                     ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets the total badges reward value obtained by a given user. Some filtering options available.",
+                "Gets the total badges reward value obtained by a given user. Some options available.",
                 ReturnType::NUMBER,
                 $this,
                 "badges.getUserBadgesTotalReward(%user, false, false, true, true, true)"
@@ -834,7 +834,7 @@ class BadgesLibrary extends Library
             $awardsModule = new Awards($course);
             $awards = $awardsModule->getUserBadgesAwards($userId, $extra, $bragging, $count, $point, $active);
         }
-        return new ValueNode($awards, $this);
+        return new ValueNode($awards, Core::dictionary()->getLibraryById(AwardsLibrary::ID));
     }
 
     /**

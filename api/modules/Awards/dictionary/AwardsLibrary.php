@@ -54,13 +54,7 @@ class AwardsLibrary extends Library
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{awards.getUserAwardsByType(%user, 'presentation')}</code></pre>
         </div>
-        <p>Where the second argument is the award type.</p><br>
-        <p>Aside from the generic functions above, you can also use more specific functions available in this library, such as:</p>
-        <div class="bg-base-100 rounded-box p-4 my-2">
-          <pre><code>{awards.getUserBadgesAwards(%user)}</code></pre>
-        </div>
-        <p>Each of these specific functions also come with several optional arguments that are relevant for that award type.
-        For example, you can choose when obtaining the Badges awards to filter them by only the ones that count towards extra XP.</p><br>
+        <p>Where the second argument is the award type.</p>
         HTML;
     }
 
@@ -181,26 +175,6 @@ class AwardsLibrary extends Library
                 $this,
                 "awards.getUserAwardsByType(%user, 'presentation')"
             ),
-            new DFunction("getUserSkillsAwards",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "collab", "optional" => true, "type" => "bool"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets badges awards for a given user. Some options available.",
-                ReturnType::AWARDS_COLLECTION,
-                $this,
-                "awards.getUserSkillsAwards(%user, false, false, true)"
-            ),
-            new DFunction("getUserStreaksAwards",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "repeatable", "optional" => true, "type" => "bool"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets streaks awards for a given user. Some options available.",
-                ReturnType::AWARDS_COLLECTION,
-                $this,
-                "awards.getUserStreaksAwards(%user)"
-            ),
             new DFunction("getUserTotalRewardByType",
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "type", "optional" => false, "type" => "string"],
@@ -209,26 +183,6 @@ class AwardsLibrary extends Library
                 ReturnType::NUMBER,
                 $this,
                 "awards.getUserTotalRewardByType(%user, 'tokens')"
-            ),
-            new DFunction("getUserSkillsTotalReward",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "collab", "optional" => true, "type" => "bool"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets total skills reward for a given user. Some options available.",
-                ReturnType::NUMBER,
-                $this,
-                "awards.getUserSkillsTotalReward(%user, false, false, true)"
-            ),
-            new DFunction("getUserStreaksTotalReward",
-                [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "repeatable", "optional" => true, "type" => "bool"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"],
-                    ["name" => "active", "optional" => true, "type" => "bool"]],
-                "Gets total streaks reward for a given user. Some options available.",
-                ReturnType::NUMBER,
-                $this,
-                "awards.getUserStreaksTotalReward(%user, false, false, true)"
             )
         ];
     }
@@ -455,74 +409,6 @@ class AwardsLibrary extends Library
         return new ValueNode($awards, $this);
     }
 
-    /**
-     * Gets skill awards for a given user.
-     * Option for collaborative:
-     *  - if null --> gets total reward for all skills
-     *  - if false --> gets total reward only for skills that are not collaborative
-     *  - if true --> gets total reward only for skills that are collaborative
-     * (same for other options)
-     *
-     * @param int $userId
-     * @param bool|null $collab
-     * @param bool|null $extra
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
-    {
-        // Check permissions
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $awards = array_map(function () use ($userId) {
-                return $this->mockAward($userId, "skill");
-            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
-
-        } else {
-            $awardsModule = new Awards($course);
-            $awards = $awardsModule->getUserSkillsAwards($userId, $collab, $extra, $active);
-        }
-        return new ValueNode($awards, $this);
-    }
-
-    /**
-     * Gets streaks awards for a given user.
-     * Option for extra credit:
-     *  - if null --> gets awards for all streaks
-     *  - if false --> gets awards only for streaks that are not extra credit
-     *  - if true --> gets awards only for streaks that are extra credit
-     * (same for other options)
-     *
-     * @param int $userId
-     * @param bool|null $repeatable
-     * @param bool|null $extra
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserStreaksAwards(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
-    {
-        // Check permissions
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $awards = array_map(function () use ($userId) {
-                return $this->mockAward($userId, "streak");
-            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
-
-        } else {
-            $awardsModule = new Awards($course);
-            $awards = $awardsModule->getUserStreaksAwards($userId, $repeatable, $extra, $active);
-        }
-        return new ValueNode($awards, $this);
-    }
-
 
     /*** ---------- Rewards ---------- ***/
 
@@ -548,69 +434,6 @@ class AwardsLibrary extends Library
         } else {
             $awardsModule = new Awards($course);
             $reward = $awardsModule->getUserTotalRewardByType($userId, $type, $instance);
-        }
-        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
-    }
-
-    /**
-     * Gets total skills reward for a given user.
-     * Option for collaborative:
-     *  - if null --> gets total reward for all skills
-     *  - if false --> gets total reward only for skills that are not collaborative
-     *  - if true --> gets total reward only for skills that are collaborative
-     * (same for other options)
-     *
-     * @param int $userId
-     * @param bool|null $collab
-     * @param bool|null $extra
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
-    {
-        // Check permissions
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
-
-        } else {
-            $awardsModule = new Awards($course);
-            $reward = $awardsModule->getUserSkillsTotalReward($userId, $collab, $extra, $active);
-        }
-        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
-    }
-
-    /**
-     * Gets total streaks reward for a given user.
-     * Option for extra credit:
-     *  - if null --> gets total reward for all streaks
-     *  - if false --> gets total reward only for streaks that are not extra credit
-     *  - if true --> gets total reward only for streaks that are extra credit
-     *
-     * @param int $userId
-     * @param bool|null $repeatable
-     * @param bool|null $extra
-     * @param bool|null $active
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function getUserStreaksTotalReward(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
-    {
-        // Check permissions
-        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
-        $course = Core::dictionary()->getCourse();
-        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
-
-        if (Core::dictionary()->mockData()) {
-            $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
-
-        } else {
-            $awardsModule = new Awards($course);
-            $reward = $awardsModule->getUserStreaksTotalReward($userId, $repeatable, $active, $active);
         }
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

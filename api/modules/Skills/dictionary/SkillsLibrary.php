@@ -3,6 +3,7 @@ namespace GameCourse\Views\Dictionary;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -59,7 +60,7 @@ class SkillsLibrary extends Library
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{skills.getSkills()}</code></pre>
         </div>
-        <p>This returns every single skill in the course; however the function allows you to filter by active, extra, and
+        <p>This returns every single skill in the course, however, the function allows you to filter by active, extra, and
         collaborative skills using optional arguments. This is detailed in the documentation of the function!</p>
         HTML;
     }
@@ -99,6 +100,20 @@ class SkillsLibrary extends Library
             "dependencies" => array_map(function () {
                 return ["name" => Core::dictionary()->faker()->text(20)];
             }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
+        ];
+    }
+
+    private function mockAward($userId, $type = null) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "user" => $userId,
+            "description" => Core::dictionary()->faker()->text(20),
+            "type" => $type ?: Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "moduleInstance" => null,
+            "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
         ];
     }
 
@@ -232,6 +247,26 @@ class SkillsLibrary extends Library
                 ReturnType::USERS_COLLECTION,
                 $this,
                 "skills.getUsersWithSkill(%skill.id)"
+            ),
+            new DFunction("getUserSkillsAwards",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "collab", "optional" => true, "type" => "bool"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"],
+                    ["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets awards of type 'skill' obtained by a given user. Some options available.",
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "skills.getUserSkillsAwards(%user, false, false, true)"
+            ),
+            new DFunction("getUserSkillsTotalReward",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "collab", "optional" => true, "type" => "bool"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"],
+                    ["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets total skills reward for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this,
+                "skills.getUserSkillsTotalReward(%user, false, false, true)"
             )
         ];
     }
@@ -583,5 +618,71 @@ class SkillsLibrary extends Library
             $users = $skillsModule->getUsersWithSkill($skillId);
         }
         return new ValueNode($users, Core::dictionary()->getLibraryById(UsersLibrary::ID));
+    }
+
+    /**
+     * Gets skill awards for a given user.
+     * Option for collaborative:
+     *  - if null --> gets total reward for all skills
+     *  - if false --> gets total reward only for skills that are not collaborative
+     *  - if true --> gets total reward only for skills that are collaborative
+     * (same for other options)
+     *
+     * @param int $userId
+     * @param bool|null $collab
+     * @param bool|null $extra
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserSkillsAwards(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "skill");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
+
+        } else {
+            $awardsModule = new Awards($course);
+            $awards = $awardsModule->getUserSkillsAwards($userId, $collab, $extra, $active);
+        }
+        return new ValueNode($awards, Core::dictionary()->getLibraryById(AwardsLibrary::ID));
+    }
+
+    /**
+     * Gets total skills reward for a given user.
+     * Option for collaborative:
+     *  - if null --> gets total reward for all skills
+     *  - if false --> gets total reward only for skills that are not collaborative
+     *  - if true --> gets total reward only for skills that are collaborative
+     * (same for other options)
+     *
+     * @param int $userId
+     * @param bool|null $collab
+     * @param bool|null $extra
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserSkillsTotalReward(int $userId, bool $collab = null, bool $extra = null, bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
+
+        } else {
+            $awardsModule = new Awards($course);
+            $reward = $awardsModule->getUserSkillsTotalReward($userId, $collab, $extra, $active);
+        }
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 }
