@@ -1015,8 +1015,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     await this.getUsersToPreview();
     this.loading.users = false;
 
-    this.viewerToPreview = this.viewersToPreview.find(e => e.value == this.user.id)?.value;
-    this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
+    if (!this.viewerToPreview)
+      this.viewerToPreview = this.viewersToPreview.find(e => e.value == this.user.id)?.value;
+
+    if (!this.userToPreview)
+      this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
 
     AlertService.clear(AlertType.ERROR);
     ModalService.openModal('preview-as');

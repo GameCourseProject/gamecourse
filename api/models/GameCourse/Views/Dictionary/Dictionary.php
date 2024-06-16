@@ -215,24 +215,24 @@ class Dictionary
 
         // Check number and types of arguments
         $ref = $library->getFunctionReflection($funcName);
-        if (count($args) < $ref->getNumberOfRequiredParameters()) {
-            throw new Exception("Function '$funcName' requires more arguments than provided.");
-        }
         foreach ($ref->getParameters() as $index => $parameter) {
-            if (isset($args[$index])) {
+            if (array_key_exists($index, $args)) {
                 $expectedType = $parameter->getType();
-                $actualType = get_debug_type($args[$index]);
 
                 if ($expectedType) {
+                    $actualType = get_debug_type($args[$index]);
                     $expectedTypeName = $expectedType->getName();
 
                     if ($expectedTypeName == "bool" && ($args[$index] == 1 || $args[$index] == 0)) continue;
                     if ($expectedTypeName == "float" && $actualType == "int") continue;
+                    if ($index >= $ref->getNumberOfRequiredParameters() && $actualType == "null") continue;
 
                     if ($expectedTypeName !== $actualType && !is_a($args[$index], $expectedTypeName)) {
                         throw new Exception("Argument " . ($index + 1) . " passed to function '" . $funcName . "' must be of the type " . $expectedTypeName . ", " . $actualType . " given.");
                     }
                 }
+            } else if ($index < $ref->getNumberOfRequiredParameters()) {
+                throw new Exception("Function '$funcName' requires more arguments than provided.");
             }
         }
 

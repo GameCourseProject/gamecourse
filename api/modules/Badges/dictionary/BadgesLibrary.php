@@ -142,6 +142,20 @@ class BadgesLibrary extends Library
         ];
     }
 
+    private function mockAward($userId, $type = null) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "user" => $userId,
+            "description" => Core::dictionary()->faker()->text(20),
+            "type" => $type ?: Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "moduleInstance" => null,
+            "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
+        ];
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
