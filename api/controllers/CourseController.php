@@ -153,10 +153,11 @@ class CourseController
         $isActive = $course->isActive();
         $isVisible = $course->isVisible();
         $avatars = API::getValue("avatars");
+        $nicknames = API::getValue("nicknames");
         $theme = API::getValue("theme");
 
         // Edit course
-        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars, $theme);
+        $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars, $nicknames, $theme);
 
         $courseInfo = $course->getData();
         if (Core::getLoggedUser()->isAdmin())

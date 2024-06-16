@@ -694,8 +694,16 @@ class ViewHandler
         }
 
         // Evaluate view of a specific type
-        $viewType = ViewType::getViewTypeById($view["type"]);
-        $viewType->evaluate($view, $visitor);
+        try {
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->evaluate($view, $visitor);
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if (strpos($message, " component.") === false) {
+                $message .= " On " . $view["type"] . " component.";
+            }
+            throw new Exception($message);
+        }
     }
 
     /**
@@ -940,34 +948,6 @@ class ViewHandler
                 $logs[] = new EditLog($view["id"]);
             }
 
-            // Move view
-            // WARNING: this isn't creating logs, it's moving the views immediately
-            // I needed this to not lose track of the positions when moving to an already occupied position
-            if ( isset($parent["parent"]) && !empty(Core::database()->select(self::TABLE_VIEW, ["id" => $parent["parent"]])) ) {
-                $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]], "child");
-
-                // If the position is occupied, move the occupying one out temporarily
-                if (!empty($occupying) && $occupying != $view["id"]) {
-                    Core::database()->executeQuery("SET @i=0");
-                    $sql = "SELECT MAX(if(@i=position,@i:=position+1,@i)) FROM " . self::TABLE_VIEW_PARENT . " WHERE parent = " . $parent["parent"] . " ORDER BY position";
-                    $tempPos = intval(Core::database()->executeQuery($sql)->fetchColumn());
-
-                    self::moveView($occupying,
-                        ["parent" => $parent["parent"], "pos" => $parent["pos"]],
-                        ["parent" => $parent["parent"], "pos" => $tempPos]
-                    );
-                }
-
-                // If this view was somewhere else previously, move it
-                $prevPos = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $view["id"]], "*");
-                if (isset($prevPos)) {
-                    self::moveView($view["id"],
-                        ["parent" => $prevPos["parent"], "pos" => $prevPos["position"]],
-                        $parent
-                    );
-                }
-            }
-
             // Translate view of a specific type
             $viewType = ViewType::getViewTypeById($view["type"]);
             $viewType->translate($view, $logs, $views, $parent);
@@ -978,8 +958,18 @@ class ViewHandler
 
         // Move view
         if (isset($parent["parent"])) {
-            $where = ["parent" => $parent["parent"], "child" => $viewRoot];
-            if (empty(Core::database()->select(self::TABLE_VIEW_PARENT, $where))) {
+            $currentParentAndPosition = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $viewRoot]);
+            if (!empty($currentParentAndPosition["parent"])) {
+                $currentParent = $currentParentAndPosition["parent"];
+                $currentPosition = $currentParentAndPosition["position"];
+
+                if ($currentParent != $parent["parent"] || $currentPosition != $parent["pos"]) {
+                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
+                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $currentParent, "position" => $currentPosition]);
+                    $logs[] = new MoveLog($viewRoot, null, $parent);
+                }
+            } else {
+                Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
                 $logs[] = new MoveLog($viewRoot, null, $parent);
             }
         }

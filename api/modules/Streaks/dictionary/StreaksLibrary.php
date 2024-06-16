@@ -4,6 +4,7 @@ namespace GameCourse\Views\Dictionary;
 use Exception;
 use Faker\Factory;
 use GameCourse\Core\Core;
+use GameCourse\Module\Awards\Awards;
 use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\Streaks\Streaks;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -29,6 +30,20 @@ class StreaksLibrary extends Library
             "isExtra" => Core::dictionary()->faker()->randomElement([0, 1]),
             "isRepeatable" => Core::dictionary()->faker()->randomElement([0, 1]),
             "isActive" => Core::dictionary()->faker()->randomElement([0, 1])
+        ];
+    }
+
+    private function mockAward($userId, $type = null) : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "course" => 0,
+            "user" => $userId,
+            "description" => Core::dictionary()->faker()->text(20),
+            "type" => $type ?: Core::dictionary()->faker()->randomElement(['assignment','badge','bonus','exam','labs','post','presentation','quiz','skill','streak','tokens']),
+            "moduleInstance" => null,
+            "reward" => Core::dictionary()->faker()->numberBetween(50, 500),
+            "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
         ];
     }
 
@@ -109,6 +124,26 @@ class StreaksLibrary extends Library
                 ReturnType::TIME,
                 $this,
                 "streaks.getUserStreakDeadline(%user, %streak.id)"
+            ),
+            new DFunction("getUserStreaksAwards",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "repeatable", "optional" => true, "type" => "bool"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"],
+                    ["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets awards of type 'streak' obtained by a given user. Some options available.",
+                ReturnType::AWARDS_COLLECTION,
+                $this,
+                "streaks.getUserStreaksAwards(%user)"
+            ),
+            new DFunction("getUserStreaksTotalReward",
+                [["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "repeatable", "optional" => true, "type" => "bool"],
+                    ["name" => "extra", "optional" => true, "type" => "bool"],
+                    ["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets total streaks reward for a given user. Some options available.",
+                ReturnType::NUMBER,
+                $this,
+                "streaks.getUserStreaksTotalReward(%user, false, false, true)"
             )
         ];
     }
@@ -453,5 +488,70 @@ class StreaksLibrary extends Library
             $deadline = $streaksModule->getUserStreakDeadline($userId, $streakId);
         }
         return new ValueNode($deadline, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets streaks awards for a given user.
+     * Option for extra credit:
+     *  - if null --> gets awards for all streaks
+     *  - if false --> gets awards only for streaks that are not extra credit
+     *  - if true --> gets awards only for streaks that are extra credit
+     * (same for other options)
+     *
+     * @param int $userId
+     * @param bool|null $repeatable
+     * @param bool|null $extra
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserStreaksAwards(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $awards = array_map(function () use ($userId) {
+                return $this->mockAward($userId, "streak");
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 5)));
+
+        } else {
+            $awardsModule = new Awards($course);
+            $awards = $awardsModule->getUserStreaksAwards($userId, $repeatable, $extra, $active);
+        }
+        return new ValueNode($awards, Core::dictionary()->getLibraryById(AwardsLibrary::ID));
+    }
+
+    /**
+     * Gets total streaks reward for a given user.
+     * Option for extra credit:
+     *  - if null --> gets total reward for all streaks
+     *  - if false --> gets total reward only for streaks that are not extra credit
+     *  - if true --> gets total reward only for streaks that are extra credit
+     *
+     * @param int $userId
+     * @param bool|null $repeatable
+     * @param bool|null $extra
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getUserStreaksTotalReward(int $userId, bool $repeatable = null, bool $extra = null, bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $reward = Core::dictionary()->faker()->numberBetween(0, 3000);
+
+        } else {
+            $awardsModule = new Awards($course);
+            $reward = $awardsModule->getUserStreaksTotalReward($userId, $repeatable, $active, $active);
+        }
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 }

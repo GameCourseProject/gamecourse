@@ -67,6 +67,7 @@ CREATE TABLE course(
     roleHierarchy               text,
     theme                       varchar(50) DEFAULT NULL,
     avatars                     boolean DEFAULT TRUE,
+    nicknames                     boolean DEFAULT TRUE,
 
     UNIQUE key(name, year),
     FOREIGN key(landingPage) REFERENCES page(id) ON DELETE CASCADE

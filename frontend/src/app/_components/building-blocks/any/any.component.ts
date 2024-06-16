@@ -24,7 +24,7 @@ import {ModalService} from 'src/app/_services/modal.service';
 import {
   ComponentEditorComponent
 } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
-import {groupedChildren} from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {groupedChildren, viewsDeleted} from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from 'src/app/_services/history.service';
 import {ViewEditorService} from 'src/app/_services/view-editor.service';
 import {AlertService, AlertType} from "../../../_services/alert.service";
@@ -216,7 +216,8 @@ export class BBAnyComponent implements OnInit, OnDestroy {
 
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-      groupedChildren: groupedChildren
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 
@@ -239,7 +240,8 @@ export class BBAnyComponent implements OnInit, OnDestroy {
       this.delete = true;
       this.history.saveState({
         viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-        groupedChildren: groupedChildren
+        groupedChildren: groupedChildren,
+        viewsDeleted: viewsDeleted
       });
     }
   }
@@ -248,7 +250,8 @@ export class BBAnyComponent implements OnInit, OnDestroy {
     this.service.duplicate(this.view);
     this.history.saveState({
       viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-      groupedChildren: groupedChildren
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 

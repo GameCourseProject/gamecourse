@@ -57,10 +57,10 @@ class CoursesLibrary extends Library
         $fakeStart = Core::dictionary()->faker()->dateTimeThisYear();
         return [
             "id" => $id,
-            "name" => Core::dictionary()->faker()->name(),
+            "name" => Core::dictionary()->faker()->text(25),
             "short" => Core::dictionary()->faker()->text(5),
             "color" => Core::dictionary()->faker()->hexColor(),
-            "theme" => Core::dictionary()->faker()->name(),
+            "theme" => Core::dictionary()->faker()->text(10),
             "avatars" => Core::dictionary()->faker()->boolean(),
             "year" => date("Y"),
             "startDate" => $fakeStart->format("Y-m-d H:m:s"),

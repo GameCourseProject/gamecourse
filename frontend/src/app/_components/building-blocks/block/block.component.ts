@@ -1,8 +1,11 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {BlockDirection, ViewBlock} from "../../../_domain/views/view-types/view-block";
 import {View, ViewMode} from "../../../_domain/views/view";
-import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
-import { groupedChildren } from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {
+  groupedChildren,
+  viewsDeleted
+} from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from "../../../_services/history.service";
 import {ViewEditorService} from "../../../_services/view-editor.service";
 import * as _ from "lodash";
@@ -52,46 +55,91 @@ export class BBBlockComponent implements OnInit {
   /*** ------------------------------------------------ ***/
 
   drop (event: CdkDragDrop<View[]>) {
+    const viewsWithThis = this.service.viewsByAspect.filter((e) => !_.isEqual(this.service.selectedAspect, e.aspect) && e.view?.findView(this.view.id));
+
+    const lowerInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.viewerRole, this.service.selectedAspect.viewerRole))
+      || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.userRole, this.service.selectedAspect.userRole))
+    );
+    lowerInHierarchy.push(this.service.getEntryOfAspect(this.service.selectedAspect));
+
+    const higherInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(this.service.selectedAspect.viewerRole, e.aspect.viewerRole))
+      || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(this.service.selectedAspect.userRole, e.aspect.userRole))
+    );
+
+    // Reorder inside same block ------------------------------------------------------------------
     if (event.previousContainer === event.container && event.previousIndex != event.currentIndex) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
+      if (higherInHierarchy.length <= 0) {
+        // just move in current block (which can be also in lower-in-hierarchy views
+        for (let el of lowerInHierarchy) {
+          let view = el.view.findView(+event.container.id);
+          if (view instanceof ViewBlock) {
+            moveItemInArray(
+              view.children,
+              event.previousIndex,
+              event.currentIndex
+            );
+          }
+        }
+        const group = groupedChildren.get(+event.container.id);
+        moveItemInArray(group, event.previousIndex, event.currentIndex);
+      }
+      else {
+        const viewToMove = _.cloneDeep(event.previousContainer.data[event.previousIndex]);
 
-      const group = groupedChildren.get(+event.container.id);
-      moveItemInArray(group, event.previousIndex, event.currentIndex);
+        const newBlock = this.service.delete(event.container.data[event.previousIndex]);
 
-      this.history.saveState({
-        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-        groupedChildren: groupedChildren
-      });
+        setTimeout(() => {
+          if (newBlock) {
+            this.service.add(viewToMove, newBlock, "value");
+          }
+        }, 0);
 
-    } else if (event.previousContainer !== event.container) {
-      // TODO: Aspects
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
+        setTimeout(() => {
+          for (let el of lowerInHierarchy) {
+            let view = el.view.findView(newBlock.id);
+            if (view instanceof ViewBlock) {
+              moveItemInArray(
+                view.children,
+                view.children.length - 1,
+                event.currentIndex
+              );
+            }
+          }
+        }, 0);
 
-      const prevGroup = groupedChildren.get(+event.previousContainer.id);
+        const group = groupedChildren.get(+event.container.id);
+        moveItemInArray(group, event.container.data.length - 1, event.currentIndex);
+      }
+    }
+    // Transfer to a different block ------------------------------------------------------------------
+    else if (event.previousContainer !== event.container) {
+      const viewToMove = _.cloneDeep(event.previousContainer.data[event.previousIndex]);
+      this.service.add(viewToMove, this.view, "value");
 
-      let newGroup = groupedChildren.get(+event.container.id);
-      if (!newGroup) {
-        newGroup = [];
-        groupedChildren.set(+event.container.id, newGroup);
+      for (let el of lowerInHierarchy) {
+        let view = el.view.findView(this.view.id);
+        if (view instanceof ViewBlock) {
+          moveItemInArray(
+            view.children,
+            view.children.length - 1,
+            event.currentIndex
+          );
+        }
       }
 
-      transferArrayItem(prevGroup, newGroup, event.previousIndex, event.currentIndex);
-      this.view.findView(newGroup[event.currentIndex][0]).parent = this.view;
+      this.service.delete(event.previousContainer.data[event.previousIndex]);
 
-      this.history.saveState({
-        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
-        groupedChildren: groupedChildren
-      });
+      const group = groupedChildren.get(+event.container.id);
+      moveItemInArray(group, event.container.data.length - 1, event.currentIndex);
     }
+
+    this.history.saveState({
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
+    });
   }
 
   private getIdsRecursive(item: any): string[] {

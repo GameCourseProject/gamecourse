@@ -99,7 +99,7 @@ class EvaluateVisitor extends Visitor
                 else {
                     $library = $context->getLibrary();
                     if (!$library) {
-                        throw new Exception('Calling function \'' . $funcName . '\' on incorrect argument type.');
+                        throw new Exception('Function \'' . $funcName . '\' called with argument of type ' . gettype($contextVal) . ', expected namespace or item.');
                     }
                 }
                 $node->setLibrary($library);

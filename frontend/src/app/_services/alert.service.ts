@@ -7,10 +7,15 @@ export class AlertService {
 
   constructor() { }
 
+  static clear(type: AlertType) {
+    const alert = document.getElementById(type + '-alert');
+    alert.classList.add('hidden');
+  }
+
   static showAlert(type: AlertType, msg: string, duration?: number) {
     // Hide previous alert of same type
     const alert = document.getElementById(type + '-alert');
-    alert.classList.add('hidden')
+    alert.classList.add('hidden');
 
     // Set alert message
     alert.querySelector('.alert-msg').textContent = msg;
@@ -23,7 +28,7 @@ export class AlertService {
     alert.classList.remove('hidden');
 
     // Hide alert automatically
-    setTimeout(() => alert.classList.add('hidden'), duration ?? 5000);
+    if (type != AlertType.ERROR) setTimeout(() => alert.classList.add('hidden'), duration ?? 5000);
   }
 
   static showErrorAlert(error: {message: string, stack: string, full: string}) {

@@ -12,6 +12,13 @@ export class SidebarService {
     this.overlay.classList.toggle('hidden');
   }
 
+  togglePC() {
+    this.sidebar.classList.toggle('lg:translate-x-0');
+    this.sidebar.classList.toggle('lg:-translate-x-[110%]');
+    this.main.classList.toggle('lg:pl-80');
+    this.navbar.classList.toggle('lg:pl-72');
+  }
+
   open() {
     this.sidebar.classList.remove('-translate-x-full');
     this.overlay.classList.remove('hidden');
@@ -34,5 +41,13 @@ export class SidebarService {
 
   private get toggler(): HTMLInputElement {
     return document.getElementById('sidebar-toggler') as HTMLInputElement;
+  }
+
+  private get main(): HTMLElement {
+    return document.getElementsByTagName('main')[0];
+  }
+
+  private get navbar(): HTMLElement {
+    return document.getElementById('navbar-left-container');
   }
 }

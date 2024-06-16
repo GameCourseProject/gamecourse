@@ -313,6 +313,7 @@ export class CoursesComponent implements OnInit {
       startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
       endDate: course?.endDate?.format('YYYY-MM-DD') ?? null,
       avatars: course?.avatars ?? false,
+      nicknames: course?.nicknames ?? false,
       theme: (course?.theme as Theme) ?? null
     };
     if (course) courseData.id = course.id;
@@ -376,6 +377,7 @@ export interface CourseManageData {
   startDate: string,
   endDate: string,
   avatars: boolean,
+  nicknames: boolean,
   theme: Theme
 }
 
