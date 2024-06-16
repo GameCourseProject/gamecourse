@@ -84,12 +84,10 @@
       </div>
     </div>
 
-    <div class="card bg-base-100 shadow-xl card-body">
-      <h2 class="card-title">Customization</h2>
+    <div class="card bg-base-100 shadow-xl card-body mb-5">
+      <h2 class="card-title mb-4">Theme</h2>
 
       <!-- Themes -->
-      <span class="font-semibold">Theme</span>
-
       <div class="alert alert-warning shadow-md mb-4" *ngIf="courseToManage.theme != course.theme">
         <ng-icon name="feather-alert-triangle" size="1.5rem" color="fillCurrent"></ng-icon>
         <div class="flex flex-col items-start justify-start w-full">
@@ -98,7 +96,6 @@
       </div>
 
       <div class="rounded-box grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-
         <!-- Default theme switches between light and dark -->
         <div class="transition-all overflow-hidden rounded-lg outline outline-2 border-2
                       {{!courseToManage.theme ? 'border-primary outline-primary' : 'border-base-200 outline-transparent hover:border-transparent hover:outline-base-300'}}"
@@ -128,7 +125,24 @@
             </div>
           </div>
         </div>
+        <div class="md:col-span-3 lg:col-span-4 flex flex-col md:flex-row w-full md:gap-5 md:items-center">
+          <div class="ml-auto flex flex-row justify-start items-center gap-2">
+            <app-simple-helper [position]="'right'" [text]="'This is the color that will appear on the main menu of GameCourse together with the initial of this course. If you are using the default theme, it\'s also the color of the header.'"></app-simple-helper>
+            <span class="block font-semibold text-mg">Color</span>
+          </div>
+          <!-- Color -->
+          <app-input-color
+            [id]="'course-color'"
+            [form]="f"
+            [(value)]="courseToManage.color"
+            [placeholder]="'Course color'"
+          ></app-input-color>
+        </div>
+      </div>
 
+      <div class="divider my-0"></div>
+
+      <div class="rounded-box grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         <!-- All other themes -->
         <div *ngFor="let theme of getThemes()" class="transition-all overflow-hidden rounded-lg outline outline-2 border-2
                       {{theme === courseToManage.theme ? 'border-primary outline-primary' : 'border-base-200 outline-transparent hover:border-transparent hover:outline-base-300'}}"
@@ -161,30 +175,32 @@
 
       </div>
 
-      <div class="mt-3 md:grid grid-cols-2 items-start gap-3">
-        <!-- Color -->
-        <app-input-color
-          [id]="'course-color'"
-          [form]="f"
-          [(value)]="courseToManage.color"
-          [placeholder]="'Course color'"
-          [topLabel]="'Color'"
-          [helperText]="'This is the color that will appear on the main menu of GameCourse together with the initial of this course. If you are using the default theme, it\'s also the color of the header.'"
-          [helperPosition]="'right'"
-        ></app-input-color>
+    </div>
 
-        <!-- Avatars -->
-        <app-input-toggle
-          [id]="'course-avatars'"
-          [form]="f"
-          [(value)]="courseToManage.avatars"
-          [label]="'Allow Avatars'"
-          [helperText]="'Enabling this lets the expression language access the user\'s avatars, allowing them to show up in pages.'"
-          [helperPosition]="'right'"
-          [color]="'primary'"
-          [classList]="'mt-2'"
-        ></app-input-toggle>
-      </div>
+    <div class="card bg-base-100 shadow-xl card-body">
+      <h2 class="card-title">Pages</h2>
+      <!-- Avatars -->
+      <app-input-toggle
+        [id]="'course-avatars'"
+        [form]="f"
+        [(value)]="courseToManage.avatars"
+        [label]="'Allow Avatars'"
+        [helperText]="'Enabling this lets the expression language access the users\' avatars, allowing them to show up in pages. If disabled, the expression returns the user photo instead.'"
+        [helperPosition]="'right'"
+        [color]="'primary'"
+        [classList]="'mt-2'"
+      ></app-input-toggle>
+      <!-- Nicknames -->
+      <app-input-toggle
+        [id]="'course-nicknames'"
+        [form]="f"
+        [(value)]="courseToManage.nicknames"
+        [label]="'Allow Nicknames'"
+        [helperText]="'Enabling this lets the expression language access the users\' nicknames, allowing them to show up in pages. If disabled, the expression returns the user name instead.'"
+        [helperPosition]="'right'"
+        [color]="'primary'"
+        [classList]="'mt-2'"
+      ></app-input-toggle>
     </div>
 
     <div class="w-full mt-6 flex">

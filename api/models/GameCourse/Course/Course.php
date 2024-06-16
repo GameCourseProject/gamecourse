@@ -34,7 +34,7 @@ class Course
 
     const HEADERS = [   // headers for import/export functionality
         "name", "short", "color", "year", "startDate", "endDate", "landingPage", "isActive", "isVisible",
-        "roleHierarchy", "theme", "avatars"
+        "roleHierarchy", "theme", "avatars", "nicknames"
     ];
 
     protected $id;
@@ -113,6 +113,11 @@ class Course
     public function getAvatars(): bool
     {
         return $this->getData("avatars");
+    }
+
+    public function getNicknames(): bool
+    {
+        return $this->getData("nicknames");
     }
 
     /**
@@ -232,6 +237,14 @@ class Course
     public function setAvatars(bool $avatars)
     {
         $this->setData(["avatars" => +$avatars]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function setNicknames(bool $nicknames)
+    {
+        $this->setData(["nicknames" => +$nicknames]);
     }
 
     /**
@@ -551,7 +564,7 @@ class Course
      * @throws Exception
      */
     public function editCourse(string $name, ?string $short, ?string $year, ?string $color, ?string $startDate,
-                               ?string $endDate, bool $isActive, bool $isVisible, bool $avatars, ?string $theme): Course
+                               ?string $endDate, bool $isActive, bool $isVisible, bool $avatars, bool $nicknames, ?string $theme): Course
     {
         $this->setData([
             "name" => $name,
@@ -563,6 +576,7 @@ class Course
             "isActive" => +$isActive,
             "isVisible" => +$isVisible,
             "avatars" => +$avatars,
+            "nicknames" => +$nicknames,
             "theme" => $theme
         ]);
         return $this;
@@ -1368,13 +1382,14 @@ class Course
             $roleHierarchy = $course[$indexes["roleHierarchy"]];
             $theme = $course[$indexes["theme"]];
             $avatars = $course[$indexes["avatars"]];
+            $nicknames = $course[$indexes["nicknames"]];
 
             $mode = null;
             $course = self::getCourseByNameAndYear($name, $year);
             if ($course) {  // course already exists
                 if ($replace) { // replace
                     $mode = "update";
-                    $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars);
+                    $course->editCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible, $avatars, $nicknames);
                     $course->setTheme($theme);
                 }
 
@@ -1383,6 +1398,7 @@ class Course
                 $course = self::addCourse($name, $short, $year, $color, $startDate, $endDate, $isActive, $isVisible);
                 $course->setTheme($theme);
                 $course->setAvatars($avatars);
+                $course->setNicknames($nicknames);
                 $nrCoursesImported++;
             }
 
@@ -1448,7 +1464,7 @@ class Course
         $zip->addFromString("courses.csv", Utils::exportToCSV($courses, function ($course) {
             return [$course["name"], $course["short"], $course["color"], $course["year"], $course["startDate"],
                 $course["endDate"], $course["landingPage"], +$course["isActive"], +$course["isVisible"], $course["roleHierarchy"],
-                $course["theme"], +$course["avatars"]];
+                $course["theme"], +$course["avatars"], +$course["nicknames"]];
         }, self::HEADERS));
 
         // Add each course
@@ -1637,7 +1653,7 @@ class Course
     private static function parse(array $course = null, $field = null, string $fieldName = null)
     {
         $intValues = ["id", "landingPage"];
-        $boolValues = ["isActive", "isVisible", "avatars"];
+        $boolValues = ["isActive", "isVisible", "avatars", "nicknames"];
         $jsonValues = ["roleHierarchy"];
 
         return Utils::parse(["int" => $intValues, "bool" => $boolValues, "json" => $jsonValues], $course, $field, $fieldName);
@@ -1651,7 +1667,7 @@ class Course
      */
     private static function trim(&...$values)
     {
-        $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme", "avatars"];
+        $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme", "avatars", "nicknames"];
         Utils::trim($params, ...$values);
     }
 }

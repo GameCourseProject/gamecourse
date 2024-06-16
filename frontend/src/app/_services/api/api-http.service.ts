@@ -524,6 +524,7 @@ export class ApiHttpService {
       startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
       endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null,
       avatars: courseData.avatars,
+      nicknames: courseData.nicknames,
       theme: courseData.theme
     }
 

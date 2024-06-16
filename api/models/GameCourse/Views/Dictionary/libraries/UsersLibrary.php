@@ -115,7 +115,8 @@ class UsersLibrary extends Library
             ),
             new DFunction("nickname",
                 [["name" => "user", "optional" => false, "type" => "User"]],
-                "Gets a given user's major",
+                "Gets a given user's nickname. If the course doesn't
+                allow nicknames, will return the name instead.",
                 ReturnType::TEXT,
                 $this,
                 "%someUser.nickname"
@@ -327,7 +328,11 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $nickname = $user["nickname"];
-        elseif (is_object($user) && method_exists($user, 'getNickname')) $nickname = $user->getNickname();
+        elseif (is_object($user) && method_exists($user, 'getNickname')) {
+            if (Core::dictionary()->getCourse()->getNicknames() === true)
+                $nickname = $user->getNickname();
+            else $nickname = $user->getName();
+        }
         else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($nickname, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -410,7 +415,7 @@ class UsersLibrary extends Library
         elseif (is_object($user) && method_exists($user, 'getAvatar')) {
             if (Core::dictionary()->getCourse()->getAvatars() === true)
                 $avatar = $user->getAvatar();
-            else $avatar = null;
+            else $avatar = $user->getImage();
         }
         else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($avatar, Core::dictionary()->getLibraryById(TextLibrary::ID));

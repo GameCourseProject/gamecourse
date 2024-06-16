@@ -81,6 +81,7 @@ export class SettingsComponent implements OnInit {
       startDate: course?.startDate?.format('YYYY-MM-DD') ?? null,
       endDate: course?.endDate?.format('YYYY-MM-DD') ?? null,
       avatars: course?.avatars ?? false,
+      nicknames: course?.nicknames ?? false,
       theme: (course?.theme as Theme) ?? null
     };
     if (course) courseData.id = course.id;
