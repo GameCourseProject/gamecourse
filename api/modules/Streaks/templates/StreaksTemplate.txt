@@ -70,7 +70,7 @@
                                                     {
                                                         "type": "text",
                                                         "style": "color: {%courseColor}",
-                                                        "text": "{awards.getUserStreaksTotalReward(%user)} XP"
+                                                        "text": "{streaks.getUserStreaksTotalReward(%user)} XP"
                                                     }
                                                 ]
                                             ]
