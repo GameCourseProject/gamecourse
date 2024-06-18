@@ -26,6 +26,7 @@ class ReturnType
     const USERS_COLLECTION = "collection of users";
     const BADGES_COLLECTION = "collection of badges";
     const BADGE_LEVELS_COLLECTION = "collection of badge levels";
+    const BADGE_PROGRESSION_COLLECTION = "collection of badge progression";
     const SKILLS_COLLECTION = "collection of skills";
     const TIERS_COLLECTION = "collection of tiers";
     const TREES_COLLECTION = "collection of trees";

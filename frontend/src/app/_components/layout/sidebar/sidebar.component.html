@@ -1,6 +1,18 @@
 <aside id="sidebar" class="fixed w-64 inset-y-0 flex flex-col items-center justify-between p-0 mt-20 lg:my-4 antialiased
-              transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-tr-box lg:rounded-box
+              transition-transform duration-200 -translate-x-full bg-base-100 border-0 z-50 lg:ml-6 rounded-tr-box lg:rounded-box lg:rounded-tr-none
               lg:left-0 lg:translate-x-0 shadow-xl lg:h-auto bottom-0 pb-4">
+
+  <!-- Collapse - PC -->
+  <label class="absolute -right-[28px] py-3.5 px-1 bg-base-100 hover:bg-base-200 transition rounded-r-full rounded-l-none swap swap-rotate text-primary-content hidden lg:inline-grid">
+    <!-- this hidden checkbox controls the state -->
+    <input id="sidebar-toggler" type="checkbox" (click)="sidebar.togglePC()"/>
+
+    <!-- open icon -->
+    <ng-icon name="feather-chevron-right" size="1.3rem" class="swap-on text-base-content"></ng-icon>
+
+    <!-- close icon -->
+    <ng-icon name="feather-chevron-left" size="1.3rem" class="swap-off text-base-content"></ng-icon>
+  </label>
 
   <!-- Logo -->
   <div class="h-25 px-6 py-6 pb-3">

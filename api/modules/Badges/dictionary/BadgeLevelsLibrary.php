@@ -15,6 +15,47 @@ class BadgeLevelsLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "badgeLevels";    // NOTE: must match the name of the class
+    const NAME = "Badge Levels";
+    const DESCRIPTION = "Provides access to information regarding badge levels.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to get the information of a level of a badge. For example, the first level of the Amphitheatre Lover badge is characterized by:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+          "id": "1",
+          "number": 1,
+          "goal": 7,
+          "description": "be there for 50% of lectures",
+          "reward": 75,
+          "tokens": 0,
+          "image": "http://localhost/gamecourse/api/course_data/1-Multimedia_Content_Production/badges/Amphitheatre_Lover/badge.png",
+        }</code></pre>
+        </div><br>
+        <p>To obtain a specific level of a badge, you can use the function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{badgeLevels.getLevelByNumber(2, %badge.id)}</code></pre>
+        </div>
+        <p>In this example, the result would be the second level, in the same format as the example above, of the badge saved in the custom varible <span class="text-secondary">%badge</span>.</p>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockBadgeLevel(int $number = null) : array
     {
         return [
@@ -27,15 +68,6 @@ class BadgeLevelsLibrary extends Library
             "image" => null
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "badgeLevels";    // NOTE: must match the name of the class
-    const NAME = "Badge Levels";
-    const DESCRIPTION = "Provides access to information regarding badge levels.";
 
 
     /*** ----------------------------------------------- ***/

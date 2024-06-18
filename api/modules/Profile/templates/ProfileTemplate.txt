@@ -264,7 +264,7 @@
                                                   {
                                                     "type": "text",
                                                     "class": "text-neutral/75",
-                                                    "text": "{awards.getUserBadgesTotalReward(%user)} XP"
+                                                    "text": "{badges.getUserBadgesTotalReward(%user)} XP"
                                                   }
                                                 ]
                                               ]
@@ -383,7 +383,7 @@
                                                   {
                                                     "type": "text",
                                                     "class": "text-neutral/75",
-                                                    "text": "{awards.getUserSkillsTotalReward(%user)} XP"
+                                                    "text": "{skills.getUserSkillsTotalReward(%user)} XP"
                                                   }
                                                 ]
                                               ]
@@ -424,7 +424,7 @@
                                                   {
                                                     "type": "text",
                                                     "class": "text-neutral/75",
-                                                    "text": "{awards.getUserStreaksTotalReward(%user)} XP"
+                                                    "text": "{streaks.getUserStreaksTotalReward(%user)} XP"
                                                   }
                                                 ]
                                               ]
@@ -1086,7 +1086,7 @@
                                   "variables": [
                                     {
                                       "name": "userBadges",
-                                      "value": "{awards.getUserBadgesAwards(%user).count}"
+                                      "value": "{badges.getUserBadgesAwards(%user).count}"
                                     },
                                     {
                                       "name": "totalBadges",

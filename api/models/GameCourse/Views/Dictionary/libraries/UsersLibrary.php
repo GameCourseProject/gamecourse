@@ -31,8 +31,28 @@ class UsersLibrary extends Library
     public function getNamespaceDocumentation(): ?string
     {
         return <<<HTML
-        <p>This namespace allows you to obtain users and certain information about them. For instance, to obtain
-        a collection with the students of the current course you can simply do:</p>
+        <p>This namespace allows you to obtain users and certain information about them, which consists of the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 1,
+            "name": "Mara Alves",
+            "email": "maraalves@tecnico.ulisboa.pt",
+            "major": "MEIC",
+            "nickname": null,
+            "studentNumber": 95625,
+            "theme": "dark",
+            "isAdmin": true,
+            "isActive": true,
+            "username": "ist195625",
+            "auth_service": "fenix",
+            "lastLogin": "2024-06-16 16:56:50",
+            "lastActivity": "2024-06-18 17:42:27",
+            "isActiveInCourse": true,
+            "image": "http://localhost/gamecourse/api/user_data/1/profile.png",
+            "avatar": "http://localhost/gamecourse/api/user_data/1/avatar.svg",
+        }</code></pre>
+        </div><br>
+        <p>For instance, to obtain a collection with the students of the current course you can simply do:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{users.getStudents()}</code></pre>
         </div>
@@ -44,9 +64,9 @@ class UsersLibrary extends Library
           <pre><code>{users.getUsersWithRole(%roleName)}</code></pre>
         </div>
         <p>replacing the first argument with your desired role name!</p><br>
-        <p>Each user is an "object", meaning that they have several attributes. Some of them are <span class="text-secondary">id</span>,
-        <span class="text-secondary">name</span>, <span class="text-secondary">email</span>, ... All of these are also displayed in
-        this namespace's functions. If, for example, we wanted to obtain the major of the user with id = 1, we could use:</p>
+        <p>To access the attributes of a user, such as <span class="text-secondary">id</span>,
+        <span class="text-secondary">name</span>, <span class="text-secondary">email</span>, ... You can use the functions available
+        in this namespace. If, for example, we wanted to obtain the major of the user with id = 1, we could use:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{users.getUserById(1).major}</code></pre>
         </div>
