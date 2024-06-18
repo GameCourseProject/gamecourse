@@ -17,6 +17,76 @@ class StreaksLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "streaks";    // NOTE: must match the name of the class
+    const NAME = "Streaks";
+    const DESCRIPTION = "Provides access to information regarding streaks.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to obtain Streaks and their information. 
+        Each streak has the following attributes:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+          "id": 1,
+          "course": 1,
+          "name": "Constant Gardener",
+          "description": "Do five skills with no more than five days between them",
+          "color": "#36987B",
+          "goal": 5,
+          "periodicityGoal": 1,
+          "periodicityNumber": 5,
+          "periodicityTime": "day",
+          "periodicityType": "relative",
+          "reward": 150,
+          "tokens": 100,
+          "isExtra": true,
+          "isRepeatable": true,
+          "isActive": true,
+          "rule": 138,
+          "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM2OTg3QiI+DQogICAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMTIuOTYzIDIuMjg2YS43NS43NSAwIDAwLTEuMDcxLS4xMzYgOS43NDIgOS43NDIgMCAwMC0zLjUzOSA2LjE3N0E3LjU0NyA3LjU0NyAwIDAxNi42NDggNi42MWEuNzUuNzUgMCAwMC0xLjE1Mi0uMDgyQTkgOSAwIDEwMTUuNjggNC41MzRhNy40NiA3LjQ2IDAgMDEtMi43MTctMi4yNDh6TTE1Ljc1IDE0LjI1YTMuNzUgMy43NSAwIDExLTcuMzEzLTEuMTcyYy42MjguNDY1IDEuMzUuODEgMi4xMzMgMWE1Ljk5IDUuOTkgMCAwMTEuOTI1LTMuNTQ1IDMuNzUgMy43NSAwIDAxMy4yNTUgMy43MTd6IiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIC8+DQo8L3N2Zz4NCg==",
+          "isPeriodic": true
+        }</code></pre>
+        </div><br>
+        <p>With this library, you can:</p>
+        <ul>
+            <li>Obtain all Streaks
+                <div class="bg-base-100 rounded-box p-4 my-2">
+                  <pre><code>{streaks.getStreaks()}</code></pre>
+                </div>
+            </li>
+            <li>Obtain the Streaks obtained by a user
+                <div class="bg-base-100 rounded-box p-4 my-2">
+                  <pre><code>{streaks.getUserStreaks(%user)}</code></pre>
+                </div>
+            </li>
+            <li>Or obtain the users who have earned a certain Streak
+                <div class="bg-base-100 rounded-box p-4 my-2">
+                  <pre><code>{streaks.getUsersWithStreak(%streak.id)}</code></pre>
+                </div>
+            </li>
+        </ul><br>
+        <p>As with other namespaces, after obtaining a streak, you can access its attributes like this:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%streak.id}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockStreak() : array
     {
         return [
@@ -47,16 +117,6 @@ class StreaksLibrary extends Library
         ];
     }
 
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "streaks";    // NOTE: must match the name of the class
-    const NAME = "Streaks";
-    const DESCRIPTION = "Provides access to information regarding streaks.";
-
-
     /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
@@ -64,6 +124,69 @@ class StreaksLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("id",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's ID in the system.",
+                ReturnType::NUMBER,
+                $this,
+                "%streak.id"
+            ),
+            new DFunction("name",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's name.",
+                ReturnType::TEXT,
+                $this,
+                "%streak.name"
+            ),
+            new DFunction("goal",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's goal.",
+                ReturnType::NUMBER,
+                $this,
+                "%streak.goal"
+            ),
+            new DFunction("description",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's description.",
+                ReturnType::TEXT,
+                $this,
+                "%streak.description"
+            ),
+            new DFunction("color",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's color.",
+                ReturnType::TEXT,
+                $this,
+                "%streak.color"
+            ),
+            new DFunction("reward",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's reward.",
+                ReturnType::NUMBER,
+                $this,
+                "%streak.reward"
+            ),
+            new DFunction("tokens",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Gets a given streak's tokens.",
+                ReturnType::NUMBER,
+                $this,
+                "%streak.tokens"
+            ),
+            new DFunction("repeatable",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Returns whether a streak is repeatable or not.",
+                ReturnType::BOOLEAN,
+                $this,
+                "%streak.repeatable"
+            ),
+            new DFunction("extra",
+                [["name" => "streak", "optional" => false, "type" => "Streak"]],
+                "Returns whether a streak is extra or not.",
+                ReturnType::BOOLEAN,
+                $this,
+                "%streak.extra"
+            ),
             new DFunction("getMaxXP",
                 [],
                 "Gets maximum XP each student can earn with streaks.",
@@ -198,7 +321,7 @@ class StreaksLibrary extends Library
         if (is_array($streak)) $goal = $streak["goal"];
         elseif (is_object($streak) && method_exists($streak, 'getGoal')) $goal = $streak->getGoal();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
-        return new ValueNode($goal, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($goal, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
@@ -246,7 +369,7 @@ class StreaksLibrary extends Library
         if (is_array($streak)) $reward = $streak["reward"];
         elseif (is_object($streak) && method_exists($streak, 'getReward')) $reward = $streak->getReward();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
-        return new ValueNode($reward, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
@@ -262,7 +385,7 @@ class StreaksLibrary extends Library
         if (is_array($streak)) $tokens = $streak["tokens"];
         elseif (is_object($streak) && method_exists($streak, 'getTokens')) $tokens = $streak->getTokens();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
-        return new ValueNode($tokens, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($tokens, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**
@@ -278,7 +401,7 @@ class StreaksLibrary extends Library
         if (is_array($streak)) $repeatable = $streak["isRepeatable"];
         elseif (is_object($streak) && method_exists($streak, 'isRepeatable')) $repeatable = $streak->isRepeatable();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
-        return new ValueNode($repeatable, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($repeatable, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
     /**
@@ -294,7 +417,7 @@ class StreaksLibrary extends Library
         if (is_array($streak)) $extra = $streak["isExtra"];
         elseif (is_object($streak) && method_exists($streak, 'isExtra')) $extra = $streak->isExtra();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a streak.");
-        return new ValueNode($extra, Core::dictionary()->getLibraryById(TextLibrary::ID));
+        return new ValueNode($extra, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
 

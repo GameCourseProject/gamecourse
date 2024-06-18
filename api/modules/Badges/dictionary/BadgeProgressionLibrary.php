@@ -24,6 +24,35 @@ class BadgeProgressionLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to get the information regarding a user's progress towards a badge. Each item of this namespace follows this structure:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+          "description": "Re: Looking for group for L04 Shift (Tuesday 15h30, Thursday 16h30)",
+          "link": "https://pcm.rnl.tecnico.ulisboa.pt/moodle/mod/forum/discuss.php?d=3379&parent=22381",
+        }</code></pre>
+        </div><br>
+        <p>The function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{badges.getUserBadgeProgressionInfo(%user, %badge.id)}</code></pre>
+        </div>
+        <p>of the <span class="text-secondary">badges</span> library, for example, returns a collection of items of this type. </p><br>
+        <p>Thanks to this namespace, you can, given an item,
+        access its attribute. Assuming for example that you have a custom auxiliary variable, <span class="text-secondary">progress</span> with value 
+        <span class="text-secondary">{badges.getUserBadgeProgressionInfo(%user, %badge.id).item(0)}</span>, you can do:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%progress.link}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 

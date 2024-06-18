@@ -301,7 +301,7 @@ class BadgesLibrary extends Library
                 [["name" => "userId", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets user progression information on a given badge, e.g. description and links to posts.",
-                ReturnType::OBJECT,
+                ReturnType::BADGE_PROGRESSION_COLLECTION,
                 $this,
                 "badges.getUserBadgeProgressionInfo(%user, %badge.id)"
             ),
