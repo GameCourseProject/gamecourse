@@ -3,7 +3,7 @@
 
   <div class="flex justify-between w-full">
     <!-- Left -->
-    <div class="flex justify-start gap-2 lg:pl-[278px] mr-4 transition-all" id="navbar-left-container">
+    <div class="flex justify-start gap-2 lg:pl-[278px] lg:ml-8 transition-all" id="navbar-left-container">
 
       <!-- Hamburger Menu - Mobile -->
       <label class="btn btn-ghost btn-circle swap swap-rotate text-primary-content lg:hidden">
@@ -15,18 +15,6 @@
 
         <!-- close icon -->
         <ng-icon name="feather-x" size="1.5rem" color="fillCurrent" class="swap-on"></ng-icon>
-      </label>
-
-      <!-- Hamburger Menu - PC -->
-      <label class="-ml-[25px] py-3.5 pr-1 pl-4 bg-base-100 hover:bg-base-200 transition rounded-r-full rounded-l-none shadow-xl swap swap-rotate text-primary-content hidden lg:inline-grid">
-        <!-- this hidden checkbox controls the state -->
-        <input id="sidebar-toggler" type="checkbox" (click)="sidebar.togglePC()"/>
-
-        <!-- open icon -->
-        <ng-icon name="feather-chevron-right" size="1.3rem" class="swap-on text-base-content"></ng-icon>
-
-        <!-- close icon -->
-        <ng-icon name="feather-chevron-left" size="1.3rem" class="swap-off text-base-content"></ng-icon>
       </label>
 
     </div>
@@ -134,7 +122,7 @@
   </div>
 
   <!-- Course Name on mobile -->
-  <div *ngIf="isInCourse()" class="lg:hidden sticky top-20 w-full flex flex-col justify-center items-center h-8 pl-5 pr-3">
+  <div *ngIf="isInCourse()" class="lg:hidden sticky top-20 w-full flex flex-col justify-center items-center h-8 px-3">
 
     <!-- Course Name -->
     <h6 *ngIf="course" class="mb-0 font-bold text-white text-center">{{course.name}}</h6>
