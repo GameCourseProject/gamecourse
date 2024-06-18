@@ -190,7 +190,7 @@
                                                                                 "type": "icon",
                                                                                 "class": "btn btn-circle btn-ghost btn-sm",
                                                                                 "visibilityType": "conditional",
-                                                                                "visibilityCondition": "{%streak.repeatable}",
+                                                                                "visibilityCondition": "{%streak.isRepeatable}",
                                                                                 "icon": "feather-repeat",
                                                                                 "size": "1.2rem",
                                                                                 "events": [
@@ -227,7 +227,7 @@
                                                                                             "type": "text",
                                                                                             "class": "font-medium text-error text-sm",
                                                                                             "visibilityType": "conditional",
-                                                                                            "visibilityCondition": "{%streak.extra}",
+                                                                                            "visibilityCondition": "{%streak.isExtra}",
                                                                                             "text": "extra credit"
                                                                                         }
                                                                                     ]

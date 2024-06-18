@@ -173,19 +173,19 @@ class StreaksLibrary extends Library
                 $this,
                 "%streak.tokens"
             ),
-            new DFunction("repeatable",
+            new DFunction("isRepeatable",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Returns whether a streak is repeatable or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%streak.repeatable"
+                "%streak.isRepeatable"
             ),
-            new DFunction("extra",
+            new DFunction("isExtra",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Returns whether a streak is extra or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%streak.extra"
+                "%streak.isExtra"
             ),
             new DFunction("getMaxXP",
                 [],
@@ -395,7 +395,7 @@ class StreaksLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function repeatable($streak): ValueNode
+    public function isRepeatable($streak): ValueNode
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $repeatable = $streak["isRepeatable"];
@@ -411,7 +411,7 @@ class StreaksLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function extra($streak): ValueNode
+    public function isExtra($streak): ValueNode
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($streak)) $extra = $streak["isExtra"];
