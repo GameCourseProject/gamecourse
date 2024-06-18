@@ -26,6 +26,50 @@ class TreeLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to access the skill trees configured in the course, where the users complete 
+        skills in order to achieve higher tiers. A tree item consists of the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 2,
+            "name": "Media Challenges",
+            "maxReward": 6000
+        }</code></pre>
+        </div><br>
+        <p>You can access all these attributes. For example, to access the id, 
+        given that you have a tree item in the variable <span class="text-secondary">tree</span> use the expression</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tree.id}</code></pre>
+        </div><br>
+        <p>Accessing the tiers of a tree can also be done with the following expression:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tree.tiers}</code></pre>
+        </div>
+        <p>Which will return a collection of tiers. Check out the <span class="text-secondary">tier namespace</span> 
+        to know the data you can get out of this!</p>
+        <br>
+        <p>To obtain all the trees in a course:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTrees()}</code></pre>
+        </div>
+        <p>But you can obtain just a specific tree given its id</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTreeById(1)}</code></pre>
+        </div>
+        <p>or given its name</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTreeByName('Media Challenges')}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 

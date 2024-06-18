@@ -26,6 +26,50 @@ class TiersLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to access tiers, which are part of skill trees, and their information. 
+        A tier looks like the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 6,
+            "skillTree": 2,
+            "name": "1",
+            "reward": 250,
+            "position": 0,
+            "isActive": true,
+            "costType": "exponential",
+            "cost": 0,
+            "increment": 10,
+            "minRating": 3
+        }</code></pre>
+        </div><br>
+        <p>Having a tier, you can get the skills on it with:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tier.skills}</code></pre>
+        </div>
+        <p>Which will return a collection of items of the <span class="text-secondary">skills namespace</span>!</p><br>
+        <p>You can obtain all of the tiers available in a course with</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTiers()}</code></pre>
+        </div>
+        <p>However, you can obtain just a specific tier given its id</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTierById(1)}</code></pre>
+        </div>
+        <p>or given its name, requiring the id of the skill tree it belongs to</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTierByName(%skillTree.id, 'Wildcard')}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Mock data ------------------ ***/
     /*** ----------------------------------------------- ***/
 

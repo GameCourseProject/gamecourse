@@ -56,7 +56,7 @@ class SkillsLibrary extends Library
           <pre><code>{skills.getSkillById(1).name}</code></pre>
         </div>
         <p>would return "Album Cover".</p><br>
-        <p>With this namespace you can also obtain every single skill available in the course, using the function</p>
+        <p>With this namespace you can also obtain all skills available in the course, using the function</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{skills.getSkills()}</code></pre>
         </div>
