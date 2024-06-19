@@ -34,7 +34,7 @@
       </div>
 
       <!-- Preview expression tabs  -->
-      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto relative">
+      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto relative text-sm">
         <div [id]="getId(i, tab.name)"></div>
         <div class="w-full bg-base-300 flex flex-row items-center gap-2">
           <button type="button" class="ml-2 btn btn-secondary btn-sm text-secondary-content gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="previewExpression(tab)">

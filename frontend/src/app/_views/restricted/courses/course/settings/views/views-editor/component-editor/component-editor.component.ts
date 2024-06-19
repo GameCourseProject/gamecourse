@@ -172,7 +172,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   getItemInInherited() {
-    return this.view.getViewWithLoop()?.loopData;
+    if (this.viewToEdit.loopData && this.viewToEdit.loopData != "") return this.viewToEdit.loopData;
+    else return this.view.getViewWithLoop()?.loopData;
   }
 
 
