@@ -30,7 +30,12 @@ class AwardsLibrary extends Library
     public function getNamespaceDocumentation(): ?string
     {
         return <<<HTML
-        <p>This namespace allows you to access the awards earned by students. An award is characterized by the following:</p>
+        <p>This namespace allows you to access the awards earned by students. An award is the core
+        concept on which GameCourse operates: a student, by completing a task, is rewarded with
+        an award. Awards can be of different <span class="font-semibold">types</span>, depending on the module from which the activity refers to: 
+        for example, a student obtaining a badge will have an award of type 'badge', while completing a skill
+        offers an award of type 'skill'.</p>
+        <p>An award is characterized by the following:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{
             "id": 4,
@@ -43,7 +48,7 @@ class AwardsLibrary extends Library
             "date": "2024-04-08 09:30:51"
         }</code></pre>
         </div><br>
-        <p>You can obtain all the awards of a user using the generic function:</p>
+        <p>You can obtain all the awards of a user using the function:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{awards.getUserAwards(%viewer)}</code></pre>
         </div>

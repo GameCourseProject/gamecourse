@@ -216,39 +216,6 @@ export abstract class View {
     else return this.parent?.getViewWithLoop() ?? null;
   }
 
-  getAllVariablesForPreview(): { [name: string]: string } {
-    const viewVars = {};
-
-    for (let auxVar of this.variables) {
-      let value = auxVar.value;
-      // Replace %item
-      if (value.includes("%item")) {
-        const loopedView = this.getViewWithLoop();
-
-        if (!!loopedView) {
-          let loopExpression = loopedView.loopData;
-          if (loopExpression.startsWith("{") && loopExpression.endsWith("}")) {
-            loopExpression = loopExpression.slice(1, -1).trim();
-          }
-          value = value.replace("%item", loopExpression + ".item(0)");
-        }
-      }
-      // Remove outer '{' and '}'
-      if (value.startsWith("{") && value.endsWith("}")) {
-        value = value.slice(1, -1).trim();
-      }
-
-      viewVars[auxVar.name] = value;
-    }
-
-    if (this.parent) {
-      return {...viewVars, ...this.parent.getAllVariablesForPreview()};
-    }
-    else {
-      return viewVars;
-    }
-  }
-
 
   /**
    * Custom way to stringify this class.
