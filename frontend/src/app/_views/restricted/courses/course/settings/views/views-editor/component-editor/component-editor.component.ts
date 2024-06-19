@@ -171,6 +171,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     window.localStorage.setItem('openInherited', JSON.stringify(!this.getCollapseInherited()));
   }
 
+  getItemInInherited() {
+    return this.view.getViewWithLoop()?.loopData;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Init -------------------- ***/

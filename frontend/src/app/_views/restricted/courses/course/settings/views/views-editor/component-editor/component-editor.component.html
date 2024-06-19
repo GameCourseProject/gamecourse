@@ -56,7 +56,7 @@
         [placeholder]="'e.g. {tree.getSkillTrees()}'"
       ></app-input-text>
       <span class="text-xs pl-1 mt-1" *ngIf="view.parent">
-        You can access each item with <span class="text-info">%item</span>.
+        You can access each item with <span class="text-secondary">%item</span>.
       </span>
     </div>
   </div>
@@ -372,7 +372,7 @@
           <span class="text-info">%course</span> -> id of the course that the user is manipulating <br>
           <span class="text-info">%user</span> -> id of the user associated to the page which is being displayed <br>
           <span class="text-info">%viewer</span> -> id of the user that is currently logged in watching the page <br>
-          <span class="text-info">%item</span> -> used to access the values of the collection being iterated
+          <!--<span class="text-info">%item</span> -> used to access the values of the collection being iterated-->
         </div>
       </div>
     </form>
@@ -388,7 +388,10 @@
           <p *ngFor="let variable of view.parent?.getAllVariables()">
             <span class="text-secondary">%{{variable.name}}</span> = {{variable.value}}
           </p>
-          <p *ngIf="view.parent?.getAllVariables().length <= 0" class="text-base-content/70">This component's parents have no auxiliary variables.</p>
+          <p *ngIf="getItemInInherited()"><span class="text-secondary">%item</span> -> from {{getItemInInherited()}}</p>
+          <p *ngIf="!getItemInInherited() && view.parent?.getAllVariables().length <= 0" class="text-base-content/70">
+            This component's parents have no auxiliary variables.
+          </p>
         </div>
       </div>
     </form>
