@@ -1,37 +1,36 @@
-<div class="alert alert-info shadow-md mb-4 text-sm font-normal" *ngIf="view.parent && view.parent.type !== ViewType.ROW && higherInHierarchy.length > 0">
-  <ng-icon name="feather-info" size="1.5rem" color="fillCurrent"></ng-icon>
-  <div class="flex flex-col items-start">
-    <p>This component is inherited from another version that is higher in the hierarchy. Making changes here will create a new instance that:</p>
-    <ul class="list-disc ml-5">
-      <li><span class="font-semibold">Won't</span> affect the versions that are <span class="font-semibold">higher</span> in the hierarchy ({{getHigherInHierarchyString()}})</li>
-      <li><span class="font-semibold">Will</span> be propagated to the versions that are <span class="font-semibold">lower</span> in the hierarchy</li>
-    </ul>
-    <p>If you intend to change this component everywhere, edit it in the version that is higher in the hierarchy instead.</p>
+<div class="text-left text-wrap whitespace-normal font-normal text-base">
+  <div class="alert alert-info shadow-md mb-4 text-sm font-normal" *ngIf="view.parent && view.parent.type !== ViewType.ROW && higherInHierarchy.length > 0">
+    <ng-icon name="feather-info" size="1.5rem" color="fillCurrent"></ng-icon>
+    <div class="flex flex-col items-start">
+      <p>This component is inherited from another version that is higher in the hierarchy. Making changes here will create a new instance that:</p>
+      <ul class="list-disc ml-5">
+        <li><span class="font-semibold">Won't</span> affect the versions that are <span class="font-semibold">higher</span> in the hierarchy ({{getHigherInHierarchyString()}})</li>
+        <li><span class="font-semibold">Will</span> be propagated to the versions that are <span class="font-semibold">lower</span> in the hierarchy</li>
+      </ul>
+      <p>If you intend to change this component everywhere, edit it in the version that is higher in the hierarchy instead.</p>
+    </div>
   </div>
-</div>
 
-<div class="text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
-  <p>You can either write ordinary text or write expressions to define the fields.
-    To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span></p>
-  <p *ngIf="viewToEdit.type !== ViewType.TABLE || tableSelectedTab == 'Overall'">For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.</p>
-</div>
+  <div class="text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
+    <p>You can either write ordinary text or write expressions to define the fields.
+      To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span></p>
+    <p *ngIf="viewToEdit.type !== ViewType.TABLE || tableSelectedTab == 'Overall'">For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.</p>
+  </div>
 
-<ng-container *ngIf="!loading && viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
-<ng-container *ngIf="!loading && viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
+  <ng-container *ngIf="!loading && viewToEdit.type !== ViewType.TABLE" [ngTemplateOutlet]="GENERIC_EDITOR"></ng-container>
+  <ng-container *ngIf="!loading && viewToEdit.type === ViewType.TABLE" [ngTemplateOutlet]="TABLE_EDITOR"></ng-container>
 
-<!-- Loader -->
-<div class="w-full flex justify-center" *ngIf="loading">
-  <app-spinner [size]="'md'" [color]="'primary'"></app-spinner>
+  <!-- Loader -->
+  <div class="w-full flex justify-center" *ngIf="loading">
+    <app-spinner [size]="'md'" [color]="'primary'"></app-spinner>
+  </div>
 </div>
 
 <!--------------------------------------------------->
 <!----- EDITOR FOR TEXT, BUTTONS, BLOCKS, ETC. ------>
 <!--------------------------------------------------->
-
 <ng-template #GENERIC_EDITOR>
-<div class="overflow-x-hidden text-left">
-
-  <div class="flex flex-row items-end gap-8">
+  <div class="flex flex-row items-start gap-8">
     <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW">
       <app-input-select
         [disabled]="!view.parent"
@@ -41,10 +40,9 @@
         [placeholder]="'Select component type'"
         [topLabel]="'Component Type'"
         [required]="true"
-        [classList]="'mb-4'"
       ></app-input-select>
     </div>
-    <div class="w-full" *ngIf="!saveButton || viewToEdit.type === ViewType.ROW">
+    <div class="w-full flex flex-col" *ngIf="!saveButton || viewToEdit.type === ViewType.ROW">
       <!-- Data Iteration -->
       <app-input-text
         [disabled]="!view.parent"
@@ -54,13 +52,15 @@
         [helperText]="'Determines for which items this component will be repeated.
           \n E.g. {tree.getSkillTrees()} Means that this component will be repeated for each of the skill trees available in this
           course. You can then access each with %item'"
-        [helperPosition]="'bottom'"
+        [helperPosition]="'right'"
         [placeholder]="'e.g. {tree.getSkillTrees()}'"
-        [classList]="'mb-4'"
       ></app-input-text>
+      <span class="text-xs pl-1 mt-1" *ngIf="view.parent">
+        You can access each item with <span class="text-info">%item</span>.
+      </span>
     </div>
   </div>
-  <div *ngIf="!view.parent" class="text-warning text-xs -mt-2 mb-2">
+  <div *ngIf="!view.parent" class="text-warning text-xs mt-1 mb-2 pl-1">
     The fields above are not available in the root of a page/template.
   </div>
 
@@ -519,7 +519,7 @@
           [helperPosition]="'right'"
         ></app-input-text>
 
-        <p [ngSwitch]="viewToEdit.type" class="text-xs font-normal mt-1">
+        <p [ngSwitch]="viewToEdit.type" class="text-xs font-normal mt-1 pl-1">
           <span *ngSwitchCase="ViewType.BUTTON">
             Check out <a class="link link-secondary" href="https://daisyui.com/components/button/" target="_blank">DaisyUI's Buttons</a>.
             You can also use <a class="link" href="https://tailwindcss.com" target="_blank">Tailwind CSS</a>.
@@ -571,8 +571,6 @@
       <button class="btn btn-primary btn-sm" (click)="trySaveView()">Save {{ viewToEdit.type === ViewType.ROW ? 'Row' : 'Cell' }}</button>
     </div>
   </div>
-
-</div>
 </ng-template>
 
 
