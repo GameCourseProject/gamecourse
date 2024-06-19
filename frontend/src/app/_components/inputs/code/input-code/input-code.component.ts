@@ -704,7 +704,14 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     this.size = this.size === 'lg' ? 'md' : 'lg';
   }
 
-  isSelected(fx: CustomFunction){
+  isNamespaceSelected(name: string){
+    if (this.selectedNamespace !== null){
+      return this.selectedNamespace == name;
+    }
+    return false;
+  }
+
+  isFunctionSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
       return this.selectedFunction.keyword === fx.keyword && this.selectedFunction.name === fx.name;
     }

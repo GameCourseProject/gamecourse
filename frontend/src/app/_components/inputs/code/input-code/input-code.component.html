@@ -24,7 +24,7 @@
     </button>
   </div>
 
-  <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto bg-base-200
+  <div class="w-full rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto bg-base-200
         {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}">
 
     <ng-container *ngFor="let tab of tabs, let i = index">
@@ -70,22 +70,27 @@
             </app-input-search>
             <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
 
+              <!-- Overview -->
+              <button class="badge badge-secondary gap-1 mb-2 ml-2
+                        {{ (!selectedFunction && !selectedNamespace) ? 'badge-outline' : 'hover:badge-outline' }}"
+                      (click)="selectedFunction = null; selectedNamespace = null">
+                Overview
+              </button>
               <!-- Namespaces -->
               <div *ngFor="let entry of filteredFunctions | keyvalue" class="mb-2">
-                <button class="pl-2 p-0.5 hover:bg-base-content/10 transition text-sm flex flex-row justify-start items-center w-full font-light gap-1"
+                <button class="badge badge-secondary mb-1 ml-2 gap-1
+                        {{ isNamespaceSelected(entry.key) ? 'badge-outline' : 'hover:badge-outline' }}"
                         (click)="selectedFunction = null; selectedNamespace = entry.key">
-                  <ng-icon name="tabler-code" size="1rem"/>Namespace<span class="font-semibold">{{entry.key}}</span>
+                  Namespace<span class="font-semibold">{{entry.key}}</span>
                 </button>
                 <div class="flex flex-col gap-1 ml-2">
-
                   <!-- Functions -->
                   <button *ngFor="let fx of entry.value"
                        class="badge badge-secondary
-                        {{ isSelected(fx) ? 'badge-outline' : 'hover:badge-outline' }}"
+                        {{ isFunctionSelected(fx) ? 'badge-outline' : 'text-neutral bg-neutral/20 border-transparent hover:badge-outline' }}"
                        (click)="selectedNamespace = null; selectedFunction = fx">
                     {{ fx.keyword }}
                   </button>
-
                 </div>
               </div>
 
@@ -96,10 +101,34 @@
             </div>
           </div>
 
-
           <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto text-base-content w-full">
-            <div *ngIf="!selectedFunction && !selectedNamespace" class="text-base-content text-opacity-50 ml-5 mt-2">
-              Select a function or namespace on the left panel
+            <div *ngIf="!selectedFunction && !selectedNamespace" class="px-4 flex flex-col gap-2 w-full">
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">Overview</span>
+              </div>
+              <div class="mb-8 w-full">
+                <p>In this window, you can find all the functions that are available in GameCourse. Select a function or module on the
+                left panel to open its documentation!</p><br>
+                <p>On GameCouse, <span class="font-semibold">students obtain
+                <span class="link link-primary" (click)="selectedNamespace = 'awards'; selectedFunction = null">awards</span>
+                for their actions</span>. Awards are the most basic unit of information and can be associated with other concepts provided by the
+                modules active in a course. For example, a user completing the requirements for obtaining a certain badge receives an award of type 'badge',
+                containing the reward earned for doing so, a description, and the timestamp.</p><br>
+                <p>Other than the awards, <span class="font-semibold">enabling a module</span> usually enables new namespaces to be used,
+                allowing access to information that is more specific to that
+                module. Continuing the previous example regarding the Badges module, having it enabled allows you to use the functions in the
+                  <span class="link link-primary" (click)="selectedNamespace = 'badges'; selectedFunction = null">badges</span>,
+                  <span class="link link-primary" (click)="selectedNamespace = 'badgeLevels'; selectedFunction = null">badgeLevels</span> and
+                  <span class="link link-primary" (click)="selectedNamespace = 'badgeProgression'; selectedFunction = null">badgeProgression</span>
+                namespaces.
+                </p><br>
+                <p>We call a <span class="font-semibold">group of multiple items</span> (e.g. several awards) a
+                <span class="link link-primary font-semibold" (click)="selectedNamespace = 'collection'; selectedFunction = null">collection</span>.
+                With collections, you can create pages with dynamic content, displaying a certain element several times for
+                each element of the collection. To do so, fill in the <span class="text-secondary">Repeat this component for every item in</span>
+                field of the component that you want to repeat. Inside it, you can access the information of each element itself using
+                <span class="text-secondary">%item</span>.</p>
+              </div>
             </div>
 
             <div *ngIf="selectedNamespace" class="px-4 flex flex-col gap-2 w-full">
@@ -109,7 +138,7 @@
               <div class="mb-8 w-full" [innerHTML]="namespaces[selectedNamespace]"></div>
             </div>
 
-            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 relative">
+            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 w-full">
 
               <div class="absolute tooltip tooltip-left top-1 right-2" [attr.data-tip]="'Copy Function Formula'">
                 <button class="btn btn-sm btn-ghost btn-circle" (click)="copyReferenceToClipboard()">
@@ -127,7 +156,7 @@
                     <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{': ' + arg.name}}{{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
                 </div>
 
-                <span> ) -> {{selectedFunction.returnType}}</span>
+                <span> ) <span class="whitespace-nowrap">-></span> {{selectedFunction.returnType}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length === 0" class="mb-4">
