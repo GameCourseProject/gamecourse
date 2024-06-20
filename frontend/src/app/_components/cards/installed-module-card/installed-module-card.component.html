@@ -1,0 +1,19 @@
+<div class="flex items-start p-0 relative rounded-2xl shadow-lg bg-base-100 border-base-200 border-2 h-[10rem]">
+
+  <div class="p-4">
+    <div class="flex items-center w-full prose mb-2">
+      <div class="icon mr-3" [innerHTML]="svgIcon | sanitizeHTML"></div>
+      <h4 class="font-semibold normal-case text-base-content/75 my-0">{{module.name}}</h4>
+    </div>
+
+    <div class="w-full prose">
+      <p class="text-sm text-left normal-case line-clamp-3 font-normal">{{module.description}}</p>
+    </div>
+  </div>
+
+  <div class="absolute -bottom-1 bg-opacity-90 rounded-b-2xl py-0.5 w-full uppercase py-0 flex items-center justify-center font-semibold"
+       [ngClass]="{'bg-success text-success-content': isCompatible(), 'bg-error text-error-content': !isCompatible()}">
+    <span class="!text-xs">version {{module.version}} - {{isCompatible() ? 'Compatible' : getIncompatibleString()}}</span>
+  </div>
+
+</div>
