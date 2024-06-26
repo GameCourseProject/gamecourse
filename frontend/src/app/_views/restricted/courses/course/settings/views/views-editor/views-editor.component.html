@@ -294,7 +294,7 @@
 
 <!-- Save Template Modal -->
 <app-modal
-  *ngIf="pageToManage"
+  *ngIf="pageToManage || !template"
   [id]="'save-template'"
   [templateRef]="SAVE_TEMPLATE"
   [header]="'Save Custom Template'"
@@ -307,7 +307,7 @@
 <ng-template #SAVE_TEMPLATE>
   <app-input-text
     [id]="'new-template-name'"
-    [(value)]="pageToManage.name"
+    [(value)]="pageToManage ? pageToManage.name : templateNameToManage"
     [topLabel]="'Choose a name for this template:'"
     [required]="true">
   </app-input-text>

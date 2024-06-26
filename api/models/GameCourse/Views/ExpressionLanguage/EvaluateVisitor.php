@@ -186,7 +186,7 @@ class EvaluateVisitor extends Visitor
     {
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
-            throw new Exception('Unknown variable: ' . $variableName);
+            throw new Exception('Unknown variable: ' . $variableName . ".");
 
         $param = $this->params[$variableName];
         return $param instanceof Node ? $param->accept($this) : new ValueNode($param);

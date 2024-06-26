@@ -61,6 +61,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   page: Page;                                     // page where information will be saved
   pageToManage: PageManageData;                   // NEW page where information will be saved, and also used for NEW template NAME
   template: Template;                             // template where information will be saved
+  templateNameToManage: string;                   // NEW template name
   coreTemplate: Template;                         // core template to view
 
   aspects: Aspect[];                              // Aspects saved
@@ -630,7 +631,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
-      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
@@ -679,7 +679,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
-      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
@@ -836,8 +835,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   // ----------------------------------------------------------------
 
   async saveTemplate() {
-    if (!this.pageToManage.name) {
-      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+    if ((this.pageToManage && !this.pageToManage.name) || (!this.pageToManage && !this.templateNameToManage)) {
+      AlertService.showAlert(AlertType.ERROR, "The template must have a name.");
       return;
     }
 
@@ -851,7 +850,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     try {
-      await this.api.saveCustomTemplate(this.course.id, this.pageToManage.name, buildViewTree([this.view]), image).toPromise();
+      await this.api.saveCustomTemplate(
+        this.course.id,
+        this.pageToManage ? this.pageToManage.name : this.templateNameToManage,
+        buildViewTree([this.view]),
+        image
+      ).toPromise();
       await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
     }

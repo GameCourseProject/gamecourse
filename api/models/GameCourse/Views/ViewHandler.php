@@ -700,7 +700,7 @@ class ViewHandler
         } catch (Exception $exception) {
             $message = $exception->getMessage();
             if (strpos($message, " component.") === false) {
-                $message .= " On " . $view["type"] . " component.";
+                $message .= " On " . $view["type"] . " component.<" . $view["id"] . ">";
             }
             throw new Exception($message);
         }

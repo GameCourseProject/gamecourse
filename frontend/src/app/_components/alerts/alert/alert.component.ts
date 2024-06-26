@@ -1,6 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {AlertType} from "../../../_services/alert.service";
 import {NavigationEnd, Router} from "@angular/router";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'app-alert',
@@ -38,6 +39,7 @@ export class AlertComponent implements OnInit {
   closeAlert() {
     const alert = document.getElementById(this.type + '-alert');
     alert.classList.add('hidden');
+    ErrorService.clearView();
   }
 
 }
