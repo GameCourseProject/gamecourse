@@ -37,6 +37,7 @@ import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
 import {domToPng} from 'modern-screenshot'
+import {ErrorService} from "../../../../../../../_services/error.service";
 
 @Component({
   selector: 'app-views-editor',
@@ -939,6 +940,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
           AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
           ModalService.openModal('save-before-preview');
         } else {
           await this.previewWithMockData();
@@ -954,6 +956,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.previewMode = 'real';
         if (this.history.hasUndo()) {
           AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
           ModalService.openModal('save-before-preview');
         }
         else {
@@ -963,6 +966,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       else if (this.pageToManage) {
         this.previewMode = 'real';
         AlertService.clear(AlertType.ERROR);
+        ErrorService.clearView();
         ModalService.openModal('save-new-before-preview');
       }
     }
@@ -1026,6 +1030,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
 
     AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
     ModalService.openModal('preview-as');
   }
 
@@ -1069,6 +1074,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async previewWithMockData() {
     AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
 
     this.loading.action = true;
     try {
