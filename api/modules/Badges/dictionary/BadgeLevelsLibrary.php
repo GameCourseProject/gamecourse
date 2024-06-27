@@ -82,42 +82,42 @@ class BadgeLevelsLibrary extends Library
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
                 $this,
-            "%badgeLevel.number"
+                "badgeLevels.number(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.number"
             ),
             new DFunction("goal",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's goal.",
                 ReturnType::NUMBER,
                 $this,
-                "%badgeLevel.goal"
+                "badgeLevels.goal(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.goal"
             ),
             new DFunction("description",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
                 $this,
-                "%badgeLevel.description"
+                "badgeLevels.description(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.description"
             ),
             new DFunction("reward",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's reward.",
                 ReturnType::NUMBER,
                 $this,
-                "%badgeLevel.reward"
+                "badgeLevels.reward(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.reward"
             ),
             new DFunction("tokens",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's tokens.",
                 ReturnType::NUMBER,
                 $this,
-                "%badgeLevel.tokens"
+                "badgeLevels.tokens(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.tokens"
             ),
             new DFunction("image",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's image URL.",
                 ReturnType::TEXT,
                 $this,
-                "%badgeLevel.image"
+                "badgeLevels.image(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.image"
             ),
             new DFunction("getLevelByNumber",
                 [["name" => "number", "optional" => false, "type" => "int"],
@@ -125,7 +125,7 @@ class BadgeLevelsLibrary extends Library
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
                 $this,
-            "badgeLevels.getLevelByNumber(2, %badge.id)"
+                "badgeLevels.getLevelByNumber(2, %badge.id)"
             )
         ];
     }

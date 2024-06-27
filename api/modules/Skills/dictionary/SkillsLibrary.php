@@ -130,42 +130,42 @@ class SkillsLibrary extends Library
                 "Gets skill's id.",
                 ReturnType::NUMBER,
                 $this,
-            "%skill.id"
+                "skills.id(%skill)\nor (shorthand notation):\n%skill.id"
             ),
             new DFunction("name",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's name.",
                 ReturnType::TEXT,
                 $this,
-                "%skill.name"
+                "skills.name(%skill)\nor (shorthand notation):\n%skill.name"
             ),
             new DFunction("color",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's color.",
                 ReturnType::TEXT,
                 $this,
-                "%skill.color"
+                "skills.color(%skill)\nor (shorthand notation):\n%skill.color"
             ),
             new DFunction("dependencies",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "Gets skill's dependencies.",
                 ReturnType::COLLECTION,
                 $this,
-                "%skill.dependencies"
+                "skills.dependencies(%skill)\nor (shorthand notation):\n%skill.dependencies"
             ),
             new DFunction("isCollab",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "True if the skill is collaborative.",
                 ReturnType::TEXT,
                 $this,
-                "%skill.isCollab"
+                "skills.isCollab(%skill)\nor (shorthand notation):\n%skill.isCollab"
             ),
             new DFunction("isExtra",
                 [["name" => "skill", "optional" => false, "type" => "skill"]],
                 "True if the skill is extra.",
                 ReturnType::TEXT,
                 $this,
-                "%skill.isExtra"
+                "skills.isExtra(%skill)\nor (shorthand notation):\n%skill.isExtra"
             ),
             new DFunction("getSkillById",
                 [["name" => "skillId", "optional" => false, "type" => "int"]],

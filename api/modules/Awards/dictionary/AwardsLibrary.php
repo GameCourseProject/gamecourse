@@ -95,49 +95,49 @@ class AwardsLibrary extends Library
                 "Gets a given award's ID in the system.",
                 ReturnType::NUMBER,
                 $this,
-                "%award.id"
+                "awards.id(%award)\nor (shorthand notation):\n%award.id"
             ),
             new DFunction("description",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's description.",
                 ReturnType::TEXT,
                 $this,
-                "%award.description"
+                "awards.description(%award)\nor (shorthand notation):\n%award.description"
             ),
             new DFunction("type",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's type.",
                 ReturnType::TEXT,
                 $this,
-                "%award.type"
+                "awards.type(%award)\nor (shorthand notation):\n%award.type"
             ),
             new DFunction("instance",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's module instance.",
                 ReturnType::NUMBER,
                 $this,
-                "%award.instance"
+                "awards.instance(%award)\nor (shorthand notation):\n%award.instance"
             ),
             new DFunction("reward",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's reward.",
                 ReturnType::NUMBER,
                 $this,
-                "%award.reward"
+                "awards.reward(%award)\nor (shorthand notation):\n%award.reward"
             ),
             new DFunction("date",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's date.",
                 ReturnType::TIME,
                 $this,
-                "%award.date"
+                "awards.date(%award)\nor (shorthand notation):\n%award.date"
             ),
             new DFunction("icon",
                 [["name" => "award", "optional" => false, "type" => "any"]],
                 "Gets a given award's icon.",
                 ReturnType::TEXT,
                 $this,
-                "%award.icon"
+                "awards.icon(%award)\nor (shorthand notation):\n%award.icon"
             ),
             new DFunction("image",
                 [["name" => "award", "optional" => false, "type" => "any"],
@@ -146,7 +146,7 @@ class AwardsLibrary extends Library
                 "Gets a given award's image URL.",
                 ReturnType::TEXT,
                 $this,
-                "%award.image"
+                "awards.image(%award)\nor (shorthand notation):\n%award.image"
             ),
             new DFunction("getIconOfType",
                 [["name" => "type", "optional" => false, "type" => "string"]],

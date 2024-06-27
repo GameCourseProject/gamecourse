@@ -557,43 +557,52 @@ class ViewHandler
      */
     public static function compileView(array &$view)
     {
-        // Store view information on the dictionary
-        Core::dictionary()->storeView($view);
+        try {
+            // Store view information on the dictionary
+            Core::dictionary()->storeView($view);
 
-        // Compile basic parameters
-        $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
-        foreach ($params as $param) {
-            if (isset($view[$param])) {
-                // Ignore % that are not variables, e.g. 'width: 100%'
-                $pattern = "/(\d+)%/";
-                preg_match_all($pattern, $view[$param], $matches);
-                if (!empty($matches) && count($matches) == 2) {
-                    foreach ($matches[0] as $i => $v) {
-                        $view[$param] = preg_replace("/$v/", $matches[1][$i] . "?", $view[$param]);
+            // Compile basic parameters
+            $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
+            foreach ($params as $param) {
+                if (isset($view[$param])) {
+                    // Ignore % that are not variables, e.g. 'width: 100%'
+                    $pattern = "/(\d+)%/";
+                    preg_match_all($pattern, $view[$param], $matches);
+                    if (!empty($matches) && count($matches) == 2) {
+                        foreach ($matches[0] as $i => $v) {
+                            $view[$param] = preg_replace("/$v/", $matches[1][$i] . "?", $view[$param]);
+                        }
                     }
+
+                    self::compileExpression($view[$param]);
                 }
-
-                self::compileExpression($view[$param]);
             }
-        }
 
-        // Compile variables
-        if (isset($view["variables"])) {
-            foreach ($view["variables"] as &$variable) {
-                self::compileExpression($variable["value"]);
+            // Compile variables
+            if (isset($view["variables"])) {
+                foreach ($view["variables"] as &$variable) {
+                    self::compileExpression($variable["value"]);
+                }
             }
-        }
 
-        // Compile events
-        if (isset($view["events"])) {
-            foreach ($view["events"] as &$event) {
-                self::compileExpression($event["action"]);
+            // Compile events
+            if (isset($view["events"])) {
+                foreach ($view["events"] as &$event) {
+                    self::compileExpression($event["action"]);
+                }
             }
-        }
 
-        // Compile view of a specific type
-        $viewType = ViewType::getViewTypeById($view["type"]);
-        $viewType->compile($view);
+            // Compile view of a specific type
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->compile($view);
+
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if (strpos($message, " component.") === false) {
+                $message .= " On " . $view["type"] . " component.<" . $view["id"] . ">";
+            }
+            throw new Exception($message);
+        }
     }
 
     /**
@@ -700,7 +709,7 @@ class ViewHandler
         } catch (Exception $exception) {
             $message = $exception->getMessage();
             if (strpos($message, " component.") === false) {
-                $message .= " On " . $view["type"] . " component.";
+                $message .= " On " . $view["type"] . " component.<" . $view["id"] . ">";
             }
             throw new Exception($message);
         }

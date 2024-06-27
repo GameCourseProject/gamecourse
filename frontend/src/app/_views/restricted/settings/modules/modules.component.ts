@@ -1,31 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
-import {ApiEndpointsService} from "../../../../_services/api/api-endpoints.service";
 
 import {Module} from "../../../../_domain/modules/module";
-import {DownloadManager} from "../../../../_utils/download/download-manager";
-import {Reduce} from "../../../../_utils/lists/reduce";
-import {finalize} from "rxjs/operators";
+import { ModuleType } from 'src/app/_domain/modules/ModuleType';
+import {ModalService} from "../../../../_services/modal.service";
 
 @Component({
   selector: 'app-modules',
-  templateUrl: './modules.component.html',
-  styleUrls: ['./modules.component.scss']
+  templateUrl: './modules.component.html'
 })
 export class ModulesComponent implements OnInit {
 
   loading = true;
+
   modules: Module[];
-  versions: {project: string, api: string};
+  filteredModules: Module[];
 
-  reduce = new Reduce();
-  searchQuery: string;
-
-  importedFile: File;
-
-  isImportModalOpen: boolean;
-  saving: boolean;
+  modulesTypes: {[key in ModuleType]: string} = {
+    GameElement: 'Game Elements',
+    DataSource: 'Data Sources',
+    Util: 'Tools'
+  };
 
   constructor(
     private api: ApiHttpService
@@ -36,6 +32,14 @@ export class ModulesComponent implements OnInit {
     this.loading = false;
   }
 
+  get ModuleType(): typeof ModuleType {
+    return ModuleType;
+  }
+
+  get ModuleService(): typeof ModalService {
+    return ModalService;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** -------------------- Init ------------------- ***/
@@ -43,16 +47,7 @@ export class ModulesComponent implements OnInit {
 
   async getModules(): Promise<void> {
     this.modules = await this.api.getModules().toPromise();
-    this.reduceList();
-  }
-
-
-  /*** --------------------------------------------- ***/
-  /*** ------------------- Search ------------------ ***/
-  /*** --------------------------------------------- ***/
-
-  reduceList(query?: string): void {
-    this.reduce.search(this.modules, query);
+    this.filteredModules = this.modules;
   }
 
 
@@ -62,7 +57,7 @@ export class ModulesComponent implements OnInit {
 
   public importModule(): void {
     // FIXME: check if working
-    this.loading = true;
+/*    this.loading = true;
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -74,7 +69,7 @@ export class ModulesComponent implements OnInit {
         }) )
         .subscribe(res => this.getModules())
     }
-    reader.readAsDataURL(this.importedFile);
+    reader.readAsDataURL(this.importedFile);*/
   }
 
   public exportModules(): void {
@@ -91,21 +86,14 @@ export class ModulesComponent implements OnInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  isCompatible(module: Module): boolean {
-    return module.compatibility.project && module.compatibility.api;
+  objectKeys(obj: object): string[] {
+    return Object.keys(obj);
   }
 
-  getIncompatibleString(module: Module): string {
-    if (!module.compatibility.project && !module.compatibility.api)
-      return "Project & API";
-    if (!module.compatibility.project)
-      return "Project";
-    else return "API";
+  filterModules(type: ModuleType): Module[] {
+    return this.filteredModules.filter(module => module.type === type);
   }
 
-  onFileSelected(files: FileList): void {
-    this.importedFile = files.item(0);
-  }
 }
 
 export interface ImportModulesData {

@@ -37,6 +37,7 @@ import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
 import {domToPng} from 'modern-screenshot'
+import {ErrorService} from "../../../../../../../_services/error.service";
 
 @Component({
   selector: 'app-views-editor',
@@ -61,6 +62,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   page: Page;                                     // page where information will be saved
   pageToManage: PageManageData;                   // NEW page where information will be saved, and also used for NEW template NAME
   template: Template;                             // template where information will be saved
+  templateNameToManage: string;                   // NEW template name
   coreTemplate: Template;                         // core template to view
 
   aspects: Aspect[];                              // Aspects saved
@@ -630,7 +632,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
-      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
@@ -679,7 +680,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     try {
       buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
     } catch (e) {
-      console.log(e);
       AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
       this.loading.action = false;
       return "error";
@@ -836,8 +836,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   // ----------------------------------------------------------------
 
   async saveTemplate() {
-    if (!this.pageToManage.name) {
-      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+    if ((this.pageToManage && !this.pageToManage.name) || (!this.pageToManage && !this.templateNameToManage)) {
+      AlertService.showAlert(AlertType.ERROR, "The template must have a name.");
       return;
     }
 
@@ -851,7 +851,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     try {
-      await this.api.saveCustomTemplate(this.course.id, this.pageToManage.name, buildViewTree([this.view]), image).toPromise();
+      await this.api.saveCustomTemplate(
+        this.course.id,
+        this.pageToManage ? this.pageToManage.name : this.templateNameToManage,
+        buildViewTree([this.view]),
+        image
+      ).toPromise();
       await this.closeConfirmed();
       AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
     }
@@ -935,6 +940,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
           AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
           ModalService.openModal('save-before-preview');
         } else {
           await this.previewWithMockData();
@@ -950,6 +956,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.previewMode = 'real';
         if (this.history.hasUndo()) {
           AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
           ModalService.openModal('save-before-preview');
         }
         else {
@@ -959,6 +966,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       else if (this.pageToManage) {
         this.previewMode = 'real';
         AlertService.clear(AlertType.ERROR);
+        ErrorService.clearView();
         ModalService.openModal('save-new-before-preview');
       }
     }
@@ -1022,6 +1030,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
 
     AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
     ModalService.openModal('preview-as');
   }
 
@@ -1065,6 +1074,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   async previewWithMockData() {
     AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
 
     this.loading.action = true;
     try {

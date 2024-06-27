@@ -169,63 +169,63 @@ class BadgesLibrary extends Library
                 "Gets a given badge's ID in the system.",
                 ReturnType::NUMBER,
                 $this,
-            "%badge.id"
+                "badges.id(%badge)\nor (shorthand notation):\n%badge.id"
             ),
             new DFunction("name",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's name.",
                 ReturnType::TEXT,
                 $this,
-                "%badge.name"
+                "badges.name(%badge)\nor (shorthand notation):\n%badge.name"
             ),
             new DFunction("description",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's description.",
                 ReturnType::TEXT,
                 $this,
-                "%badge.description"
+                "badges.description(%badge)\nor (shorthand notation):\n%badge.description"
             ),
             new DFunction("image",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's image.",
                 ReturnType::TEXT,
                 $this,
-                "%badge.image"
+                "badges.image(%badge)\nor (shorthand notation):\n%badge.image"
             ),
             new DFunction("levels",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Gets a given badge's levels.",
                 ReturnType::BADGE_LEVELS_COLLECTION,
                 $this,
-                "%badge.levels"
+                "badges.levels(%badge)\nor (shorthand notation):\n%badge.levels"
             ),
             new DFunction("isExtra",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is extra credit.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%badge.isExtra"
+                "badges.isExtra(%badge)\nor (shorthand notation):\n%badge.isExtra"
             ),
             new DFunction("isBragging",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is bragging.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%badge.isBragging"
+                "badges.isBragging(%badge)\nor (shorthand notation):\n%badge.isBragging"
             ),
             new DFunction("isBasedOnCounts",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is based on counting occurrences of a given type.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%badge.isBasedOnCounts"
+                "badges.isBasedOnCounts(%badge)\nor (shorthand notation):\n%badge.isBasedOnCounts"
             ),
             new DFunction("isBasedOnPoints",
                 [["name" => "badge", "optional" => false, "type" => "Badge"]],
                 "Checks whether a given badge is based on earning a certain amount of points.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%badge.isBasedOnPoints"
+                "badges.isBasedOnPoints(%badge)\nor (shorthand notation):\n%badge.isBasedOnPoints"
             ),
             new DFunction("getMaxXP",
                 [],

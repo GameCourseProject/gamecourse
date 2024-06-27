@@ -129,63 +129,63 @@ class StreaksLibrary extends Library
                 "Gets a given streak's ID in the system.",
                 ReturnType::NUMBER,
                 $this,
-                "%streak.id"
+                "streaks.id(%streak)\nor (shorthand notation):\n%streak.id"
             ),
             new DFunction("name",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's name.",
                 ReturnType::TEXT,
                 $this,
-                "%streak.name"
+                "streaks.name(%streak)\nor (shorthand notation):\n%streak.name"
             ),
             new DFunction("goal",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's goal.",
                 ReturnType::NUMBER,
                 $this,
-                "%streak.goal"
+                "streaks.goal(%streak)\nor (shorthand notation):\n%streak.goal"
             ),
             new DFunction("description",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's description.",
                 ReturnType::TEXT,
                 $this,
-                "%streak.description"
+                "streaks.description(%streak)\nor (shorthand notation):\n%streak.description"
             ),
             new DFunction("color",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's color.",
                 ReturnType::TEXT,
                 $this,
-                "%streak.color"
+                "streaks.color(%streak)\nor (shorthand notation):\n%streak.color"
             ),
             new DFunction("reward",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's reward.",
                 ReturnType::NUMBER,
                 $this,
-                "%streak.reward"
+                "streaks.reward(%streak)\nor (shorthand notation):\n%streak.reward"
             ),
             new DFunction("tokens",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Gets a given streak's tokens.",
                 ReturnType::NUMBER,
                 $this,
-                "%streak.tokens"
+                "streaks.tokens(%streak)\nor (shorthand notation):\n%streak.tokens"
             ),
             new DFunction("isRepeatable",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Returns whether a streak is repeatable or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%streak.isRepeatable"
+                "streaks.isRepeatable(%streak)\nor (shorthand notation):\n%streak.isRepeatable"
             ),
             new DFunction("isExtra",
                 [["name" => "streak", "optional" => false, "type" => "Streak"]],
                 "Returns whether a streak is extra or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%streak.isExtra"
+                "streaks.isExtra(%streak)\nor (shorthand notation):\n%streak.isExtra"
             ),
             new DFunction("getMaxXP",
                 [],

@@ -3535,7 +3535,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => {
         return {
           viewTree: res['data']['viewTree'],
@@ -3562,7 +3562,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
@@ -3578,7 +3578,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
@@ -3787,7 +3787,7 @@ export class ApiHttpService {
   /*** -------------- Helper Functions ------------- ***/
   /*** --------------------------------------------- ***/
 
-  public get(url: string, options?: any, skipErrors?: boolean) {
+  public get(url: string, options?: any, skipErrors?: boolean, inViewEditor?: boolean) {
     return this.http.get(url, options)
       .pipe(
         catchError(error => {
@@ -3800,13 +3800,14 @@ export class ApiHttpService {
           if (error.status === 409)
             this.router.navigate(['/setup']);
 
-          if (!skipErrors) ErrorService.set(error);
+          if (!skipErrors && !inViewEditor) ErrorService.set(error);
+          else if (inViewEditor) ErrorService.setInViewEditor(error);
           return throwError(error);
         })
       );
   }
 
-  public post(url: string, data: any, options?: any, skipErrors?: boolean) {
+  public post(url: string, data: any, options?: any, skipErrors?: boolean, inViewEditor?: boolean) {
     return this.http.post(url, data, options)
       .pipe(
         catchError(error => {
@@ -3820,6 +3821,7 @@ export class ApiHttpService {
             this.router.navigate(['/setup']);
 
           if (!skipErrors) ErrorService.set(error);
+          else if (inViewEditor) ErrorService.setInViewEditor(error);
           return throwError(error);
         })
       );

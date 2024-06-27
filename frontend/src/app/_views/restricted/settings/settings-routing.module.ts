@@ -9,11 +9,11 @@ const routes: Routes = [
     children: [
       {
         path: 'modules',
-        component: ComingSoonComponent  // TODO: ModulesComponent
+        component: ModulesComponent
       },
       {
         path: 'themes',
-        component: ComingSoonComponent
+        component: ComingSoonComponent  // TODO: ThemesComponent
       },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]

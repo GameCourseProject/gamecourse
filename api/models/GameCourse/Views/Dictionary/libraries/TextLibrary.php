@@ -52,14 +52,14 @@ class TextLibrary extends Library
                 "Make a text uppercase.",
                 ReturnType::TEXT,
                 $this,
-                "text.capitalize('hello world')\nReturns 'HELLO WORLD'"
+                "text.uppercase('hello world')\nReturns 'HELLO WORLD'"
             ),
             new DFunction("lowercase",
                 [["name" => "text", "optional" => false, "type" => "string"]],
                 "Make a text lowercase.",
                 ReturnType::TEXT,
                 $this,
-                "text.capitalize('HELLO WorlD')\nReturns 'hello world'"
+                "text.lowercase('HELLO WorlD')\nReturns 'hello world'"
             ),
             new DFunction("capitalize",
                 [["name" => "text", "optional" => false, "type" => "string"]],

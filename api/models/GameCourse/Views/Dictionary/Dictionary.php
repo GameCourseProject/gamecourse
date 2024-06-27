@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use InvalidArgumentException;
 use Faker\Factory;
 use Faker\Generator;
 use GameCourse\Course\Course;
@@ -244,6 +245,14 @@ class Dictionary
         $this->faker = Factory::create(); // Check out https://fakerphp.github.io/
 
         // Call function
-        return $library->{$funcName}(...$args);
+        try {
+            return $library->{$funcName}(...$args);
+        } catch (InvalidArgumentException $e) {
+            $errorMessage = $e->getMessage();
+            $position = strpos($errorMessage, ':');
+            if ($position !== false) {
+                throw new Exception(substr($errorMessage, 0, $position) . " on function $funcName" . substr($errorMessage, $position));
+            }
+        }
     }
 }

@@ -36,7 +36,7 @@ class PagesLibrary extends Library
                 "Gets a given page's ID in the system.",
                 ReturnType::NUMBER,
                 $this,
-                "%page.id"
+                "pages.id(%page)\nor (shorthand notation):\n%page.id"
             ),
             new DFunction("getPageByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],

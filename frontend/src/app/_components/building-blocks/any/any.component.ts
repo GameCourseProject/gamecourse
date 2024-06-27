@@ -28,6 +28,7 @@ import {groupedChildren, viewsDeleted} from 'src/app/_domain/views/build-view-tr
 import {HistoryService} from 'src/app/_services/history.service';
 import {ViewEditorService} from 'src/app/_services/view-editor.service';
 import {AlertService, AlertType} from "../../../_services/alert.service";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'bb-any',
@@ -53,7 +54,7 @@ export class BBAnyComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     public selection: ViewSelectionService,
     private history: HistoryService,
-    public service: ViewEditorService,
+    private service: ViewEditorService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -178,6 +179,10 @@ export class BBAnyComponent implements OnInit, OnDestroy {
 
   isSelected() {
     return this.selection.get() == this.view;
+  }
+
+  isError() {
+    return ErrorService.viewId == this.view.id;
   }
 
   isOpen() {
