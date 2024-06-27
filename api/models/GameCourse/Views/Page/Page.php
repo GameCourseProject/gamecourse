@@ -723,8 +723,26 @@ class Page
         $viewType->compile($view);
         $viewType->evaluate($view, $visitor);
 
-        if (is_object($view["text"])) return $view["text"]->getData();
-        else return $view["text"];
+        if (is_object($view["text"])) {
+            $className = explode('\\', get_class($view["text"]));
+            return array_merge(["itemType" => end($className)], $view["text"]->getData());
+        }
+        else if (is_array($view["text"])) {
+            foreach ($view["text"] as &$el) {
+                if (is_object($el)) {
+                    return array_merge(["itemNamespace" => $el->getId()], $view["text"]);
+                }
+                else if (isset($el["libraryOfItem"])) {
+                    $type = $el["libraryOfItem"]->getId();
+                    unset($el["libraryOfItem"]);
+                    $el = array_merge(["itemNamespace" => $type], $el);
+                }
+            }
+            return $view["text"];
+        }
+        else {
+            return $view["text"];
+        }
     }
 
     /**
