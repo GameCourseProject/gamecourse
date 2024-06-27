@@ -20,11 +20,28 @@
     </div>
     <!-- Actions -->
     <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}}
-                absolute -top-4 -right-3 bg-secondary rounded-full w-7 h-7 justify-center items-center z-30
-                hover:cursor-pointer hover:bg-secondary-focus transition-all"
+                absolute -top-4 -right-3 bg-secondary rounded-full h-7 w-7 justify-center items-center z-30
+                hover:cursor-pointer hover:bg-secondary-focus transition-all text-secondary-content"
          (click)="onRightClick($event)">
-      <ng-icon tabindex="0" name="tabler-dots-vertical" color="white"/>
+      <ng-icon tabindex="0" name="tabler-dots-vertical"/>
     </div>
+    <!-- Repeat Indicator -->
+    <div *ngIf="view.loopData" class="z-30 absolute top-3 -right-3 h-7 w-7 rounded-full flex justify-center items-center
+         bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words"
+         [attr.data-tip]="view.type.capitalize() + ' repeats for each item in ' + view.loopData">
+      <ng-icon tabindex="0" name="feather-repeat"/>
+    </div>
+    <!-- Repeat Indicator for Table Rows -->
+    <ng-container *ngIf="view.type === ViewType.TABLE">
+      <ng-container *ngFor="let row of $any(view).bodyRows">
+        <div *ngIf="row.loopData" class="z-30 absolute top-10 -right-3 h-7 w-7 rounded-full flex justify-center items-center
+             bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words"
+             [attr.data-tip]="'Row repeats for each item in ' + row.loopData">
+          <ng-icon tabindex="0" name="feather-repeat"/>
+        </div>
+      </ng-container>
+    </ng-container>
+    <!-- Component -->
     <ng-container [ngTemplateOutlet]="anyComponent"></ng-container>
   </div>
 </ng-container>
