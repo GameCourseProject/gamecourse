@@ -82,49 +82,49 @@ class CoursesLibrary extends Library
                 "Gets a given course's name.",
                 ReturnType::TEXT,
                 $this,
-                "%someCourse.name\nReturns, for example, 'Multimedia Content Production'"
+                "courses.name(%someCourse)\nor (shorthand notation):\n%someCourse.name\n\nReturns, for example, 'Multimedia Content Production'"
             ),
             new DFunction("short",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given course's short.",
                 ReturnType::TEXT,
                 $this,
-                "%someCourse.short\nReturns, for example, 'MCP'"
+                "courses.short(%someCourse)\nor (shorthand notation):\n%someCourse.short\n\nReturns, for example, 'MCP'"
             ),
             new DFunction("year",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given course's year.",
                 ReturnType::TEXT,
                 $this,
-                "%someCourse.year\nReturns, for example, '2024-2025'"
+                "courses.year(%someCourse)\nor (shorthand notation):\n%someCourse.year\n\nReturns, for example, '2024-2025'"
             ),
             new DFunction("color",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given course's color.",
                 ReturnType::TEXT,
                 $this,
-                "%someCourse.color"
+                "courses.color(%someCourse)\nor (shorthand notation):\n%someCourse.color"
             ),
             new DFunction("theme",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Gets a given course's theme.",
                 ReturnType::TEXT,
                 $this,
-                "%someCourse.theme"
+                "courses.theme(%someCourse)\nor (shorthand notation):\n%someCourse.theme"
             ),
             new DFunction("avatars",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Returns whether the avatars are enabled in the course or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%someCourse.avatars\nReturns true or false."
+                "courses.avatars(%someCourse)\nor (shorthand notation):\n%someCourse.avatars\n\nReturns true or false."
             ),
             new DFunction("nicknames",
                 [["name" => "course", "optional" => false, "type" => "Course"]],
                 "Returns whether the nicknames are enabled in the course or not.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%someCourse.nicknames\nReturns true or false."
+                "courses.nicknames(%someCourse)\nor (shorthand notation):\n%someCourse.nicknames\n\nReturns true or false."
             ),
             new DFunction("getCourseById",
                 [["name" => "courseId", "optional" => false, "type" => "int"]],

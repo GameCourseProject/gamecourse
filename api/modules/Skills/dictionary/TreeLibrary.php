@@ -128,42 +128,42 @@ class TreeLibrary extends Library
                 "Gets skill tree's id.",
                 ReturnType::TEXT,
                 $this,
-            "%tree.id"
+                "tree.id(%tree)\nor (shorthand notation):\n%tree.id"
             ),
             new DFunction("name",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's name.",
                 ReturnType::TEXT,
                 $this,
-            "%tree.name"
+                "tree.name(%tree)\nor (shorthand notation):\n%tree.name"
             ),
             new DFunction("maxReward",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's maximum reward.",
                 ReturnType::NUMBER,
                 $this,
-            "%tree.maxReward"
+                "tree.maxReward(%tree)\nor (shorthand notation):\n%tree.maxReward"
             ),
             new DFunction("tiers",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's tiers.",
                 ReturnType::TIERS_COLLECTION,
                 $this,
-            "%tree.tiers"
+                "tree.tiers(%tree)\nor (shorthand notation):\n%tree.tiers"
             ),
             new DFunction("getSkillTreeById",
                 [["name" => "skillTreeId", "optional" => false, "type" => "int"]],
                 "Gets a skill tree by its ID in the system.",
                 ReturnType::OBJECT,
                 $this,
-            "tree.getSkillTreeById(1)"
+                "tree.getSkillTreeById(1)"
             ),
             new DFunction("getSkillTreeByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a skill tree by its name.",
                 ReturnType::OBJECT,
                 $this,
-            "tree.getSkillTreeByName('Media Challenges')"
+                "tree.getSkillTreeByName('Media Challenges')"
             ),
             new DFunction("getSkillTrees",
                 [],

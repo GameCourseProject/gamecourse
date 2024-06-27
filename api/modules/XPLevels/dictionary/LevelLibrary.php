@@ -38,7 +38,6 @@ class LevelLibrary extends Library
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    // TODO: descriptions
     public function getFunctions(): ?array
     {
         return [
@@ -46,55 +45,64 @@ class LevelLibrary extends Library
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.id(%level)\nor (shorthand notation):\n%level.id"
             ),
             new DFunction("minXP",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's minimum XP.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.minXP(%level)\nor (shorthand notation):\n%level.minXP"
             ),
             new DFunction("description",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "xpLevel.description(%level)\nor (shorthand notation):\n%level.description"
             ),
             new DFunction("number",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.number(%level)\nor (shorthand notation):\n%level.number"
             ),
             new DFunction("getLevelById",
                 [["name" => "levelId", "optional" => false, "type" => "int"]],
                 "Gets a level by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelById(6)"
             ),
             new DFunction("getLevelByMinXP",
                 [["name" => "minXP", "optional" => false, "type" => "int"]],
                 "Gets a level by its minimum XP.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelById(5000)"
             ),
             new DFunction("getLevelByXP",
                 [["name" => "xp", "optional" => false, "type" => "int"]],
                 "Gets a level by its corresponding XP.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelByXP(5120)"
             ),
             new DFunction("getLevelByNumber",
                 [["name" => "number", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelByNumber(5)"
             ),
             new DFunction("getLevels",
                 [["name" => "orderBy", "optional" => true, "type" => "string"]],
                 "Gets levels of course. Option to order by a given parameter.",
                 ReturnType::LEVELS_COLLECTION,
-                $this
+                $this,
+                "xpLevel.getLevels()"
             )
         ];
     }

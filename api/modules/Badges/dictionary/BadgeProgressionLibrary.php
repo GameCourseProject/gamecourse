@@ -64,14 +64,14 @@ class BadgeProgressionLibrary extends Library
                 "Gets a given progression's description.",
                 ReturnType::TEXT,
                 $this,
-            "%badgeProgression.description"
+                "badgeProgression.description(%badgeProgression)\nor (shorthand notation):\n%badgeProgression.description"
             ),
             new DFunction("link",
                 [["name" => "progression", "optional" => false, "type" => "any"]],
                 "Gets a given progression's link.",
                 ReturnType::TEXT,
                 $this,
-            "%badgeProgression.link"
+                "badgeProgression.link(%badgeProgression)\nor (shorthand notation):\n%badgeProgression.link"
             )
         ];
     }

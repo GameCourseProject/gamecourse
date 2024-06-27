@@ -110,28 +110,28 @@ class UsersLibrary extends Library
                 "Gets a given user's ID in the system.",
                 ReturnType::NUMBER,
                 $this,
-                "%someUser.id"
+                "users.id(%someUser)\nor (shorthand notation):\n%someUser.id"
             ),
             new DFunction("name",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's name.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.name"
+                "users.name(%someUser)\nor (shorthand notation):\n%someUser.name"
             ),
             new DFunction("email",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's email.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.email"
+                "users.email(%someUser)\nor (shorthand notation):\n%someUser.email"
             ),
             new DFunction("major",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's major.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.major"
+                "users.major(%someUser)\nor (shorthand notation):\n%someUser.major"
             ),
             new DFunction("nickname",
                 [["name" => "user", "optional" => false, "type" => "User"]],
@@ -139,34 +139,35 @@ class UsersLibrary extends Library
                 allow nicknames, will return the name instead.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.nickname"
+                "users.nickname(%someUser)\nor (shorthand notation):\n%someUser.nickname"
             ),
             new DFunction("studentNumber",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student number.",
                 ReturnType::NUMBER,
                 $this,
-                "%someUser.studentNumber"
+                "users.studentNumber(%someUser)\nor (shorthand notation):\n%someUser.studentNumber"
             ),
             new DFunction("theme",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student theme.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.theme(%someUser)\nor (shorthand notation):\n%someUser.theme"
             ),
             new DFunction("username",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student username.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.username"
+                "users.username(%someUser)\nor (shorthand notation):\n%someUser.username"
             ),
             new DFunction("image",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student image.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.image"
+                "users.image(%someUser)\nor (shorthand notation):\n%someUser.image"
             ),
             new DFunction("avatar",
                 [["name" => "user", "optional" => false, "type" => "User"]],
@@ -174,28 +175,42 @@ class UsersLibrary extends Library
                 allow avatars, will return the image instead.",
                 ReturnType::TEXT,
                 $this,
-                "%someUser.avatar"
+                "users.avatar(%someUser)\nor (shorthand notation):\n%someUser.avatar"
             ),
             new DFunction("lastActivity",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's last activity datetime in the course.",
                 ReturnType::TIME,
                 $this,
-                "%someUser.lastActivity"
+                "users.lastActivity(%someUser)\nor (shorthand notation):\n%someUser.lastActivity"
             ),
             new DFunction("landingPage",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's course landing page.",
                 ReturnType::OBJECT,
                 $this,
-                "%someUser.landingPage"
+                "users.landingPage(%someUser)\nor (shorthand notation):\n%someUser.landingPage"
             ),
             new DFunction("isActive",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Checks if a given user is active in the course.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%someUser.isActive"
+                "users.isActive(%someUser)\nor (shorthand notation):\n%someUser.isActive"
+            ),
+            new DFunction("isStudent",
+                [["name" => "user", "optional" => false, "type" => "User"]],
+                "Checks whether a given user is a student.",
+                ReturnType::BOOLEAN,
+                $this,
+                "users.isStudent(%someUser)\nor (shorthand notation):\n%someUser.isStudent"
+            ),
+            new DFunction("isTeacher",
+                [["name" => "user", "optional" => false, "type" => "User"]],
+                "Checks whether a given user is a teacher.",
+                ReturnType::BOOLEAN,
+                $this,
+                "users.isTeacher(%someUser)\nor (shorthand notation):\n%someUser.isTeacher"
             ),
             new DFunction("getUserById",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
@@ -250,20 +265,6 @@ class UsersLibrary extends Library
                 ReturnType::USERS_COLLECTION,
                 $this,
                 "users.getTeachers()"
-            ),
-            new DFunction("isStudent",
-                [["name" => "user", "optional" => false, "type" => "User"]],
-                "Checks whether a given user is a student.",
-                ReturnType::BOOLEAN,
-                $this,
-                "%someUser.isStudent"
-            ),
-            new DFunction("isTeacher",
-                [["name" => "user", "optional" => false, "type" => "User"]],
-                "Checks whether a given user is a teacher.",
-                ReturnType::BOOLEAN,
-                $this,
-                "%someUser.isTeacher"
             )
         ];
     }

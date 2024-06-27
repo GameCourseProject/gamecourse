@@ -46,55 +46,64 @@ class VCLibrary extends Library
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "vc.description(%spending)\nor (shorthand notation):\n%spending.description"
             ),
             new DFunction("amount",
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's amount.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "vc.amount(%spending)\nor (shorthand notation):\n%spending.amount"
             ),
             new DFunction("date",
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's date.",
                 ReturnType::TIME,
-                $this
+                $this,
+                "vc.date(%spending)\nor (shorthand notation):\n%spending.date"
             ),
             new DFunction("getVCName",
                 [],
                 "Gets Virtual Currency name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "vc.getVCName()"
             ),
             new DFunction("getImage",
                 [],
                 "Gets Virtual Currency image URL.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "vc.getImage()"
             ),
             new DFunction("getUserTokens",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total tokens for a given user.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "vc.getUserTokens(%user)"
             ),
             new DFunction("getUserSpending",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets spending for a given user.",
                 ReturnType::SPENDING_COLLECTION,
-                $this
+                $this,
+                "vc.getUserSpending(%user)"
             ),
             new DFunction("getUserTotalSpending",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total spending for a given user.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "vc.getUserTotalSpending(%user)"
             ),
             new DFunction("getUserExchanged",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets a boolean indicating if the student already exchanged their tokens for XP or not.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "vc.getUserExchanged(%user)"
             ),
             new DFunction("exchangeTokensForXP",
                 [["name" => "userId", "optional" => false, "type" => "int"],

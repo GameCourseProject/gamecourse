@@ -114,35 +114,35 @@ class TiersLibrary extends Library
                 "Gets tier's id.",
                 ReturnType::TEXT,
                 $this,
-                "%tier.id"
+                "tiers.id(%tier)\nor (shorthand notation):\n%tier.id"
             ),
             new DFunction("name",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's name.",
                 ReturnType::TEXT,
                 $this,
-                "%tier.name"
+                "tiers.name(%tier)\nor (shorthand notation):\n%tier.name"
             ),
             new DFunction("reward",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's reward.",
                 ReturnType::NUMBER,
                 $this,
-                "%tier.reward"
+                "tiers.reward(%tier)\nor (shorthand notation):\n%tier.reward"
             ),
             new DFunction("skills",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's skills.",
                 ReturnType::SKILLS_COLLECTION,
                 $this,
-                "%tier.skills"
+                "tiers.skills(%tier)\nor (shorthand notation):\n%tier.skills"
             ),
             new DFunction("isActive",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Checks whether a given tier is active.",
                 ReturnType::BOOLEAN,
                 $this,
-                "%tier.isActive"
+                "tiers.isActive(%tier)\nor (shorthand notation):\n%tier.isActive"
             ),
             new DFunction("getTierById",
                 [["name" => "tierId", "optional" => false, "type" => "int"]],
