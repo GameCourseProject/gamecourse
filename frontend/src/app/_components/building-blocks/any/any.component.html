@@ -27,7 +27,7 @@
     </div>
     <!-- Repeat Indicator -->
     <div *ngIf="view.loopData" class="z-30 absolute top-3 -right-3 h-7 w-7 rounded-full flex justify-center items-center
-         bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words"
+         bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words before:whitespace-normal"
          [attr.data-tip]="view.type.capitalize() + ' repeats for each item in ' + view.loopData">
       <ng-icon tabindex="0" name="feather-repeat"/>
     </div>
@@ -35,7 +35,7 @@
     <ng-container *ngIf="view.type === ViewType.TABLE">
       <ng-container *ngFor="let row of $any(view).bodyRows">
         <div *ngIf="row.loopData" class="z-30 absolute top-10 -right-3 h-7 w-7 rounded-full flex justify-center items-center
-             bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words"
+             bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words before:whitespace-normal"
              [attr.data-tip]="'Row repeats for each item in ' + row.loopData">
           <ng-icon tabindex="0" name="feather-repeat"/>
         </div>
