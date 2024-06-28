@@ -68,7 +68,7 @@ import {
   GameElementManageData,
   QuestionnaireManageData
 } from 'src/app/_views/restricted/courses/course/settings/adaptation/adaptation.component';
-import {CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
+import {CookbookRecipe, CustomFunction} from "../../_components/inputs/code/input-code/input-code.component";
 import {PageManageData, TemplateManageData} from "../../_views/restricted/courses/course/settings/views/views/views.component";
 import { Aspect } from 'src/app/_domain/views/aspects/aspect';
 import { ViewType } from 'src/app/_domain/views/view-types/view-type';
@@ -523,7 +523,9 @@ export class ApiHttpService {
       color: courseData.color,
       startDate: courseData.startDate ? courseData.startDate + ' 00:00:00' : null,
       endDate: courseData.endDate ? courseData.endDate + ' 23:59:59' : null,
-      avatars: courseData.avatars
+      avatars: courseData.avatars,
+      nicknames: courseData.nicknames,
+      theme: courseData.theme
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1764,7 +1766,7 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data']) );
   }
 
-  public getELFunctions(): Observable<CustomFunction[]> {
+  public getELFunctions(): Observable<{ namespaces: { [name: string]: string }, functions: CustomFunction[] }> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.RULES_SYSTEM);
       qs.push('request', 'getELFunctions');
@@ -1888,10 +1890,11 @@ export class ApiHttpService {
       .pipe( map((res: any) => res));
   }
 
-  public previewExpression(courseID: number, expression: string): Observable<void> {
+  public previewExpression(courseID: number, expression: string, tree: any): Observable<void> {
     const data = {
       courseId: courseID,
-      expression: expression
+      expression: expression,
+      tree: tree
     };
 
     const params = (qs: QueryStringParameters) => {
@@ -1902,6 +1905,19 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe( map((res: any) => res));
+  }
+
+  public getCookbook(courseID: number): Observable<CookbookRecipe[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.PAGE);
+      qs.push('request', 'getCookbook');
+      qs.push('courseId', courseID);
+    }
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe(map((res: any) => res['data']));
   }
 
   public previewRule(ruleData: RuleManageData): Observable<void> {
@@ -3345,12 +3361,13 @@ export class ApiHttpService {
       }));
   }
 
-  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public saveTemplateChanges(courseID: number, templateID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       templateId: templateID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 
@@ -3383,7 +3400,7 @@ export class ApiHttpService {
 
   // Pages //////////////////////////////////////////////////////////////////////////
 
-  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<void> {
+  public saveViewAsPage(courseID: number, name: string, viewTree, image): Observable<number> {
     const data = {
       courseId: courseID,
       name: name,
@@ -3398,15 +3415,16 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
+      .pipe( map((res: any) => res['data']) );
   }
 
-  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], image: string): Observable<void> {
+  public savePageChanges(courseID: number, pageID: number, viewTree, viewsDeleted: number[], name: string, image: string): Observable<void> {
     const data = {
       courseId: courseID,
       pageId: pageID,
       viewTree: viewTree,
       viewsDeleted: viewsDeleted,
+      name: name,
       image: image
     }
 
@@ -3517,7 +3535,7 @@ export class ApiHttpService {
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => {
         return {
           viewTree: res['data']['viewTree'],
@@ -3539,30 +3557,28 @@ export class ApiHttpService {
       if (aspect.viewerRole) {
         qs.push('viewerRole', aspect.viewerRole);
       }
+      qs.push('_', Date.now().toString());
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
-  public previewPage(pageID: number, aspect: Aspect): Observable<View> {
+  public previewPage(pageID: number, viewerID: number, userID: number): Observable<View> {
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.PAGE);
       qs.push('request', 'previewPage');
       qs.push('pageId', pageID);
-      if (aspect.userRole) {
-        qs.push('userRole', aspect.userRole);
-      }
-      if (aspect.viewerRole) {
-        qs.push('viewerRole', aspect.viewerRole);
-      }
+      qs.push('viewerId', viewerID);
+      qs.push('userId', userID);
+      qs.push('_', Date.now().toString());
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
 
-    return this.get(url, ApiHttpService.httpOptions)
+    return this.get(url, ApiHttpService.httpOptions, false, true)
       .pipe(map((res: any) => buildView(res['data'])));
   }
 
@@ -3771,7 +3787,7 @@ export class ApiHttpService {
   /*** -------------- Helper Functions ------------- ***/
   /*** --------------------------------------------- ***/
 
-  public get(url: string, options?: any, skipErrors?: boolean) {
+  public get(url: string, options?: any, skipErrors?: boolean, inViewEditor?: boolean) {
     return this.http.get(url, options)
       .pipe(
         catchError(error => {
@@ -3784,13 +3800,14 @@ export class ApiHttpService {
           if (error.status === 409)
             this.router.navigate(['/setup']);
 
-          if (!skipErrors) ErrorService.set(error);
+          if (!skipErrors && !inViewEditor) ErrorService.set(error);
+          else if (inViewEditor) ErrorService.setInViewEditor(error);
           return throwError(error);
         })
       );
   }
 
-  public post(url: string, data: any, options?: any, skipErrors?: boolean) {
+  public post(url: string, data: any, options?: any, skipErrors?: boolean, inViewEditor?: boolean) {
     return this.http.post(url, data, options)
       .pipe(
         catchError(error => {
@@ -3804,6 +3821,7 @@ export class ApiHttpService {
             this.router.navigate(['/setup']);
 
           if (!skipErrors) ErrorService.set(error);
+          else if (inViewEditor) ErrorService.setInViewEditor(error);
           return throwError(error);
         })
       );

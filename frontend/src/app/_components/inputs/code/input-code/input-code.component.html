@@ -14,15 +14,21 @@
     <span class="label-text" [ngClass]="{'opacity-50': disabled}">{{title}} <span *ngIf="required" class="text-secondary">*</span></span>
   </label>
 
-  <div *ngIf="showTabs" class="tabs tabs-boxed flex flex-wrap bg-base-content rounded-b-none">
-    <ng-container *ngFor="let tab of tabs, let i = index">
-      <a class="tab tab-sm text-base-200 {{tab.active ? 'tab-active' : ''}}" (click)="toggleTabs(i)">{{tab.name}}</a>
-    </ng-container>
+  <div *ngIf="showTabs" class="flex flex-wrap gap-1.5 rounded-b-none rounded-xl items-center border-base-content border-t-2 bg-base-content px-2 pt-1.5 font-semibold">
+    <button *ngFor="let tab of tabs, let i = index" (click)="toggleTabs(i)"
+      class="{{tab.active ? 'bg-base-300 hover:bg-base-300 text-base-content' : 'bg-base-100 transition text-base-300 bg-opacity-25 hover:bg-opacity-30'}}
+        rounded-t-lg uppercase font-semibold text-xs px-3 py-1.5 -mb-0.5"
+    >
+      {{tab.name}}
+    </button>
+    <button class="ml-auto text-base-200 hover:text-primary transition flex items-center tooltip tooltip-left -mt-2 font-normal" [attr.data-tip]="'Expand'" (click)="expand()">
+      <ng-icon *ngIf="size === 'md'" name="tabler-window-maximize" size="1.3rem" class="text-inherit" />
+      <ng-icon *ngIf="size === 'lg'" name="tabler-window-minimize" size="1.3rem" class="text-inherit" />
+    </button>
   </div>
 
-  <div class="rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} border-2 overflow-y-auto
-        {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}"
-       [style.background-color]="getTheme() === 'light' ? '#FFFFFF' : '#282C34'">
+  <div class="w-full rounded-xl border-base-content {{size === 'lg' ? 'h-[35rem]' : 'h-64'}} {{showTabs ? 'border-x-2 border-b-2' : 'border-2'}} overflow-y-auto bg-base-200
+        {{getTheme() === 'light' && showTabs ? 'border-t-base-300' : ''}} {{showTabs ? 'rounded-t-none': ''}}">
 
     <ng-container *ngFor="let tab of tabs, let i = index">
       <!-- Editor code tabs  -->
@@ -30,99 +36,153 @@
         <div [id]="getId(i, tab.name)"></div>
       </div>
 
-      <!-- Preview code tabs  -->
-      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto">
+      <!-- Preview expression tabs  -->
+      <div *ngIf="tab.type === 'preview'" class="cm {{!showTabs || tab.active ? '' : 'hidden'}} h-full hover:cursor-text flex flex-col overflow-y-auto relative text-sm">
         <div [id]="getId(i, tab.name)"></div>
-        <button type="button" class="btn btn-secondary btn-sm text-white w-full gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}} rounded-none" (click)="previewExpression(tab)">
-          <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-white"></ng-icon>
-          <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
-          Preview Expression
-        </button>
+        <div class="w-full bg-base-300 flex flex-row items-center gap-2">
+          <button type="button" class="ml-2 btn btn-secondary btn-sm text-secondary-content gap-2 {{isRunning(tab) ? 'btn-disabled' : ''}}" (click)="previewExpression(tab)">
+            <ng-icon *ngIf="!isRunning(tab)" name="feather-play-circle" size="1.2rem" class="text-inherit"></ng-icon>
+            <app-spinner *ngIf="isRunning(tab)" [classList]="'ml-2'" [color]="'neutral-content'" [size]="'sm'"></app-spinner>
+            Preview Expression
+          </button>
+          <div *ngIf="outputPreview" class="font-semibold">Result:</div>
+          <div *ngIf="outputPreviewError" class="font-semibold text-error">Error:</div>
+        </div>
         <div class="text-xs p-2 bg-base-300 flex flex-col flex-1 w-fit min-w-full">
-          <div class="text-sm font-semibold h-fit">Result: </div>
           <pre *ngIf="outputPreview">{{outputPreview | json}}</pre>
+          <div *ngIf="outputPreviewError" [innerHTML]="outputPreviewError" class="text-sm"></div>
+        </div>
+        <div class="absolute tooltip tooltip-left top-1 right-1" [attr.data-tip]="'Copy'">
+          <button class="btn btn-sm btn-ghost btn-circle" (click)="copyPreviewToClipboard()">
+            <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
+          </button>
         </div>
       </div>
 
       <!-- Editor reference manual tabs -->
-      <div *ngIf="tab.type === 'manual' && tab.active" class="ml-1 h-full overflow-y-clip">
+      <div *ngIf="tab.type === 'manual' && tab.active" class="h-full overflow-y-clip relative">
         <div class="w-full flex h-full">
-          <div class="w-[calc(50%-0.25rem)] h-full flex flex-col">
-            <div class="justify-center flex mb-1.5">
-              <app-input-search
-                [id] = "'manual'"
-                [size]="'sm'"
-                [classList]="'mt-1'"
-                [items] = "originalFunctions"
-                [placeholder]="'Search for function...'"
-                (valueChange)="filterFunctions($event)">
-              </app-input-search>
-            </div>
-            <div class="bg-base-300 h-full overflow-y-auto overflow-x-auto">
-              <div *ngFor="let namespace of tab.namespaces">
-                <ng-container *ngIf="containsFunctions(namespace)">
-                  <span class="text-sm"><strong>{{ namespace !== 'gamerules' ? 'Namespace: ' : 'Others: ' }}</strong>
-                    <i>{{ namespace !== 'gamerules' ? namespace : '' }}</i>
-                  </span>
-                  <div *ngFor="let fx of functionsToShow">
-                    <div *ngIf="fx.name === namespace" class="badge badge-secondary mt-0.5 hover:cursor-pointer hover:badge-outline
-                        {{ isSelected(fx) ? 'badge-outline' : '' }}" (click)="selectedFunction = fx">
-                      {{ fx.keyword }}
-                    </div>
-                  </div>
-                </ng-container>
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col bg-base-300">
+            <app-input-search
+              [id]="'manual'"
+              [size]="'sm'"
+              [classList]="'my-2'"
+              [items]="Object.values(originalFunctions)"
+              [placeholder]="'Search for function...'"
+              (valueChange)="filterFunctions($event)">
+            </app-input-search>
+            <div class="h-full overflow-y-auto overflow-x-auto">
+
+              <!-- Overview -->
+              <button class="badge badge-secondary gap-1 mb-2 ml-2
+                        {{ (!selectedFunction && !selectedNamespace) ? 'badge-outline' : 'hover:badge-outline' }}"
+                      (click)="selectedFunction = null; selectedNamespace = null">
+                Overview
+              </button>
+              <!-- Namespaces -->
+              <div *ngFor="let entry of filteredFunctions | keyvalue" class="mb-2">
+                <button class="badge badge-secondary mb-1 ml-2 gap-1
+                        {{ isNamespaceSelected(entry.key) ? 'badge-outline' : 'hover:badge-outline' }}"
+                        (click)="selectedFunction = null; selectedNamespace = entry.key">
+                  Namespace<span class="font-semibold">{{entry.key}}</span>
+                </button>
+                <div class="flex flex-col gap-1 ml-2">
+                  <!-- Functions -->
+                  <button *ngFor="let fx of entry.value"
+                       class="badge badge-secondary
+                        {{ isFunctionSelected(fx) ? 'badge-outline' : 'text-neutral bg-neutral/20 border-transparent hover:badge-outline' }}"
+                       (click)="selectedNamespace = null; selectedFunction = fx">
+                    {{ fx.keyword }}
+                  </button>
+                </div>
               </div>
 
-              <span *ngIf="functionsToShow.length === 0" class="text-base-content text-opacity-50 justify-center flex">
+              <span *ngIf="Object.values(filteredFunctions).length === 0" class="text-base-content text-opacity-50 justify-center flex">
                 Nothing found.
               </span>
 
             </div>
           </div>
 
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto text-base-content w-full">
+            <div *ngIf="!selectedFunction && !selectedNamespace" class="px-4 flex flex-col gap-2 w-full">
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">Overview</span>
+              </div>
+              <div class="mb-8 w-full">
+                <p>In this window, you can find all the functions that are available in GameCourse. Select a function or module on the
+                left panel to open its documentation!</p><br>
+                <p>On GameCouse, <span class="font-semibold">students obtain
+                <span class="link link-primary" (click)="selectedNamespace = 'awards'; selectedFunction = null">awards</span>
+                for their actions</span>. Awards are the most basic unit of information and can be associated with other concepts provided by the
+                modules active in a course. For example, a user completing the requirements for obtaining a certain badge receives an award of type 'badge',
+                containing the reward earned for doing so, a description, and the timestamp.</p><br>
+                <p>Other than the awards, <span class="font-semibold">enabling a module</span> usually enables new namespaces to be used,
+                allowing access to information that is more specific to that
+                module. Continuing the previous example regarding the Badges module, having it enabled allows you to use the functions in the
+                  <span class="link link-primary" (click)="selectedNamespace = 'badges'; selectedFunction = null">badges</span>,
+                  <span class="link link-primary" (click)="selectedNamespace = 'badgeLevels'; selectedFunction = null">badgeLevels</span> and
+                  <span class="link link-primary" (click)="selectedNamespace = 'badgeProgression'; selectedFunction = null">badgeProgression</span>
+                namespaces.
+                </p><br>
+                <p>We call a <span class="font-semibold">group of multiple items</span> (e.g. several awards) a
+                <span class="link link-primary font-semibold" (click)="selectedNamespace = 'collection'; selectedFunction = null">collection</span>.
+                With collections, you can create pages with dynamic content, displaying a certain element several times for
+                each element of the collection. To do so, fill in the <span class="text-secondary">Repeat this component for every item in</span>
+                field of the component that you want to repeat. Inside it, you can access the information of each element itself using
+                <span class="text-secondary">%item</span>.</p>
+              </div>
+            </div>
 
-          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2">
-            <span *ngIf="!selectedFunction" class="text-base-content text-opacity-50 ml-5">
-              Select a function
-            </span>
+            <div *ngIf="selectedNamespace" class="px-4 flex flex-col gap-2 w-full">
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">{{selectedNamespace}}</span>
+              </div>
+              <div class="mb-8 w-full" [innerHTML]="namespaces[selectedNamespace]"></div>
+            </div>
 
-            <div *ngIf="selectedFunction" class="ml-2">
-              <div class="border-b border-gray-200 mb-4">
-                <span class="text-secondary text-lg font-bold">{{selectedFunction.keyword}}</span>
+            <div *ngIf="selectedFunction" class="px-4 flex flex-col gap-2 w-full">
+
+              <div class="absolute tooltip tooltip-left top-1 right-2" [attr.data-tip]="'Copy Function Formula'">
+                <button class="btn btn-sm btn-ghost btn-circle" (click)="copyReferenceToClipboard()">
+                  <ng-icon name="jam-files" size="1.3rem" class="text-base-content"/>
+                </button>
+              </div>
+
+              <div class="border-base-content/10 border-b-2 mb-4 mt-2">
+                <span class="text-xl font-bold">{{selectedFunction.keyword}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length > 0" class="mb-4">
-                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> (</div>
-                <div *ngFor="let arg of selectedFunction.args, let i = index">
-                    <span class="ml-4"><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{' : ' + arg.name}}
-                      {{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
+                <span class="text-secondary">{{selectedFunction.name}}.{{selectedFunction.keyword}}</span> (
+                <div *ngFor="let arg of selectedFunction.args, let i = index" class="inline">
+                    <span><span class="text-primary">{{arg.optional ? '?' : ''}}{{arg.type}}</span>{{': ' + arg.name}}{{selectedFunction.args.length - 1 !== i ? ', ' : ''}}</span>
                 </div>
 
-                <span>) : {{selectedFunction.returnType}}</span>
+                <span> ) <span class="whitespace-nowrap">-></span> {{selectedFunction.returnType}}</span>
               </div>
 
               <div *ngIf="selectedFunction.args.length === 0" class="mb-4">
-                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () : {{selectedFunction.returnType}}</div>
+                <div><span class="text-secondary">{{selectedFunction.keyword}}</span> () -> {{selectedFunction.returnType}}</div>
               </div>
 
-              <div><span><strong>Description: </strong>{{selectedFunction.description}}</span></div><br *ngIf="selectedFunction.example">
-              <div *ngIf="selectedFunction.example">
-                <span><strong>Example: </strong></span><br>
-                <span *ngFor="let examplePart of getExampleParts(selectedFunction.example)" class="text-sm">
-                  <div class="ml-4"><strong>></strong> {{examplePart}}</div>
-                </span>
-              </div><br>
+              <div><span><strong>Description: </strong>
+                {{selectedFunction.description}}</span>
+              </div>
 
               <div *ngIf="selectedFunction.name !== 'gamerules'">
-                <strong>Namespace: </strong><i>{{selectedFunction.name}}</i><br>
-              </div><br *ngIf="selectedFunction.name !== 'gamerules'">
+                <strong>Namespace: </strong>
+                <span class="link link-primary" (click)="selectedNamespace = selectedFunction.name; selectedFunction = null">
+                  {{selectedFunction.name}}
+                </span><br>
+              </div>
 
               <div *ngIf="selectedFunction.name === 'gamerules'">
                 <span><strong>Args:</strong></span><br>
                 <span *ngFor="let arg of selectedFunction.args, let i = index" class="text-sm">
                   <div class="ml-4"><strong>- {{arg.name}} : </strong>{{arg.description}}</div>
                 </span>
-              </div><br *ngIf="selectedFunction.name === 'gamerules'">
+              </div>
 
               <!-- Replace later when argument's descriptions are added (in backend) -->
               <ng-container *ngIf="selectedFunction.name !== 'gamerules' && selectedFunction.args.length > 0">
@@ -130,10 +190,59 @@
                   <ng-container *ngFor="let arg of selectedFunction.args, let i = index">
                     <span> {{arg.name}}{{selectedFunction.args.length - 1 !== i ? ',' : ''}}</span>
                   </ng-container>
-                </div><br>
+                </div>
               </ng-container>
 
-              <div><strong>Return type:</strong> {{selectedFunction.returnType.removeWord('->')}}</div><br>
+              <div><strong>Return type:</strong> {{selectedFunction.returnType}}</div>
+
+              <div *ngIf="selectedFunction.example" class="mb-8 mt-4"><strong>Usage Example: </strong>
+                <pre style="white-space: pre-wrap;"><code>{{selectedFunction.example.split("\nor (shorthand notation):\n")[0]}}</code></pre>
+                <div *ngIf="selectedFunction.example.split('\nor (shorthand notation):\n').length > 1" class="my-0.5">or (shorthand notation):</div>
+                <pre style="white-space: pre-wrap;"><code>{{selectedFunction.example.split("\nor (shorthand notation):\n")[1]}}</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cookbook -->
+      <div *ngIf="tab.type === 'cookbook' && tab.active" class="h-full overflow-y-clip">
+        <div class="w-full flex h-full">
+          <div class="grow-0 shrink-0 w-64 max-w-[45%] h-full flex flex-col bg-base-300">
+            <app-input-search
+              [id]="'manual'"
+              [size]="'sm'"
+              [classList]="'my-2'"
+              [items]="originalRecipes"
+              [placeholder]="'Search for recipe...'"
+              (valueChange)="filterRecipes($event)">
+            </app-input-search>
+            <div class="h-full overflow-y-auto overflow-x-auto flex flex-col gap-1 ml-2">
+              <button *ngFor="let recipe of filteredRecipes"
+                   class="badge badge-secondary
+                        {{ recipe == selectedRecipe ? 'badge-outline' : 'hover:badge-outline' }}"
+                   (click)="selectedRecipe = recipe">
+                {{ recipe.name }}
+              </button>
+
+              <span *ngIf="filteredRecipes.length === 0" class="text-base-content text-opacity-50 justify-center flex">
+                Nothing found.
+              </span>
+
+            </div>
+          </div>
+
+
+          <div class="{{size === 'lg' ? 'h-[34rem]' : 'h-64'}} overflow-y-auto overflow-x-auto mt-2 text-base-content w-full">
+            <span *ngIf="!selectedRecipe" class="text-base-content text-opacity-50 ml-5">
+              Select a recipe on the left panel
+            </span>
+
+            <div *ngIf="selectedRecipe" class="px-4 flex flex-col gap-2 w-full">
+              <div class="border-base-content/10 border-b-2 mb-4">
+                <span class="text-xl font-bold">{{selectedRecipe.name}}</span>
+              </div>
+              <div class="mb-8 w-full" [innerHTML]="selectedRecipe.content"></div>
             </div>
           </div>
         </div>

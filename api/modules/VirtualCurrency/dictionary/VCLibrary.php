@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class VCLibrary extends Library
 {
@@ -41,74 +42,131 @@ class VCLibrary extends Library
     public function getFunctions(): ?array
     {
         return [
-            new DFunction("getVCName",
-                [],
-                "Gets Virtual Currency name.",
-                ReturnType::TEXT,
-                $this
-            ),
-            new DFunction("getImage",
-                [],
-                "Gets Virtual Currency image URL.",
-                ReturnType::TEXT,
-                $this
-            ),
-            new DFunction("getUserTokens",
-                [["name" => "userId", "optional" => false, "type" => "int"]],
-                "Gets total tokens for a given user.",
-                ReturnType::NUMBER,
-                $this
-            ),
             new DFunction("description",
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "vc.description(%spending)\nor (shorthand notation):\n%spending.description"
             ),
             new DFunction("amount",
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's amount.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "vc.amount(%spending)\nor (shorthand notation):\n%spending.amount"
             ),
             new DFunction("date",
                 [["name" => "spending", "optional" => false, "type" => "any"]],
                 "Gets a given spending's date.",
                 ReturnType::TIME,
-                $this
+                $this,
+                "vc.date(%spending)\nor (shorthand notation):\n%spending.date"
+            ),
+            new DFunction("getVCName",
+                [],
+                "Gets Virtual Currency name.",
+                ReturnType::TEXT,
+                $this,
+                "vc.getVCName()"
+            ),
+            new DFunction("getImage",
+                [],
+                "Gets Virtual Currency image URL.",
+                ReturnType::TEXT,
+                $this,
+                "vc.getImage()"
+            ),
+            new DFunction("getUserTokens",
+                [["name" => "userId", "optional" => false, "type" => "int"]],
+                "Gets total tokens for a given user.",
+                ReturnType::NUMBER,
+                $this,
+                "vc.getUserTokens(%user)"
             ),
             new DFunction("getUserSpending",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets spending for a given user.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::SPENDING_COLLECTION,
+                $this,
+                "vc.getUserSpending(%user)"
             ),
             new DFunction("getUserTotalSpending",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets total spending for a given user.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "vc.getUserTotalSpending(%user)"
             ),
             new DFunction("getUserExchanged",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets a boolean indicating if the student already exchanged their tokens for XP or not.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "vc.getUserExchanged(%user)"
             ),
             new DFunction("exchangeTokensForXP",
                 [["name" => "userId", "optional" => false, "type" => "int"],
-                    ["name" => "ratio", "optional" => true, "type" => "string"],
-                    ["name" => "threshold", "optional" => true, "type" => "int"],
-                    ["name" => "extra", "optional" => true, "type" => "bool"]],
+                    ["name" => "ratio", "optional" => false, "type" => "string"],
+                    ["name" => "threshold", "optional" => false, "type" => "int"],
+                    ["name" => "extra", "optional" => false, "type" => "bool"]],
                 "Exchanges a given user's tokens for XP according to a specific ratio and threshold. Option to give XP as extra credit.",
                 ReturnType::VOID,
-                $this
+                $this,
+                "vc.exchangeTokensForXP(%user, '3:1', 2000, false)"
             )
         ];
     }
 
     // NOTE: add new library functions bellow & update its
     //       metadata in 'getFunctions' above
+
+    /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets a given spending's description.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function description($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        if (!is_array($spending)) throw new InvalidArgumentException("Invalid type for first argument: expected a spending.");
+        $description = $spending["description"];
+        return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets a given spending's amount.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function amount($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        if (!is_array($spending)) throw new InvalidArgumentException("Invalid type for first argument: expected a spending.");
+        $amount = $spending["amount"];
+        return new ValueNode($amount, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Gets a given spending's date.
+     *
+     * @param $spending
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function date($spending): ValueNode
+    {
+        // NOTE: on mock data, spending will be mocked
+        if (!is_array($spending)) throw new InvalidArgumentException("Invalid type for first argument: expected a spending.");
+        $date = $spending["date"];
+        return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
+    }
 
 
     /*** ---------- Config ---------- ***/
@@ -176,48 +234,6 @@ class VCLibrary extends Library
 
 
     /*** --------- Spending --------- ***/
-
-    /**
-     * Gets a given spending's description.
-     *
-     * @param $spending
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function description($spending): ValueNode
-    {
-        // NOTE: on mock data, spending will be mocked
-        $description = $spending["description"];
-        return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
-    }
-
-    /**
-     * Gets a given spending's amount.
-     *
-     * @param $spending
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function amount($spending): ValueNode
-    {
-        // NOTE: on mock data, spending will be mocked
-        $amount = $spending["amount"];
-        return new ValueNode($amount, Core::dictionary()->getLibraryById(MathLibrary::ID));
-    }
-
-    /**
-     * Gets a given spending's date.
-     *
-     * @param $spending
-     * @return ValueNode
-     * @throws Exception
-     */
-    public function date($spending): ValueNode
-    {
-        // NOTE: on mock data, spending will be mocked
-        $date = $spending["date"];
-        return new ValueNode($date, Core::dictionary()->getLibraryById(TimeLibrary::ID));
-    }
 
     /**
      * Gets spending for a given user.
@@ -308,7 +324,7 @@ class VCLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, string $ratio, ?int $threshold = null, ?bool $extra = true): ?ValueNode
+    public function exchangeTokensForXP(int $userId, string $ratio, int $threshold, bool $extra): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));

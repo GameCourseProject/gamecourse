@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {ModulesComponent} from "./modules/modules.component";
-import {ComingSoonComponent} from "../../../_components/misc/pages/coming-soon/coming-soon.component";
+import {ThemesComponent} from "./themes/themes.component";
 
 const routes: Routes = [
   {
@@ -9,11 +9,11 @@ const routes: Routes = [
     children: [
       {
         path: 'modules',
-        component: ComingSoonComponent  // TODO: ModulesComponent
+        component: ModulesComponent
       },
       {
         path: 'themes',
-        component: ComingSoonComponent
+        component: ThemesComponent
       },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]

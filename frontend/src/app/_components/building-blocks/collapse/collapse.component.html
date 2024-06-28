@@ -74,12 +74,12 @@
 
     <!-- Title -->
     <div class="collapse-title">
-      <bb-any [view]="view.header"></bb-any>
+      <bb-any [view]="view.header" (addComponentEvent)="addComponentEvent.emit()"></bb-any>
     </div>
 
     <!-- Content -->
     <div class="collapse-content !overflow-visible">
-      <bb-any [view]="view.content"></bb-any>
+      <bb-any [view]="view.content" (addComponentEvent)="addComponentEvent.emit()"></bb-any>
     </div>
   </div>
 </ng-template>

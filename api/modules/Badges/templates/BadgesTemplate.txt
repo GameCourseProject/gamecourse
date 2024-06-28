@@ -17,7 +17,7 @@
       },
       {
         "name": "userBadges",
-        "value": "{awards.getUserBadgesAwards(%user).count}"
+        "value": "{badges.getUserBadgesAwards(%user).count}"
       },
       {
         "name": "blankBadge",
@@ -82,7 +82,7 @@
                           {
                             "type": "text",
                             "style": "color: {%courseColor}",
-                            "text": "{awards.getUserBadgesTotalReward(%user)} XP"
+                            "text": "{badges.getUserBadgesTotalReward(%user)} XP"
                           }
                         ]
                       ]

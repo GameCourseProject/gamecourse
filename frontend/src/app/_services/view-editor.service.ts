@@ -13,14 +13,16 @@ import {Subject} from 'rxjs';
 import {ViewTable} from '../_domain/views/view-types/view-table';
 import {buildView} from "../_domain/views/build-view/build-view";
 import {ViewBlock} from "../_domain/views/view-types/view-block";
+import {ViewCollapse} from "../_domain/views/view-types/view-collapse";
 
 
 /**
  * This service can keep information about and manipulate the
  * several views/aspects of a page/template
  *
- * IMPORTANT NOTE: the edit action is inside the component-editor
- * component, not here, due to its complexity
+ * IMPORTANT NOTES:
+ * the edit action is inside the component-editor component, not here, due to its complexity;
+ * the reorder action is inside the block component since that's where the drag and drop is
  */
 @Injectable({
   providedIn: 'root'
@@ -30,7 +32,7 @@ export class ViewEditorService {
   public selectedAspect: Aspect;  // Selected aspect for previewing and editing
   public rolesHierarchy;
   public aspectsToDelete: Aspect[] = [];
-  public aspectsToAdd: { newAspect: Aspect, aspectToCopy: Aspect }[] = [];
+  public aspectsToAdd: { newAspect: Aspect, viewToCopy: View }[] = [];
   public aspectsToChange: { old: Aspect, newAspect: Aspect }[] = [];
 
   selectedChange: Subject<View> = new Subject<View>();
@@ -60,7 +62,38 @@ export class ViewEditorService {
   }
 
   deleteAspect(aspect: Aspect) {
-    this.viewsByAspect = this.viewsByAspect.filter(e => e.aspect.userRole !== aspect.userRole || e.aspect.viewerRole !== aspect.viewerRole);
+    const oldEntry = this.getEntryOfAspect(aspect);
+    this.viewsByAspect = this.viewsByAspect.filter(e => !_.isEqual(e, oldEntry));
+
+    this.viewsByAspect.forEach(e => {
+      e.view?.modifyAspect([aspect], e.aspect);
+    });
+
+    this.recursivelyAddToViewsDeleted(oldEntry.view);
+  }
+  recursivelyAddToViewsDeleted(item: View) {
+    // View doesn't exist anymore in any tree -> delete from database
+    if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
+      viewsDeleted.push(item.id);
+      return; // adding the parent is enough, backend will delete all dependants too
+    }
+    else if (item instanceof ViewBlock) {
+      for (let child of item.children) {
+        this.recursivelyAddToViewsDeleted(child);
+      }
+    }
+    else if (item instanceof ViewCollapse) {
+      this.recursivelyAddToViewsDeleted(item.header);
+      this.recursivelyAddToViewsDeleted(item.content);
+    }
+    else if (item instanceof ViewTable) {
+      for (let row of item.headerRows) {
+        this.recursivelyAddToViewsDeleted(row);
+      }
+      for (let row of item.bodyRows) {
+        this.recursivelyAddToViewsDeleted(row);
+      }
+    }
   }
 
   createAspect(aspect: Aspect, view: View) {
@@ -71,8 +104,8 @@ export class ViewEditorService {
     // aspects lower in hierarchy and the aspect itself
     const defaultAspect = new Aspect(null, null)
     const aspectsToReplace = this.viewsByAspect.filter((e) => {
-      if (_.isEqual(e.aspect, defaultAspect)) return false;
-      if (e.aspect.userRole === old.userRole) return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole);
+      if (_.isEqual(old, defaultAspect)) return true;
+      else if (e.aspect.userRole === old.userRole) return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole);
       else if (e.aspect.viewerRole === old.viewerRole) return this.isMoreSpecific(old.userRole, e.aspect.userRole);
       else return this.isMoreSpecific(old.viewerRole, e.aspect.viewerRole) && this.isMoreSpecific(old.userRole, e.aspect.userRole)
     }).map(e => e.aspect);
@@ -95,14 +128,16 @@ export class ViewEditorService {
 
     // Modify roles of existing aspects
     for (let changed of this.aspectsToChange) {
-      if (changed.old.viewerRole === "new" || changed.old.userRole === "new") continue;
       this.changeAspect(changed.old, changed.newAspect);
+      if (_.isEqual(this.selectedAspect, changed.old)) {
+        this.selectedAspect = changed.newAspect;
+      }
     }
     this.aspectsToChange = [];
 
     // Create new aspects
     for (let aspect of this.aspectsToAdd) {
-      const view = _.cloneDeep(this.getEntryOfAspect(aspect.aspectToCopy).view); // FIXME: the aspectToCopy might not exist anymore
+      const view = _.cloneDeep(aspect.viewToCopy);
 
       const defaultAspect = new Aspect(null, null)
       const aspectsToReplace = this.viewsByAspect.filter((e) => {
@@ -112,7 +147,7 @@ export class ViewEditorService {
         else return !this.isMoreSpecific(aspect.newAspect.viewerRole, e.aspect.viewerRole) && !this.isMoreSpecific(aspect.newAspect.userRole, e.aspect.userRole)
       }).map(e => e.aspect);
 
-      view.modifyAspect(aspectsToReplace, aspect.newAspect);
+      view?.modifyAspect(aspectsToReplace, aspect.newAspect);
       this.createAspect(aspect.newAspect, view);
     }
     this.aspectsToAdd = [];
@@ -127,6 +162,21 @@ export class ViewEditorService {
     );
 
     return higherInHierarchy;
+  }
+
+  getFutureAspects(): Aspect[] {
+    // deleted
+    const futureAspects = this.viewsByAspect.filter(e => this.aspectsToDelete.findIndex(toDel => _.isEqual(e.aspect, toDel)) == -1).map(e => e.aspect);
+    // changed
+    for (let changed of this.aspectsToChange) {
+      const found = futureAspects.findIndex(e => _.isEqual(e, changed.old));
+      if (found != -1) futureAspects[found] = changed.newAspect;
+    }
+    // added
+    for (let added of this.aspectsToAdd) {
+      futureAspects.push(added.newAspect);
+    }
+    return futureAspects;
   }
 
 
@@ -183,8 +233,11 @@ export class ViewEditorService {
 
   /*
    * Deletes a view
+   * Returns the new parent, needed for the reordering
    */
-  delete(item: View) {
+  delete(item: View): ViewBlock | null {
+    let newBlock; // the new parent block
+
     const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
 
     const lowerInHierarchy = viewsWithThis.filter((e) =>
@@ -200,7 +253,7 @@ export class ViewEditorService {
 
     // if there is any aspect above, we need to create a new version of the parent, without the item, for this aspect
     if (higherInHierarchy.length > 0 && item.parent) {
-      const newBlock = _.cloneDeep(item.parent);
+      newBlock = _.cloneDeep(item.parent);
       newBlock.removeChildView(item.id);
       newBlock.replaceWithFakeIds();
       newBlock.aspect = this.selectedAspect;
@@ -214,7 +267,7 @@ export class ViewEditorService {
 
         for (let el of lowerInHierarchy) {
           let view = el.view.findView(item.parent.id);
-          view.parent.replaceView(view.id, newBlock);
+          view.parent.replaceView(view.id, _.cloneDeep(newBlock));
         }
       }
       // make a new block with the original content, so the parent has the two alternatives (original and new) as child
@@ -248,7 +301,6 @@ export class ViewEditorService {
               for (let el of otherBlock.children) {
                 el.parent = otherBlock
               }
-              otherBlock.parent = item.parent;
             }
           }
 
@@ -300,6 +352,8 @@ export class ViewEditorService {
     if (item.id > 0 && this.viewsByAspect.filter((e) => e.view?.findView(item.id)).length <= 0) {
       viewsDeleted.push(item.id);
     }
+
+    return newBlock;
   }
 
   /*

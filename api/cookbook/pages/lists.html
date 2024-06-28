@@ -1,0 +1,23 @@
+<p>Creating a list of something is done with the <span class="text-secondary">Repeat this component for every item in</span> field.</p><br>
+
+<p>Every page must have a single Block, that will act as the root of the page. For this reason, you can't repeat that Block component.
+    You can, however, add another Block or any other type of component, such as Text, inside it, and then repeat this inner component.
+    To do so, go into its Edit modal, and in the <span class="text-secondary">Repeat this component for every item in</span> field insert
+    an expression that returns a collection. An example would be:</p>
+<div class="bg-base-100 rounded-box p-4 my-2">
+    <pre><code>{skills.getUsersWithSkill(1)}</code></pre>
+</div>
+<p>which returns a collection of users with the skill of id 1.</p><br>
+
+<p>Although the field has "Repetition" in its name, <span class="font-semibold"> that doesn't mean that every item has to look exactly the same!</span>
+    Using the example above, we could list the names of the users of the collection. To access the item of each iteration, use <span class="text-info">%item</span>.
+    Then you could just write</p>
+<div class="bg-base-100 rounded-box p-4 my-2">
+    <pre><code>{%item.name}</code></pre>
+</div>
+<p>in a Text component, to display the name of each user.</p><br>
+
+<p>Keep in mind that if you have the Repetition defined in a component, and then want to access the item in other, deeper components,
+    you should create an auxiliary variable to save the <span class="text-info">%item</span> value. This also improves the
+    readability of your code. So, in the component being repeated, you would create an auxiliary variable named
+    <span class="text-secondary">currentUser</span>, with <span class="text-info">{%item}</span> on its expression, and use it instead.</p>

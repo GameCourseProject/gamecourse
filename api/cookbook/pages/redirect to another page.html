@@ -1,0 +1,22 @@
+<p>You might want to redirect a user to some other page once he clicks on, for example, a button. To do this, we will
+    make use of <span class="text-info">Events</span>, and the functions <span class="text-secondary">actions.goToPage</span>
+    and <span class="text-secondary">pages.getPageByName</span>.</p><br>
+
+<p>First of all, add a Button to your page. Go into its Edit modal, and scroll down until you find the <span class="text-info">Events</span>
+    section. We will create a new event here. On the "When", choose "Click". On "Do", choose "actions.goToPage".</p><br>
+
+<p>As for the expression, we can use a function as an argument to another one. In this case the full expression would be:</p>
+<div class="bg-base-100 rounded-box p-4 my-2">
+    <pre><code>{actions.goToPage(pages.getPageByName("Profile").id, %user)}</code></pre>
+</div><br>
+
+<p>The <span class="font-semibold">first argument</span> of actions.goToPage must be the id of the desired page. However,
+this might be hard to know by heart, and that's why we used <span class="text-secondary">pages.getPageByName("Profile")</span>, to redirect
+the user to the page named "Profile". Another advantage of this approach is, if for some reason that page is deleted but then a new one
+with the same name is created to replace it, this will continue to work, even though the id changed. Don't forget that
+<span class="text-secondary">pages.getPageByName("Profile")</span> returns the page, not the id! Thus the need for <span class="text-secondary">.id</span>.</p><br>
+
+<p>The <span class="font-semibold">second argument</span> corresponds to who the page is about. It is optional, since this might not be relevant,
+for example in pages with static content. However, in this specific case, it guarantees that clicking the button redirects the user to their own
+Profile; since every user has this Profile page that is available for the others to see - meaning that you could also redirect to the Profile page
+of another user, knowing their id.</p>

@@ -1,8 +1,11 @@
-import {ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, ViewChild} from "@angular/core";
 import {
   CodeTab,
+  CookbookRecipe,
+  CookbookTab,
   CustomFunction,
-  OutputTab, PreviewTab,
+  OutputTab,
+  PreviewTab,
   ReferenceManualTab
 } from "src/app/_components/inputs/code/input-code/input-code.component";
 import {View, ViewMode} from "src/app/_domain/views/view";
@@ -25,17 +28,18 @@ import {BBAnyComponent} from "src/app/_components/building-blocks/any/any.compon
 import {ViewImage} from "src/app/_domain/views/view-types/view-image";
 import {RowType, ViewRow} from "src/app/_domain/views/view-types/view-row";
 import {ApiHttpService} from "src/app/_services/api/api-http.service";
-import {moveItemInArray} from "@angular/cdk/drag-drop";
 import {ActivatedRoute} from "@angular/router";
 import {ChartType, ViewChart} from "src/app/_domain/views/view-types/view-chart";
 import {
-  addToGroupedChildren, addVariantToGroupedChildren,
+  addToGroupedChildren,
+  addVariantToGroupedChildren,
   getFakeId,
   groupedChildren,
   viewsDeleted
 } from "src/app/_domain/views/build-view-tree/build-view-tree";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Aspect} from "../../../../../../../../_domain/views/aspects/aspect";
+import {AuxVarCardComponent} from "../../../../../../../../_components/cards/aux-var-card/aux-var-card.component";
 
 @Component({
   selector: 'app-component-editor',
@@ -51,6 +55,8 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   courseId: number;
 
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
+  @ViewChild('additionalTools') additionalToolsRef: ElementRef;
+  @ViewChild('newAuxVar') newAuxVar: AuxVarCardComponent;
 
   viewToEdit: ViewManageData;
   viewToPreview: View;
@@ -65,11 +71,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   strippedGridHorizontal?: boolean = false;
   strippedGridVertical?: boolean = false;
 
-  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[];
+  additionalToolsTabs: (CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[];
   ELfunctions: CustomFunction[];
-  namespaces: string[];
+  cookbook: CookbookRecipe[];
+  namespaces: { [name: string]: string };
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
+
+  // Helpers for collapse
+  newHeaderType: ViewType;
+  newContentType: ViewType;
 
   constructor(
     private api: ApiHttpService,
@@ -82,10 +93,19 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     this.route.parent.params.subscribe(async params => {
       this.courseId = parseInt(params.id);
       await this.getCustomFunctions(this.courseId);
+      await this.getCookbook(this.courseId);
       this.prepareAdditionalTools();
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
       this.loading = false;
     })
+
+    if (window.localStorage.getItem('openContext') === null) {
+      window.localStorage.setItem('openContext', JSON.stringify(true));
+    }
+
+    if (!window.localStorage.getItem('openInherited') === null) {
+      window.localStorage.setItem('openInherited', JSON.stringify(true));
+    }
   }
 
   ngOnChanges() {
@@ -108,47 +128,59 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   // Additional Tools --------------------------------------
   // code from the rules editor
 
+  scroll() {
+    this.additionalToolsRef.nativeElement.scrollIntoView({behavior: 'smooth'});
+  }
+
   prepareAdditionalTools() {
-    let helpVariables = "";
-
-    if (this.view.getAllVariables().length > 0) {
-      helpVariables += "# Inherited from the component's parents:\n";
-
-      for (const variable of this.view.getAllVariables()) {
-        helpVariables += "%" + variable.name + " = " + variable.value + "\n";
-      }
-    }
-
-    if (helpVariables.length > 0) helpVariables += '\n';
-
-    helpVariables += "# Globals:" +
-      "\n%course = # id of the course that the user is manipulating" +
-      "\n%user = # id of the user associated to the page which is being displayed" +
-      "\n%viewer = # id of the user that is currently logged in watching the page" +
-      "\n%item = # used to access the values of the collection being iterated";
-
     this.additionalToolsTabs = [
-      { name: 'Available Variables', type: "code", active: true, value: helpVariables, debug: false, readonly: true },
-
-      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "python",
-        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." },
-
-      { name: 'Manual', type: "manual", active: false, customFunctions: this.ELfunctions,
+      { name: 'Reference Manual', type: "manual", active: true, customFunctions: this.ELfunctions,
         namespaces: this.namespaces
       },
+
+      { name: 'Cookbook', type: "cookbook", active: false, documentation: this.cookbook
+      },
+
+      { name: 'Preview Expression', type: "preview", active: false, running: null, debug: false, mode: "el",
+        customFunctions: this.ELfunctions, courseId: this.courseId, nrLines: 3, placeholder: "Write an expression to preview." }
     ]
   }
 
   async getCustomFunctions(courseID: number){
-    this.ELfunctions = await this.api.getELFunctions().toPromise();
-    //this.ELfunctions.map(ELfunction => ELfunction.returnType = "-> " + ELfunction.returnType);
-
-    // set namespaces of functions
-    let names = this.ELfunctions
-      .map(fn => fn.name).sort((a, b) => a.localeCompare(b));   // order by name
-    this.namespaces = Array.from(new Set(names).values())
-    moveItemInArray(this.namespaces, this.namespaces.indexOf('gamerules'), this.namespaces.length - 1);      // leave 'gamerules' at the end of array
+    const res = await this.api.getELFunctions().toPromise();
+    this.ELfunctions = res.functions;
+    this.namespaces = res.namespaces;
   }
+
+  async getCookbook(courseID: number) {
+    this.cookbook = await this.api.getCookbook(courseID).toPromise();
+  }
+
+  // Variables --------------------------------------
+
+  getCollapseContext(): boolean {
+    return JSON.parse(window.localStorage.getItem('openContext'));
+  }
+  toggleCollapseContext() {
+    window.localStorage.setItem('openContext', JSON.stringify(!this.getCollapseContext()));
+  }
+  getCollapseInherited(): boolean {
+    return JSON.parse(window.localStorage.getItem('openInherited'));
+  }
+  toggleCollapseInherited() {
+    window.localStorage.setItem('openInherited', JSON.stringify(!this.getCollapseInherited()));
+  }
+
+  getItemInInherited(): string | void {
+    if (this.viewToEdit.loopData && this.viewToEdit.loopData != "") return this.viewToEdit.loopData + ", in this component";
+    else {
+      const view = this.view.getViewWithLoop();
+      if (view) {
+        return view.loopData + ", in " + view.type.capitalize() + " component";
+      }
+    }
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------- Init -------------------- ***/
@@ -184,15 +216,26 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       viewToEdit.icon = this.view.icon;
       viewToEdit.size = this.view.size;
     }
-    else if (this.view instanceof ViewBlock) {
-      viewToEdit.direction = this.view.direction;
-      viewToEdit.responsive = this.view.responsive;
-      viewToEdit.columns = this.view.columns;
-    }
-    else if (this.view instanceof ViewCollapse) {
+
+    if (this.view instanceof ViewCollapse) {
       viewToEdit.collapseIcon = this.view.icon;
       viewToEdit.header = this.view.header;
       viewToEdit.content = this.view.content;
+      this.newHeaderType = this.view.header.type;
+      this.newContentType = this.view.content.type;
+    } else { // be prepared in case user switches type to collapse
+      viewToEdit.collapseIcon = CollapseIcon.ARROW;
+      viewToEdit.header = ViewText.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
+      viewToEdit.content = ViewBlock.getDefault(this.view.parent, this.view.viewRoot, getFakeId(), this.view.aspect);
+    }
+
+    if (this.view instanceof ViewBlock) {
+      viewToEdit.direction = this.view.direction;
+      viewToEdit.responsive = this.view.responsive;
+      viewToEdit.columns = this.view.columns;
+      viewToEdit.children = this.view.children;
+    } else { // be prepared in case user switches type to block
+      viewToEdit.direction = BlockDirection.VERTICAL;
     }
 
     if (this.view instanceof ViewChart) {
@@ -214,7 +257,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       if (viewToEdit.options.stripedGrid === 'vertical') this.strippedGridVertical = true;
       else if (viewToEdit.options.stripedGrid === 'horizontal') this.strippedGridHorizontal = true;
     }
-    else { // needed in case user changes type to chart
+    else { // be prepared in case user switches type to chart
       viewToEdit.options = {colors: [], datalabels: [], tooltip: true};
       viewToEdit.chartType = ChartType.LINE;
       viewToEdit.progressData = {value: "", max: null};
@@ -242,7 +285,9 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
         row.fakeIndex = rowIndex + 1;
       })
     }
-    else { // have rows prepared in case user switches type to table
+    else { // be prepared in case user switches type to table
+      viewToEdit.orderingByType = "ASC";
+      viewToEdit.orderingByIndex = "0";
       viewToEdit.headerRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.HEADER)];
       viewToEdit.bodyRows = [ViewRow.getDefault(getFakeId(), this.view, this.view.viewRoot, this.view.aspect, RowType.BODY)];
       viewToEdit.headerRows[0].children = [ViewText.getDefault(viewToEdit.headerRows[0], this.view.viewRoot, getFakeId(), this.service.selectedAspect, "Header")];
@@ -262,8 +307,20 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   changeComponentType(view: View, type: ViewType): View {
     let newView;
+
     if (type === ViewType.BLOCK) {
       newView = ViewBlock.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+      if (view instanceof ViewCollapse) {
+        if (view.header) {
+          newView.children.push(view.header);
+        }
+        if (view.content) {
+          newView.children.push(view.content);
+        }
+      } else if (view instanceof ViewBlock) {
+        newView.children = view.children;
+      }
+      for (let child of newView.children) child.parent = newView;
     }
     else if (type === ViewType.BUTTON) {
       newView = ViewButton.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
@@ -273,6 +330,13 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else if (type === ViewType.COLLAPSE) {
       newView = ViewCollapse.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
+
+      if (view instanceof ViewBlock) {
+        for (let child of view.children) {
+          child.parent = newView.content;
+          newView.content.children.push(child);
+        }
+      }
     }
     else if (type === ViewType.ICON) {
       newView = ViewIcon.getDefault(view.parent, view.viewRoot, view.id, view.aspect);
@@ -324,8 +388,6 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     }
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
-      to.header = from.header;
-      to.content = from.content;
     }
     else if (to instanceof ViewTable) {
       to.headerRows = from.headerRows;
@@ -420,6 +482,17 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   /*** --------------------------------------------- ***/
   /*** ------------------ Actions ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  hasUnsavedAuxVar() {
+    return this.newAuxVar?.isFilled() ?? false;
+  }
+
+  async trySaveView() {
+    if (this.hasUnsavedAuxVar()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable in the Cell but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      return;
+    } else await this.saveView();
+  }
 
   async saveView() {
     // Changing the type requires creating a new instance of the new class
@@ -704,6 +777,7 @@ export interface ViewManageData {
   size?: string,
   header?: View,
   content?: View,
+  children?: View[],
   collapseIcon?: CollapseIcon,
   direction?: BlockDirection,
   responsive?: boolean,

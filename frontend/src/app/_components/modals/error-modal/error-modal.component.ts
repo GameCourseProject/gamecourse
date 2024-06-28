@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
-import html2canvas from "html2canvas";
+import { domToPng } from 'modern-screenshot'
 import * as moment from "moment";
 
 @Component({
@@ -21,10 +21,10 @@ export class ErrorModalComponent implements OnInit {
 
   takeScreenshot() {
     this.loading = true;
-    html2canvas(document.body).then(canvas => {
+    domToPng(document.body).then(dataURL => {
       const a = document.createElement('a');
       a.download = moment().format('YYYY-MM-DD HH:mm:ss') + '.png';
-      a.href = canvas.toDataURL('image/png');
+      a.href = dataURL;
       a.click();
       this.loading = false;
     });

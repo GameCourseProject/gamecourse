@@ -2,35 +2,16 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
-use Faker\Factory;
 use GameCourse\Core\Core;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class UsersLibrary extends Library
 {
     public function __construct()
     {
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
-    }
-
-    private function mockUser(int $id = null, string $email = null, string $studentNumber = null) : array
-    {
-        return [
-            "id" => $id ? $id : Core::dictionary()->faker()->numberBetween(0, 100),
-            "name" => Core::dictionary()->faker()->name(),
-            "email" => $email ? $email : Core::dictionary()->faker()->email(),
-            "major" => Core::dictionary()->faker()->text(5),
-            "nickname" => Core::dictionary()->faker()->text(10),
-            "studentNumber" => $studentNumber ? $studentNumber : Core::dictionary()->faker()->numberBetween(11111, 99999),
-            "theme" => null,
-            "username" => $email ? $email : Core::dictionary()->faker()->email(),
-            "image" => null,
-            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
-            "landingPage" => null,
-            "isActive" => true,
-            "avatar" => null
-        ];
     }
 
 
@@ -44,6 +25,80 @@ class UsersLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to obtain users and certain information about them, which consists of the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 1,
+            "name": "Mara Alves",
+            "email": "maraalves@tecnico.ulisboa.pt",
+            "major": "MEIC",
+            "nickname": null,
+            "studentNumber": 95625,
+            "theme": "dark",
+            "isAdmin": true,
+            "isActive": true,
+            "username": "ist195625",
+            "auth_service": "fenix",
+            "lastLogin": "2024-06-16 16:56:50",
+            "lastActivity": "2024-06-18 17:42:27",
+            "isActiveInCourse": true,
+            "image": "http://localhost/gamecourse/api/user_data/1/profile.png",
+            "avatar": "http://localhost/gamecourse/api/user_data/1/avatar.svg",
+        }</code></pre>
+        </div><br>
+        <p>For instance, to obtain a collection with the students of the current course you can simply do:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getStudents()}</code></pre>
+        </div>
+        <p>There's also a similar function for Teachers, and it's possible to filter by state in order to obtain
+        only the active (or inactive) users of this type.</p><br>
+        <p>However, GameCourse doesn't have only the roles Student and Teacher. You can have your own Roles, and some
+        modules add other Roles too. Nevertheless, this namespace comes prepared for this! Just use the generic function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getUsersWithRole(%roleName)}</code></pre>
+        </div>
+        <p>replacing the first argument with your desired role name!</p><br>
+        <p>To access the attributes of a user, such as <span class="text-secondary">id</span>,
+        <span class="text-secondary">name</span>, <span class="text-secondary">email</span>, ... You can use the functions available
+        in this namespace. If, for example, we wanted to obtain the major of the user with id = 1, we could use:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{users.getUserById(1).major}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    private function mockUser(int $id = null, string $email = null, int $studentNumber = null) : array
+    {
+        return [
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->name(),
+            "email" => $email ?: Core::dictionary()->faker()->email(),
+            "major" => Core::dictionary()->faker()->text(5),
+            "nickname" => Core::dictionary()->faker()->text(10),
+            "studentNumber" => $studentNumber ?: Core::dictionary()->faker()->numberBetween(11111, 99999),
+            "theme" => null,
+            "username" => $email ?: Core::dictionary()->faker()->email(),
+            "image" => null,
+            "lastActivity" => Core::dictionary()->faker()->dateTimeThisYear(),
+            "landingPage" => null,
+            "isActive" => true,
+            "avatar" => null
+        ];
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -54,86 +109,115 @@ class UsersLibrary extends Library
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "users.id(%someUser)\nor (shorthand notation):\n%someUser.id"
             ),
             new DFunction("name",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.name(%someUser)\nor (shorthand notation):\n%someUser.name"
             ),
             new DFunction("email",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's email.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.email(%someUser)\nor (shorthand notation):\n%someUser.email"
             ),
             new DFunction("major",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's major.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.major(%someUser)\nor (shorthand notation):\n%someUser.major"
             ),
             new DFunction("nickname",
                 [["name" => "user", "optional" => false, "type" => "User"]],
-                "Gets a given user's major",
+                "Gets a given user's nickname. If the course doesn't
+                allow nicknames, will return the name instead.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.nickname(%someUser)\nor (shorthand notation):\n%someUser.nickname"
             ),
             new DFunction("studentNumber",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student number.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "users.studentNumber(%someUser)\nor (shorthand notation):\n%someUser.studentNumber"
             ),
             new DFunction("theme",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student theme.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.theme(%someUser)\nor (shorthand notation):\n%someUser.theme"
             ),
             new DFunction("username",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student username.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.username(%someUser)\nor (shorthand notation):\n%someUser.username"
             ),
             new DFunction("image",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student image.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.image(%someUser)\nor (shorthand notation):\n%someUser.image"
             ),
             new DFunction("avatar",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's student avatar. If the course doesn't
                 allow avatars, will return the image instead.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "users.avatar(%someUser)\nor (shorthand notation):\n%someUser.avatar"
             ),
             new DFunction("lastActivity",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's last activity datetime in the course.",
                 ReturnType::TIME,
-                $this
+                $this,
+                "users.lastActivity(%someUser)\nor (shorthand notation):\n%someUser.lastActivity"
             ),
             new DFunction("landingPage",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Gets a given user's course landing page.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "users.landingPage(%someUser)\nor (shorthand notation):\n%someUser.landingPage"
             ),
             new DFunction("isActive",
                 [["name" => "user", "optional" => false, "type" => "User"]],
                 "Checks if a given user is active in the course.",
                 ReturnType::BOOLEAN,
-                $this
+                $this,
+                "users.isActive(%someUser)\nor (shorthand notation):\n%someUser.isActive"
+            ),
+            new DFunction("isStudent",
+                [["name" => "user", "optional" => false, "type" => "User"]],
+                "Checks whether a given user is a student.",
+                ReturnType::BOOLEAN,
+                $this,
+                "users.isStudent(%someUser)\nor (shorthand notation):\n%someUser.isStudent"
+            ),
+            new DFunction("isTeacher",
+                [["name" => "user", "optional" => false, "type" => "User"]],
+                "Checks whether a given user is a teacher.",
+                ReturnType::BOOLEAN,
+                $this,
+                "users.isTeacher(%someUser)\nor (shorthand notation):\n%someUser.isTeacher"
             ),
             new DFunction("getUserById",
                 [["name" => "userId", "optional" => false, "type" => "int"]],
                 "Gets a user by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "users.getUserById(3)"
             ),
             new DFunction("getUserByUsername",
                 [["name" => "username", "optional" => false, "type" => "string"],
@@ -157,39 +241,30 @@ class UsersLibrary extends Library
             new DFunction("getUsers",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets users of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::USERS_COLLECTION,
+                $this,
+                "users.getUsers()"
             ),
             new DFunction("getUsersWithRole",
                 [["name" => "roleName", "optional" => false, "type" => "string"],
                  ["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets users with a given role. Option to filter by user state.",
-                ReturnType::COLLECTION,
+                ReturnType::USERS_COLLECTION,
                 $this
             ),
             new DFunction("getStudents",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets students of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::USERS_COLLECTION,
+                $this,
+                "users.getStudents()"
             ),
             new DFunction("getTeachers",
                 [["name" => "active", "optional" => true, "type" => "bool"]],
                 "Gets teachers of course. Option to filter by user state.",
-                ReturnType::COLLECTION,
-                $this
-            ),
-            new DFunction("isStudent",
-                [["name" => "user", "optional" => false, "type" => "User"]],
-                "Checks whether a given user is a student.",
-                ReturnType::BOOLEAN,
-                $this
-            ),
-            new DFunction("isTeacher",
-                [["name" => "user", "optional" => false, "type" => "User"]],
-                "Checks whether a given user is a teacher.",
-                ReturnType::BOOLEAN,
-                $this
+                ReturnType::USERS_COLLECTION,
+                $this,
+                "users.getTeachers()"
             )
         ];
     }
@@ -210,7 +285,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $userId = $user["id"];
-        else $userId = $user->getId();
+        elseif (is_object($user) && method_exists($user, 'getId')) $userId = $user->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($userId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -225,7 +301,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $name = $user["name"];
-        else $name = $user->getName();
+        elseif (is_object($user) && method_exists($user, 'getName')) $name = $user->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -240,7 +317,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $email = $user["email"];
-        else $email = $user->getEmail();
+        elseif (is_object($user) && method_exists($user, 'getEmail')) $email = $user->getEmail();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($email, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -255,7 +333,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $major = $user["major"];
-        else $major = $user->getMajor();
+        elseif (is_object($user) && method_exists($user, 'getMajor')) $major = $user->getMajor();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($major, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -270,7 +349,12 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $nickname = $user["nickname"];
-        else $nickname = $user->getNickname();
+        elseif (is_object($user) && method_exists($user, 'getNickname')) {
+            if (Core::dictionary()->getCourse()->getNicknames() === true)
+                $nickname = $user->getNickname();
+            else $nickname = $user->getName();
+        }
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($nickname, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -285,7 +369,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $studentNumber = $user["studentNumber"];
-        else $studentNumber = $user->getStudentNumber();
+        elseif (is_object($user) && method_exists($user, 'getStudentNumber')) $studentNumber = $user->getStudentNumber();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($studentNumber, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -300,7 +385,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $theme = $user["theme"];
-        else $theme = $user->getTheme();
+        elseif (is_object($user) && method_exists($user, 'getTheme')) $theme = $user->getTheme();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($theme, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -315,7 +401,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $username = $user["username"];
-        else $username = $user->getUsername();
+        elseif (is_object($user) && method_exists($user, 'getUsername')) $username = $user->getUsername();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($username, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -330,7 +417,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $image = $user["image"];
-        else $image = $user->getImage();
+        elseif (is_object($user) && method_exists($user, 'getImage')) $image = $user->getImage();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($image, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -345,11 +433,12 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $avatar = $user["avatar"];
-        else {
-            if (Core::dictionary()->getCourse()->avatars() === true)
+        elseif (is_object($user) && method_exists($user, 'getAvatar')) {
+            if (Core::dictionary()->getCourse()->getAvatars() === true)
                 $avatar = $user->getAvatar();
-            else $avatar = null;
+            else $avatar = $user->getImage();
         }
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($avatar, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -364,7 +453,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $lastActivity = $user["lastActivity"];
-        else $lastActivity = $user->getLastActivity();
+        elseif (is_object($user) && method_exists($user, 'getLastActivity')) $lastActivity = $user->getLastActivity();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($lastActivity, Core::dictionary()->getLibraryById(TimeLibrary::ID));
     }
 
@@ -379,7 +469,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $landingPage = $user["landingPage"];
-        else $landingPage = $user->getLandingPage();
+        elseif (is_object($user) && method_exists($user, 'getLandingPage')) $landingPage = $user->getLandingPage();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($landingPage, Core::dictionary()->getLibraryById(PagesLibrary::ID));
     }
 
@@ -394,7 +485,8 @@ class UsersLibrary extends Library
     {
         // NOTE: on mock data, user will be mocked
         if (is_array($user)) $isActive = $user["isActiveInCourse"];
-        else $isActive = $user->isActive();
+        elseif (is_object($user) && method_exists($user, 'isActive')) $isActive = $user->isActive();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($isActive, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -591,9 +683,17 @@ class UsersLibrary extends Library
      */
     public function isStudent($user): ValueNode
     {
-        // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $user = CourseUser::getUserById($user["id"]);
-        $isStudent = $user->isStudent();
+        if (Core::dictionary()->mockData()) {
+            $isStudent = Core::dictionary()->faker()->boolean();
+        }
+        else if (is_array($user)) {
+            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+            $isStudent = $courseUser->isStudent();
+        }
+        else {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
+            $isStudent = $courseUser->isStudent();
+        }
         return new ValueNode($isStudent, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 
@@ -606,9 +706,17 @@ class UsersLibrary extends Library
      */
     public function isTeacher($user): ValueNode
     {
-        // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $user = CourseUser::getUserById($user["id"]);
-        $isTeacher = $user->isTeacher();
+        if (Core::dictionary()->mockData()) {
+            $isTeacher = Core::dictionary()->faker()->boolean();
+        }
+        else if (is_array($user)) {
+            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+            $isTeacher = $courseUser->isTeacher();
+        }
+        else {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
+            $isTeacher = $courseUser->isTeacher();
+        }
         return new ValueNode($isTeacher, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
 }

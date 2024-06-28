@@ -49,13 +49,13 @@ export abstract class View {
     this.classList = classList;
     this.styles = styles;
 
-    this.visibilityType = visibilityType;
+    this.visibilityType = visibilityType ?? VisibilityType.VISIBLE;
     this.visibilityCondition = visibilityCondition;
 
     this.loopData = loopData;
 
-    this.variables = variables;
-    this.events = events;
+    this.variables = variables ?? [];
+    this.events = events ?? [];
   }
 
 
@@ -211,6 +211,11 @@ export abstract class View {
     }
   }
 
+  getViewWithLoop(): View | null {
+    if (this.loopData) return this;
+    else return this.parent?.getViewWithLoop() ?? null;
+  }
+
 
   /**
    * Custom way to stringify this class.
@@ -302,6 +307,5 @@ export enum ViewMode {
   DISPLAY = 'display',    // final appearance and behaviour
   PREVIEW = 'preview',    // used in the edit component modal
   EDIT = 'edit',          // default in views editor
-  REARRANGE = 'rearrange' // rearrange in views editor
 }
 

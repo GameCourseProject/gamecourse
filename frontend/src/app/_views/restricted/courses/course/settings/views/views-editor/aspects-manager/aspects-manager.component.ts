@@ -14,6 +14,7 @@ import {NgForm} from "@angular/forms";
 export class AspectsManagerComponent implements OnInit{
 
   @Input() course: Course;
+  @Input() isNewPage: boolean;
 
   @Input() aspects: Aspect[];                     // Original aspects
   aspectsToEdit: Aspect[];                        // Aspects that show up in modal
@@ -38,7 +39,7 @@ export class AspectsManagerComponent implements OnInit{
 
   ngOnInit(): void {
     this.aspectsToEdit = _.cloneDeep(this.aspects);
-    this.currentAspect = this.service.selectedAspect;
+    this.currentAspect = this.aspectsToEdit.find(e => _.isEqual(e, this.service.selectedAspect));
     this.aspectToSelect = null;
     this.service.aspectsToDelete = [];
     this.service.aspectsToChange = [];
@@ -75,11 +76,11 @@ export class AspectsManagerComponent implements OnInit{
       let [viewerToCopy, userToCopy] = this.aspectToCopy.split(" | ");
       if (viewerToCopy === 'none') viewerToCopy = null;
       if (userToCopy === 'none') userToCopy = null;
-      const aspectToCopy = new Aspect(viewerToCopy, userToCopy);
+      const viewToCopy = this.service.getEntryOfAspect(new Aspect(viewerToCopy, userToCopy)).view;
 
       if (this.aspectsToEdit.findIndex(e => _.isEqual(e, newAspect)) == -1) {
         this.aspectsToEdit.push(newAspect);
-        this.service.aspectsToAdd.push({newAspect: newAspect, aspectToCopy: aspectToCopy});
+        this.service.aspectsToAdd.push({newAspect: newAspect, viewToCopy: viewToCopy});
 
         ModalService.closeModal("create-new-aspect");
 
@@ -106,8 +107,8 @@ export class AspectsManagerComponent implements OnInit{
   }
 
   saveAspects() {
-    this.service.applyAspectChanges();
     this.service.selectedAspect = this.currentAspect;
+    this.service.applyAspectChanges();
     this.save.emit();
     ModalService.closeModal('manage-versions');
   }
@@ -121,6 +122,10 @@ export class AspectsManagerComponent implements OnInit{
     this.aspectsToEdit = this.aspectsToEdit.filter(e => !_.isEqual(e, aspect))
     this.service.aspectsToDelete.push(aspect);
     this.aspectToSelect = null;
+  }
+
+  updateAspect(event: { old: Aspect, new: Aspect }) {
+    this.aspectsToEdit = this.aspectsToEdit.map(e => _.isEqual(e, event.old) ? event.new : e);
   }
 
   /*** --------------------------------------------- ***/

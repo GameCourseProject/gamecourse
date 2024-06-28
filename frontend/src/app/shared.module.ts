@@ -66,6 +66,7 @@ import { TableData } from "./_components/tables/table-data/table-data.component"
 // Components: cards
 import { CourseCardComponent } from './_components/cards/course-card/course-card.component';
 import { ModuleCardComponent } from './_components/cards/module-card/module-card.component';
+import { InstalledModuleCardComponent } from "./_components/cards/installed-module-card/installed-module-card.component";
 import { AspectCardComponent } from './_components/cards/aspect-card/aspect-card.component';
 import { AuxVarCardComponent } from './_components/cards/aux-var-card/aux-var-card.component';
 import { EventCardComponent } from './_components/cards/event-card/event-card.component';
@@ -117,6 +118,7 @@ import { NgIconsModule } from "@ng-icons/core";
 import { DataTablesModule } from "angular-datatables";
 import { NgApexchartsModule } from "ng-apexcharts";
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import {CdkDrag, CdkDropList} from "@angular/cdk/drag-drop";
 import { MentionModule } from "angular-mentions";
 
 // Icons
@@ -148,7 +150,9 @@ import {
   featherVolume2,
   featherX,
   featherXCircle,
-  featherChevronDown
+  featherChevronDown,
+  featherChevronLeft,
+  featherChevronRight
 } from "@ng-icons/feather-icons";
 
 import {
@@ -157,6 +161,7 @@ import {
   jamEyeF,
   jamGoogle,
   jamFacebook,
+  jamFiles,
   jamFilesF,
   jamLayout,
   jamLayoutF,
@@ -172,7 +177,8 @@ import {
   jamTrashF,
   jamUpload,
   jamBox,
-  jamShuffle
+  jamShuffle,
+  jamFolderF
 } from "@ng-icons/jam-icons";
 
 import {
@@ -186,6 +192,8 @@ import {
   tablerArrowNarrowUp,
   tablerArrowsUpDown,
   tablerArrowsVertical,
+  tablerWindowMaximize,
+  tablerWindowMinimize,
   tablerAward,
   tablerChartBar,
   tablerCheck,
@@ -205,13 +213,11 @@ import {
   tablerCloudUpload,
   tablerCoin,
   tablerColorSwatch,
-  tablerCopy,
   tablerDeviceDesktop,
   tablerEye,
   tablerEyeOff,
   tablerFlame,
   tablerFlask,
-  tablerFolder,
   tablerGavel,
   tablerGift,
   tablerIdBadge2,
@@ -242,7 +248,11 @@ import {
   tablerColumnInsertRight,
   tablerQuote,
   tablerDatabase,
-  tablerBinaryTree
+  tablerBinaryTree,
+  tablerCode,
+  tablerCodeDots,
+  tablerClick,
+  tablerTools
 } from "@ng-icons/tabler-icons";
 
 import {
@@ -311,6 +321,7 @@ import {
 
     CourseCardComponent,
     ModuleCardComponent,
+    InstalledModuleCardComponent,
     AspectCardComponent,
     AuxVarCardComponent,
     EventCardComponent,
@@ -403,6 +414,7 @@ import {
 
     CourseCardComponent,
     ModuleCardComponent,
+    InstalledModuleCardComponent,
     AspectCardComponent,
     AuxVarCardComponent,
     EventCardComponent,
@@ -478,12 +490,15 @@ import {
       featherX,
       featherXCircle,
       featherChevronDown,
+      featherChevronLeft,
+      featherChevronRight,
 
       jamCircleF,
       jamDownload,
       jamEyeF,
       jamGoogle,
       jamFacebook,
+      jamFiles,
       jamFilesF,
       jamLayout,
       jamLayoutF,
@@ -500,6 +515,7 @@ import {
       jamUpload,
       jamBox,
       jamShuffle,
+      jamFolderF,
 
       tablerAlertTriangle,
       tablerArchive,
@@ -511,6 +527,8 @@ import {
       tablerArrowNarrowLeft,
       tablerArrowsUpDown,
       tablerArrowsVertical,
+      tablerWindowMaximize,
+      tablerWindowMinimize,
       tablerAward,
       tablerChartBar,
       tablerCheck,
@@ -531,10 +549,8 @@ import {
       tablerCoin,
       tablerColorSwatch,
       tablerDeviceDesktop,
-      tablerCopy,
       tablerEye,
       tablerEyeOff,
-      tablerFolder,
       tablerFlame,
       tablerFlask,
       tablerGavel,
@@ -568,6 +584,10 @@ import {
       tablerQuote,
       tablerDatabase,
       tablerBinaryTree,
+      tablerCode,
+      tablerCodeDots,
+      tablerClick,
+      tablerTools,
 
       matFaceRetouchingNatural,
 
@@ -576,6 +596,8 @@ import {
     DataTablesModule,
     NgApexchartsModule,
     ScrollingModule,
+    CdkDrag,
+    CdkDropList,
     MentionModule
   ]
 })

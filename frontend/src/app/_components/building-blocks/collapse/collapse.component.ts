@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
 import {ViewCollapse} from "../../../_domain/views/view-types/view-collapse";
 import {ViewMode} from "../../../_domain/views/view";
@@ -11,6 +11,7 @@ import { ViewType } from 'src/app/_domain/views/view-types/view-type';
 export class BBCollapseComponent implements OnInit {
 
   @Input() view: ViewCollapse;
+  @Output() addComponentEvent = new EventEmitter<void>();
 
   classes: string;
 

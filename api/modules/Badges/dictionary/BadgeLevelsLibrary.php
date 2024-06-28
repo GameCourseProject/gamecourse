@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Badges\Badge;
 use GameCourse\Module\Badges\Badges;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class BadgeLevelsLibrary extends Library
 {
@@ -13,6 +14,47 @@ class BadgeLevelsLibrary extends Library
     {
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "badgeLevels";    // NOTE: must match the name of the class
+    const NAME = "Badge Levels";
+    const DESCRIPTION = "Provides access to information regarding badge levels.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to get the information of a level of a badge. For example, the first level of the Amphitheatre Lover badge is characterized by:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+          "id": "1",
+          "number": 1,
+          "goal": 7,
+          "description": "be there for 50% of lectures",
+          "reward": 75,
+          "tokens": 0,
+          "image": "http://localhost/gamecourse/api/course_data/1-Multimedia_Content_Production/badges/Amphitheatre_Lover/badge.png",
+        }</code></pre>
+        </div><br>
+        <p>To obtain a specific level of a badge, you can use the function</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{badgeLevels.getLevelByNumber(2, %badge.id)}</code></pre>
+        </div>
+        <p>In this example, the result would be the second level, in the same format as the example above, of the badge saved in the custom varible <span class="text-secondary">%badge</span>.</p>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
 
     private function mockBadgeLevel(int $number = null) : array
     {
@@ -29,15 +71,6 @@ class BadgeLevelsLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "badgeLevels";    // NOTE: must match the name of the class
-    const NAME = "Badge Levels";
-    const DESCRIPTION = "Provides access to information regarding badge levels.";
-
-
-    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -48,44 +81,51 @@ class BadgeLevelsLibrary extends Library
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badgeLevels.number(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.number"
             ),
             new DFunction("goal",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's goal.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badgeLevels.goal(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.goal"
             ),
             new DFunction("description",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "badgeLevels.description(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.description"
             ),
             new DFunction("reward",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badgeLevels.reward(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.reward"
             ),
             new DFunction("tokens",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's tokens.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "badgeLevels.tokens(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.tokens"
             ),
             new DFunction("image",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's image URL.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "badgeLevels.image(%badgeLevel)\nor (shorthand notation):\n%badgeLevel.image"
             ),
             new DFunction("getLevelByNumber",
                 [["name" => "number", "optional" => false, "type" => "int"],
                     ["name" => "badgeId", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "badgeLevels.getLevelByNumber(2, %badge.id)"
             )
         ];
     }
@@ -105,6 +145,7 @@ class BadgeLevelsLibrary extends Library
     public function number($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $number = $level["number"] ?? 0;
         return new ValueNode($number, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -119,6 +160,7 @@ class BadgeLevelsLibrary extends Library
     public function goal($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $goal = $level["goal"];
         return new ValueNode($goal, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -133,6 +175,7 @@ class BadgeLevelsLibrary extends Library
     public function description($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $description = $level["description"];
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
@@ -147,6 +190,7 @@ class BadgeLevelsLibrary extends Library
     public function reward($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $reward = $level["reward"];
         return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
@@ -161,6 +205,7 @@ class BadgeLevelsLibrary extends Library
     public function tokens($level): ValueNode
     {
         // NOTE: on mock data, badge level will be mocked
+        if (!is_array($level)) throw new InvalidArgumentException("Invalid type for first argument: expected a badge level.");
         $tokens = $level["tokens"];
         return new ValueNode($tokens, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }

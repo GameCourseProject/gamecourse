@@ -21,6 +21,19 @@ class MathLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace has many methods that allow you to perform mathematical tasks on numbers,
+        similarly to those found in programming languages.</p>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -32,31 +45,58 @@ class MathLibrary extends Library
                 [[ "name" => "value", "optional" => false, "type" => "int"]],
                 "Returns the absolute value of a number.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.abs(-7)\nReturns 7"
             ),
             new DFunction("min",
                 [[ "name" => "value1", "optional" => false, "type" => "int"], [ "name" => "value2", "optional" => false, "type" => "int"]],
                 "Returns the smallest number between two numbers.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.min(5, 10)\nReturns 5"
             ),
             new DFunction("max",
                 [[ "name" => "value1", "optional" => false, "type" => "int"], [ "name" => "value2", "optional" => false, "type" => "int"]],
                 "Returns the greatest number between two numbers.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.max(5, 10)\nReturns 10"
+            ),
+            new DFunction("round",
+                [[ "name" => "value", "optional" => false, "type" => "float"]],
+                "Returns the rounded value of a number.",
+                ReturnType::NUMBER,
+                $this,
+                "math.round('3.3') Returns 3\nmath.round('3.6') Returns 4"
             ),
             new DFunction("floor",
-                [[ "name" => "value", "optional" => false, "type" => "int"]],
+                [[ "name" => "value", "optional" => false, "type" => "float"]],
                 "Returns the next lower number by rounding down if necessary.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.floor('5.95')\nReturns 5"
             ),
             new DFunction("ceil",
-                [[ "name" => "value", "optional" => false, "type" => "int"]],
+                [[ "name" => "value", "optional" => false, "type" => "float"]],
                 "Returns the next highest number by rounding up if necessary.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "math.ceil('5.95')\nReturns 6"
+            ),
+            new DFunction("sqrt",
+                [[ "name" => "value", "optional" => false, "type" => "int"]],
+                "Returns the square root of a number.",
+                ReturnType::NUMBER,
+                $this,
+                "math.sqrt(4)\nReturns 2"
+            ),
+            new DFunction("pow",
+                [[ "name" => "value", "optional" => false, "type" => "int"],
+                 [ "name" => "exponent", "optional" => false, "type" => "int"]],
+                "Returns the value of a number raised to the power of an exponent.",
+                ReturnType::NUMBER,
+                $this,
+                "math.pow(2, 3)\nReturns 8"
             )
         ];
     }
@@ -100,12 +140,23 @@ class MathLibrary extends Library
     }
 
     /**
-     * Returns the next lower number by rounding down if necessary.
+     * Returns the rounded value of a number.
      *
-     * @param int $value
+     * @param float $value
      * @return ValueNode
      */
-    public function floor(int $value): ValueNode
+    public function round(float $value): ValueNode
+    {
+        return new ValueNode(round($value), $this);
+    }
+
+    /**
+     * Returns the next lower number by rounding down if necessary.
+     *
+     * @param float $value
+     * @return ValueNode
+     */
+    public function floor(float $value): ValueNode
     {
         return new ValueNode(floor($value), $this);
     }
@@ -113,11 +164,34 @@ class MathLibrary extends Library
     /**
      * Returns the next highest number by rounding up if necessary.
      *
+     * @param float $value
+     * @return ValueNode
+     */
+    public function ceil(float $value): ValueNode
+    {
+        return new ValueNode(ceil($value), $this);
+    }
+
+    /**
+     * Returns the square root of a number.
+     *
      * @param int $value
      * @return ValueNode
      */
-    public function ceil(int $value): ValueNode
+    public function sqrt(int $value): ValueNode
     {
-        return new ValueNode(ceil($value), $this);
+        return new ValueNode(sqrt($value), $this);
+    }
+
+    /**
+     * Returns the value of a number raised to the power of an exponent.
+     *
+     * @param int $value
+     * @param int $exponent
+     * @return ValueNode
+     */
+    public function pow(int $value, int $exponent): ValueNode
+    {
+        return new ValueNode(pow($value, $exponent), $this);
     }
 }

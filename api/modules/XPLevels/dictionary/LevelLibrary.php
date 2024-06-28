@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\XPLevels\Level;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class LevelLibrary extends Library
 {
@@ -37,7 +38,6 @@ class LevelLibrary extends Library
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
-    // TODO: descriptions
     public function getFunctions(): ?array
     {
         return [
@@ -45,55 +45,64 @@ class LevelLibrary extends Library
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.id(%level)\nor (shorthand notation):\n%level.id"
             ),
             new DFunction("minXP",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's minimum XP.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.minXP(%level)\nor (shorthand notation):\n%level.minXP"
             ),
             new DFunction("description",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's description.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "xpLevel.description(%level)\nor (shorthand notation):\n%level.description"
             ),
             new DFunction("number",
                 [["name" => "level", "optional" => false, "type" => "any"]],
                 "Gets a given level's number.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "xpLevel.number(%level)\nor (shorthand notation):\n%level.number"
             ),
             new DFunction("getLevelById",
                 [["name" => "levelId", "optional" => false, "type" => "int"]],
                 "Gets a level by its ID.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelById(6)"
             ),
             new DFunction("getLevelByMinXP",
                 [["name" => "minXP", "optional" => false, "type" => "int"]],
                 "Gets a level by its minimum XP.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelById(5000)"
             ),
             new DFunction("getLevelByXP",
                 [["name" => "xp", "optional" => false, "type" => "int"]],
                 "Gets a level by its corresponding XP.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelByXP(5120)"
             ),
             new DFunction("getLevelByNumber",
                 [["name" => "number", "optional" => false, "type" => "int"]],
                 "Gets a level by its number.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "xpLevel.getLevelByNumber(5)"
             ),
             new DFunction("getLevels",
                 [["name" => "orderBy", "optional" => true, "type" => "string"]],
                 "Gets levels of course. Option to order by a given parameter.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::LEVELS_COLLECTION,
+                $this,
+                "xpLevel.getLevels()"
             )
         ];
     }
@@ -114,7 +123,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $levelId = $level["id"];
-        else $levelId = $level->getId();
+        elseif (is_object($level) && method_exists($level, 'getId')) $levelId = $level->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($levelId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -129,7 +139,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $minXP = $level["minXP"];
-        else $minXP = $level->getMinXP();
+        elseif (is_object($level) && method_exists($level, 'getMinXP')) $minXP = $level->getMinXP();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($minXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -144,7 +155,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $description = $level["description"];
-        else $description = $level->getDescription();
+        elseif (is_object($level) && method_exists($level, 'getDescription')) $description = $level->getDescription();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($description, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -159,7 +171,8 @@ class LevelLibrary extends Library
     {
         // NOTE: on mock data, level will be mocked
         if (is_array($level)) $number = $level["number"];
-        else $number = $level->getNumber();
+        elseif (is_object($level) && method_exists($level, 'getNumber')) $number = $level->getNumber();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a level.");
         return new ValueNode($number, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 

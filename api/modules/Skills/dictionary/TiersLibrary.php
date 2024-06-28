@@ -4,8 +4,9 @@ namespace GameCourse\Views\Dictionary;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Module\Skills\Skill;
-use GameCourse\Module\Skills\Skills;
+use GameCourse\Module\Skills\Tier;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class TiersLibrary extends Library
 {
@@ -25,29 +26,145 @@ class TiersLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to access tiers, which are part of skill trees, and their information. 
+        A tier looks like the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 6,
+            "skillTree": 2,
+            "name": "1",
+            "reward": 250,
+            "position": 0,
+            "isActive": true,
+            "costType": "exponential",
+            "cost": 0,
+            "increment": 10,
+            "minRating": 3
+        }</code></pre>
+        </div><br>
+        <p>Having a tier, you can get the skills on it with:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tier.skills}</code></pre>
+        </div>
+        <p>Which will return a collection of items of the <span class="text-secondary">skills namespace</span>!</p><br>
+        <p>You can obtain all of the tiers available in a course with</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTiers()}</code></pre>
+        </div>
+        <p>However, you can obtain just a specific tier given its id</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTierById(1)}</code></pre>
+        </div>
+        <p>or given its name, requiring the id of the skill tree it belongs to</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tiers.getTierByName(%skillTree.id, 'Wildcard')}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
+    private function mockTier(int $id = null, string $name = null) : array
+    {
+        return [
+            "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => $name ?: Core::dictionary()->faker()->text(5),
+            "reward" => Core::dictionary()->faker()->numberBetween(200, 2000),
+            "isActive" => Core::dictionary()->faker()->boolean(),
+            "skills" => array_map(function () {
+                return $this->mockSkill();
+            }, range(1, Core::dictionary()->faker()->numberBetween(3, 7)))
+        ];
+    }
+
+    private function mockSkill() : array
+    {
+        return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
+            "name" => Core::dictionary()->faker()->text(20),
+            "color" => Core::dictionary()->faker()->hexColor(),
+            "isCollab" => Core::dictionary()->faker()->boolean(),
+            "isExtra" => Core::dictionary()->faker()->boolean(),
+            "isActive" => Core::dictionary()->faker()->boolean(),
+            "dependencies" => array_map(function () {
+                return ["name" => Core::dictionary()->faker()->text(20)];
+            }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
+        ];
+    }
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
     public function getFunctions(): ?array
     {
         return [
+            new DFunction("id",
+                [["name" => "tier", "optional" => false, "type" => "tier"]],
+                "Gets tier's id.",
+                ReturnType::TEXT,
+                $this,
+                "tiers.id(%tier)\nor (shorthand notation):\n%tier.id"
+            ),
             new DFunction("name",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "tiers.name(%tier)\nor (shorthand notation):\n%tier.name"
             ),
             new DFunction("reward",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "tiers.reward(%tier)\nor (shorthand notation):\n%tier.reward"
             ),
             new DFunction("skills",
                 [["name" => "tier", "optional" => false, "type" => "tier"]],
                 "Gets tier's skills.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::SKILLS_COLLECTION,
+                $this,
+                "tiers.skills(%tier)\nor (shorthand notation):\n%tier.skills"
+            ),
+            new DFunction("isActive",
+                [["name" => "tier", "optional" => false, "type" => "tier"]],
+                "Checks whether a given tier is active.",
+                ReturnType::BOOLEAN,
+                $this,
+                "tiers.isActive(%tier)\nor (shorthand notation):\n%tier.isActive"
+            ),
+            new DFunction("getTierById",
+                [["name" => "tierId", "optional" => false, "type" => "int"]],
+                "Gets a skill tier by its ID in the system.",
+                ReturnType::OBJECT,
+                $this,
+                "tiers.getTierById(1)"
+            ),
+            new DFunction("getTierByName",
+                [["name" => "name", "optional" => false, "type" => "string"],
+                 ["name" => "skillTreeId", "optional" => false, "type" => "int"]],
+                "Gets a skill tier by its name. Requires the id of the skill tree it belongs to.",
+                ReturnType::OBJECT,
+                $this,
+                "tiers.getTierByName(%skillTree.id, 'Wildcard')"
+            ),
+            new DFunction("getTiers",
+                [["name" => "active", "optional" => true, "type" => "bool"]],
+                "Gets all tiers of course. Option to filter by state.",
+                ReturnType::TIERS_COLLECTION,
+                $this,
+                "tiers.getTiers() Returns all tiers in course\ntiers.getTiers(true) Returns only the active tiers\ntiers.getTiers(false) Returns the inactive tiers"
             )
         ];
     }
@@ -56,6 +173,22 @@ class TiersLibrary extends Library
     //       metadata in 'getFunctions' above
 
     /*** --------- Getters ---------- ***/
+
+    /**
+     * Gets tier's id.
+     *
+     * @param $tier
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function id($tier): ValueNode
+    {
+        // NOTE: on mock data, tier will be mocked
+        if (is_array($tier)) $name = $tier["id"];
+        elseif (is_object($tier) && method_exists($tier, 'getId')) $name = $tier->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
+        return new ValueNode($name, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
 
     /**
      * Gets tier's name.
@@ -68,7 +201,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["name"];
-        else $name = $tier->getName();
+        elseif (is_object($tier) && method_exists($tier, 'getName')) $name = $tier->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -83,7 +217,8 @@ class TiersLibrary extends Library
     {
         // NOTE: on mock data, tier will be mocked
         if (is_array($tier)) $name = $tier["reward"];
-        else $name = $tier->getReward();
+        elseif (is_object($tier) && method_exists($tier, 'getReward')) $name = $tier->getReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -96,12 +231,96 @@ class TiersLibrary extends Library
      */
     public function skills($tier): ValueNode
     {
+        if (!is_array($tier)) throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
+
         if (Core::dictionary()->mockData()) {
             $skills = $tier["skills"];
-
         } else {
             $skills = Skill::getSkillsOfTier($tier["id"]);
-        };
+        }
         return new ValueNode($skills, Core::dictionary()->getLibraryById(SkillsLibrary::ID));
+    }
+
+    /**
+     * Checks whether a given tier is active.
+     *
+     * @param $tier
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function isActive($tier): ValueNode
+    {
+        // NOTE: on mock data, tier will be mocked
+        if (is_array($tier)) $name = $tier["isActive"];
+        elseif (is_object($tier) && method_exists($tier, 'isActive')) $name = $tier->isActive();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tier.");
+        return new ValueNode($name, Core::dictionary()->getLibraryById(BoolLibrary::ID));
+    }
+
+    /*** --------- General ---------- ***/
+
+    /**
+     * Gets a skill tree by its ID in the system.
+     *
+     * @param int $tierId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getTierById(int $tierId): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $tier = $this->mockTier($tierId);
+
+        } else $tier = Tier::getTierById($tierId);
+        return new ValueNode($tier, $this);
+    }
+
+    /**
+     * Gets a skill tree by its name.
+     *
+     * @param string $name
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getTierByName(int $skillTreeId, string $name): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $tier = $this->mockTier(null, $name);
+
+        } else $tier = Tier::getTierByName($skillTreeId, $name);
+        return new ValueNode($tier, $this);
+    }
+
+    /**
+     * Gets all tiers of course.
+     *
+     * @param bool|null $active
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getTiers(bool $active = null): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $tiers = array_map(function () {
+                return $this->mockTier();
+            }, range(1, Core::dictionary()->faker()->numberBetween(1, 4)));
+
+        } else $tiers = Tier::getTiers($courseId, $active);
+        return new ValueNode($tiers, $this);
     }
 }

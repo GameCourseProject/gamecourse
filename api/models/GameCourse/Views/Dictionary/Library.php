@@ -4,6 +4,7 @@ namespace GameCourse\Views\Dictionary;
 use Exception;
 use GameCourse\Course\Course;
 use GameCourse\User\User;
+use ReflectionMethod;
 
 /**
  * This is the Library model, which implements the necessary methods
@@ -70,6 +71,17 @@ abstract class Library
      * @return array|null
      */
     public function getFunctions(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Gets library metadata. This is useful for
+     * the Reference Manual.
+     * TODO: Each getNamespaceDocumentation from library should include its description
+     * @return string|null
+     */
+    public function getNamespaceDocumentation(): ?string
     {
         return null;
     }
@@ -155,6 +167,17 @@ abstract class Library
     {
         $libraryMethods = get_class_methods($this);
         return in_array($funcName, $libraryMethods);
+    }
+
+    /**
+     * Reports information about a method.
+     *
+     * @param string $funcName
+     * @return bool
+     */
+    public function getFunctionReflection(string $funcName): ReflectionMethod
+    {
+        return new ReflectionMethod(get_class($this), $funcName);
     }
 
     /**

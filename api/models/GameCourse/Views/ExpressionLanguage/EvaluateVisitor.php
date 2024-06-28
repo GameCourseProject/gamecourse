@@ -96,7 +96,12 @@ class EvaluateVisitor extends Visitor
             if (!$library) {
                 if (is_array($contextVal) && (empty($contextVal) || Utils::isSequentialArray($contextVal)))
                     $library = Core::dictionary()->getLibraryById(CollectionLibrary::ID);
-                else $library = $context->getLibrary();
+                else {
+                    $library = $context->getLibrary();
+                    if (!$library) {
+                        throw new Exception('Function \'' . $funcName . '\' called with argument of type ' . gettype($contextVal) . ', expected namespace or item.');
+                    }
+                }
                 $node->setLibrary($library);
             }
         } else $contextVal = null;
@@ -181,7 +186,7 @@ class EvaluateVisitor extends Visitor
     {
         $variableName = $node->getParameter();
         if (!array_key_exists($variableName, $this->params))
-            throw new Exception('Unknown variable: ' . $variableName);
+            throw new Exception('Unknown variable: ' . $variableName . ".");
 
         $param = $this->params[$variableName];
         return $param instanceof Node ? $param->accept($this) : new ValueNode($param);

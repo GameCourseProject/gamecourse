@@ -1,18 +1,16 @@
 <div class="card bg-base-200 shadow-md flex flex-row items-end gap-2 {{new || edit ? 'pb-2.5 px-5' : 'p-5'}}">
-  <div class="w-28">
-    <app-input-text
-      *ngIf="edit || new"
-      [id]="'aux-var-name'"
-      [(value)]="newName"
-      [topLabel]="'Name:'"
-      [placeholder]="'courseColor'"
-      [size]="'sm'"
-    ></app-input-text>
-    <div *ngIf="!edit && !new">
-      <span class="block font-semibold text-md">Name:</span>{{newName}}
-    </div>
+  <app-input-text
+    *ngIf="edit || new"
+    [id]="'aux-var-name'"
+    [(value)]="newName"
+    [topLabel]="'Name:'"
+    [placeholder]="'e.g: courseColor'"
+    [size]="'sm'"
+  ></app-input-text>
+  <div *ngIf="!edit && !new" class="w-52 mr-4">
+    <span class="block font-semibold text-md">Name:</span>{{newName}}
   </div>
-  <div class="w-80">
+  <div class="w-full">
     <app-input-text
       *ngIf="edit || new"
       [id]="'aux-var-expression'"
@@ -20,14 +18,14 @@
       [topLabel]="'Expression:'"
       [helperText]="'This will compute the variable\'s value. To write expressions encapsulate them with curvy brackets: {}.
         See the \'Additional Tools\' box for more information.'"
-      [placeholder]="'{courses.getCourseById{%course}.color}'"
+      [placeholder]="'e.g: {courses.getCourseById{%course}.color}'"
       [size]="'sm'"
     ></app-input-text>
     <div *ngIf="!edit && !new">
       <span class="block font-semibold text-md">Expression:</span>{{newValue}}
     </div>
   </div>
-  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()">Add</button>
+  <button *ngIf="new" class="btn btn-secondary" (click)="addNewAction()" [disabled]="newName == '' || newValue == ''">Add</button>
   <div *ngIf="edit" class="flex flex-col">
     <button class="btn btn-sm btn-ghost px-0.5" (click)="cancelAction()">Cancel</button>
     <button class="btn btn-sm btn-secondary px-0.5" (click)="saveAction()">Save</button>

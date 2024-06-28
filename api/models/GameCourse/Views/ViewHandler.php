@@ -3,6 +3,7 @@ namespace GameCourse\Views;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Course\Course;
 use GameCourse\Role\Role;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Component\Component;
@@ -350,17 +351,39 @@ class ViewHandler
         $mockData = $populate && !is_array($populate);
 
         if ($mockData) {
-            $faker = Factory::create();
+            $course = Course::getCourseById($aspectToMock["course"]);
 
             // Create temporary viewer with viewer role
-            $fakeViewer = User::addUser($faker->name(), "ist0", AuthService::FENIX, $faker->email(),
-                $faker->numberBetween(-99999, -11111), null, null, false, true);
-            CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+            $fakeViewer = User::getUserByEmail("viewer@not.real");
+            if (!isset($fakeViewer)) {
+                $fakeViewer = User::addUser("Preview's Viewer", "viewer@not.real", AuthService::FENIX, "viewer@not.real",
+                    0, null, null, false, true);
+                CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+            } else {
+                $courseViewer = CourseUser::getCourseUserById($fakeViewer->getId(), $course);
+                if (!isset($courseViewer)) {
+                    CourseUser::addCourseUser($fakeViewer->getId(), $aspectToMock["course"], $aspectToMock["viewerRole"], null, false);
+                } else {
+                    if (isset($aspectToMock["viewerRole"])) $courseViewer->setRoles([$aspectToMock["viewerRole"]]);
+                    else $courseViewer->setRoles([]);
+                }
+            }
 
             // Create temporary user with user role
-            $fakeUser = User::addUser($faker->name(), "ist1", AuthService::FENIX, $faker->email(),
-                $faker->numberBetween(-99999, -11111), null, null, false, true);
-            CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+            $fakeUser = User::getUserByEmail("user@not.real");
+            if (!isset($fakeUser)) {
+                $fakeUser = User::addUser("Preview's User", "user@not.real", AuthService::FENIX, "user@not.real",
+                    1, null, null, false, true);
+                CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+            } else {
+                $courseUser = CourseUser::getCourseUserById($fakeUser->getId(), $course);
+                if (!isset($courseUser)) {
+                    CourseUser::addCourseUser($fakeUser->getId(), $aspectToMock["course"], $aspectToMock["userRole"], null, false);
+                } else {
+                    if (isset($aspectToMock["userRole"])) $courseUser->setRoles([$aspectToMock["userRole"]]);
+                    else $courseUser->setRoles([]);
+                }
+            }
 
             $sortedAspects = Aspect::getAspectsByViewerAndUser($aspectToMock["course"], $fakeViewer->getId(), $fakeUser->getId(), true);
         }
@@ -476,7 +499,6 @@ class ViewHandler
 
         // Get view tree for each aspect of view root
         $viewTreeByAspect = [];
-        $defaultAspect = Aspect::getAspectBySpecs($courseId, null, null)->getData("id, viewerRole, userRole");
         $aspects = Aspect::getAspectsInViewTree($viewRoot);
 
         $hierarchy = Role::getCourseRoles($courseId, false, true);
@@ -492,11 +514,13 @@ class ViewHandler
             if (isset($aspect["viewerRole"])) {
                 $parentsOfViewer = array_merge($parentsOfViewer, Role::getParentNamesOfRole($hierarchy, null, $aspect["viewerRole"]));
             }
+            $parentsOfViewer[] = null;
 
             $parentsOfUser = [$userRoleName];
             if (isset($aspect["userRole"])) {
                 $parentsOfUser = array_merge($parentsOfUser, Role::getParentNamesOfRole($hierarchy, null, $aspect["userRole"]));
             }
+            $parentsOfUser[] = null;
 
             foreach ($parentsOfUser as $userRole) {
                 $userRoleId = null;
@@ -506,13 +530,10 @@ class ViewHandler
                     $viewerRoleId = null;
                     if (isset($viewerRole)) $viewerRoleId = Role::getRoleId($viewerRole, $courseId);
 
-                    if (isset($userRoleId) || isset($viewerRoleId)) {
-                        $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
-                        $sortedAspects[] = $parentAspect;
-                    }
+                    $parentAspect = Aspect::getAspectBySpecs($courseId, $viewerRoleId, $userRoleId)->getData("id, viewerRole, userRole");
+                    $sortedAspects[] = $parentAspect;
                 }
             }
-            $sortedAspects[] = $defaultAspect;
 
             // Render and associate with aspect
             $viewTreeOfAspect = self::renderView($viewRoot, $sortedAspects);
@@ -536,24 +557,78 @@ class ViewHandler
      */
     public static function compileView(array &$view)
     {
+        try {
+            // Store view information on the dictionary
+            Core::dictionary()->storeView($view);
+
+            // Compile basic parameters
+            $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
+            foreach ($params as $param) {
+                if (isset($view[$param])) {
+                    // Ignore % that are not variables, e.g. 'width: 100%'
+                    $pattern = "/(\d+)%/";
+                    preg_match_all($pattern, $view[$param], $matches);
+                    if (!empty($matches) && count($matches) == 2) {
+                        foreach ($matches[0] as $i => $v) {
+                            $view[$param] = preg_replace("/$v/", $matches[1][$i] . "?", $view[$param]);
+                        }
+                    }
+
+                    self::compileExpression($view[$param]);
+                }
+            }
+
+            // Compile variables
+            if (isset($view["variables"])) {
+                foreach ($view["variables"] as &$variable) {
+                    self::compileExpression($variable["value"]);
+                }
+            }
+
+            // Compile events
+            if (isset($view["events"])) {
+                foreach ($view["events"] as &$event) {
+                    self::compileExpression($event["action"]);
+                }
+            }
+
+            // Compile view of a specific type
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->compile($view);
+
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if (strpos($message, " component.") === false) {
+                $message .= " On " . $view["type"] . " component.<" . $view["id"] . ">";
+            }
+            throw new Exception($message);
+        }
+    }
+
+    /**
+     * Stripped-down version of the above, that only compiles
+     * the fields needed for other expressions.
+     *
+     * @param array $view
+     * @throws Exception
+     */
+    public static function compileReducedView(array &$view)
+    {
         // Store view information on the dictionary
         Core::dictionary()->storeView($view);
 
         // Compile basic parameters
-        $params = ["cssId", "class", "style", "visibilityCondition", "loopData"];
-        foreach ($params as $param) {
-            if (isset($view[$param])) {
-                // Ignore % that are not variables, e.g. 'width: 100%'
-                $pattern = "/(\d+)%/";
-                preg_match_all($pattern, $view[$param], $matches);
-                if (!empty($matches) && count($matches) == 2) {
-                    foreach ($matches[0] as $i => $v) {
-                        $view[$param] = preg_replace("/$v/", $matches[1][$i] . "?", $view[$param]);
-                    }
+        if (isset($view["loopData"])) {
+            // Ignore % that are not variables, e.g. 'width: 100%'
+            $pattern = "/(\d+)%/";
+            preg_match_all($pattern, $view["loopData"], $matches);
+            if (!empty($matches) && count($matches) == 2) {
+                foreach ($matches[0] as $i => $v) {
+                    $view["loopData"] = preg_replace("/$v/", $matches[1][$i] . "?", $view["loopData"]);
                 }
-
-                self::compileExpression($view[$param]);
             }
+
+            self::compileExpression($view["loopData"]);
         }
 
         // Compile variables
@@ -563,16 +638,11 @@ class ViewHandler
             }
         }
 
-        // Compile events
-        if (isset($view["events"])) {
-            foreach ($view["events"] as &$event) {
-                self::compileExpression($event["action"]);
+        if (isset($view["children"])) {
+            foreach ($view["children"] as &$child) {
+                self::compileReducedView($child);
             }
         }
-
-        // Compile view of a specific type
-        $viewType = ViewType::getViewTypeById($view["type"]);
-        $viewType->compile($view);
     }
 
     /**
@@ -633,8 +703,48 @@ class ViewHandler
         }
 
         // Evaluate view of a specific type
-        $viewType = ViewType::getViewTypeById($view["type"]);
-        $viewType->evaluate($view, $visitor);
+        try {
+            $viewType = ViewType::getViewTypeById($view["type"]);
+            $viewType->evaluate($view, $visitor);
+        } catch (Exception $exception) {
+            $message = $exception->getMessage();
+            if (strpos($message, " component.") === false) {
+                $message .= " On " . $view["type"] . " component.<" . $view["id"] . ">";
+            }
+            throw new Exception($message);
+        }
+    }
+
+    /**
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateReducedView(array &$view, EvaluateVisitor $visitor)
+    {
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+
+        if (isset($view["children"])) {
+            $childrenEvaluated = [];
+            foreach ($view["children"] as &$child) {
+                if (isset($child["loopData"])) {
+                    self::evaluateReducedLoop($child, $visitor);
+                    $childrenEvaluated = array_merge($childrenEvaluated, $child);
+
+                } else {
+                    self::evaluateReducedView($child, $visitor);
+                    if ($child) $childrenEvaluated[] = $child;
+                }
+            }
+            $view["children"] = $childrenEvaluated;
+        }
     }
 
     /**
@@ -700,6 +810,54 @@ class ViewHandler
             if ($newView) $repeatedViews[] = $newView;
         }
         $view = $repeatedViews;
+    }
+
+    /**
+     * Stripped-down version of the above, that only evaluates
+     * the fields needed for other expressions.
+     * Sets item and index to the first element of the collection.
+     *
+     * @param array $view
+     * @param EvaluateVisitor $visitor
+     * @throws Exception
+     */
+    public static function evaluateReducedLoop(array &$view, EvaluateVisitor $visitor)
+    {
+        Core::dictionary()->storeViewIdAsViewWithLoopData($view["id"]);
+
+        if (isset($view["variables"])) {
+            foreach ($view["variables"] as $variable) {
+                $visitor->addParam($variable["name"], $variable["value"]);
+            }
+        }
+        self::evaluateNode($view["loopData"], $visitor);
+        $collection = $view["loopData"];
+        unset($view["loopData"]);
+        if (is_null($collection)) $collection = [];
+        if (!is_array($collection)) throw new Exception("Loop data must be a collection");
+
+        // Transform to sequential array
+        $collection = array_values($collection);
+
+        // If inner loop, replace item params
+        if ($visitor->hasParam("item")) {
+            $viewIdsWithLoopData = Core::dictionary()->getViewIdsWithLoopData();
+            $newItemKey = "item" . str_repeat("N", count($viewIdsWithLoopData) - 1);
+            foreach (Core::dictionary()->getView($viewIdsWithLoopData[count($viewIdsWithLoopData) - 2])["variables"] as $variable) {
+                $newValue = str_replace("%item", "%$newItemKey", $variable["value"]);
+                self::compileExpression($newValue);
+                $visitor->addParam($variable["name"], $newValue);
+            }
+            $visitor->addParam($newItemKey, $visitor->getParam("item"));
+        }
+
+        // Update visitor params with %item and %index
+        if (isset($collection[0])) {
+            $visitor->addParam("item", new ValueNode($collection[0], $collection[0]["libraryOfItem"]));
+            $visitor->addParam("index", 0);
+        }
+
+        self::evaluateReducedView($view, $visitor);
     }
 
     /**
@@ -798,36 +956,6 @@ class ViewHandler
                 $views[$view["id"]] = $view;
                 $logs[] = new EditLog($view["id"]);
             }
-            // Move view (if changed)
-            // WARNING: this isn't creating logs, it's moving the views immediately
-            // I needed this to not lose track of the positions when moving to an already occupied position
-            if (isset($parent["parent"])) {
-                $prevPos = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $view["id"]], "*");
-
-                if ((isset($prevPos) && $prevPos["parent"] == $parent["parent"] && $prevPos["position"] != $parent["pos"]) || !isset($prevPos)) {
-                    // If the position is already occupied, need to disoccupy it first to keep the constraint
-                    $occupying = Core::database()->select(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
-                    if (!empty($occupying)) {
-                        Core::database()->executeQuery("SET @i=0");
-                        $sql = "SELECT MAX(if(@i=position,@i:=position+1,@i)) FROM " . self::TABLE_VIEW_PARENT . " WHERE parent = " . $parent["parent"] . " ORDER BY position";
-                        $tempPos = intval(Core::database()->executeQuery($sql)->fetchColumn());
-
-                        self::moveView($occupying["child"],
-                            ["parent" => $parent["parent"], "pos" => $parent["pos"]],
-                            ["parent" => $parent["parent"], "pos" => $tempPos]
-                        );
-                    }
-                    else if (isset($prevPos)) {
-                        self::moveView($view["id"],
-                            ["parent" => $parent["parent"], "pos" => $prevPos],
-                            ["parent" => $parent["parent"], "pos" => $parent["pos"]]
-                        );
-                    }
-                }
-                else if (isset($prevPos) && $prevPos["parent"] != $parent["parent"]) {
-                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $prevPos["parent"], "position" => $prevPos["position"]]);
-                }
-            }
 
             // Translate view of a specific type
             $viewType = ViewType::getViewTypeById($view["type"]);
@@ -839,8 +967,18 @@ class ViewHandler
 
         // Move view
         if (isset($parent["parent"])) {
-            $where = ["parent" => $parent["parent"], "child" => $viewRoot];
-            if (empty(Core::database()->select(self::TABLE_VIEW_PARENT, $where))) {
+            $currentParentAndPosition = Core::database()->select(self::TABLE_VIEW_PARENT, ["child" => $viewRoot]);
+            if (!empty($currentParentAndPosition["parent"])) {
+                $currentParent = $currentParentAndPosition["parent"];
+                $currentPosition = $currentParentAndPosition["position"];
+
+                if ($currentParent != $parent["parent"] || $currentPosition != $parent["pos"]) {
+                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
+                    Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $currentParent, "position" => $currentPosition]);
+                    $logs[] = new MoveLog($viewRoot, null, $parent);
+                }
+            } else {
+                Core::database()->delete(self::TABLE_VIEW_PARENT, ["parent" => $parent["parent"], "position" => $parent["pos"]]);
                 $logs[] = new MoveLog($viewRoot, null, $parent);
             }
         }

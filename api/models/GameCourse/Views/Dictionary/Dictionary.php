@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use Exception;
+use InvalidArgumentException;
 use Faker\Factory;
 use Faker\Generator;
 use GameCourse\Course\Course;
@@ -213,6 +214,29 @@ class Dictionary
         // Add context
         if ($context !== null) array_unshift($args, $context);
 
+        // Check number and types of arguments
+        $ref = $library->getFunctionReflection($funcName);
+        foreach ($ref->getParameters() as $index => $parameter) {
+            if (array_key_exists($index, $args)) {
+                $expectedType = $parameter->getType();
+
+                if ($expectedType) {
+                    $actualType = get_debug_type($args[$index]);
+                    $expectedTypeName = $expectedType->getName();
+
+                    if ($expectedTypeName == "bool" && ($args[$index] == 1 || $args[$index] == 0)) continue;
+                    if ($expectedTypeName == "float" && $actualType == "int") continue;
+                    if ($index >= $ref->getNumberOfRequiredParameters() && $actualType == "null") continue;
+
+                    if ($expectedTypeName !== $actualType && !is_a($args[$index], $expectedTypeName)) {
+                        throw new Exception("Argument " . ($index + 1) . " passed to function '" . $funcName . "' must be of the type " . $expectedTypeName . ", " . $actualType . " given.");
+                    }
+                }
+            } else if ($index < $ref->getNumberOfRequiredParameters()) {
+                throw new Exception("Function '$funcName' requires more arguments than provided.");
+            }
+        }
+
         // Add course
         if ($course) $this->course = $course;
 
@@ -221,6 +245,14 @@ class Dictionary
         $this->faker = Factory::create(); // Check out https://fakerphp.github.io/
 
         // Call function
-        return $library->{$funcName}(...$args);
+        try {
+            return $library->{$funcName}(...$args);
+        } catch (InvalidArgumentException $e) {
+            $errorMessage = $e->getMessage();
+            $position = strpos($errorMessage, ':');
+            if ($position !== false) {
+                throw new Exception(substr($errorMessage, 0, $position) . " on function $funcName" . substr($errorMessage, $position));
+            }
+        }
     }
 }

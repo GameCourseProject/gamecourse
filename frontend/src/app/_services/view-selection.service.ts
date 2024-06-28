@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {View, ViewMode} from "../_domain/views/view";
 import {exists} from "../_utils/misc/misc";
 
@@ -6,12 +6,8 @@ import {exists} from "../_utils/misc/misc";
   providedIn: 'root'
 })
 export class ViewSelectionService {
-
-  static readonly IGNORE_SELECTION_CLASS = 'ignore-selection';
-
   private selected: View;
-  private disabled: boolean;
-  private rearrange: boolean;
+  private openContext: boolean = false;
 
   constructor() {
   }
@@ -20,26 +16,36 @@ export class ViewSelectionService {
     return exists(this.selected);
   }
 
+  public hasOpen(): boolean {
+    return this.openContext;
+  }
+
   public get(): View {
     return this.selected;
   }
 
-  public update(view: View, target?: HTMLElement) {
-    if (this.disabled) return;
-    if (target && target.classList.contains(ViewSelectionService.IGNORE_SELECTION_CLASS))
-      return;
+  public set(view: View) {
+    this.selected = view;
+  }
+
+  public update(view: View) {
+    this.openContext = false;
 
     if (this.isSelected(view)) { // Same view
-      if (this.rearrange) this.switchMode();
       this.selected = null;
     }
     else { // Different view
-      if (this.selected) {
-        if (this.rearrange) this.switchMode();
-      }
       this.selected = view;
-      if (this.rearrange) this.switchMode();
     }
+  }
+
+  public open(view: View) {
+    this.selected = view;
+    this.openContext = true;
+  }
+
+  public close() {
+    this.openContext = false;
   }
 
   public clear() {
@@ -50,21 +56,8 @@ export class ViewSelectionService {
     return this.selected && view.id === this.selected.id;
   }
 
-  public toggleState(): void {
-    this.disabled = !this.disabled;
-  }
-
-  public setRearrange(state: boolean): void {
-    this.rearrange = state;
-    this.switchMode();
-  }
-
-  private switchMode(): void {
-    if (this.selected?.mode === ViewMode.REARRANGE) {
-      this.selected.mode = ViewMode.EDIT;
-    }
-    else if (this.selected?.mode === ViewMode.EDIT) {
-      this.selected.mode = ViewMode.REARRANGE;
-    }
+  public refresh(): void {
+    if (this.selected.mode === ViewMode.EDIT) this.selected.mode = ViewMode.DISPLAY;
+    else if (this.selected.mode === ViewMode.DISPLAY) this.selected.mode = ViewMode.EDIT;
   }
 }

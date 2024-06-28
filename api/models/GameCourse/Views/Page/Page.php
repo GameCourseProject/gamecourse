@@ -699,21 +699,80 @@ class Page
         return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, true);
     }
 
+    /*** ---------------------------------------------------- ***/
+    /*** ------------------- Editor Tools ------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
     /**
      * Previews an expression of the Language Expression as Text.
      *
      * @throws Exception
      */
-    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId)
+    public static function previewExpressionLanguage(string $expression, int $courseId, int $viewerId, array $tree)
     {
+        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
+        Core::dictionary()->setVisitor($visitor);
+
+        // Process the tree to obtain knowledge of the variables
+        ViewHandler::compileReducedView($tree);
+        ViewHandler::evaluateReducedView($tree, $visitor);
+
+        // Compile and evaluate the desired expression
         $viewType = ViewType::getViewTypeById("text");
         $view = ["text" => $expression];
         $viewType->compile($view);
-        $visitor = new EvaluateVisitor(["course" => $courseId, "viewer" => $viewerId, "user" => $viewerId]);
-        Core::dictionary()->setVisitor($visitor);
         $viewType->evaluate($view, $visitor);
 
-        return $view["text"];
+        if (is_object($view["text"])) {
+            $className = explode('\\', get_class($view["text"]));
+            return array_merge(["itemType" => end($className)], $view["text"]->getData());
+        }
+        else if (is_array($view["text"])) {
+            foreach ($view["text"] as &$el) {
+                if (is_object($el)) {
+                    return array_merge(["itemNamespace" => $el->getId()], $view["text"]);
+                }
+                else if (isset($el["libraryOfItem"])) {
+                    $type = $el["libraryOfItem"]->getId();
+                    unset($el["libraryOfItem"]);
+                    $el = array_merge(["itemNamespace" => $type], $el);
+                }
+            }
+            return $view["text"];
+        }
+        else {
+            return $view["text"];
+        }
+    }
+
+    /**
+     * Gets the recipes from the cookbook that are
+     * useful for the page editor
+     *
+     * @throws Exception
+     */
+    public static function getCookbook(Course $course): array {
+        $content = [];
+
+        $folderPath = COOKBOOK_FOLDER . "/pages";
+        if (!is_dir($folderPath) || !is_readable($folderPath)) {
+            throw new Exception("Cookbook folder not found or not readable");
+        }
+
+        $folderContents = scandir($folderPath);
+        foreach ($folderContents as $fileName) {
+            // Skip current and parent directory entries
+            if ($fileName === "." || $fileName === "..") {
+                continue;
+            }
+
+            $path = $folderPath . "/" . $fileName;
+            $fileContent = file_get_contents($path);
+            $name = pathinfo($fileName, PATHINFO_FILENAME);
+
+            $content[] = ["name" => $name, "content" => $fileContent];
+        }
+        return $content;
     }
 
 

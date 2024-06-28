@@ -1,4 +1,5 @@
-import {ChangeDetectorRef, Component, Input, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import * as _ from "lodash";
 
 import {View, ViewMode} from "../../../_domain/views/view";
 import {ViewType} from "../../../_domain/views/view-types/view-type";
@@ -23,20 +24,22 @@ import {ModalService} from 'src/app/_services/modal.service';
 import {
   ComponentEditorComponent
 } from 'src/app/_views/restricted/courses/course/settings/views/views-editor/component-editor/component-editor.component';
-import {groupedChildren} from 'src/app/_domain/views/build-view-tree/build-view-tree';
+import {groupedChildren, viewsDeleted} from 'src/app/_domain/views/build-view-tree/build-view-tree';
 import {HistoryService} from 'src/app/_services/history.service';
 import {ViewEditorService} from 'src/app/_services/view-editor.service';
 import {AlertService, AlertType} from "../../../_services/alert.service";
+import {ErrorService} from "../../../_services/error.service";
 
 @Component({
   selector: 'bb-any',
-  templateUrl: './any.component.html'
+  templateUrl: './any.component.html',
+  styleUrls: ['./any.component.scss']
 })
-export class BBAnyComponent implements OnInit {
+export class BBAnyComponent implements OnInit, OnDestroy {
 
   @Input() view: View;
   @Input() isExistingRoot: boolean = false;
-
+  @Output() addComponentEvent = new EventEmitter<void>();
   @ViewChild(ComponentEditorComponent) componentEditor?: ComponentEditorComponent;
 
   courseID: number;
@@ -45,11 +48,13 @@ export class BBAnyComponent implements OnInit {
   visible: boolean;
   delete: boolean = false;
 
+  contextMenuPos = { x: '0', y: '0' };
+
   constructor(
     private route: ActivatedRoute,
     public selection: ViewSelectionService,
     private history: HistoryService,
-    public service: ViewEditorService,
+    private service: ViewEditorService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -61,8 +66,40 @@ export class BBAnyComponent implements OnInit {
       this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
         (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
     });
+
+    if (this.view.mode === ViewMode.EDIT) {
+      this.handleKeyDown = this.handleKeyDown.bind(this);
+      addEventListener('keydown', this.handleKeyDown);
+    }
   }
 
+  ngOnDestroy() {
+    removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  handleKeyDown(event: KeyboardEvent) {
+    if (this.isSelected() && !ModalService.isAnyOpen()) {
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        ModalService.openModal('component-delete-' + this.view.id);
+      }
+    }
+  }
+
+  onRightClick(event: MouseEvent) {
+    if (!ModalService.isAnyOpen()) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.selection.open(this.view);
+
+      if (event.clientX + 192 > window.innerWidth) {
+        this.contextMenuPos.x = event.clientX- 192 + 'px';
+      } else {
+        this.contextMenuPos.x = event.clientX + 'px';
+      }
+      this.contextMenuPos.y = event.clientY + 'px';
+    }
+  }
 
   /*** ---------------------------------------- ***/
   /*** ----------------- Views ---------------- ***/
@@ -144,8 +181,16 @@ export class BBAnyComponent implements OnInit {
     return this.selection.get() == this.view;
   }
 
+  isError() {
+    return ErrorService.viewId == this.view.id;
+  }
+
+  isOpen() {
+    return this.isSelected() && this.selection.hasOpen();
+  }
+
   openSaveComponentModal() {
-    ModalService.openModal('save-as-component');
+    ModalService.openModal('save-component');
   }
 
 
@@ -157,21 +202,27 @@ export class BBAnyComponent implements OnInit {
     ModalService.openModal('component-editor');
   }
 
-  submitEditAction() {
-    this.componentEditor.saveView();
+  async submitEditAction() {
+    if (this.componentEditor.hasUnsavedAuxVar()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      return;
+    }
+
+    await this.componentEditor.saveView();
 
     // Force rerender to show changes
     // and recalculates visibility since it might have changed
     this.visible = false;
-    this.selection.setRearrange(true);
+    this.selection.refresh();
     this.cdr.detectChanges();
-    this.selection.setRearrange(false);
-    this.visible = this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
+    this.selection.refresh();
+    this.visible = this.view.visibilityType === VisibilityType.VISIBLE ||
       (this.view.visibilityType === VisibilityType.CONDITIONAL && (this.view.visibilityCondition as boolean));
 
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 
@@ -185,15 +236,17 @@ export class BBAnyComponent implements OnInit {
 
   submitDeleteAction() {
     if (this.isExistingRoot) {
-      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...")
+      AlertService.showAlert(AlertType.WARNING, "You can't delete the root of an existing page/template! Edit it instead...");
+      ModalService.closeModal('component-delete-' + this.view.id);
     }
     else {
       this.service.delete(this.view);
       this.selection.clear();
       this.delete = true;
       this.history.saveState({
-        viewsByAspect: this.service.viewsByAspect,
-        groupedChildren: groupedChildren
+        viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+        groupedChildren: groupedChildren,
+        viewsDeleted: viewsDeleted
       });
     }
   }
@@ -201,8 +254,9 @@ export class BBAnyComponent implements OnInit {
   duplicateAction() {
     this.service.duplicate(this.view);
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 

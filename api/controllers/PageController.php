@@ -6,7 +6,6 @@ use Event\EventType;
 use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Role\Role;
-use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
 use GameCourse\Views\ViewHandler;
 use GameCourse\Views\CreationMode;
@@ -183,7 +182,9 @@ class PageController
         $image = API::getValue("image");
         
         $page = Page::addPage($courseId, CreationMode::BY_VALUE, $name, $viewTree);
-        $page->setImage($image);
+        if ($image) $page->setImage($image);
+
+        API::response($page->getId());
     }
 
     /**
@@ -205,13 +206,15 @@ class PageController
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
 
+        $name = API::getValue("name");
+
         $image = API::getValue("image");
         if ($image) $page->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($page->getViewRoot()), $viewIdsDeleted);
 
-        $page->editPage($page->getName(), $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
+        $page->editPage($name, $page->isVisible(), $page->isPublic(), $page->getVisibleFrom(), $page->getVisibleUntil(),
                 $page->getPosition(), $translatedTree);
     }
 
@@ -221,7 +224,7 @@ class PageController
      */
     public function saveTemplate()
     {
-        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted");
+        API::requireValues("courseId", "templateId", "viewTree", "viewsDeleted", "name");
         
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -234,12 +237,14 @@ class PageController
         $viewTree = API::getValue("viewTree", "array");
         $viewIdsDeleted = API::getValue("viewsDeleted", "array");
 
+        $name = API::getValue("name");
+
         $image = API::getValue("image");
         if ($image) $template->setImage($image);
         
         // Translate tree into logs
         $translatedTree = ViewHandler::translateViewTree($viewTree, ViewHandler::getViewById($template->getViewRoot()), $viewIdsDeleted);
-        $template->editTemplate($template->getName(), $translatedTree);
+        $template->editTemplate($name, $translatedTree);
     }
 
     /**
@@ -866,27 +871,26 @@ class PageController
      * Renders a given page for previewing.
      *
      * @param int $pageId
-     * @param int $userId (optional)
+     * @param int $userId
+     * @param int $viewerId
      * @throws Exception
      */
     public function previewPage()
     {
-        API::requireValues("pageId");
+        API::requireValues("pageId", "viewerId", "userId");
 
         $pageId = API::getValue("pageId", "int");
         $page = API::verifyPageExists($pageId);
-        
-        $course = $page->getCourse();
-        $courseId = $course->getId();
 
-        $userRole = API::getValue("userRole", "string");
-        $userRoleId = $userRole ? Role::getRoleId($userRole, $courseId) : null;
+        $viewerId = API::getValue("viewerId", "int");
+        $userId = API::getValue("userId", "int");
 
-        $viewerRole = API::getValue("viewerRole", "string");
-        $viewerRoleId = $viewerRole ? Role::getRoleId($viewerRole, $courseId) : null;
-
-        API::response($page->previewPage(null, null, Aspect::getAspectBySpecs($courseId, $userRoleId, $viewerRoleId)));
+        API::response($page->previewPage($viewerId, $userId));
     }
+
+    /*** --------------------------------------------- ***/
+    /*** ---------------- Editor Tools --------------- ***/
+    /*** --------------------------------------------- ***/
 
     /**
      * Previews an expression of the Language Expression as Text.
@@ -895,7 +899,7 @@ class PageController
      */
     public function previewExpression()
     {
-        API::requireValues('courseId', 'expression');
+        API::requireValues('courseId', 'expression', 'tree');
 
         $courseId = API::getValue("courseId", "int");
         $course = API::verifyCourseExists($courseId);
@@ -903,10 +907,29 @@ class PageController
         API::requireCourseAdminPermission($course);
 
         $expression = API::getValue("expression", "string");
+        $tree = API::getValue("tree", "array");
 
         $viewerId = Core::getLoggedUser()->getId();
 
-        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId));
+        API::response(Page::previewExpressionLanguage($expression, $courseId, $viewerId, $tree));
+    }
+
+    /**
+     * Returns the additional information to help users use the
+     * Expression Language of each module.
+     *
+     * @throws Exception
+     */
+    public function getCookbook()
+    {
+        API::requireValues('courseId');
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        API::response(Page::getCookbook($course));
     }
 
 

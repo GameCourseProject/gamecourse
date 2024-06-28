@@ -39,7 +39,7 @@ class Category
             ["id" => 2, "name" => "Components"],
             ["id" => 3, "name" => "Titles"],
             ["id" => 4, "name" => "Paragraphs"],
-            ["id" => 5, "name" => "Empty Block"],
+            ["id" => 5, "name" => "Styled"],
             ["id" => 6, "name" => "Solid"],
             ["id" => 7, "name" => "Outlined"],
             ["id" => 8, "name" => "With Icon"],
@@ -52,7 +52,8 @@ class Category
             ["id" => 15, "name" => "Line"],
             ["id" => 16, "name" => "Progress"],
             ["id" => 17, "name" => "Radar"],
-            ["id" => 18, "name" => "Pie"]
+            ["id" => 18, "name" => "Pie"],
+            ["id" => 19, "name" => "Non-Styled"]
         ];
 
         $sql = "INSERT INTO " . self::TABLE_CATEGORY . " (id, name) VALUES ";

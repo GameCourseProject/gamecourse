@@ -6,6 +6,7 @@ use GameCourse\Core\Core;
 use GameCourse\Module\Skills\SkillTree;
 use GameCourse\Module\Skills\Tier;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
+use InvalidArgumentException;
 
 class TreeLibrary extends Library
 {
@@ -13,6 +14,64 @@ class TreeLibrary extends Library
     {
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "tree";    // NOTE: must match the name of the class
+    const NAME = "Skill Tree";
+    const DESCRIPTION = "Provides access to information regarding skill trees.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to access the skill trees configured in the course, where the users complete 
+        skills in order to achieve higher tiers. A tree item consists of the following:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{
+            "id": 2,
+            "name": "Media Challenges",
+            "maxReward": 6000
+        }</code></pre>
+        </div><br>
+        <p>You can access all these attributes. For example, to access the id, 
+        given that you have a tree item in the variable <span class="text-secondary">tree</span> use the expression</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tree.id}</code></pre>
+        </div><br>
+        <p>Accessing the tiers of a tree can also be done with the following expression:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%tree.tiers}</code></pre>
+        </div>
+        <p>Which will return a collection of tiers. Check out the <span class="text-secondary">tier namespace</span> 
+        to know the data you can get out of this!</p>
+        <br>
+        <p>To obtain all the trees in a course:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTrees()}</code></pre>
+        </div>
+        <p>But you can obtain just a specific tree given its id</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTreeById(1)}</code></pre>
+        </div>
+        <p>or given its name</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{tree.getSkillTreeByName('Media Challenges')}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
 
     private function mockTree(int $id = null, string $name = null) : array
     {
@@ -31,8 +90,10 @@ class TreeLibrary extends Library
     private function mockTier() : array
     {
         return [
+            "id" => Core::dictionary()->faker()->numberBetween(0, 100),
             "name" => Core::dictionary()->faker()->text(5),
             "reward" => Core::dictionary()->faker()->numberBetween(200, 2000),
+            "isActive" => Core::dictionary()->faker()->boolean(),
             "skills" => array_map(function () {
                 return $this->mockSkill();
             }, range(1, Core::dictionary()->faker()->numberBetween(3, 7)))
@@ -46,20 +107,13 @@ class TreeLibrary extends Library
             "name" => Core::dictionary()->faker()->text(20),
             "color" => Core::dictionary()->faker()->hexColor(),
             "isCollab" => Core::dictionary()->faker()->boolean(),
+            "isExtra" => Core::dictionary()->faker()->boolean(),
+            "isActive" => Core::dictionary()->faker()->boolean(),
             "dependencies" => array_map(function () {
                 return ["name" => Core::dictionary()->faker()->text(20)];
             }, range(1, Core::dictionary()->faker()->numberBetween(0, 3)))
         ];
     }
-
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "tree";    // NOTE: must match the name of the class
-    const NAME = "Skill Tree";
-    const DESCRIPTION = "Provides access to information regarding skill trees.";
 
 
     /*** ----------------------------------------------- ***/
@@ -73,43 +127,50 @@ class TreeLibrary extends Library
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's id.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "tree.id(%tree)\nor (shorthand notation):\n%tree.id"
             ),
             new DFunction("name",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's name.",
                 ReturnType::TEXT,
-                $this
+                $this,
+                "tree.name(%tree)\nor (shorthand notation):\n%tree.name"
             ),
             new DFunction("maxReward",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's maximum reward.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "tree.maxReward(%tree)\nor (shorthand notation):\n%tree.maxReward"
             ),
             new DFunction("tiers",
                 [["name" => "skillTree", "optional" => false, "type" => "skillTree"]],
                 "Gets skill tree's tiers.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::TIERS_COLLECTION,
+                $this,
+                "tree.tiers(%tree)\nor (shorthand notation):\n%tree.tiers"
             ),
             new DFunction("getSkillTreeById",
                 [["name" => "skillTreeId", "optional" => false, "type" => "int"]],
                 "Gets a skill tree by its ID in the system.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "tree.getSkillTreeById(1)"
             ),
             new DFunction("getSkillTreeByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a skill tree by its name.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "tree.getSkillTreeByName('Media Challenges')"
             ),
             new DFunction("getSkillTrees",
                 [],
                 "Gets all skill trees of course.",
-                ReturnType::COLLECTION,
-                $this
+                ReturnType::TREES_COLLECTION,
+                $this,
+                "tree.getSkillTrees()"
             )
         ];
     }
@@ -131,7 +192,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $id = $skillTree["id"];
-        else $id = $skillTree->getId();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getId')) $id = $skillTree->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($id, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -146,7 +208,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $name = $skillTree["name"];
-        else $name = $skillTree->getName();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getName')) $name = $skillTree->getName();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($name, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -161,7 +224,8 @@ class TreeLibrary extends Library
     {
         // NOTE: on mock data, skill tree will be mocked
         if (is_array($skillTree)) $maxReward = $skillTree["maxReward"];
-        else $maxReward = $skillTree->getMaxReward();
+        elseif (is_object($skillTree) && method_exists($skillTree, 'getMaxReward')) $maxReward = $skillTree->getMaxReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
         return new ValueNode($maxReward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
@@ -174,12 +238,14 @@ class TreeLibrary extends Library
      */
     public function tiers($skillTree): ValueNode
     {
+        if (!is_array($skillTree)) throw new InvalidArgumentException("Invalid type for first argument: expected a tree.");
+
         if (Core::dictionary()->mockData()) {
             $tiers = $skillTree["tiers"];
 
         } else {
             $tiers = Tier::getTiersOfSkillTree($skillTree["id"]);
-        };
+        }
         return new ValueNode($tiers, Core::dictionary()->getLibraryById(TiersLibrary::ID));
     }
 

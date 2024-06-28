@@ -6,11 +6,12 @@ import {Variable} from "../variables/variable";
 import {Event} from "../events/event";
 import {buildView} from "../build-view/build-view";
 import {
+  addToGroupedChildren,
+  addVariantToGroupedChildren,
   getFakeId,
   groupedChildren,
-  viewTree,
   viewsAdded,
-  addVariantToGroupedChildren, addToGroupedChildren
+  viewTree
 } from "../build-view-tree/build-view-tree";
 import * as _ from "lodash"
 
@@ -268,8 +269,8 @@ export class ViewBlock extends View {
       visibilityType: obj.visibilityType,
       visibilityCondition: obj.visibilityCondition,
       loopData: obj.loopData,
-      variables: obj.variables.map(variable => Variable.toDatabase(variable)),
-      events: obj.events.map(event => Event.toDatabase(event)),
+      variables: obj.variables?.map(variable => Variable.toDatabase(variable)) ?? [],
+      events: obj.events?.map(event => Event.toDatabase(event)) ?? [],
       direction: obj.direction,
       columns: obj.columns,
       responsive: obj.responsive,

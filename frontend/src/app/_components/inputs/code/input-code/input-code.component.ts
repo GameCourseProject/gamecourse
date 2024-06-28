@@ -3,10 +3,11 @@ import {basicSetup, EditorView} from "codemirror";
 import {syntaxTree} from "@codemirror/language";
 import {SearchCursor} from "@codemirror/search";
 import {ThemingService} from "../../../../_services/theming/theming.service";
+import {Clipboard} from '@angular/cdk/clipboard';
 
 // THEMES
-import {oneDark} from "@codemirror/theme-one-dark";
-import {basicLight} from "cm6-theme-basic-light";
+import {githubLight} from '@ddietr/codemirror-themes/github-light'
+import {githubDark} from '@ddietr/codemirror-themes/github-dark'
 
 // @ts-ignore
 import {highlightTree} from '@codemirror/highlight';
@@ -34,7 +35,11 @@ import {javascript, javascriptLanguage} from "@codemirror/lang-javascript";
 import {UpdateService} from "../../../../_services/update.service";
 import {Reduce} from "../../../../_utils/lists/reduce";
 import {ApiHttpService} from "../../../../_services/api/api-http.service";
+import {HttpErrorResponse} from "@angular/common/http";
 import {AlertService, AlertType} from "../../../../_services/alert.service";
+
+import * as _ from "lodash";
+import {ViewEditorService} from "../../../../_services/view-editor.service";
 
 @Component({
   selector: 'app-input-code',
@@ -54,7 +59,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() helperPosition?: 'top' | 'bottom' | 'left' | 'right';  // Helper position
   @Input() showTabs?: boolean = true;                             // Boolean to show/hide tabs (this will only show content of first tab)
 
-  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab)[] = [
+  @Input() tabs?: ( CodeTab | OutputTab | ReferenceManualTab | PreviewTab | CookbookTab)[] = [
     { name: 'Code', type: "code", active: true, debug: true, mode: "python"},
     { name: 'Output', type: "output", active: false, running: false, debugOutput: false }];
 
@@ -62,7 +67,6 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   @Input() required?: boolean;                                    // Make it required
   // Errors
   @Input() requiredErrorMessage?: string;                         // Message for required error
-
 
   @Output() valueChange = new EventEmitter<string>();
   @Output() isCompleted = new EventEmitter<boolean>();
@@ -80,23 +84,30 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   // SEARCH AND FILTER
   // NOTE: Because there can only be 1 tab active at a time, we can take these variables as 'global' for the entire component
   reduce = new Reduce();
-  originalFunctions: CustomFunction[] = [];
-  functionsToShow: CustomFunction[] = [];
-  filteredFunctions: CustomFunction[] = [];
+  originalFunctions: { [name: string]: CustomFunction[] } = {};
+  filteredFunctions: { [name: string]: CustomFunction[] } = {};
+  namespaces: { [name: string]: string } = {};
+
+  // COOKBOOK
+  originalRecipes: CookbookRecipe[] = [];
+  filteredRecipes: CookbookRecipe[] = [];
+  selectedRecipe: CookbookRecipe = null;
 
   // REFERENCE MANUAL
-  namespaces: Set<string>;
   selectedFunction: CustomFunction = null;                       // Selected function to show information in reference manual
+  selectedNamespace: string = null;                              // Selected namespace to show information in reference manual
 
-  //selection: string
-
+  @Input() currentViewId?: number;
   expressionToPreview: string = "";
   outputPreview: any = null;
+  outputPreviewError: any = null;
 
   constructor(
     private themeService: ThemingService,
     private updateService: UpdateService,
-    private api: ApiHttpService
+    private api: ApiHttpService,
+    private clipboard: Clipboard,
+    public service: ViewEditorService
   ) { }
 
   /*** --------------------------------------------- ***/
@@ -110,10 +121,15 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
 
       if (this.tabs[i].type === 'code' || this.tabs[i].type === 'preview'){
         this.setUpKeywords((this.tabs[i] as CodeTab));
-
-      } else if (this.tabs[i].type === 'manual') {
-        this.filteredFunctions = (this.tabs[i] as ReferenceManualTab).customFunctions;
-        this.functionsToShow = (this.tabs[i] as ReferenceManualTab).customFunctions;
+      }
+      else if (this.tabs[i].type === 'manual') {
+        this.originalFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.filteredFunctions = this.groupBy((this.tabs[i] as ReferenceManualTab).customFunctions, 'name');
+        this.namespaces = (this.tabs[i] as ReferenceManualTab).namespaces;
+      }
+      else if (this.tabs[i].type === 'cookbook') {
+        this.originalRecipes = (this.tabs[i] as CookbookTab).documentation;
+        this.filteredRecipes = (this.tabs[i] as CookbookTab).documentation;
       }
     }
     this.views = views;
@@ -142,6 +158,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
           "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short",
           "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var",
           "void", "volatile", "while", "with", "yield"];
+        case "el": return ["true", "false", "%course", "%user", "%viewer", "%item"];
         default: return [];
       }
     }
@@ -201,7 +218,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     let query = tab.highlightQuery;
 
     // Initializes with the device's theme
-    const theme = this.themeService.getTheme() === 'dark' ? oneDark : basicLight;
+    const theme = this.themeService.getTheme() === 'dark' ? githubDark : githubLight;
 
     const wordHover = hoverTooltip((view, pos, side) => {
       let {from, to, text} = view.state.doc.lineAt(pos)
@@ -322,10 +339,10 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
             }
           },
           "&light .cm-tooltip-below" : {
-            backgroundColor: "#bec1c4 !important",
+            backgroundColor: "#dedfe1 !important",
           },
           " &light .cm-tooltip.cm-completionInfo": {
-            backgroundColor: "#bec1c4 !important"
+            backgroundColor: "#dedfe1 !important"
           },
           ".cm-completionInfo": {
             fontSize: "0.875rem",
@@ -548,9 +565,79 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Preview ------------------ ***/
+  /*** --------------------------------------------- ***/
+
   async previewExpression(tab: PreviewTab){
     (tab as PreviewTab).running = true;
 
+    const toPreview = this.formatExpressionToPreview();
+
+    try {
+      // Gets the tree, but only the path for the current view
+      const full = _.cloneDeep(this.service.getSelectedView());
+      let current = full.findView(this.currentViewId);
+      current.children = [];
+      let child = null;
+
+      while (current) {
+        const tempChild = {
+          id: current.id,
+          type: current.type,
+          variables: current.variables.map(e => ({ name: e.name, value: e.value })),
+          loopData: current.loopData,
+          children: child ? [child] : []
+        };
+
+        child = tempChild;
+        current = current.parent;
+      }
+
+      this.outputPreviewError = null;
+      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview, child).toPromise();
+    }
+    catch (err: unknown) {
+      this.outputPreview = null;
+      if (err instanceof HttpErrorResponse) {
+        // Hide alert since it will be in the console anyway
+        const alert = document.getElementById(AlertType.ERROR + '-alert');
+        alert.classList.add('hidden')
+
+        // Get only parts before stack trace, and replace \n with <br>
+        let errorMessage = err.error.text.split("Stack trace:")[0].replace(/\n/g, "<br>");
+
+        // Remove file path
+        const endIndex = errorMessage.lastIndexOf(" in ");
+        if (endIndex !== -1) {
+          errorMessage = errorMessage.substring(0, endIndex);
+        }
+
+        // Remove initial 'Fatal error: Uncaught Exception'
+        const startIndex = errorMessage.indexOf('<b>Fatal error</b>:  Uncaught Exception: ');
+        if (startIndex !== -1) {
+          errorMessage = errorMessage.substring(startIndex + '<b>Fatal error</b>:  Uncaught Exception: '.length).trim();
+        }
+
+        this.outputPreviewError = errorMessage.replace(/^((<br\s*\/?>)+)/, ''); // Trim leading <br> or <br /> tags
+      }
+    }
+
+    (tab as PreviewTab).running = false;
+  }
+
+  copyPreviewToClipboard() {
+    this.clipboard.copy(this.formatExpressionToPreview());
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  copyReferenceToClipboard() {
+    this.clipboard.copy("{ " + this.selectedFunction.name + "." + this.selectedFunction.keyword + "(" +
+      this.selectedFunction.args.map(e => e.name).join(", ") + ") }");
+    AlertService.showAlert(AlertType.INFO, "Expression copied to clipboard.");
+  }
+
+  formatExpressionToPreview(): string {
     let toPreview = this.expressionToPreview
       .replace(/#.*/g, '') // Remove comments
       .replace(/^\s*[\r\n]/gm, '') // Remove empty lines
@@ -561,36 +648,51 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     if (toPreview[0] != "{" && toPreview[toPreview.length - 1] != "}") {
       toPreview = `{${toPreview.trim()}}`;
     }
-
-    try {
-      this.outputPreview = await this.api.previewExpression(tab.courseId, toPreview).toPromise();
-    } catch {
-      AlertService.showAlert(AlertType.ERROR, "Something went wrong... You might want to check your expression.");
-    }
-
-    (tab as PreviewTab).running = false;
+    return toPreview;
   }
 
   /*** --------------------------------------------- ***/
   /*** -------------- Search & Filter -------------- ***/
   /*** --------------------------------------------- ***/
 
-  reduceList(query?: string): void {
-    this.reduce.search(this.originalFunctions, query);
-  }
+  groupBy(xs, key) {
+    return xs.reduce(function(rv, x) {
+      (rv[x[key]] = rv[x[key]] || []).push(x);
+      return rv;
+    }, {});
+  };
 
-  filterFunctions(searchQuery?: string) {
+  filterFunctions(searchQuery?: string): void {
     if (searchQuery) {
-      let functions: CustomFunction[] = [];
-      for (let i = 0; i < this.filteredFunctions.length; i++){
-        if (((this.filteredFunctions[i].keyword).toLowerCase()).includes(searchQuery.toLowerCase())) {
-          functions.push(this.filteredFunctions[i]);
+      this.filteredFunctions = {};
+      Object.keys(this.originalFunctions).forEach(namespace => {
+        const filteredFunctions = this.originalFunctions[namespace].filter(func => {
+          // Check if either the function name or keyword matches the search string
+          return func.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            func.keyword.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+        if (filteredFunctions.length > 0) {
+          this.filteredFunctions[namespace] = filteredFunctions;
         }
-      }
-      this.functionsToShow = functions;
+      });
     }
     else {
-      this.functionsToShow = this.filteredFunctions;
+      this.filteredFunctions = this.originalFunctions;
+    }
+  }
+
+  filterRecipes(searchQuery?: string) {
+    if (searchQuery) {
+      let functions: CookbookRecipe[] = [];
+      for (let i = 0; i < this.filteredRecipes.length; i++){
+        if (((this.filteredRecipes[i].name).toLowerCase()).includes(searchQuery.toLowerCase())) {
+          functions.push(this.filteredRecipes[i]);
+        }
+      }
+      this.filteredRecipes = functions;
+    }
+    else {
+      this.filteredRecipes = this.originalRecipes;
     }
   }
 
@@ -598,19 +700,20 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  getExampleParts(text: string){
-    text = '\n' + text;
-    return (text.split('\n>')).slice(1);
+  expand() {
+    this.size = this.size === 'lg' ? 'md' : 'lg';
   }
 
-  containsFunctions(namespace: string) {
-    let namespaces = this.functionsToShow.map(fx => fx.name);
-    return namespaces.includes(namespace)
+  isNamespaceSelected(name: string){
+    if (this.selectedNamespace !== null){
+      return this.selectedNamespace == name;
+    }
+    return false;
   }
 
-  isSelected(fx: CustomFunction){
+  isFunctionSelected(fx: CustomFunction){
     if (this.selectedFunction !== null){
-      return this.selectedFunction.keyword === fx.keyword;
+      return this.selectedFunction.keyword === fx.keyword && this.selectedFunction.name === fx.name;
     }
     return false;
   }
@@ -631,7 +734,7 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
   loadTheme() {
     for (let i = 0; i < this.tabs.length; i++){
       this.views[i].dispatch({
-        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? basicLight : oneDark)
+        effects: this.editorTheme.reconfigure(this.themeService.getTheme() === "light" ? githubLight : githubDark)
       });
     }
   }
@@ -640,8 +743,11 @@ export class InputCodeComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.tabs.length; i++){
       this.tabs[i].active = i === index;
     }
+    this.filteredFunctions = this.originalFunctions;
+    this.filteredRecipes = this.originalRecipes;
   }
 
+  protected readonly Object = Object;
 }
 
 export interface CodeTab {
@@ -666,7 +772,7 @@ export interface PreviewTab {
   debug: boolean,                                  // Allows debug to occur or not (in case of metadata should be false, for instance)
   highlightQuery?: string,                         // Text to highlight
   value?: string,                                  // Value on init
-  mode?: "python" | "javascript",                  // Type of code to write. E.g. python, javascript, ... NOTE: only python-lang and javascript-lang installed. Must install more packages for others
+  mode?: "el",                                     // Type of code to write.
   placeholder?: string,                            // Message to show by default
   nrLines?: number,                                // Number of lines already added to the editor. Default = 10 lines
   customKeywords?: string[],                       // Personalized keywords
@@ -688,13 +794,19 @@ export interface OutputTab {
   tooltip?: string,                          // Message to show by default
 }
 
-
 export interface ReferenceManualTab {
   name: string,                              // Name of the tab that will appear above
   type: "manual",                            // Specifies type of tab in editor
   active: boolean,                           // Indicates which tab is active (only one at a time!)
   customFunctions?: CustomFunction[],        // Personalized functions
-  namespaces?: string[]                      // Namespaces of functions
+  namespaces?: { [name: string]: string }    // Namespaces of functions
+}
+
+export interface CookbookTab {
+  name: string,                              // Name of the tab that will appear above
+  type: "cookbook",                          // Specifies type of tab in editor
+  active: boolean,                           // Indicates which tab is active (only one at a time!)
+  documentation?: CookbookRecipe[],          // Personalized documentation
 }
 
 export interface CustomFunction {
@@ -705,4 +817,9 @@ export interface CustomFunction {
   example?: string
   args: {name: string, optional: boolean, type: string, description: string}[],   // Arguments that each function receives
   returnType: string,                                     // Type of value it returns
+}
+
+export interface CookbookRecipe {
+  name: string,
+  content: string
 }

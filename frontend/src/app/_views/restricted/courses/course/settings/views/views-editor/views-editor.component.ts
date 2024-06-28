@@ -3,64 +3,54 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {ApiHttpService} from "../../../../../../../_services/api/api-http.service";
 import {Course} from "../../../../../../../_domain/courses/course";
 import {Page} from "src/app/_domain/views/pages/page";
-
 import {initPageToManage, PageManageData} from "../views/views.component";
-import { ViewType } from "src/app/_domain/views/view-types/view-type";
-import { trigger, style, animate, transition, group } from '@angular/animations';
-import { View, ViewMode } from "src/app/_domain/views/view";
-import { buildView } from "src/app/_domain/views/build-view/build-view";
-import * as _ from "lodash"
-import { ViewSelectionService } from "src/app/_services/view-selection.service";
-import { ModalService } from 'src/app/_services/modal.service';
-import { AlertService, AlertType } from "src/app/_services/alert.service";
-import { ViewBlock, ViewBlockDatabase } from "src/app/_domain/views/view-types/view-block";
-import { User } from "src/app/_domain/users/user";
-import { Aspect } from "src/app/_domain/views/aspects/aspect";
-import { buildViewTree, getFakeId, groupedChildren, initGroupedChildren, setGroupedChildren, viewsDeleted } from "src/app/_domain/views/build-view-tree/build-view-tree";
-import { Role } from "src/app/_domain/roles/role";
-import { Template } from "src/app/_domain/views/templates/template";
-import { ViewCollapse, ViewCollapseDatabase } from "src/app/_domain/views/view-types/view-collapse";
-import { ViewButtonDatabase, ViewButton } from "src/app/_domain/views/view-types/view-button";
-import { ViewChartDatabase, ViewChart } from "src/app/_domain/views/view-types/view-chart";
-import { ViewIconDatabase, ViewIcon } from "src/app/_domain/views/view-types/view-icon";
-import { ViewImageDatabase, ViewImage } from "src/app/_domain/views/view-types/view-image";
-import { ViewRowDatabase, ViewRow } from "src/app/_domain/views/view-types/view-row";
-import { ViewTableDatabase, ViewTable } from "src/app/_domain/views/view-types/view-table";
-import { ViewTextDatabase, ViewText } from "src/app/_domain/views/view-types/view-text";
-import html2canvas from "html2canvas";
-import { HistoryService } from "src/app/_services/history.service";
-import { ViewEditorService } from "src/app/_services/view-editor.service";
-import { Subscription } from "rxjs";
+import {ViewType} from "src/app/_domain/views/view-types/view-type";
+import {View, ViewMode} from "src/app/_domain/views/view";
+import {buildView} from "src/app/_domain/views/build-view/build-view";
+import * as _ from "lodash";
+import {ViewSelectionService} from "src/app/_services/view-selection.service";
+import {ModalService} from 'src/app/_services/modal.service';
+import {AlertService, AlertType} from "src/app/_services/alert.service";
+import {ViewBlock, ViewBlockDatabase} from "src/app/_domain/views/view-types/view-block";
+import {User} from "src/app/_domain/users/user";
+import {Aspect} from "src/app/_domain/views/aspects/aspect";
+import {
+  buildViewTree,
+  getFakeId,
+  groupedChildren,
+  initGroupedChildren,
+  setGroupedChildren, setViewsDeleted,
+  viewsDeleted
+} from "src/app/_domain/views/build-view-tree/build-view-tree";
+import {Role} from "src/app/_domain/roles/role";
+import {Template} from "src/app/_domain/views/templates/template";
+import {ViewCollapse, ViewCollapseDatabase} from "src/app/_domain/views/view-types/view-collapse";
+import {ViewButton, ViewButtonDatabase} from "src/app/_domain/views/view-types/view-button";
+import {ViewChart, ViewChartDatabase} from "src/app/_domain/views/view-types/view-chart";
+import {ViewIcon, ViewIconDatabase} from "src/app/_domain/views/view-types/view-icon";
+import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/view-image";
+import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
+import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
+import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
+import {HistoryService} from "src/app/_services/history.service";
+import {ViewEditorService} from "src/app/_services/view-editor.service";
+import {Subscription} from "rxjs";
+import {HttpErrorResponse} from "@angular/common/http";
+import {domToPng} from 'modern-screenshot'
+import {ErrorService} from "../../../../../../../_services/error.service";
 
 @Component({
   selector: 'app-views-editor',
   templateUrl: './views-editor.component.html',
-  animations: [
-    trigger('dropdownAnimation', [
-      transition(':enter', [
-        style({
-          transformOrigin: 'top',
-          transform: 'scaleY(0.95)',
-          opacity: 0,
-        }),
-        animate('70ms ease-out', style({ transform: 'scaleY(1)', opacity: 1 })),
-      ]),
-      transition(':leave', [
-        group([
-          animate('100ms ease-in', style({ opacity: 0 })),
-          animate('100ms ease-in', style({ transform: 'scaleY(0.95)' })),
-        ]),
-      ]),
-    ])
-  ], // FIXME: Could we move this to the scss?
+  styleUrls: ['./views-editor.component.scss']
 })
 export class ViewsEditorComponent implements OnInit, OnDestroy {
 
   loading = {
     page: true,
     components: true,
-    aspects: true,
-    action: false
+    action: false,
+    users: true
   };
 
   view: View;                                     // Full view tree of the page
@@ -70,12 +60,18 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   course: Course;                                 // Specific course in which page exists
   user: User;                                     // Logged in user
   page: Page;                                     // page where information will be saved
-  pageToManage: PageManageData;                   // NEW page where information will be saved
+  pageToManage: PageManageData;                   // NEW page where information will be saved, and also used for NEW template NAME
   template: Template;                             // template where information will be saved
+  templateNameToManage: string;                   // NEW template name
   coreTemplate: Template;                         // core template to view
 
   aspects: Aspect[];                              // Aspects saved
   manageAspects: boolean = false;
+
+  usersToPreview: { value: number, text: string }[];
+  viewersToPreview: { value: number, text: string }[];
+  userToPreview: number;
+  viewerToPreview: number;
 
   options: Option[];
   activeSubMenu: SubMenu;
@@ -89,7 +85,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   sharedTemplates: { id: number, name: string, sharedTimestamp: string, user: number, view: View }[];
 
   newComponentName: string;                       // Name for custom component to be saved
-  newTemplateName: string;                        // Name for custom template to be saved
   componentSettings: { id: number, top: number }; // Pop up for sharing/making private and deleting components
   templateSettings: { id: number, top: number };  // Pop up for sharing/making private and deleting templates
 
@@ -99,7 +94,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     {name: "By reference", char: "ref"},
     {name: "By value", char: "value"}
   ];
-  optionSelected: "ref" | "value" = null;
+  optionSelected: "ref" | "value" = null;         // mode of adding the Template
 
   _subscription: Subscription;
 
@@ -131,13 +126,11 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.route.params.subscribe(async childParams => {
         const prevSegment = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
-        this.selection.setRearrange(false);
 
         if (segment === 'new') {
           this.pageToManage = initPageToManage(courseID);
           this.service.selectedAspect = new Aspect(null, null);
           this.aspects = [this.service.selectedAspect];
-          this.loading.aspects = false;
           this.service.viewsByAspect = [{
             aspect: this.service.selectedAspect,
             view: buildView({
@@ -152,8 +145,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           this.view.switchMode(ViewMode.EDIT);
           initGroupedChildren([]);
           this.history.saveState({
-            viewsByAspect: this.service.viewsByAspect,
-            groupedChildren: groupedChildren
+            viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+            groupedChildren: groupedChildren,
+            viewsDeleted: viewsDeleted
           });
         }
         else {
@@ -166,6 +160,26 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.componentSettings = { id: null, top: null };
       this.templateSettings = { id: null, top: null };
       this.setOptions();
+    })
+
+    addEventListener('keydown', async (event: KeyboardEvent) => {
+      if (ModalService.isOpen("component-editor")) return;
+
+      if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
+        (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
+      {
+        event.preventDefault();
+        await this.doAction('Redo');
+      }
+      else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        await this.doAction('Undo');
+      }
+      else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
+        event.preventDefault();
+        if (this.page || this.template) { await this.saveChanges(); }
+        else if (this.pageToManage) { this.openSaveAsPageModal(); }
+      }
     })
   }
 
@@ -200,9 +214,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.service.rolesHierarchy = rolesHierarchySmart;
   }
 
-  async initView(id: number, templateType?: 'template' | 'system-template', keepAspect: boolean = false): Promise<void> {
-    this.loading.aspects = true;
-
+  async initView(id: number, templateType?: 'template' | 'system-template', aspect?: Aspect): Promise<void> {
     let data;
     if (!templateType) {
       this.page = await this.api.getPageById(id).toPromise();
@@ -218,7 +230,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       data = await this.api.renderCoreTemplateInEditor(this.coreTemplate.id, this.course.id).toPromise();
     }
     else {
-      AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+      AlertService.showAlert(AlertType.ERROR, 'Error: Couldn\'t identify as a valid template type (should be either system or custom)');
       return;
     }
 
@@ -226,28 +238,20 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     initGroupedChildren(data["viewTree"]);
 
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
-    if (!keepAspect) this.service.selectedAspect = this.aspects[0];
+
+    if (!aspect) this.service.selectedAspect = this.aspects[0];
+    else this.service.selectedAspect = aspect;
+
     this.sortAspects();
 
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
 
+    this.history.clear();
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
-    });
-
-    this.loading.aspects = false;
-  }
-
-  sortAspects() {
-    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
-      if (_.isEqual(a, new Aspect(null, null))) return -1;
-      else if (_.isEqual(b, new Aspect(null, null))) return 1;
-      else if (a.viewerRole == null && b.viewerRole != null) return 1;
-      else if (a.viewerRole != null && b.viewerRole == null) return -1;
-      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
-      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
   }
 
@@ -483,12 +487,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
             },
           ]
         }
-      },
-      {
-        icon: 'feather-move',
-        iconSelected: 'feather-move',
-        isSelected: false,
-        description: 'Rearrange'
       }
     ];
     this.loading.components = false;
@@ -504,9 +502,6 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.options[i] !== option && this.options[i].isSelected) {
         this.options[i].isSelected = false;
         this.resetMenus();
-        if (this.options[i].description == 'Rearrange') {
-          this.selection.setRearrange(false);
-        }
       }
     }
 
@@ -516,17 +511,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     // No menus active -> reset all
     if (!option.isSelected) {
       this.resetMenus();
-      if (option.description == 'Rearrange') {
-        this.selection.setRearrange(false);
-      }
-    }
-    else if (option.description == 'Rearrange') {
-      this.selection.setRearrange(true);
     }
 
     // since templates only have a submenu, switch that directly
     if (option.description === 'Choose Template') {
-      option.subMenu.isSelected ? this.resetMenus : this.triggerSubMenu(option.subMenu, 0);
+      if (option.subMenu.isSelected) this.resetMenus();
+      else this.triggerSubMenu(option.subMenu, 0);
     }
   }
 
@@ -556,9 +546,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   }
 
   addComponentToPage(item: View) {
+    const selected = this.selection.get();
+
     // Add child to the selected block
-    if (this.selection.get()?.type === ViewType.BLOCK) {
-      this.service.add(item, this.selection.get(), "value");
+    if (selected?.type === ViewType.BLOCK) {
+      this.service.add(item, selected, "value");
+    } else if (selected) {
+      this.service.add(item, selected.parent, "value");
     }
     // If the page is empty, need to add a block first
     else if (!this.service.getSelectedView()) {
@@ -584,13 +578,21 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.service.add(item, this.view, "value");
     }
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
     this.resetMenus();
   }
 
   addTemplateToPage(item: View) {
+    if (!this.optionSelected) {
+      AlertService.showAlert(AlertType.ERROR, "You must choose the way you want to add the template.");
+      return;
+    }
+
+    this.loading.action = true;
+
     // Add child to the selected block
     if (this.selection.get()?.type === ViewType.BLOCK) {
       this.service.add(item, this.selection.get(), this.optionSelected);
@@ -604,33 +606,36 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       this.service.add(item, this.view, this.optionSelected);
     }
     this.history.saveState({
-      viewsByAspect: this.service.viewsByAspect,
-      groupedChildren: groupedChildren
+      viewsByAspect: _.cloneDeep(this.service.viewsByAspect),
+      groupedChildren: groupedChildren,
+      viewsDeleted: viewsDeleted
     });
 
     this.optionSelected = null;
     ModalService.closeModal("add-template");
     this.resetMenus();
+
+    this.loading.action = false;
   }
 
-  async savePage() {
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+  async savePage(): Promise<void | "error"> {
+    AlertService.clear(AlertType.ERROR);
 
-    let image;
-    try {
-      image = await this.takeScreenshot();
-    } catch {
-      image = null;
+    if (!this.pageToManage.name) {
+      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+      return;
     }
-    await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise(); // FIXME null -> image
-    await this.closeConfirmed();
-    AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
-  }
 
-  async saveChanges() {
     this.loading.action = true;
 
-    const buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
+      this.loading.action = false;
+      return "error";
+    }
 
     let image;
     try {
@@ -638,62 +643,137 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     } catch {
       image = null;
     }
-    if (this.page) {
-      await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, image).toPromise();
-      this.history.clear();
-      await this.initView(this.page.id, null, true);
-      AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+
+    try {
+      const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
+      this.pageToManage = null;
+      const aspect = this.service.selectedAspect;
+      await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
+      await this.initView(pageId, null, aspect);
+
+      AlertService.showAlert(AlertType.SUCCESS, 'Page Created');
     }
-    else if (this.template) {
-      await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, image).toPromise();
-      this.history.clear();
-      await this.initView(this.template.id, "template", true);
-      AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
-    }
-    else {
-      AlertService.showAlert(AlertType.ERROR, 'Something went wrong...');
+    catch (e) {
+      this.recoverFromFail();
+      ModalService.closeModal('save-page');
+      this.loading.action = false;
+      return "error";
     }
 
     this.loading.action = false;
   }
 
-  async takeScreenshot() {
-    return await html2canvas(document.querySelector("#capture")).then(canvas => {
-      return canvas.toDataURL('image/png');
-    });
+  async saveChanges(): Promise<void | "error"> {
+    AlertService.clear(AlertType.ERROR);
+
+    if (this.page && !this.page.name) {
+      AlertService.showAlert(AlertType.ERROR, "The page must have a name.");
+      return;
+    } else if (this.template && !this.template.name) {
+      AlertService.showAlert(AlertType.ERROR, "The template must have a name.")
+      return;
+    }
+
+    this.loading.action = true;
+
+    let buildedTree;
+    try {
+      buildedTree = buildViewTree(this.service.viewsByAspect.map((e) => e.view));
+    } catch (e) {
+      AlertService.showAlert(AlertType.ERROR, "Error: Something went wrong while building the tree to be saved. This is most likely a bug. Contact an admin or try a different page.");
+      this.loading.action = false;
+      return "error";
+    }
+
+    let image;
+    try {
+      image = await this.takeScreenshot();
+    } catch {
+      image = null;
+    }
+
+    try {
+      if (this.page) {
+        await this.api.savePageChanges(this.course.id, this.page.id, buildedTree, viewsDeleted, this.page.name, image).toPromise();
+        await this.initView(this.page.id, null, this.service.selectedAspect);
+        AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+      }
+      else if (this.template) {
+        await this.api.saveTemplateChanges(this.course.id, this.template.id, buildedTree, viewsDeleted, this.template.name, image).toPromise();
+        await this.initView(this.template.id, "template", this.service.selectedAspect);
+        AlertService.showAlert(AlertType.SUCCESS, 'Changes Saved');
+      }
+      else {
+        AlertService.showAlert(AlertType.ERROR, 'Error: Couldn\'t detect if this is a page or a template');
+      }
+
+      this.loading.action = false;
+    }
+    catch (e) {
+      this.recoverFromFail();
+      this.loading.action = false;
+      return "error";
+    }
+
   }
 
+  async takeScreenshot() {
+    return await domToPng(document.querySelector("#capture"))
+      .then(dataURL => {
+        return dataURL;
+      });
+  }
+
+  // ---------------------------------------------------------------
   // Aspects -------------------------------------------------------
+  // ---------------------------------------------------------------
+
+  sortAspects() {
+    this.aspects = this.service.viewsByAspect.map((e) => e.aspect).sort((a, b) => {
+      if (_.isEqual(a, new Aspect(null, null))) return -1;
+      else if (_.isEqual(b, new Aspect(null, null))) return 1;
+      else if (a.viewerRole == null && b.viewerRole != null) return 1;
+      else if (a.viewerRole != null && b.viewerRole == null) return -1;
+      else if (a.viewerRole != b.viewerRole) return this.service.isMoreSpecific(a.viewerRole, b.viewerRole) ? 1 : -1;
+      else return !this.service.isMoreSpecific(a.userRole, b.userRole) ? -1 : 1;
+    });
+  }
 
   discardAspects() {
     this.manageAspects = false;
   }
 
   saveAspects() {
-    this.loading.aspects = true;
-
     this.aspects = this.service.viewsByAspect.map((e) => e.aspect);
     this.view = this.service.getSelectedView();
     if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
     this.previewMode = 'raw';
 
     this.sortAspects();
-
-    this.loading.aspects = false;
+    this.selection.clear();
   }
 
   switchToAspect(aspect: Aspect) {
     this.service.selectedAspect = aspect;
     this.view = this.service.getSelectedView();
-    if (this.view && this.editable) this.view.switchMode(ViewMode.EDIT);
+
+    if (this.view && this.editable) {
+      this.view.switchMode(ViewMode.EDIT);
+      this.previewMode = 'raw';
+    }
+
     this.manageAspects = false;
+    this.selection.clear();
   }
 
   aspectIsSelected(aspect: Aspect) {
     return _.isEqual(this.service.selectedAspect, aspect);
   }
 
+
+  // ----------------------------------------------------------------
   // Components -----------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveComponent() {
     let component = _.cloneDeep(this.selection.get());
@@ -713,7 +793,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     await this.api.saveCustomComponent(this.course.id, this.newComponentName, buildComponent(component)).toPromise();
-    ModalService.closeModal('save-as-component');
+    ModalService.closeModal('save-component');
     AlertService.showAlert(AlertType.SUCCESS, 'Component saved successfully!');
     this.resetMenus();
     await this.getComponents();
@@ -751,18 +831,41 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Templates --------------------------------------------------------
+  // ----------------------------------------------------------------
+  // Templates ------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async saveTemplate() {
+    if ((this.pageToManage && !this.pageToManage.name) || (!this.pageToManage && !this.templateNameToManage)) {
+      AlertService.showAlert(AlertType.ERROR, "The template must have a name.");
+      return;
+    }
+
+    this.loading.action = true;
+
     let image;
     try {
       image = await this.takeScreenshot();
     } catch {
       image = null;
     }
-    await this.api.saveCustomTemplate(this.course.id, this.newTemplateName, buildViewTree([this.view]), image).toPromise();
-    await this.closeConfirmed();
-    AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+
+    try {
+      await this.api.saveCustomTemplate(
+        this.course.id,
+        this.pageToManage ? this.pageToManage.name : this.templateNameToManage,
+        buildViewTree([this.view]),
+        image
+      ).toPromise();
+      await this.closeConfirmed();
+      AlertService.showAlert(AlertType.SUCCESS, 'Template saved successfully!');
+    }
+    catch {
+      this.recoverFromFail();
+      ModalService.closeModal('save-template');
+    }
+
+    this.loading.action = false;
   }
 
   async shareTemplate() {
@@ -795,7 +898,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ----------------------------------------------------------------
   // Previews -------------------------------------------------------
+  // ----------------------------------------------------------------
 
   async doAction(action: string): Promise<void>{
     if (action === 'Manage Versions') {
@@ -807,6 +912,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         const res = this.history.undo();
         this.service.viewsByAspect = res.viewsByAspect;
         setGroupedChildren(res.groupedChildren);
+        setViewsDeleted(res.viewsByAspect);
+
         this.view = this.service.getSelectedView();
       }
     }
@@ -815,6 +922,8 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         const res = this.history.redo();
         this.service.viewsByAspect = res.viewsByAspect;
         setGroupedChildren(res.groupedChildren);
+        setViewsDeleted(res.viewsByAspect);
+
         this.view = this.service.getSelectedView();
       }
     }
@@ -830,27 +939,167 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       if (this.page) {
         this.previewMode = 'mock';
         if (this.history.hasUndo()) {
-          ModalService.openModal('save-before-preview')
-        } else this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+          AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
+          ModalService.openModal('save-before-preview');
+        } else {
+          await this.previewWithMockData();
+        }
+      }
+      else if (this.pageToManage) {
+        this.previewMode = 'mock';
+        ModalService.openModal('save-new-before-preview');
+      }
+    }
+    else if (action === 'Final preview (real data)') {
+      if (this.page) {
+        this.previewMode = 'real';
+        if (this.history.hasUndo()) {
+          AlertService.clear(AlertType.ERROR);
+          ErrorService.clearView();
+          ModalService.openModal('save-before-preview');
+        }
+        else {
+          await this.selectUsersToPreview();
+        }
+      }
+      else if (this.pageToManage) {
+        this.previewMode = 'real';
+        AlertService.clear(AlertType.ERROR);
+        ErrorService.clearView();
+        ModalService.openModal('save-new-before-preview');
       }
     }
   }
 
   async saveBeforePreview() {
     if (this.page) {
-      await this.saveChanges();
-      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
-      ModalService.closeModal('save-before-preview')
+      this.loading.action = true;
+
+      const res = await this.saveChanges();
+
+      if (res === "error") {
+        this.previewMode = "raw";
+        ModalService.closeModal('save-before-preview');
+        return;
+      }
+
+      if (this.previewMode === 'mock') {
+        await this.previewWithMockData();
+        ModalService.closeModal('save-before-preview');
+      }
+      else if (this.previewMode === 'real') {
+        ModalService.closeModal('save-before-preview');
+        await this.selectUsersToPreview();
+      }
+    }
+
+    else if (this.pageToManage) {
+      this.loading.action = true;
+
+      const res = await this.savePage();
+
+      if (res === "error") {
+        this.previewMode = "raw";
+        ModalService.closeModal('save-new-before-preview');
+        return;
+      }
+
+      if (this.previewMode === 'mock') {
+        await this.previewWithMockData();
+      } else if (this.previewMode === 'real') {
+        await this.selectUsersToPreview();
+      }
     }
   }
 
   cancelPreview() {
     this.previewMode = "raw";
+    this.loading.users = true;
   }
+
+  async selectUsersToPreview() {
+    await this.getViewersToPreview();
+    await this.getUsersToPreview();
+    this.loading.users = false;
+
+    if (!this.viewerToPreview)
+      this.viewerToPreview = this.viewersToPreview.find(e => e.value == this.user.id)?.value;
+
+    if (!this.userToPreview)
+      this.userToPreview = this.usersToPreview.find(e => e.value == this.user.id)?.value;
+
+    AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
+    ModalService.openModal('preview-as');
+  }
+
+  async getViewersToPreview() {
+    let res;
+    if (this.service.selectedAspect.viewerRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.viewerRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.viewersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async getUsersToPreview() {
+    let res;
+    if (this.service.selectedAspect.userRole) {
+      res = await this.api.getCourseUsersWithRole(this.course.id, this.service.selectedAspect.userRole, true).toPromise();
+    } else {
+      res = await this.api.getCourseUsers(this.course.id, true).toPromise();
+    }
+    this.usersToPreview = res.map(e => { return { value: e.id, text: e.name } });
+  }
+
+  async previewWithRealData() {
+    if (!this.viewerToPreview || !this.userToPreview) {
+      AlertService.showAlert(AlertType.ERROR, "Both user fields are required.");
+      return;
+    }
+
+    this.loading.action = true;
+    try {
+      this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
+    }
+    catch (err) {
+      if (!(err instanceof HttpErrorResponse)) AlertService.showAlert(AlertType.ERROR, err);
+      this.previewMode = "raw";
+    }
+    this.loading.action = false;
+    ModalService.closeModal('preview-as');
+  }
+
+  async previewWithMockData() {
+    AlertService.clear(AlertType.ERROR);
+    ErrorService.clearView();
+
+    this.loading.action = true;
+    try {
+      this.view = await this.api.renderPageWithMockData(this.page.id, this.service.selectedAspect).toPromise();
+    }
+    catch (err) {
+      if (!(err instanceof HttpErrorResponse)) AlertService.showAlert(AlertType.ERROR, err);
+      this.previewMode = "raw";
+    }
+    this.loading.action = false;
+  }
+
 
   /*** --------------------------------------------- ***/
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
+
+  recoverFromFail() {
+    const backup = this.history.getMostRecent();
+    this.service.viewsByAspect = backup.viewsByAspect;
+    setGroupedChildren(backup.groupedChildren);
+    setViewsDeleted(backup.viewsByAspect);
+
+    this.view = this.service.getSelectedView();
+  }
 
   get ViewType(): typeof ViewType {
     return ViewType;
@@ -909,6 +1158,10 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   openAddTemplateModal(item: any) {
     this.templateToAdd = item;
     ModalService.openModal('add-template');
+  }
+
+  discardAddTemplate() {
+    this.optionSelected = null;
   }
 
   openSaveAsPageModal() {

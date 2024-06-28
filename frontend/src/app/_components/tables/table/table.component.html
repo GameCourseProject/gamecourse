@@ -7,7 +7,7 @@
 
       <!-- Table: header -->
       <thead>
-        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-neutral/75 bg-base-200">
+        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-base-content/75 bg-base-200">
           <th *ngFor="let header of headers" class="whitespace-nowrap px-4 py-3 !border-b-2 !border-b-base-content !border-opacity-20 {{getAlign(header.align)}}">
             {{header.label}}
           </th>
@@ -26,7 +26,7 @@
 
       <!-- Table: footer -->
       <tfoot *ngIf="hasFooters">
-        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-neutral/75 border-b bg-base-200">
+        <tr class="text-xs font-semibold tracking-wide text-left uppercase text-base-content/75 border-b bg-base-200">
           <th *ngFor="let footer of footers; let i = index" class="whitespace-nowrap px-4 py-3 !border-t !border-t-base-content !border-opacity-20 {{getAlign(headers[i].align)}}">
             {{footer}}
           </th>

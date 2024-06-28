@@ -1,69 +1,38 @@
-<ng-container *ngIf="!loading">
-  <!-- Search -->
-  <div class="search">
-    <input type="text" id="search_input" placeholder="Search.." name="search" [(ngModel)]="searchQuery" (ngModelChange)="reduceList(searchQuery)">
-    <button class="magnifying-glass" id="search-btn" (click)="reduceList(searchQuery)"></button>
-  </div>
+<div class="w-full relative">
 
-  <!-- Action buttons -->
-  <div class="action-buttons ng-scope" id="install_modules">
-    <div class="icon import_icon" title="Import" (click)="isImportModalOpen = true"></div>
-    <div class="icon export_icon" title="Export" (click)="exportModules()"></div>
-  </div>
+  <!-- Header -->
+  <app-header [title]="'Installed Modules'" [icon]="'tabler-plug'" [loading]="loading"></app-header>
+
+  <!-- Search -->
+  <app-input-search
+    [id]="'module-search'"
+    [items]="modules"
+    [classList]="'lg:w-1/2 mx-auto'"
+    (onSearch)="filteredModules = $event">
+  </app-input-search>
 
   <!-- Modules -->
-  <div id="modules">
-    <div *ngFor="let module of reduce.items" class="module_card">
-      <div class="icon" [style.backgroundImage]="'url(' + module.icon + ')'"></div>
-      <div class="header">{{module.name}}</div>
-      <div class="text">
-        {{module.description}}
-        <span class="version">v{{module.version}}</span>
-      </div>
-      <div class="status" [ngClass]="{'compatible': isCompatible(module), 'incompatible': !isCompatible(module)}">
-        {{isCompatible(module) ? 'Compatible' : 'Incompatible ' + getIncompatibleString(module)}}
-        <div class="background"></div>
-      </div>
-    </div>
+  <div *ngFor="let type of objectKeys(modulesTypes)">
+    <app-header [subHeader]="true" [title]="modulesTypes[type]" [classList]="'mt-10'"></app-header>
 
-    <div *ngIf="reduce.items.length === 0" class="error_box">
-      <div id="empty_search" class="error_msg">No matches found</div>
+    <div class="flex flex-wrap -mx-4">
+
+      <ng-container *ngIf="!loading">
+        <div *ngFor="let module of filterModules(type | as : $any(ModuleType))"
+             class="sm:w-1/2 xl:w-1/3 2xl:w-1/4 w-full p-4">
+          <app-installed-module-card [module]="module"></app-installed-module-card>
+        </div>
+        <span *ngIf="filterModules(type | as : $any(ModuleType)).length === 0" class="text-error px-4">No modules of type</span>
+      </ng-container>
+
+      <!-- Modules Skeleton -->
+      <ng-container *ngIf="loading">
+        <div *ngFor="let placeholder of [1, 2, 3, 4, 5]" class="lg:w-1/3 sm:w-1/2 w-full p-4">
+          <app-course-skeleton></app-course-skeleton>
+        </div>
+      </ng-container>
+
     </div>
   </div>
-</ng-container>
 
-<!-- Loader -->
-<div *ngIf="loading" id="page-loading">
-  <img src="assets/loader/loader.gif" alt="loader">
 </div>
-
-
-<!-- Import Modal -->
-<ng-container *ngIf="isImportModalOpen">
-<!--  <app-modal-->
-<!--    [isOpen]="isImportModalOpen"-->
-<!--    [id]="'import-module'"-->
-<!--    [templateRef]="importModal"-->
-<!--    (closeBtnClicked)="isImportModalOpen = false"-->
-<!--    [actionInProgress]="saving"-->
-<!--    [innerClickEvents]="false"-->
-<!--    [classList]="'verification'">-->
-<!--  </app-modal>-->
-</ng-container>
-
-<ng-template #importModal>
-
-  <div class="warning">Please select a .zip file to be imported</div>
-  <div class="target">Be sure you followed the <a [routerLink]="'/docs/modules'" target="_blank">module guidelines</a></div>
-  <div class="target">If importing a module with an existing name, it will be replaced.</div>
-  <app-input-file
-    [id]="'import_module'"
-    [accept]="['.zip']"
-    [classList]="'config_input'"
-    (valueChange)="onFileSelected($event)">
-  </app-input-file>
-  <div class="confirmation_btns">
-    <button (click)="importModule()">Install New Module</button>
-  </div>
-
-</ng-template>

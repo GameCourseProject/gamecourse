@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use GameCourse\Views\Page\Page;
+use InvalidArgumentException;
 
 class PagesLibrary extends Library
 {
@@ -34,13 +35,15 @@ class PagesLibrary extends Library
                 [["name" => "page", "optional" => false, "type" => "Page"]],
                 "Gets a given page's ID in the system.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "pages.id(%page)\nor (shorthand notation):\n%page.id"
             ),
             new DFunction("getPageByName",
                 [["name" => "name", "optional" => false, "type" => "string"]],
                 "Gets a page by its name.",
                 ReturnType::OBJECT,
-                $this
+                $this,
+                "pages.getPageByName('Streaks')"
             )
         ];
     }
@@ -61,7 +64,8 @@ class PagesLibrary extends Library
     {
         // NOTE: on mock data, page will be mocked
         if (is_array($page)) $pageId = $page["id"];
-        else $pageId = $page->getId();
+        elseif (is_object($page) && method_exists($page, 'getId')) $pageId = $page->getId();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a page.");
         return new ValueNode($pageId, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 

@@ -25,6 +25,61 @@ class CollectionLibrary extends Library
 
 
     /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>Collections are, as the name suggests, groups of multiple items. All of those items should, however, be of the same type.
+        An example of a collection could be:</p>
+        <div class="bg-base-100 rounded-box px-4 py-2 my-2">
+          <pre><code>
+            {
+              "id": 1,
+              "name": "Mary",
+              "major": "MEIC"
+            },
+            {
+              "id": 2,
+              "name": "John",
+              "major": "MEIC"
+            },
+            {
+              "id": 3,
+              "name": "Jane",
+              "major": null
+            }
+          </code></pre>
+        </div><br>
+        <p>Other namespaces, such as <span class="text text-primary">users</span>, have functions that return a collection, such as
+        <span class="text-secondary">getStudents</span>. Thus, while this namespace can be used alone, it is mostly used to
+        manipulate and retrieve information from existing collections.</p><br>
+        <p>Going back to the previous example, assuming that the collection is saved in the variable 
+        <span class="text-secondary">%collection</span>, the expression:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%collection.item(0)}</code></pre>
+        </div>
+        would return
+        <div class="bg-base-100 rounded-box px-4 py-2 my-2">
+          <pre><code>
+            {
+              "id": 1,
+              "name": "Mary",
+              "major": "MEIC"
+            }
+          </code></pre>
+        </div><br>
+        <p>Another useful utility is to sort a collection, for example:</p>
+        <div class="bg-base-100 rounded-box p-4 my-2">
+          <pre><code>{%collection.sort("DESC: name")}</code></pre>
+        </div>
+        HTML;
+    }
+
+
+
+    /*** ----------------------------------------------- ***/
     /*** ------------------ Functions ------------------ ***/
     /*** ----------------------------------------------- ***/
 
@@ -36,7 +91,8 @@ class CollectionLibrary extends Library
                  ["name" => "index", "optional" => false, "type" => "int"]],
                 "Gets a given collection's item on a specific index.",
                 ReturnType::MIXED,
-                $this
+                $this,
+                "collection.item(%students, 0)\nor (shorthand notation):\n%students.item(0)"
             ),
             new DFunction("index",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
@@ -44,20 +100,33 @@ class CollectionLibrary extends Library
                     ["name" => "key", "optional" => true, "type" => "string"]],
                 "Gets the index of an item on a given collection. For items that are not basic types like text, numbers, etc., a search key should be given.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "collection.index(%students, %viewer, \"id\")\nor (shorthand notation):\n%students.index(%viewer, \"id\")"
             ),
             new DFunction("count",
                 [[ "name" => "collection", "optional" => false, "type" => "array"]],
                 "Counts the number of elements in a given collection.",
                 ReturnType::NUMBER,
-                $this
+                $this,
+                "collection.count(%students)\nor (shorthand notation):\n%students.count"
             ),
             new DFunction("sort",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
                  ["name" => "orderKeyPairs", "optional" => true, "type" => "string"]],
                 "Sorts a given collection. Order key pairs format: 'order: param'. Order options: 'ASC', 'DESC', 'asc', 'desc', 'ascending', 'descending'.",
             ReturnType::COLLECTION,
-                $this
+                $this,
+                "collection.sort(%userAwards, \"DESC: date\")\nor (shorthand notation):\n%userAwards.sort(\"DESC: date\")"
+            ),
+            new DFunction("filter",
+                [[ "name" => "collection", "optional" => false, "type" => "array"],
+                 ["name" => "key", "optional" => false, "type" => "string"],
+                 ["name" => "value", "optional" => false, "type" => "string"],
+                 ["name" => "operation", "optional" => false, "type" => "'=' | '!=' | '<' | '>'"]],
+                "Returns the collection only with objects that have the variable key that satisfy the operation with a specific value.",
+            ReturnType::COLLECTION,
+                $this,
+                "collection.filter(%userAwards, \"reward\", \"100\", \">\")\nor (shorthand notation):\n%userAwards.filter(\"reward\", \"100\", \">\")\n\nReturns the items of the collection %userAwards that have a reward higher than 100."
             ),
             new DFunction("crop",
                 [[ "name" => "collection", "optional" => false, "type" => "array"],
@@ -65,7 +134,8 @@ class CollectionLibrary extends Library
                  ["name" => "end", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning items between start and end indexes.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "collection.crop(%userAwards, 0, 10)\nor (shorthand notation):\n%userAwards.crop(0, 10)\n\nReturns only the first 10 items of the %userAwards collection."
             ),
             new DFunction("getKNeighbors",
                 [["name" => "collection", "optional" => false, "type" => "array"],
@@ -73,13 +143,16 @@ class CollectionLibrary extends Library
                  ["name" => "k", "optional" => false, "type" => "int"]],
                 "Crops a given collection by only returning an item and its K neighbors.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "collection.getKNeighbors(%students, %students.index(%viewer, \"id\"), 10)\nor (shorthand notation):\n%students.getKNeighbors(%students.index(%viewer, \"id\"), 3)"
             ),
             new DFunction("generate",
                 [["name" => "size", "optional" => false, "type" => "int"]],
-                "Generates a collection of given size.",
+                "Generates a collection of given size. This is useful when you want to repeat a component in a page 
+                a given number of times, with no interest in the actual content of each item.",
                 ReturnType::COLLECTION,
-                $this
+                $this,
+                "collection.generate(5)"
             )
         ];
     }
@@ -240,6 +313,31 @@ class CollectionLibrary extends Library
             });
         }
 
+        return new ValueNode($collection, $this);
+    }
+
+    /**
+     * Returns the collection only with objects that have the variable key that satisfy the operation with a specific value.
+     *
+     * @param array $collection
+     * @param string $orderKeyPairs
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function filter(array $collection, string $key, string $value, string $operation = "=" | "!=" | "<" | ">"): ValueNode
+    {
+        $filter =
+            function($var) use ($key, $value, $operation) {
+                if (!isset($var[$key])) $this->throwError("filter", "key '" . $key . "' doesn't exist in the collection items");
+
+                if ($operation == '=') return $var[$key] == $value;
+                else if ($operation == '!=') return $var[$key] != $value;
+                else if ($operation == '<') return $var[$key] < $value;
+                else if ($operation == '>') return $var[$key] > $value;
+                else $this->throwError("filter", "operation '" . $operation . "' invalid: must be '=', '<' or '>'");
+            };
+
+        $collection = array_filter($collection, $filter);
         return new ValueNode($collection, $this);
     }
 
