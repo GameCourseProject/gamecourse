@@ -5,10 +5,12 @@ import { SettingsRoutingModule } from './settings-routing.module';
 import { SharedModule } from "../../../shared.module";
 
 import { ModulesComponent } from './modules/modules.component';
+import {ThemesComponent} from "./themes/themes.component";
 
 @NgModule({
   declarations: [
-     ModulesComponent,
+    ModulesComponent,
+    ThemesComponent
   ],
     imports: [
       CommonModule,

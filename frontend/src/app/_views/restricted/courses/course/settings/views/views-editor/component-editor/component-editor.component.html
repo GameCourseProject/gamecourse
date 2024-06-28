@@ -1,4 +1,4 @@
-<div class="text-left text-wrap whitespace-normal font-normal text-base">
+<div class="text-left text-wrap whitespace-normal font-normal text-base text-base-content">
   <div class="alert alert-info shadow-md mb-4 text-sm font-normal" *ngIf="view.parent && view.parent.type !== ViewType.ROW && higherInHierarchy.length > 0">
     <ng-icon name="feather-info" size="1.5rem" color="fillCurrent"></ng-icon>
     <div class="flex flex-col items-start">
@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <div class="text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
+  <div class="not-prose text-xs {{viewToEdit.type === ViewType.TABLE ? 'pb-4' : ''}}" *ngIf="!saveButton"> <!-- no need to repeat in cells or rows -->
     <p>You can either write ordinary text or write expressions to define the fields.
       To write expressions, make sure you encapsulate them with curly brackets: <span class="font-semibold text-info">{{ '{' }} {{ '}' }}</span></p>
     <p *ngIf="viewToEdit.type !== ViewType.TABLE || tableSelectedTab == 'Overall'">For more information check the <span class="link link-secondary" (click)="scroll()">Additional Tools</span>.</p>
@@ -45,7 +45,7 @@
     <div class="w-full flex flex-col" *ngIf="!saveButton || viewToEdit.type === ViewType.ROW">
       <!-- Data Iteration -->
       <app-input-text
-        [disabled]="!view.parent"
+        [disabled]="!view.parent || view.parent.type === ViewType.ROW"
         [id]="'data-iter'"
         [(value)]="viewToEdit.loopData"
         [topLabel]="'Repeat this component for every item in'"
@@ -55,12 +55,15 @@
         [helperPosition]="'right'"
         [placeholder]="'e.g. {tree.getSkillTrees()}'"
       ></app-input-text>
-      <span class="text-xs pl-1 mt-1" *ngIf="view.parent">
+      <span *ngIf="view.parent && view.parent.type !== ViewType.ROW" class="text-xs pl-1 mt-1">
         You can access each item with <span class="text-secondary">%item</span>.
       </span>
+      <div *ngIf="view.parent && view.parent.type === ViewType.ROW" class="text-warning text-xs pl-1 mt-1">
+        This field is not available in a cell of a Table. Repeat the Row instead.
+      </div>
     </div>
   </div>
-  <div *ngIf="!view.parent" class="text-warning text-xs mt-1 mb-2 pl-1">
+  <div *ngIf="!view.parent" class="text-warning text-xs pl-1 mt-1 mb-2">
     The fields above are not available in the root of a page/template.
   </div>
 
@@ -359,8 +362,7 @@
   </div>
 
   <!-- Variables -->
-  <div class="flex flex-col gap-2 mb-5">
-
+  <div class="flex flex-col gap-2 mb-5 not-prose">
     <!-- Globals -->
     <form autocomplete="off">
       <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
@@ -376,7 +378,6 @@
         </div>
       </div>
     </form>
-
     <!-- Inherited -->
     <form autocomplete="off">
       <div class="collapse collapse-arrow border-base-300 bg-base-200 border-2 rounded-xl">
@@ -395,7 +396,6 @@
         </div>
       </div>
     </form>
-
     <!-- Existing -->
     <div *ngFor="let variable of viewToEdit.variables; index as i">
       <app-aux-var-card [variable]="variable" (deleteEvent)="deleteAuxVar(i)" (updateEvent)="updateAuxVar($event, i)"/>
@@ -433,7 +433,7 @@
   <div class="prose mb-4">
     <h3 class="flex gap-2 items-center"><ng-icon name="tabler-tools" size="1.5rem"/>Additional Tools</h3>
   </div>
-  <div class="w-full overflow-x-auto {{ viewToEdit.type === ViewType.ROW ? 'pb-8' : 'pb-2' }}">
+  <div class="w-full overflow-x-auto {{ viewToEdit.type === ViewType.ROW ? 'pb-8' : 'pb-2' }} not-prose">
     <app-input-code
       *ngIf="additionalToolsTabs"
       [id]="'component-tools'"
