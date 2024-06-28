@@ -19,23 +19,24 @@
       {{view.type.capitalize()}}
     </div>
     <!-- Actions -->
-    <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}}
+    <div class="dropdown dropdown-bottom dropdown-end {{isSelected() ? 'flex' : 'hidden'}} text-base
                 absolute -top-4 -right-3 bg-secondary rounded-full h-7 w-7 justify-center items-center z-30
                 hover:cursor-pointer hover:bg-secondary-focus transition-all text-secondary-content"
          (click)="onRightClick($event)">
       <ng-icon tabindex="0" name="tabler-dots-vertical"/>
     </div>
     <!-- Repeat Indicator -->
-    <div *ngIf="view.loopData" class="z-30 absolute top-3 -right-3 h-7 w-7 rounded-full flex justify-center items-center
-         bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words before:whitespace-normal"
-         [attr.data-tip]="view.type.capitalize() + ' repeats for each item in ' + view.loopData">
+    <div *ngIf="view.loopData" class="z-30 absolute top-3 -right-3 h-7 w-7 rounded-full flex justify-center items-center text-base text-neutral bg-neutral/20
+         tooltip {{view.type === ViewType.BLOCK || view.type === ViewType.COLLAPSE || view.type === ViewType.TABLE ? 'tooltip-left' : 'tooltip-bottom before:max-w-[13rem]'}} before:w-fit
+         before:content-[attr(data-tip)] before:text-xs before:break-words before:whitespace-normal"
+         [attr.data-tip]="view.type.capitalize() + ' repeats for each item in\n' + view.loopData">
       <ng-icon tabindex="0" name="feather-repeat"/>
     </div>
     <!-- Repeat Indicator for Table Rows -->
     <ng-container *ngIf="view.type === ViewType.TABLE">
       <ng-container *ngFor="let row of $any(view).bodyRows">
-        <div *ngIf="row.loopData" class="z-30 absolute top-10 -right-3 h-7 w-7 rounded-full flex justify-center items-center
-             bg-neutral/50 text-neutral-content tooltip tooltip-left before:w-[8rem] before:content-[attr(data-tip)] before:text-left before:text-xs before:break-words before:whitespace-normal"
+        <div *ngIf="row.loopData" class="z-30 absolute top-10 -right-3 h-7 w-7 rounded-full flex justify-center items-center text-base text-neutral bg-neutral/20
+             tooltip tooltip-left before:content-[attr(data-tip)] before:text-xs before:break-words before:whitespace-normal before:w-fit"
              [attr.data-tip]="'Row repeats for each item in ' + row.loopData">
           <ng-icon tabindex="0" name="feather-repeat"/>
         </div>
@@ -71,12 +72,32 @@
 <ul *ngIf="isOpen()" (click)="$event.stopPropagation()" (mousedown)="$event.stopPropagation()"
     (clickedOutside)="selection.close()"
     tabindex="0" [style.left]="contextMenuPos.x" [style.top]="contextMenuPos.y"
-    class="fixed z-50 menu shadow bg-base-300 rounded-box text-sm font-normal no-underline w-48 dropdown-animation">
-  <li (click)="editAction()"><a><ng-icon name="jam-pencil-f" size="1.3rem" class="text-warning"/>Edit</a></li>
-  <li (click)="duplicateAction()" *ngIf="view.parent && view.parent.type != ViewType.COLLAPSE"><a><ng-icon name="jam-files-f" size="1.3rem"/>Duplicate</a></li>
-  <li (click)="openSaveComponentModal()"><a><ng-icon name="jam-folder-f" size="1.3rem"/>Save as Custom</a></li>
-  <li (click)="$event.stopPropagation(); selectParentAction()" *ngIf="view.parent"><a><ng-icon name="tabler-binary-tree" size="1.3rem"/>Highlight Parent</a></li>
-  <li (click)="deleteAction()"><a><ng-icon name="feather-x" size="1.3rem" class="text-error"/>Delete</a></li>
+    class="fixed z-50 menu shadow bg-base-300 rounded-box text-left w-48 dropdown-animation p-0 m-0"
+  >
+  <li class="p-0 m-0" (click)="editAction()">
+    <a class="no-underline font-normal text-base-content text-sm">
+      <ng-icon name="jam-pencil-f" size="1.3rem" class="text-warning"/>Edit
+    </a>
+  </li>
+  <li class="p-0 m-0" (click)="duplicateAction()" *ngIf="view.parent && view.parent.type != ViewType.COLLAPSE">
+    <a class="no-underline font-normal text-base-content text-sm">
+      <ng-icon name="jam-files-f" size="1.3rem"/>Duplicate
+    </a>
+  </li>
+  <li class="p-0 m-0" (click)="openSaveComponentModal()">
+    <a class="no-underline font-normal text-base-content text-sm"><ng-icon name="jam-folder-f" size="1.3rem"/>Save as Custom
+    </a>
+  </li>
+  <li class="p-0 m-0" (click)="$event.stopPropagation(); selectParentAction()" *ngIf="view.parent">
+    <a class="no-underline font-normal text-base-content text-sm">
+      <ng-icon name="tabler-binary-tree" size="1.3rem"/>Highlight Parent
+    </a>
+  </li>
+  <li class="p-0 m-0" (click)="deleteAction()">
+    <a class="no-underline font-normal text-base-content text-sm">
+      <ng-icon name="feather-x" size="1.3rem" class="text-error"/>Delete
+    </a>
+  </li>
 </ul>
 
 
