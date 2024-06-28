@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import {ModulesComponent} from "./modules/modules.component";
-import {ComingSoonComponent} from "../../../_components/misc/pages/coming-soon/coming-soon.component";
+import {ThemesComponent} from "./themes/themes.component";
 
 const routes: Routes = [
   {
@@ -13,7 +13,7 @@ const routes: Routes = [
       },
       {
         path: 'themes',
-        component: ComingSoonComponent  // TODO: ThemesComponent
+        component: ThemesComponent
       },
       { path: '', redirectTo: 'global', pathMatch: 'full' }
     ]
