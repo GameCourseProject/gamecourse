@@ -31,7 +31,7 @@
 <!--------------------------------------------------->
 <ng-template #GENERIC_EDITOR>
   <div class="flex flex-row items-start gap-8">
-    <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW">
+    <div class="w-full" *ngIf="viewToEdit.type !== ViewType.ROW && !isHeaderCell()">
       <app-input-select
         [disabled]="!view.parent"
         [id]="'type-' + view.id"
@@ -337,7 +337,7 @@
         [options]="getColumnOrderingTypeOptions()"
         [placeholder]="'Select ordering type'"
         [topLabel]="'Default Column Ordering'"
-        [helperText]="'The way the table is ordered by default. E.g. ASC 0 means that the content of the table will be ordered based on the content of the column at index 0, ascending.'"
+        [helperText]="'The way the table is ordered by default. E.g. ASC 1 means that the content of the table will be ordered based on the content of the first column, ascending.'"
         [helperPosition]="'right'"
       ></app-input-select>
       <app-input-select
