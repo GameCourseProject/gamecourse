@@ -385,6 +385,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.direction = from.direction;
       to.responsive = from.responsive;
       to.columns = from.columns;
+
+      if (to.direction === BlockDirection.VERTICAL) {
+        to.columns = null;
+      }
     }
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
