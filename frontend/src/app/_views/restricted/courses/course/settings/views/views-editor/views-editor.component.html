@@ -306,8 +306,16 @@
 />
 <ng-template #SAVE_TEMPLATE>
   <app-input-text
+    *ngIf="pageToManage"
     [id]="'new-template-name'"
-    [(value)]="pageToManage ? pageToManage.name : templateNameToManage"
+    [(value)]="pageToManage.name"
+    [topLabel]="'Choose a name for this template:'"
+    [required]="true">
+  </app-input-text>
+  <app-input-text
+    *ngIf="!pageToManage"
+    [id]="'new-template-name'"
+    [(value)]="templateNameToManage"
     [topLabel]="'Choose a name for this template:'"
     [required]="true">
   </app-input-text>
