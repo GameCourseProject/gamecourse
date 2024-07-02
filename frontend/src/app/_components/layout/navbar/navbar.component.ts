@@ -28,9 +28,7 @@ export class NavbarComponent implements OnInit {
   notifications: Notification[] = [];
   mode: "new" | "notNew";
 
-  // FIXME: navbar space should be configurable in modules
-  isStudent: boolean;
-  tokens: number;
+  breadcrumbsLinks: { name: string, url: string }[] = [];
 
   constructor(
     private api: ApiHttpService,
@@ -52,11 +50,15 @@ export class NavbarComponent implements OnInit {
     // Get notifications information
     await this.getNotifications();
 
+    // Get breadcrumbs information
+    await this.getBreadcrumbs();
+
     // Whenever URL changes
-    this.router.events.subscribe(event => {
+    this.router.events.subscribe(async event => {
       if (event instanceof NavigationEnd) {
         const courseID = this.getCourseIDFromURL();
         if (courseID !== this.course?.id) this.getCourse();
+        await this.getBreadcrumbs();
       }
     });
 
@@ -67,6 +69,47 @@ export class NavbarComponent implements OnInit {
         this.getLoggedUser();
       }
     });
+  }
+
+  /*** --------------------------------------------- ***/
+  /*** ---------------- Breadcrumbs ---------------- ***/
+  /*** --------------------------------------------- ***/
+
+  async getBreadcrumbs() {
+    const segments = this.router.parseUrl(this.router.url).root.children[PRIMARY_OUTLET].segments;
+    this.breadcrumbsLinks = [];
+    let url = "";
+
+    for (const [index, segment] of segments.entries()) {
+      url += "/" + segment;
+
+      // Parts that are just numbers don't matter
+      if (!segment.path.match("[0-9]+")) {
+        // Intermediate Paths in pages/[pid]/user/[uid] don't make sense since there's no page for those
+        // In Custom Page show its name tho, and settings/pages must still work
+        if (segment.path == "pages" && segments[index - 1].path != "settings") {
+          const id = segments[index + 1]
+          const page = await this.api.getPageById(+id.path).toPromise();
+          this.breadcrumbsLinks.push({
+            name: page.name,
+            url: url
+          })
+        }
+        else if (segment.path == "user") {
+          continue;
+        }
+        else {
+          this.breadcrumbsLinks.push({
+            name: segment.path.replaceAll('-', ' ')
+              .split(' ')
+              .map(word => word.capitalize())
+              .join(' '),
+            url: url
+          })
+        }
+      }
+
+    }
   }
 
 

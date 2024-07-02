@@ -26,7 +26,10 @@
           <!-- Breadcrumbs -->
           <div class="text-sm text-primary-content text-opacity-50 breadcrumbs pt-0 hidden lg:block">
             <ul>
-              <li *ngFor="let part of getURLParts()">{{part.capitalize()}}</li>
+              <li *ngFor="let page of breadcrumbsLinks; last as last">
+                <ng-container *ngIf="last">{{page.name.capitalize()}}</ng-container>
+                <a *ngIf="!last" [routerLink]="page.url">{{page.name.capitalize()}}</a>
+              </li>
             </ul>
           </div>
 
