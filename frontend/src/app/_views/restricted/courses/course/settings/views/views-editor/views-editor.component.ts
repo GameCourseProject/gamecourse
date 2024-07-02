@@ -648,6 +648,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       const pageId = await this.api.saveViewAsPage(this.course.id, this.pageToManage.name, buildedTree, image).toPromise();
       this.pageToManage = null;
       const aspect = this.service.selectedAspect;
+
+      this.loading.page = true;
+
       await this.router.navigate(['/courses/' + this.course.id + '/settings/pages/editor/' + pageId]);
       await this.initView(pageId, null, aspect);
 
@@ -660,6 +663,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       return "error";
     }
 
+    this.loading.page = false;
     this.loading.action = false;
   }
 

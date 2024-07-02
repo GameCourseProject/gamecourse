@@ -348,13 +348,15 @@ class UsersLibrary extends Library
     public function nickname($user): ValueNode
     {
         // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $nickname = $user["nickname"];
-        elseif (is_object($user) && method_exists($user, 'getNickname')) {
-            if (Core::dictionary()->getCourse()->getNicknames() === true)
-                $nickname = $user->getNickname();
-            else $nickname = $user->getName();
+        if (Core::dictionary()->getCourse()->getNicknames() === true) {
+            if (is_array($user)) $nickname = $user["nickname"];
+            elseif (is_object($user) && method_exists($user, 'getNickname')) $nickname = $user->getNickname();
+            else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
+        } else {
+            if (is_array($user)) $nickname = $user["name"];
+            elseif (is_object($user) && method_exists($user, 'getName')) $nickname = $user->getName();
+            else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         }
-        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($nickname, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 
@@ -432,13 +434,15 @@ class UsersLibrary extends Library
     public function avatar($user): ValueNode
     {
         // NOTE: on mock data, user will be mocked
-        if (is_array($user)) $avatar = $user["avatar"];
-        elseif (is_object($user) && method_exists($user, 'getAvatar')) {
-            if (Core::dictionary()->getCourse()->getAvatars() === true)
-                $avatar = $user->getAvatar();
-            else $avatar = $user->getImage();
+        if (Core::dictionary()->getCourse()->getAvatars() === true) {
+            if (is_array($user)) $avatar = $user["avatar"];
+            elseif (is_object($user) && method_exists($user, 'getAvatar')) $avatar = $user->getAvatar();
+            else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
+        } else {
+            if (is_array($user)) $avatar = $user["image"];
+            elseif (is_object($user) && method_exists($user, 'getImage')) $avatar = $user->getImage();
+            else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         }
-        else throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         return new ValueNode($avatar, Core::dictionary()->getLibraryById(TextLibrary::ID));
     }
 

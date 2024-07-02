@@ -385,6 +385,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       to.direction = from.direction;
       to.responsive = from.responsive;
       to.columns = from.columns;
+
+      if (to.direction === BlockDirection.VERTICAL) {
+        to.columns = null;
+      }
     }
     else if (to instanceof ViewCollapse) {
       to.icon = from.collapseIcon;
@@ -476,7 +480,11 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   }
 
   getColumnOrderingIndexOptions() {
-    return this.viewToEdit.headerRows[0].children.map((e, index) => { return { value: index.toString(), text: "Column " + index }})
+    return this.viewToEdit.headerRows[0].children.map((e, index) => {
+      return {
+        value: index.toString(),
+        text: "Column " + (index + 1) + (e.type === ViewType.TEXT ? " - " + (e as ViewText).text : "")}
+    })
   }
 
   /*** --------------------------------------------- ***/
@@ -758,6 +766,12 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       row.children.splice(index, 1);
     }
   }
+
+  isHeaderCell() {
+    if (this.view.parent?.type !== ViewType.ROW) return false;
+    else return !!(this.view.parent.parent as ViewTable).headerRows.find(e => e.id == this.view.parent.id);
+  }
+
 }
 
 export interface ViewManageData {

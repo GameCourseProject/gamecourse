@@ -306,8 +306,16 @@
 />
 <ng-template #SAVE_TEMPLATE>
   <app-input-text
+    *ngIf="pageToManage"
     [id]="'new-template-name'"
-    [(value)]="pageToManage ? pageToManage.name : templateNameToManage"
+    [(value)]="pageToManage.name"
+    [topLabel]="'Choose a name for this template:'"
+    [required]="true">
+  </app-input-text>
+  <app-input-text
+    *ngIf="!pageToManage"
+    [id]="'new-template-name'"
+    [(value)]="templateNameToManage"
     [topLabel]="'Choose a name for this template:'"
     [required]="true">
   </app-input-text>
@@ -392,8 +400,8 @@
         [(value)]="optionSelected"
       ></app-input-radio>
       <p class="pl-[37px] text-sm">
-        Each copy is <strong>individual</strong>.
-        The changes made in the copy version <strong>won't affect</strong> the original, nor vice-versa.
+        The template changes are <strong>propagated</strong>.
+        Changes made in this copy version <strong>will affect</strong> the original, and changes in the original <strong>will affect</strong> this copy.
       </p>
     </div>
     <div class="mt-8">
@@ -408,8 +416,8 @@
         [(value)]="optionSelected"
       ></app-input-radio>
       <p class="pl-[37px] text-sm">
-        The template changes are <strong>propagated</strong>.
-        Changes made in this copy version <strong>will affect</strong> the original, and changes in the original <strong>will affect</strong> this copy.
+        Each copy is <strong>individual</strong>.
+        The changes made in the copy version <strong>won't affect</strong> the original, nor vice-versa.
       </p>
     </div>
   </div>
