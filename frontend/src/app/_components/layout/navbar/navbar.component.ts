@@ -98,6 +98,22 @@ export class NavbarComponent implements OnInit {
         else if (segment.path == "user") {
           continue;
         }
+        // In modules/[name]/config can only go back to modules, but display its name at end
+        else if (segment.path == "config" && segments[index-2].path == "modules") {
+          continue;
+        }
+        // To go back to rule-system/sections need the id after it
+        else if (segment.path == "sections") {
+          this.breadcrumbsLinks.push({
+            name: "Sections",
+            url: url + "/" + segments[index + 1],
+          })
+        }
+        // In View Editor, can have editor/[id] or editor/new or editor/system-template/[id]
+        // so having "editor" is only relevant if there's no id right after it
+        else if (segment.path == "editor" && !segments[index + 1].path.match("[0-9]+")) {
+          continue;
+        }
         else {
           this.breadcrumbsLinks.push({
             name: segment.path.replaceAll('-', ' ')
