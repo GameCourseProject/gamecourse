@@ -113,6 +113,7 @@
   [static]="true"
   (submitBtnClicked)="submitEditAction()"
   (closeBtnClicked)="cancelEditAction()"
+  (dblclick)="$event.stopPropagation();"
 />
 <ng-template #COMPONENT_EDITOR>
   <app-component-editor
