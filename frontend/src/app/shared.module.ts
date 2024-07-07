@@ -252,6 +252,7 @@ import {
   tablerCode,
   tablerCodeDots,
   tablerClick,
+  tablerTool,
   tablerTools
 } from "@ng-icons/tabler-icons";
 
@@ -587,6 +588,7 @@ import {
       tablerCode,
       tablerCodeDots,
       tablerClick,
+      tablerTool,
       tablerTools,
 
       matFaceRetouchingNatural,
