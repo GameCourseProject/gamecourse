@@ -1065,6 +1065,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     this.loading.action = true;
+    AlertService.clear(AlertType.ERROR);
     try {
       this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
     }
