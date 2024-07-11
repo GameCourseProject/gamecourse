@@ -32,7 +32,7 @@ import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/vie
 import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
 import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
 import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
-import {HistoryService} from "src/app/_services/history.service";
+import {HistoryEntry, HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
@@ -913,22 +913,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     else if (action === 'Undo') {
       if (this.history.hasUndo()) {
-        const res = this.history.undo();
-        this.service.viewsByAspect = res.viewsByAspect;
-        setGroupedChildren(res.groupedChildren);
-        setViewsDeleted(res.viewsByAspect);
-
-        this.view = this.service.getSelectedView();
+        this.loadFromHistory(this.history.undo());
       }
     }
     else if (action === 'Redo') {
       if (this.history.hasRedo()) {
-        const res = this.history.redo();
-        this.service.viewsByAspect = res.viewsByAspect;
-        setGroupedChildren(res.groupedChildren);
-        setViewsDeleted(res.viewsByAspect);
-
-        this.view = this.service.getSelectedView();
+        this.loadFromHistory(this.history.redo());
       }
     }
     else if (action === 'Raw (default)') {
@@ -1097,13 +1087,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  recoverFromFail() {
-    const backup = this.history.getMostRecent();
-    this.service.viewsByAspect = backup.viewsByAspect;
-    setGroupedChildren(backup.groupedChildren);
-    setViewsDeleted(backup.viewsByAspect);
+  loadFromHistory(data: HistoryEntry) {
+    this.service.viewsByAspect = data.viewsByAspect;
+    setGroupedChildren(data.groupedChildren);
+    setViewsDeleted(data.viewsDeleted);
 
     this.view = this.service.getSelectedView();
+  }
+
+  recoverFromFail() {
+    this.loadFromHistory(this.history.getMostRecent());
   }
 
   get ViewType(): typeof ViewType {

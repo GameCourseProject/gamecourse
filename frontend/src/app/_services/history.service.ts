@@ -7,12 +7,12 @@ import { Aspect } from '../_domain/views/aspects/aspect';
   providedIn: 'root'
 })
 export class HistoryService {
-    private states: {viewsByAspect: { aspect: Aspect, view: View | null }[], groupedChildren: Map<number, number[][]>, viewsDeleted: number[]}[] = [];
+    private states: HistoryEntry[] = [];
     private currentStateIndex: number = -1;
 
     constructor() {}
 
-    saveState(state: any): void {
+    saveState(state: HistoryEntry): void {
         // Remove any future states
         this.states.splice(this.currentStateIndex + 1);
         // Add the new state
@@ -21,20 +21,22 @@ export class HistoryService {
         this.currentStateIndex++;
     }
 
-    undo(): any {
+    undo(): HistoryEntry | null {
         if (this.currentStateIndex > 0) {
             this.currentStateIndex--;
             return _.cloneDeep(this.states[this.currentStateIndex]);
+        } else {
+          return null;
         }
-        return null;
     }
 
-    redo(): any {
+    redo(): HistoryEntry | null {
         if (this.currentStateIndex < this.states.length - 1) {
             this.currentStateIndex++;
             return _.cloneDeep(this.states[this.currentStateIndex]);
+        } else {
+          return null;
         }
-        return null;
     }
 
     clear() {
@@ -55,4 +57,10 @@ export class HistoryService {
     getMostRecent() {
       return _.cloneDeep(this.states[this.currentStateIndex]);
     }
+}
+
+export type HistoryEntry = {
+  viewsByAspect: { aspect: Aspect, view: View | null }[],
+  groupedChildren: Map<number, number[][]>,
+  viewsDeleted: number[]
 }
