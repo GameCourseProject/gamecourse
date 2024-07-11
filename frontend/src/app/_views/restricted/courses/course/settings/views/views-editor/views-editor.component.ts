@@ -116,6 +116,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.view = value;
       }, 100);
     });
+
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
@@ -123,7 +124,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       await this.getComponents();
       await this.getTemplates();
 
-      this.route.params.subscribe(async childParams => {
+      this.route.params.subscribe(async () => {
         const prevSegment = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
 
@@ -154,37 +155,41 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           await this.initView(parseInt(segment),
             (prevSegment === "template" || prevSegment === "system-template") ? prevSegment : null);
         }
-
       });
+
       this.loading.page = false;
       this.componentSettings = { id: null, top: null };
       this.templateSettings = { id: null, top: null };
       this.setOptions();
     })
 
-    addEventListener('keydown', async (event: KeyboardEvent) => {
-      if (ModalService.isOpen("component-editor")) return;
-
-      if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
-        (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
-      {
-        event.preventDefault();
-        await this.doAction('Redo');
-      }
-      else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        await this.doAction('Undo');
-      }
-      else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
-        event.preventDefault();
-        if (this.page || this.template) { await this.saveChanges(); }
-        else if (this.pageToManage) { this.openSaveAsPageModal(); }
-      }
-    })
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    addEventListener('keydown', this.handleKeyDown);
   }
 
   ngOnDestroy() {
+    removeEventListener('keydown', this.handleKeyDown);
     this._subscription.unsubscribe();
+  }
+
+  async handleKeyDown(event: KeyboardEvent) {
+    if (ModalService.isOpen("component-editor")) return;
+
+    if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
+      (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
+    {
+      event.preventDefault();
+      await this.doAction('Redo');
+    }
+    else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      await this.doAction('Undo');
+    }
+    else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
+      event.preventDefault();
+      if (this.page || this.template) { await this.saveChanges(); }
+      else if (this.pageToManage) { this.openSaveAsPageModal(); }
+    }
   }
 
   /*** --------------------------------------------- ***/
