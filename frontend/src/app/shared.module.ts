@@ -152,7 +152,8 @@ import {
   featherXCircle,
   featherChevronDown,
   featherChevronLeft,
-  featherChevronRight
+  featherChevronRight,
+  featherGithub
 } from "@ng-icons/feather-icons";
 
 import {
@@ -493,6 +494,7 @@ import {
       featherChevronDown,
       featherChevronLeft,
       featherChevronRight,
+      featherGithub,
 
       jamCircleF,
       jamDownload,

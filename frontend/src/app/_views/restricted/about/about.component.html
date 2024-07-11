@@ -1,86 +1,31 @@
-<div class="sections">
-  <div class="section">
-    <div class="content">GameCourse: A gamification system for courses.</div>
+<!-- Header -->
+<app-header [title]="'About'" [icon]="'feather-info'"></app-header>
+
+<div class="flex flex-col items-center gap-4">
+  <!-- Logo -->
+  <img class="w-96"
+    [src]="getDefaultLogoImg()"
+    alt="" />
+
+  <div class="max-w-96 flex flex-col gap-4">
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">A Gamification System for Courses</h2>
+        <p class="mt-2">Interface created with Angular 13 and <a href="https://daisyui.com/" class="link">DaisyUI</a></p>
+        <p class="mt-2"><span class="font-semibold">Version </span>2.0.0</p>
+        <a class="rounded-full btn btn-secondary mt-2 mx-auto tooltip tooltip-bottom font-normal text-base normal-case" data-tip="Visit our Github"
+          href="https://github.com/GameCourseProject/gamecourse">
+          <ng-icon name="feather-github" class="text-primary-content mt-3" size="1.5rem"/>
+        </a>
+      </div>
+    </div>
+    
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <p class="mx-auto">Since 2010 @ IST</p>
+      </div>
+    </div>
+
   </div>
 </div>
-
-
-<!-- FIXME: remove, just testing -->
-
-<form #f="ngForm" (submit)="onSubmit()">
-
-  <app-input-file
-    [id]="'dfgd'"
-    [form]="f"
-    [label]="'Label'"
-    [size]="'xs'"
-    [color]="'primary'"
-    [required]="true"
-    [helperText]="'hey'">
-  </app-input-file>
-
-<!--  <app-input-select-->
-<!--    [id]="'select-multiple'"-->
-<!--    [form]="f"-->
-<!--    [(value)]="value"-->
-<!--    [options]="[-->
-<!--      {value: 'id-1', text: 'Option 1'},-->
-<!--      {value: 'id-2', text: 'Option 2'},-->
-<!--      {value: 'id-3', text: 'Option 3'}-->
-<!--    ]"-->
-<!--    [placeholder]="'Select something'"-->
-<!--    [multiple]="true"-->
-<!--    [topLabel]="'Label'"-->
-<!--    (valueChange)="test()"-->
-<!--    [setData]="setSelected">-->
-<!--  </app-input-select>-->
-
-  <button class="btn" type="submit">submit</button>
-</form>
-
-<label [for]="'my-modal'" class="btn modal-button mt-5">open modal</label>
-<app-simple-modal
-  [id]="'my-modal'"
-  [title]="'Delete'"
-  [text]="'Are you sure you want to delete this?'"
-  [submitBtnColor]="'success'"
-  (submitBtnClicked)="test()"
-  [actionInProgress]="true">
-</app-simple-modal>
-
-<div class="mb-3 mt-5">
-  <button class="btn">Hello</button>
-  <button class="btn btn-primary">Hello</button>
-  <button class="btn btn-secondary">Hello</button>
-  <button class="btn btn-accent">Hello</button>
-  <button class="btn btn-info">Hello</button>
-  <button class="btn btn-success">Hello</button>
-  <button class="btn btn-warning">Hello</button>
-  <button class="btn btn-error" (click)="setSelected.next(['Option 1'])">Hello</button>
-</div>
-
-<div class="mb-5">
-  <button class="btn btn-outline">Hello</button>
-  <button class="btn btn-primary btn-outline">Hello</button>
-  <button class="btn btn-secondary btn-outline">Hello</button>
-  <button class="btn btn-accent btn-outline">Hello</button>
-  <button class="btn btn-info btn-outline">Hello</button>
-  <button class="btn btn-success btn-outline">Hello</button>
-  <button class="btn btn-warning btn-outline">Hello</button>
-  <button class="btn btn-error btn-outline">Hello</button>
-</div>
-
-<article class="prose">
-  <h1>Garlic bread with cheese: What the science tells us</h1>
-  <p>For years parents have espoused the health benefits of eating garlic bread with cheese to their children, with the food earning such an iconic status in our culture that kids will often dress up as warm, cheesy loaf for Halloween.</p>
-  <p>But a recent study shows that the celebrated appetizer may be linked to a series of rabies cases springing up around the country.</p>
-  <p class="prose line-clamp-3">
-    Here's a block of text from a blog post that isn't conveniently three lines long like you designed
-    for originally. It's probably like 6 lines on mobile or even on desktop depending on how you have
-    things laid out. Truly a big pain in the derriere, and not the sort of thing you expected to be
-    wasting your time trying to deal with at 4:45pm on a Friday am I right? You've got tickets to
-    SmackDown and you heard there's gonna be a dark match with that local guy from two towns over that
-    your cousin went to high school with before the show starts, and you're gonna miss it if you're
-    not there early.
-  </p>
-</article>
