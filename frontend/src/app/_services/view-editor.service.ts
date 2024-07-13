@@ -122,7 +122,14 @@ export class ViewEditorService {
   applyAspectChanges() {
     // Delete aspects
     for (let deleted of this.aspectsToDelete) {
-      this.deleteAspect(deleted);
+      // Was added but then deleted without saving in betweeen
+      if (this.aspectsToAdd.find(e => _.isEqual(e.newAspect, deleted))) {
+        this.aspectsToAdd = this.aspectsToAdd.filter(e => !_.isEqual(e.newAspect, deleted))
+      }
+      // It's an already-existing one
+      else {
+        this.deleteAspect(deleted);
+      }
     }
     this.aspectsToDelete = [];
 
@@ -162,6 +169,17 @@ export class ViewEditorService {
     );
 
     return higherInHierarchy;
+  }
+
+  lowerInHierarchy(item: View) {
+    const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
+
+    const lowerInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
+      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
+    );
+
+    return lowerInHierarchy;
   }
 
   getFutureAspects(): Aspect[] {
@@ -238,18 +256,10 @@ export class ViewEditorService {
   delete(item: View): ViewBlock | null {
     let newBlock; // the new parent block
 
-    const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
-
-    const lowerInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
-      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
-    );
+    const lowerInHierarchy = this.lowerInHierarchy(item);
     lowerInHierarchy.push(this.getEntryOfAspect(this.selectedAspect));
 
-    const higherInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.viewerRole, e.aspect.viewerRole))
-      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.userRole, e.aspect.userRole))
-    );
+    const higherInHierarchy = this.higherInHierarchy(item);
 
     // if there is any aspect above, we need to create a new version of the parent, without the item, for this aspect
     if (higherInHierarchy.length > 0 && item.parent) {
@@ -323,6 +333,8 @@ export class ViewEditorService {
     }
     // no higher -> can just delete it here and in lower aspects
     else {
+      newBlock = item.parent; // this is just so that the reorder action knows the parent is still the same
+
       for (let el of lowerInHierarchy) {
         let view = el.view.findView(item.id);
         if (view.parent) {

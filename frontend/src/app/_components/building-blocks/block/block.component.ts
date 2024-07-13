@@ -55,18 +55,10 @@ export class BBBlockComponent implements OnInit {
   /*** ------------------------------------------------ ***/
 
   drop (event: CdkDragDrop<View[]>) {
-    const viewsWithThis = this.service.viewsByAspect.filter((e) => !_.isEqual(this.service.selectedAspect, e.aspect) && e.view?.findView(this.view.id));
-
-    const lowerInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.viewerRole, this.service.selectedAspect.viewerRole))
-      || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(e.aspect.userRole, this.service.selectedAspect.userRole))
-    );
+    const lowerInHierarchy = this.service.lowerInHierarchy(this.view);
     lowerInHierarchy.push(this.service.getEntryOfAspect(this.service.selectedAspect));
 
-    const higherInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.service.selectedAspect.userRole && this.service.isMoreSpecific(this.service.selectedAspect.viewerRole, e.aspect.viewerRole))
-      || (e.aspect.userRole !== this.service.selectedAspect.userRole && this.service.isMoreSpecific(this.service.selectedAspect.userRole, e.aspect.userRole))
-    );
+    const higherInHierarchy = this.service.higherInHierarchy(this.view);
 
     // Reorder inside same block ------------------------------------------------------------------
     if (event.previousContainer === event.container && event.previousIndex != event.currentIndex) {
