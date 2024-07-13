@@ -76,6 +76,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   options: Option[];
   activeSubMenu: SubMenu;
 
+  showToast: boolean = false;                   // Tutorial Modal
+  videoElement: HTMLVideoElement | null = null;
+
   coreComponents: Map<ViewType, { category: string; views: View[] }[]>;
   customComponents: { id: number, view: View }[];
   sharedComponents: { id: number, sharedTimestamp: string, user: number, view: View }[];
@@ -1185,6 +1188,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.templateSettings.top = event.pageY - 325;
   }
 
+  openTutorial(){
+    ModalService.openModal('views-tutorial');
+  }
+
+  closeTutorial(){
+    ModalService.closeModal('views-tutorial');
+  }
 }
 
 export interface Option {
