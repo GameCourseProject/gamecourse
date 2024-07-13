@@ -2,9 +2,6 @@
 
 class RestRequest
 {
-	protected $url;
-	protected $verb;
-	protected $requestBody;
 	protected $requestLength;
 	protected $username;
 	protected $password;
@@ -12,11 +9,8 @@ class RestRequest
 	protected $responseBody;
 	protected $responseInfo;
 	
-	public function __construct ($url = null, $verb = 'GET', $requestBody = null)
+	public function __construct (protected $url = null, protected $verb = 'GET', protected $requestBody = null)
 	{
-		$this->url				= $url;
-		$this->verb				= $verb;
-		$this->requestBody		= $requestBody;
 		$this->requestLength	= 0;
 		$this->username			= null;
 		$this->password			= null;

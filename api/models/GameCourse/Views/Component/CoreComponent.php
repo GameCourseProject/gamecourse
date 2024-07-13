@@ -216,10 +216,9 @@ class CoreComponent extends Component
     /**
      * Trims core component parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["description"];
         Utils::trim($params, ...$values);

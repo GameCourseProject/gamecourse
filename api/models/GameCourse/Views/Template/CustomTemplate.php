@@ -216,7 +216,7 @@ class CustomTemplate extends Template
      *
      * @param int $id
      */
-    public static function getTemplateById(int $id): CustomTemplate
+    public static function getTemplateById(int $id): ?CustomTemplate
     {
         $template = new CustomTemplate($id);
         if ($template->exists()) return $template;
@@ -453,10 +453,9 @@ class CustomTemplate extends Template
     /**
      * Trims custom template parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    protected static function trim(&...$values)
+    protected static function trim(mixed &...$values)
     {
         $params = ["name", "creationTimestamp", "updateTimestamp"];
         Utils::trim($params, ...$values);

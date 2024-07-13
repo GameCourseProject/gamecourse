@@ -871,10 +871,9 @@ class User
     /**
      * Trims user parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    protected static function trim(&...$values)
+    protected static function trim(mixed &...$values)
     {
         $params = ["name", "email", "major", "nickname", "username", "auth_service", "lastLogin"];
         Utils::trim($params, ...$values);

@@ -4,14 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Core\Core;
 
 class FunctionOp extends Node {
-    private $name;
-    private $args;
-    private $context;
-
-    public function __construct(string $name, ?ArgumentSequence $args, ?string $libraryId, Node $context = null) {
-        $this->name = $name;
-        $this->args = $args;
-        $this->context = $context;
+    public function __construct(private string $name, private ?ArgumentSequence $args, ?string $libraryId, private ?\GameCourse\Views\ExpressionLanguage\Node $context = null) {
         $this->setLibrary($libraryId ? Core::dictionary()->getLibraryById($libraryId) : null);
     }
 

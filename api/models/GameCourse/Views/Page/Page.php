@@ -1036,10 +1036,9 @@ class Page
     /**
      * Trims page parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "creationTimestamp", "updateTimestamp", "visibleFrom", "visibleUntil"];
         Utils::trim($params, ...$values);

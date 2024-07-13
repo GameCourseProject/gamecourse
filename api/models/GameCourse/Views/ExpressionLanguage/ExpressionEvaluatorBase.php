@@ -2464,18 +2464,10 @@ break;
 
 class ParserLocation
 {
-    public $firstLine = 1;
-    public $lastLine = 0;
-    public $firstColumn = 1;
-    public $lastColumn = 0;
     public $range;
 
-    public function __construct($firstLine = 1, $lastLine = 0, $firstColumn = 1, $lastColumn = 0)
+    public function __construct(public $firstLine = 1, public $lastLine = 0, public $firstColumn = 1, public $lastColumn = 0)
     {
-        $this->firstLine = $firstLine;
-        $this->lastLine = $lastLine;
-        $this->firstColumn = $firstColumn;
-        $this->lastColumn = $lastColumn;
     }
 
     public function Range($range)
@@ -2510,65 +2502,39 @@ class ParserValue
 
 class LexerConditions
 {
-    public $rules;
-    public $inclusive;
-
-    function __construct($rules, $inclusive)
+    function __construct(public $rules, public $inclusive)
     {
-        $this->rules = $rules;
-        $this->inclusive = $inclusive;
     }
 }
 
 class ParserProduction
 {
-    public $len = 0;
-    public $symbol;
-
-    public function __construct($symbol, $len = 0)
+    public function __construct(public $symbol, public $len = 0)
     {
-        $this->symbol = $symbol;
-        $this->len = $len;
     }
 }
 
 class ParserCachedAction
 {
-    public $action;
-    public $symbol;
-
-    function __construct($action, $symbol = null)
+    function __construct(public $action, public $symbol = null)
     {
-        $this->action = $action;
-        $this->symbol = $symbol;
     }
 }
 
 class ParserAction
 {
-    public $action;
-    public $state;
-    public $symbol;
-
-    function __construct($action, &$state = null, &$symbol = null)
+    function __construct(public $action, public $state = null, public $symbol = null)
     {
-        $this->action = $action;
-        $this->state = $state;
-        $this->symbol = $symbol;
     }
 }
 
 class ParserSymbol
 {
-    public $name;
-    public $index = -1;
     public $symbols = array();
     public $symbolsByName = array();
 
-    function __construct($name, $index)
+    function __construct(public $name, public $index)
     {
-        $this->name = $name;
-        $this->index = $index;
     }
 
     public function addAction($a)
@@ -2579,46 +2545,24 @@ class ParserSymbol
 
 class ParserError
 {
-    public $text;
-    public $state;
-    public $symbol;
-    public $lineNo;
-    public $loc;
-    public $expected;
-
-    function __construct($text, $state, $symbol, $lineNo, $loc, $expected)
+    function __construct(public $text, public $state, public $symbol, public $lineNo, public $loc, public $expected)
     {
-        $this->text = $text;
-        $this->state = $state;
-        $this->symbol = $symbol;
-        $this->lineNo = $lineNo;
-        $this->loc = $loc;
-        $this->expected = $expected;
     }
 }
 
 class LexerError
 {
-    public $text;
-    public $token;
-    public $lineNo;
-
-    public function __construct($text, $token, $lineNo)
+    public function __construct(public $text, public $token, public $lineNo)
     {
-        $this->text = $text;
-        $this->token = $token;
-        $this->lineNo = $lineNo;
     }
 }
 
 class ParserState
 {
-    public $index;
     public $actions = array();
 
-    function __construct($index)
+    function __construct(public $index)
     {
-        $this->index = $index;
     }
 
     public function setActions(&$actions)
@@ -2629,12 +2573,7 @@ class ParserState
 
 class ParserRange
 {
-    public $x;
-    public $y;
-
-    function __construct($x, $y)
+    function __construct(public $x, public $y)
     {
-        $this->x = $x;
-        $this->y = $y;
     }
 }

@@ -4568,7 +4568,7 @@ class PHPMailer
      *
      * @return bool
      */
-    public function set($name, $value = '')
+    public function set($name, mixed $value = '')
     {
         if (property_exists($this, $name)) {
             $this->$name = $value;

@@ -628,10 +628,9 @@ class Utils
      * @example trim array of values --> trim(["name", "description"], ["name" => " Name ", "description" => "Description"])
      * @example trim multiple values --> trim(["name", "description"], " Name ", "Description", ...)
      *
-     * @param mixed ...$values
      * @return void
      */
-    public static function trim(array $params, &...$values)
+    public static function trim(array $params, mixed &...$values)
     {
         if (is_array($values[0])) { // array of values
             foreach ($params as $param) {
