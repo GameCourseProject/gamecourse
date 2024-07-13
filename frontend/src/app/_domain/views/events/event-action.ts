@@ -14,7 +14,7 @@ export const EventActionHelper: Record<EventAction, {name: string, args: string[
   [EventAction.SHOW_TOOLTIP]: {
     name: 'actions.showTooltip',
     args: ['text', 'position (optional)'],
-    types: ['string']
+    types: ['string', 'string']
   },
   [EventAction.EXCHANGE_TOKENS]: {
     name: 'vc.exchangeTokensForXP',
