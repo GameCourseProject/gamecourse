@@ -77,6 +77,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   namespaces: { [name: string]: string };
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
+  lowerInHierarchy: {aspect: Aspect, view: View}[] = [];
 
   // Helpers for collapse
   newHeaderType: ViewType;
@@ -96,6 +97,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       await this.getCookbook(this.courseId);
       this.prepareAdditionalTools();
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
+      this.lowerInHierarchy = this.service.lowerInHierarchy(this.view);
       this.loading = false;
     })
 
@@ -303,6 +305,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
 
   getHigherInHierarchyString() {
     return this.higherInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
+  }
+
+  getLowerInHierarchyString() {
+    return this.lowerInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
   }
 
   changeComponentType(view: View, type: ViewType): View {

@@ -1,0 +1,19 @@
+<p>Pages can look different depending on the role of who's viewing the page (<span class="text-secondary">viewer</span> role),
+    or depending on the user whose information is being displayed in that page (<span class="text-secondary">user</span> role).</p><br>
+<p>In the editor, you can create and manage these versions in the <b>dropdown menu at the actions bar</b>.</p><br>
+<p>If you don't want to restrict a version to a specific role, use <b>none</b>.</p><br>
+<p>Versions follow an <span class="text-info">hierarchy</span>, and the version displayed is always the most specific one. For example, in a Page with
+versions:</p>
+<ul class="list-disc ml-5 my-2">
+    <li>Viewer: <span class="text-secondary">none</span>, User: none</li>
+    <li>Viewer: <span class="text-secondary">Student</span>, User: none</li>
+    <li>Viewer: <span class="text-secondary">Achiever</span>, User: none</li>
+</ul>
+<p>if the Viewer is an Achiever, the third version will be used.
+If a Page doesn't have a specified version for the user's most specific role, then the nearest
+ancestor will be used instead. In the above example, if the Achiever version didn't exist,
+the Student one would be used, since Achiever is a subrole of Student.</p><br>
+
+<p>While editing, if you make some change in the first version of the example above, it will be <span class="text-info">propagated</span> to the second,
+since it is higher in the hierarchy. However, changes in the second won't affect the top one, but will affect the third. Changes in
+the third aren't propagated since there isn't any version that is lower in the hierarchy.</p>

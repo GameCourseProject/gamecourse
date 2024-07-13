@@ -53,17 +53,13 @@ class BadgesLibrary extends Library
           <pre><code>{badges.getBadges()}</code></pre>
         </div>
         <p>This might be useful if you want, for example, to create a page with a list of badges. You can do so by plugging the expression above in the 
-        <span class="text-secondary">Repeat this component for every item in</span> field on a Block component.</p>
-        <p>When using the Repetition field, the variable <span class="text-info">%item</span> becomes available for the component. We recommend also creating your own
-          Auxiliary Variable, named <span class="text-secondary">badge</span>, with the value <span class="text-secondary">{%item}</span>. 
-          You will notice that if you add components inside the repeated block, your custom variable will show up in the Inherited Variables section of those components.
-        </p><br>
-        <p>This means that you can now use the variable to access the badge's attributes. For example, to show the name of the Badge, it's as simple as adding a Text component,
-          with the following value in the text field:</p>
+        <span class="text-secondary">Repeat this component for every item in</span> field on a component.</p><br>
+        <p>When using the Repetition field, the variable <span class="text-info">%item</span> becomes available for that component and its children components,
+        allowing you to access the badge's attributes. For example, to show the name of the Badge, it's as simple as adding in a Text component, in its "Text"
+        field, the following value:</p>
         <div class="bg-base-100 rounded-box p-4 my-2">
           <pre><code>{%badge.name}</code></pre>
         </div><br>
-        <br>
         <p>It might be interesting to show, for example, which users have obtained level 1 of the Badge. To do so, we can use the same logic of creating a new component and
           filling its Repetition field, now with the expression</p>
         <div class="bg-base-100 rounded-box p-4 my-2">

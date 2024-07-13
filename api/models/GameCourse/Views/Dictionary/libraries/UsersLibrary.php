@@ -687,16 +687,20 @@ class UsersLibrary extends Library
      */
     public function isStudent($user): ValueNode
     {
-        if (Core::dictionary()->mockData()) {
-            $isStudent = Core::dictionary()->faker()->boolean();
+        if (is_array($user)) {
+            if (Core::dictionary()->mockData()) {
+                $isStudent = Core::dictionary()->faker()->boolean();
+            } else {
+                $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+                $isStudent = $courseUser->isStudent();
+            }
         }
-        else if (is_array($user)) {
-            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+        elseif (is_object($user) && method_exists($user, 'getId')) {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
             $isStudent = $courseUser->isStudent();
         }
         else {
-            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
-            $isStudent = $courseUser->isStudent();
+            throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         }
         return new ValueNode($isStudent, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
@@ -710,16 +714,20 @@ class UsersLibrary extends Library
      */
     public function isTeacher($user): ValueNode
     {
-        if (Core::dictionary()->mockData()) {
-            $isTeacher = Core::dictionary()->faker()->boolean();
+        if (is_array($user)) {
+            if (Core::dictionary()->mockData()) {
+                $isTeacher = Core::dictionary()->faker()->boolean();
+            } else {
+                $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+                $isTeacher = $courseUser->isTeacher();
+            }
         }
-        else if (is_array($user)) {
-            $courseUser = CourseUser::getCourseUserById($user["id"], Core::dictionary()->getCourse());
+        elseif (is_object($user) && method_exists($user, 'getId')) {
+            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
             $isTeacher = $courseUser->isTeacher();
         }
         else {
-            $courseUser = CourseUser::getCourseUserById($user->getId(), Core::dictionary()->getCourse());
-            $isTeacher = $courseUser->isTeacher();
+            throw new InvalidArgumentException("Invalid type for first argument: expected a user.");
         }
         return new ValueNode($isTeacher, Core::dictionary()->getLibraryById(BoolLibrary::ID));
     }
