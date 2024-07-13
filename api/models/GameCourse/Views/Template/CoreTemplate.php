@@ -276,10 +276,9 @@ class CoreTemplate extends Template
     /**
      * Trims core template parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name"];
         Utils::trim($params, ...$values);

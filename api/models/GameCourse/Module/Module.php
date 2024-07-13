@@ -868,17 +868,15 @@ abstract class Module
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Rule System -------------------- ***/
     /*** ---------------------------------------------------- ***/
-
     /**
      * Adds a new module item rule to the Rule System.
      * Returns the newly created rule.
      *
      * @param int|null $position
-     * @param mixed ...$args
      * @return Rule
      * @throws Exception
      */
-    public function addRuleOfItem(int $position = null, ...$args): Rule
+    public function addRuleOfItem(int $position = null, mixed ...$args): Rule
     {
         // Generate rule params
         $params = $this->generateRuleParams(...$args);
@@ -899,11 +897,10 @@ abstract class Module
      * @param int $ruleId
      * @param int|null $position
      * @param bool $isActive
-     * @param mixed ...$args
      * @return void
      * @throws Exception
      */
-    public function updateRuleOfItem(int $ruleId, int $position = null, bool $isActive = true, ...$args)
+    public function updateRuleOfItem(int $ruleId, int $position = null, bool $isActive = true, mixed ...$args)
     {
         // Re-generate rule params
         $params = $this->generateRuleParams(...$args);
@@ -935,10 +932,9 @@ abstract class Module
     /**
      * Generates rule parameters for a module item.
      *
-     * @param mixed ...$args
      * @return array
      */
-    protected function generateRuleParams(...$args): array
+    protected function generateRuleParams(mixed ...$args): array
     {
         return [];
     }
@@ -1360,10 +1356,9 @@ abstract class Module
     /**
      * Trims module parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["id", "name", "description", "type", "version", "minProjectVersion", "maxProjectVersion", "minAPIVersion", "maxAPIVersion"];
         Utils::trim($params, ...$values);

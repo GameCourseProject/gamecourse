@@ -1011,10 +1011,9 @@ class Badge
     /**
      * Trims badge parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "description", "desc1", "desc2", "desc3"];
         Utils::trim($params, ...$values);

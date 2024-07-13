@@ -344,10 +344,9 @@ class CustomComponent extends Component
     /**
      * Trims custom component parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    protected static function trim(&...$values)
+    protected static function trim(mixed &...$values)
     {
         $params = ["name", "creationTimestamp", "updateTimestamp"];
         Utils::trim($params, ...$values);

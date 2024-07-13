@@ -1662,10 +1662,9 @@ class Course
     /**
      * Trims course parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "short", "color", "year", "startDate", "endDate", "roleHierarchy", "theme", "avatars", "nicknames"];
         Utils::trim($params, ...$values);
