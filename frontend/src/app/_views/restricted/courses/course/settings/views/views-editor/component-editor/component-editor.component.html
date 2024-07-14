@@ -421,7 +421,7 @@
         <app-event-card [event]="event" (deleteEvent)="deleteEvent(i)" (updateEvent)="updateEvent($event, i)"/>
       </div>
       <!-- New -->
-      <app-event-card [new]="true" (createEvent)="addEvent($event)"/>
+      <app-event-card [new]="true" (createEvent)="addEvent($event)" #newEvent />
     </div>
   </ng-container>
 

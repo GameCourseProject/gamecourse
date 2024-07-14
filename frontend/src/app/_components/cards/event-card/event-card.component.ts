@@ -32,6 +32,11 @@ export class EventCardComponent implements OnInit {
     }
   }
 
+  isFilled() {
+    if (this.eventToAdd.type || this.eventToAdd.action) return true;
+    else return false;
+  }
+
   deleteAction() {
     this.deleteEvent.emit();
   }
