@@ -5,9 +5,6 @@ import config, re
 from .utils import rule_effect, rule_function
 from gamerules.connector import gamecourse_connector
 
-if gamecourse_connector.module_enabled('Moodle'):
-    from gamerules.connector import moodle_connector
-
 
 ### ------------------------------------------------------ ###
 ###	------------------ Regular Functions ----------------- ###
@@ -27,46 +24,6 @@ def get_logs(target=None, log_type=None, rating=None, evaluator=None, start_date
     return gamecourse_connector.get_logs(target, log_type, rating, evaluator, start_date, end_date, description)
 
 @rule_function
-def get_assignment_logs(target, name=None):
-    """
-    Gets all assignment logs for a specific target.
-
-    Option to get a specific assignment by name.
-    """
-
-    return gamecourse_connector.get_assignment_logs(target, name)
-
-@rule_function
-def get_attendance_lab_logs(target, lab_nr=None):
-    """
-    Gets all lab attendance logs for a specific target.
-
-    Option to get a specific lab by number.
-    """
-
-    return gamecourse_connector.get_attendance_lab_logs(target, lab_nr)
-
-@rule_function
-def get_attendance_lecture_logs(target, lecture_nr=None):
-    """
-    Gets all lecture attendance logs for a specific target.
-
-    Option to get a specific lecture by number.
-    """
-
-    return gamecourse_connector.get_attendance_lecture_logs(target, lecture_nr)
-
-@rule_function
-def get_attendance_lecture_late_logs(target, lecture_nr=None):
-    """
-    Gets all late lecture attendance logs for a specific target.
-
-    Option to get a specific lecture by number.
-    """
-
-    return gamecourse_connector.get_attendance_lecture_late_logs(target, lecture_nr)
-
-@rule_function
 def get_forum_logs(target, forum=None, thread=None, rating=None):
     """
     Gets forum logs for a specific target.
@@ -76,46 +33,6 @@ def get_forum_logs(target, forum=None, thread=None, rating=None):
     """
 
     return gamecourse_connector.get_forum_logs(target, forum, thread, rating)
-
-@rule_function
-def get_lab_logs(target, lab_nr=None):
-    """
-    Gets all labs logs for a specific target.
-
-    Option to get a specific lab by number.
-    """
-
-    return gamecourse_connector.get_lab_logs(target, lab_nr)
-
-@rule_function
-def get_page_view_logs(target, name=None):
-    """
-    Gets all page view logs for a specific target.
-
-    Option to get a specific page view by name.
-    """
-
-    return gamecourse_connector.get_page_view_logs(target, name)
-
-@rule_function
-def get_participation_lecture_logs(target, lecture_nr=None):
-    """
-    Gets all lecture participation logs for a specific target.
-
-    Option to get a specific participation by lecture number.
-    """
-
-    return gamecourse_connector.get_participation_lecture_logs(target, lecture_nr)
-
-@rule_function
-def get_participation_invited_lecture_logs(target, lecture_nr=None):
-    """
-    Gets all invited lecture participation logs for a specific target.
-
-    Option to get a specific participation by lecture number.
-    """
-
-    return gamecourse_connector.get_participation_invited_lecture_logs(target, lecture_nr)
 
 @rule_function
 def get_peergrading_logs(target, forum=None, thread=None, rating=None):
@@ -129,34 +46,6 @@ def get_peergrading_logs(target, forum=None, thread=None, rating=None):
     return gamecourse_connector.get_peergrading_logs(target, forum, thread, rating)
 
 @rule_function
-def get_presentation_logs(target):
-    """
-    Gets presentation logs for a specific target.
-    """
-
-    return gamecourse_connector.get_presentation_logs(target)
-
-@rule_function
-def get_questionnaire_logs(target, name=None):
-    """
-    Gets all questionnaire logs for a specific target.
-
-    Option to get a specific questionnaire by name.
-    """
-
-    return gamecourse_connector.get_questionnaire_logs(target, name)
-
-@rule_function
-def get_quiz_logs(target, name=None):
-    """
-    Gets all quiz logs for a specific target.
-
-    Option to get a specific quiz by name.
-    """
-
-    return gamecourse_connector.get_quiz_logs(target, name)
-
-@rule_function
 def get_resource_view_logs(target, name=None, unique=True):
     """
     Gets all resource view logs for a specific target.
@@ -166,42 +55,6 @@ def get_resource_view_logs(target, name=None, unique=True):
     """
 
     return gamecourse_connector.get_resource_view_logs(target, name, unique)
-
-@rule_function
-def get_skill_logs(target, name=None, rating=None, only_min_rating=False, only_latest=False):
-    """
-    Gets skill logs for a specific target.
-
-    Options to get logs for a specific skill by name,
-    as well as with a certain rating.
-
-    Additional options to get only logs that meet the minimum
-    rating, as well as only the latest log for each skill.
-    """
-
-    return gamecourse_connector.get_skill_logs(target, name, rating, only_min_rating, only_latest)
-
-@rule_function
-def get_skill_tier_logs(target, tier, only_min_rating=True, only_latest=True):
-    """
-    Gets skill tier logs for a specific target.
-
-    Options to get only logs that meet the minimum rating,
-    as well as only the latest log for each skill.
-    """
-
-    return gamecourse_connector.get_skill_tier_logs(target, tier, only_min_rating, only_latest)
-
-@rule_function
-def get_url_view_logs(target, name=None):
-    """
-    Gets all URL view logs for a specific target.
-
-    Option to get a specific URL view by name.
-    """
-
-    return gamecourse_connector.get_url_view_logs(target, name)
-
 
 ### Getting consecutive & periodic logs
 
@@ -323,12 +176,12 @@ def get_consecutive_rating_logs(logs, min_rating=None, max_rating=None, exact_ra
     return consecutive_logs
 
 @rule_function
-def get_consecutive_peergrading_logs(target):
+def get_consecutive_peergrading_logs(peergrade_assigned, peergrade_done):
     """
     Gets consecutive peergrading logs done by target.
     """
 
-    return moodle_connector.get_consecutive_peergrading_logs(target)
+    return gamecourse_connector.get_consecutive_peergrading_logs(peergrade_assigned, peergrade_done)
 
 @rule_function
 def get_periodic_logs(logs, number, time, log_type):
@@ -344,98 +197,6 @@ def get_periodic_logs(logs, number, time, log_type):
     """
 
     return gamecourse_connector.get_periodic_logs(logs, number, time, log_type)
-
-
-### Getting total reward
-
-@rule_function
-def get_total_reward(target, award_type=None):
-    """
-    Gets total reward for a given target.
-    Option to filter by a specific award type.
-    """
-
-    return gamecourse_connector.get_total_reward(target, award_type)
-
-@rule_function
-def get_total_assignment_reward(target):
-    """
-    Gets total reward for a given target from assignments.
-    """
-
-    return gamecourse_connector.get_total_assignment_reward(target)
-
-@rule_function
-def get_total_badge_reward(target):
-    """
-    Gets total reward for a given target from badges.
-    """
-
-    return gamecourse_connector.get_total_badge_reward(target)
-
-@rule_function
-def get_total_bonus_reward(target):
-    """
-    Gets total reward for a given target from bonus.
-    """
-
-    return gamecourse_connector.get_total_bonus_reward(target)
-
-@rule_function
-def get_total_exam_reward(target):
-    """
-    Gets total reward for a given target from exams.
-    """
-
-    return gamecourse_connector.get_total_exam_reward(target)
-
-@rule_function
-def get_total_lab_reward(target):
-    """
-    Gets total reward for a given target from labs.
-    """
-
-    return gamecourse_connector.get_total_lab_reward(target)
-
-@rule_function
-def get_total_presentation_reward(target):
-    """
-    Gets total reward for a given target from presentations.
-    """
-
-    return gamecourse_connector.get_total_presentation_reward(target)
-
-@rule_function
-def get_total_quiz_reward(target):
-    """
-    Gets total reward for a given target from quizzes.
-    """
-
-    return gamecourse_connector.get_total_quiz_reward(target)
-
-@rule_function
-def get_total_skill_reward(target):
-    """
-    Gets total reward for a given target from skills.
-    """
-
-    return gamecourse_connector.get_total_skill_reward(target)
-
-@rule_function
-def get_total_streak_reward(target):
-    """
-    Gets total reward for a given target from streaks.
-    """
-
-    return gamecourse_connector.get_total_streak_reward(target)
-
-@rule_function
-def get_total_tokens_reward(target):
-    """
-    Gets total reward for a given target from tokens.
-    """
-
-    return gamecourse_connector.get_total_tokens_reward(target)
 
 
 ### Filtering logs
@@ -575,201 +336,6 @@ def get_best_rating(logs):
         if int(log[config.LOG_RATING_COL]) > rating:
             rating = int(log[config.LOG_RATING_COL])
     return rating
-
-@rule_function
-def skill_completed(target, name):
-    """
-    Checks whether a given skill has already been awarded
-    to a specific target.
-    """
-
-    return gamecourse_connector.skill_completed(target, name)
-
-@rule_function
-def has_wildcard_available(target, skill_tree_id, wildcard_tier):
-    """
-    Checks whether a given target has wildcards available to use.
-    """
-
-    return gamecourse_connector.has_wildcard_available(target, skill_tree_id, wildcard_tier)
-
-
-### ------------------------------------------------------ ###
-###	---------------- Decorated Functions ----------------- ###
-### ------------------------------------------------------ ###
-
-### Awarding items
-
-@rule_effect
-def award(target, award_type, description, reward, instance=None, unique=True, award_id=None):
-    """
-    Awards a single prize to a specific target.
-
-    NOTE: will not retract, but will not award twice if unique.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award(target, award_type, description, reward, instance, unique, award_id)
-
-@rule_effect
-def award_assignment_grade(target, logs, max_xp=1, max_grade=1):
-    """
-    Awards assignment grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP per assignment
-     > max_grade --> maximum grade per assignment
-
-    NOTE: will NOT retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_assignment_grade(target, logs, max_xp, max_grade)
-
-@rule_effect
-def award_badge(target, name, lvl, logs, progress=None):
-    """
-    Awards a given level to a specific target.
-
-    NOTE: will retract if level changed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_badge(target, name, lvl, logs, progress)
-
-@rule_effect
-def award_bonus(target, name, logs, reward=None, instance=None, unique=True):
-    """
-    Awards given bonus to a specific target.
-
-    NOTE: will retract if bonus removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_bonus(target, name, logs, reward, instance, unique)
-
-@rule_effect
-def award_exam_grade(target, name, logs, reward, max_xp=1, max_grade=1):
-    """
-    Awards exam grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP for exam
-     > max_grade --> maximum grade for exam
-
-    NOTE: will retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_exam_grade(target, name, logs, reward, max_xp, max_grade)
-
-@rule_effect
-def award_lab_grade(target, logs, max_xp=1, max_grade=1):
-    """
-    Awards lab grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP per lab
-     > max_grade --> maximum grade per lab
-
-    NOTE: will NOT retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_lab_grade(target, logs, max_xp, max_grade)
-
-@rule_effect
-def award_post_grade(target, logs, max_xp=1, max_grade=1):
-    """
-    Awards post grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP per post
-     > max_grade --> maximum grade per post
-
-    NOTE: will NOT retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_post_grade(target, logs, max_xp, max_grade)
-
-@rule_effect
-def award_presentation_grade(target, name, logs, max_xp=1, max_grade=1):
-    """
-    Awards presentation grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP for presentation
-     > max_grade --> maximum grade for presentation
-
-    NOTE: will retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_presentation_grade(target, name, logs, max_xp, max_grade)
-
-@rule_effect
-def award_quiz_grade(target, logs, max_xp=1, max_grade=1):
-    """
-    Awards quiz grades to a specific target.
-
-    Option to calculate how many XP should be awarded:
-     > max_xp --> maximum XP per quiz
-     > max_grade --> maximum grade per quiz
-
-    NOTE: will NOT retract if grade removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_quiz_grade(target, logs, max_xp, max_grade)
-
-@rule_effect
-def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=False):
-    """
-    Awards a given skill to a specific target.
-    Option to spend a wildcard to give award.
-
-    NOTE: will retract if rating changed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_skill(target, name, rating, logs, dependencies, use_wildcard)
-
-@rule_effect
-def award_streak(target, name, logs):
-    """
-    Awards a given streak to a specific target.
-
-    NOTE: will retract if streak changed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_streak(target, name, logs)
-
-@rule_effect
-def award_tokens(target, name, logs, reward=None, instance=None, unique=True):
-    """
-    Awards given tokens to a specific target.
-
-    NOTE: will retract if tokens removed.
-    Updates award if reward has changed.
-    """
-
-    gamecourse_connector.award_tokens(target, name, logs, reward, instance, unique)
-
-
-### Spend items
-
-@rule_effect
-def spend_tokens(target, name, amount, repetitions=1):
-    """
-    Spends a single item of a specific target.
-
-    NOTE: will not retract, but will not spend twice if is unique.
-    Updates if amount has changed.
-    """
-
-    gamecourse_connector.spend_tokens(target, name, amount, repetitions)
 
 
 ### ------------------------------------------------------ ###

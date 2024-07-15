@@ -13,35 +13,43 @@ ini_set('display_errors', '1');
 use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Views\Page\Page;
+use GameCourse\Course\Course;
 use Utils\Cache;
 
-require __DIR__ . "/../../../../../inc/bootstrap.php";
+require __DIR__ . "/../inc/bootstrap.php";
 
-const TABLE_VIEWS_CACHE = "views_cache";
+const TABLE_VIEWS_CACHE = "view_cache";
 
 $courseId = intval($argv[1]);
 $targets = explode(",", $argv[2]);
 
 try {
+    $course = new Course($courseId);
+    $courseUsers = $course->getCourseUsersWithRole(true, "Student");
     $pages = Page::getPages($courseId);
 
     foreach ($pages as $page) {
         $pageId = intval($page["id"]);
         $pageToCache = new Page($pageId);
-        $mockUser = intval($targets[0]);
+        $userSpecific = $pageToCache->isUserSpecific();
 
-        if ($page["type"] === "individual") {
+        if ($userSpecific) {
             foreach ($targets as $target) {
                 $targetId = intval($target);
                 Core::database()->delete(TABLE_VIEWS_CACHE, ["page_id" => $pageId, "user_id" => $targetId]);
 
-                $pageToCache->renderPage($targetId, $targetId);
-                Cache::storeViewsInDatabase($pageId, $targetId);
+                $pageString = $pageToCache->renderPage($targetId, $targetId);
+                Cache::storeUserViewInDatabase($pageId, $targetId, $pageString);
             }
-        } else if ($page["type"] === "generic") {
+        } else {
             Core::database()->delete(TABLE_VIEWS_CACHE, ["page_id" => $pageId]);
-            $pageToCache->renderPage($mockUser, $mockUser);
-            Cache::storeViewsInDatabase($pageId);
+
+            foreach ($courseUsers as $courseUser) {
+                $targetId = intval($courseUser["id"]);
+
+                $pageString = $pageToCache->renderPage($targetId, $targetId);
+                Cache::storeUserViewInDatabase($pageId, $targetId, $pageString);
+            }
         }
     }
 
