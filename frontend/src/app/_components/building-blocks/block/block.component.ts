@@ -89,14 +89,16 @@ export class BBBlockComponent implements OnInit {
         }, 0);
 
         setTimeout(() => {
-          for (let el of lowerInHierarchy) {
-            let view = el.view.findView(newBlock.id);
-            if (view instanceof ViewBlock) {
-              moveItemInArray(
-                view.children,
-                view.children.length - 1,
-                event.currentIndex
-              );
+          if (newBlock) {
+            for (let el of lowerInHierarchy) {
+              let view = el.view.findView(newBlock.id);
+              if (view instanceof ViewBlock) {
+                moveItemInArray(
+                  view.children,
+                  view.children.length - 1,
+                  event.currentIndex
+                );
+              }
             }
           }
         }, 0);
@@ -150,11 +152,7 @@ export class BBBlockComponent implements OnInit {
   }
 
   public get connectedTo(): string[] {
-    let view: View = this.view;
-    while (view.parent) {
-      view = view.parent;
-    }
-    return this.getIdsRecursive(view).reverse();
+    return this.getIdsRecursive(this.service.getSelectedView()).reverse();
   }
 
   getCantDrag(): boolean {

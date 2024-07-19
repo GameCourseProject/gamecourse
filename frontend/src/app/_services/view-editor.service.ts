@@ -296,7 +296,7 @@ export class ViewEditorService {
         if (item.parent instanceof ViewBlock && baseBlock instanceof ViewBlock) {
           for (let el of lowerInHierarchy) {
             const found = el.view.findView(item.parent.id);
-            if (found instanceof ViewBlock) found.children = [newBlock];
+            if (found instanceof ViewBlock) found.children = [_.cloneDeep(newBlock)];
           }
 
           for (let el of this.viewsByAspect.filter(e => lowerInHierarchy.indexOf(e) == -1)) {
