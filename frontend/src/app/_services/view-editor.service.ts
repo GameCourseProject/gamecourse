@@ -337,7 +337,7 @@ export class ViewEditorService {
 
       for (let el of lowerInHierarchy) {
         let view = el.view.findView(item.id);
-        if (view.parent) {
+        if (view?.parent) {
           // visually delete the item from those views
           view.parent.removeChildView(item.id);
 
