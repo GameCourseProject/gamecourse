@@ -535,6 +535,7 @@ class Page
             $logs = $viewTreeChanges["logs"];
             $views = $viewTreeChanges["views"];
             Logging::processLogs($logs, $views, $this->getCourse()->getId());
+            $this->setViewRoot($viewTreeChanges["viewRoot"]);
         }
 
         // Update automations
