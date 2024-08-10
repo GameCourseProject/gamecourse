@@ -13,7 +13,7 @@
       <ng-icon [name]="'jam-pencil-f'" [size]="'1.8rem'"
                class="text-primary"></ng-icon>
 
-      <h2 *ngIf="coreTemplate" class="m-0">{{coreTemplate.name}}</h2>
+      <h2 *ngIf="coreTemplate" class="m-0 font-bold text-2xl">{{coreTemplate.name}}</h2>
       <input *ngIf="!coreTemplate && !page && pageToManage" type="text" placeholder="Create New" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10"
              [(ngModel)]="pageToManage.name" (keydown)="$event.stopPropagation()"/>
       <input *ngIf="page" type="text" placeholder="Page Name" class="bg-transparent font-bold text-2xl outline-0 text-base-content border-b-2 border-base-content/10"

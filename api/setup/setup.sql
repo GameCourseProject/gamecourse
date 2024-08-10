@@ -391,7 +391,7 @@ CREATE TABLE page(
      course                      int unsigned NOT NULL,
      name                        varchar(100) NOT NULL,
      isVisible                   boolean DEFAULT FALSE,
-     viewRoot                    bigint unsigned NOT NULL,
+     viewRoot                    bigint unsigned,
      creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
@@ -401,7 +401,7 @@ CREATE TABLE page(
 
      UNIQUE key(course, name),
      UNIQUE key(course, position),
-     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE SET NULL,
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 

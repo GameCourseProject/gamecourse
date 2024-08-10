@@ -15,7 +15,7 @@
 
 <ng-template #FILE_PICKER>
   <div class="flex flex-col md:flex-row w-full h-80 gap-5">
-    <div *ngIf="root && !loading" class="w-full mt-4">
+    <div *ngIf="root && !loading" class="w-full mt-4 overflow-y-auto">
 
       <div class="flex justify-center">
         <div class="btn btn-sm btn-ghost btn-circle tooltip ml-4" data-tip="Back" (click)="calculatePath()">
