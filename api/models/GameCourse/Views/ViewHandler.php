@@ -983,7 +983,7 @@ class ViewHandler
             }
         }
 
-        return ["logs" => $logs, "views" => $views];
+        return ["logs" => $logs, "views" => $views, "viewRoot" => $viewRoot];
     }
 
     /**
