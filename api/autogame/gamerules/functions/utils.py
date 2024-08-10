@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
+import config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DECORATORS
@@ -26,22 +27,28 @@ def rule_function(func):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def import_gamefunctions (scope):
 	""" return a dictionary with all the functions
-	defined in module 'gamefunctions'
+	defined in course gamefunctions folder
 	"""
 	if scope is None:
 		scope = {}
-	## import the module
-	from . import gamefunctions
-	## iterate through all name definitions in module 'functions'
-	for name in dir(gamefunctions):
-		# skip unwanted names
-		if name.startswith('_'):
-			continue
-		obj = eval('gamefunctions.%s' % name)
-		# only add callable objects that have '__gamerules__' attribute
-		if callable(obj) \
-		and hasattr(obj,"__gamerules__"):
-			scope[name] = obj
+
+	course_path = os.path.join(os.path.dirname(__file__), "gamefunctions", f"course_{config.COURSE}")
+
+	for filename in os.listdir(course_path):
+		if filename.endswith(".py") and not filename.startswith("_"):
+			module_name = filename[:-3]
+			exec(f"from .gamefunctions.course_{config.COURSE} import {module_name}")
+			mod = importlib.import_module(f"gamerules.functions.gamefunctions.course_{course}.{module_name}", package=__package__)
+			for name in dir(mod):
+				# skip unwanted names
+				if name.startswith('_'):
+					continue
+				obj = eval('%s.%s' % (module_name, name))
+				# only add callable objects that have '__gamerules__' attribute
+				if callable(obj) and hasattr(obj, "__gamerules__"):
+					# print(f"Name: {name}")
+					scope[name] = obj
+
 	return scope
 
 def import_functions_from_FuncPaths (fp):
@@ -171,6 +178,100 @@ def import_functions_from_rulepath (p, info=False):
 		return functions, fpaths, info
 
 
+def import_gamefunctions_from_course(course):
+	course_path = os.path.join(os.path.dirname(__file__), "gamefunctions", f"course_{config.COURSE}")
+
+	functions = {}
+	import imp
+	import inspect
+	effect_rules = []
+	for entry in os.listdir(course_path):
+		if entry.startswith("_") or entry[-3:] != ".py":
+			continue
+		module_name = entry[:-3]
+
+		exec(f"from .gamefunctions.course_{course} import {module_name}")
+		mod = importlib.import_module(f"gamerules.functions.gamefunctions.course_{course}.{module_name}",package=__package__)
+		# import functions from module
+		for name in dir(mod):
+			# skip private names
+			if name.startswith("_"):
+				continue
+			stmt = module_name + "." + name
+			obj = eval(stmt, {module_name: mod})
+			# only import specific callable objects
+			if not callable(obj) \
+					or not hasattr(obj, "__gamerules__"):
+				continue
+			if hasattr(obj, "__rule_effect__"):
+				rule_info = {}
+				rule_info["name"] = name
+				rule_info["description"] = obj.__doc__
+				rule_info["args"] = []
+
+				for param in inspect.signature(obj).parameters.values():
+					argument = {}
+					argument["name"] = param.name
+					argument["description"] = None
+					if (param.default is param.empty):
+						argument["type"] = None
+						argument["optional"] = "0"
+					else:
+						if param.default != None:
+							argument["type"] = type(param.default).__name__
+						else:
+							argument["type"] = None
+						argument["optional"] = "1"
+
+					rule_info["args"].append(argument)
+
+				effect_rules.append(rule_info)
+				obj = rule_effect(obj)
+			functions[name] = obj
+
+	from inspect import signature, getdoc, cleandoc
+	info = []
+
+	for func in functions:
+		function_info = {}
+		function_info["moduleId"] = "gamerules"
+		function_info["name"] = "gamerules"
+		function_info["keyword"] = func
+		function_info["args"] = []
+
+		func_args = functions[func].__code__.co_varnames[:functions[func].__code__.co_argcount]
+		func_sig = signature(functions[func])
+
+		found = next((dict for dict in effect_rules if dict["name"] == func), None)
+
+		if found:
+			description = found["description"]
+			for param in found["args"]:
+				function_info["args"].append(param)
+
+		else:
+			description = getdoc(functions[func])
+
+			for param in func_sig.parameters.values():
+				argument = {}
+				argument["name"] = param.name
+				argument["description"] = None
+				if (param.default is param.empty):
+					argument["type"] = None
+					argument["optional"] = "0"
+				else:
+					if param.default != None:
+						argument["type"] = type(param.default).__name__
+					else:
+						argument["type"] = None
+					argument["optional"] = "1"
+
+				function_info["args"].append(argument)
+
+		function_info["description"] = "" if description is None else description.replace("  ", "")
+		function_info["returnType"] = None
+		info.append(function_info)
+	return functions, info
 
 def import_functions_from_module (module):
 	import inspect
@@ -205,3 +306,107 @@ def import_functions_from_module (module):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def rm_extension(s):
 	return s[::-1][s[::-1].find(".")+1:][::-1]
+
+
+def import_functions_from_course2(course, info=False):
+	from .func_paths import FPaths
+	functions = {}
+	fpaths = FPaths()
+	import imp
+	import inspect
+	effect_rules = []
+	course_path = os.path.join(os.path.dirname(__file__), "gamefunctions", f"course_{course}")
+	for entry in os.listdir(course_path):
+		# skip private names
+		if entry.startswith("_"):
+			continue
+		# skip if the entry is not a Python file
+		if entry[-3:] != ".py":
+			continue
+		module_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "gamefunctions", f"course_{course}", entry)
+		module_name = entry[:-3]
+
+		mod = imp.load_source(module_name, module_path)
+		# import functions from module
+		for name in dir(mod):
+			# skip private names
+			if name.startswith("_"):
+				continue
+			stmt = module_name + "." + name
+			obj = eval(stmt, {module_name: mod})
+			# only import specific callable objects
+			if not callable(obj) \
+					or not hasattr(obj, "__gamerules__"):
+				continue
+			if hasattr(obj, "__rule_effect__"):
+				rule_info = {}
+				rule_info["name"] = name
+				rule_info["description"] = obj.__doc__
+				rule_info["args"] = []
+
+				for param in inspect.signature(obj).parameters.values():
+					argument = {}
+					argument["name"] = param.name
+					argument["description"] = None
+					if (param.default is param.empty):
+						argument["type"] = None
+						argument["optional"] = "0"
+					else:
+						if param.default != None:
+							argument["type"] = type(param.default).__name__
+						else:
+							argument["type"] = None
+						argument["optional"] = "1"
+
+					rule_info["args"].append(argument)
+
+				effect_rules.append(rule_info)
+				obj = rule_effect(obj)
+			functions[name] = obj
+			fpaths.add(module_path, name)
+	if not info:
+		return functions, fpaths
+	else:
+		from inspect import signature, getdoc, cleandoc
+		info = []
+
+		for func in functions:
+			function_info = {}
+			function_info["moduleId"] = "gamerules"
+			function_info["name"] = "gamerules"
+			function_info["keyword"] = func
+			function_info["args"] = []
+
+			func_args = functions[func].__code__.co_varnames[:functions[func].__code__.co_argcount]
+			func_sig = signature(functions[func])
+
+			found = next((dict for dict in effect_rules if dict["name"] == func), None)
+
+			if found:
+				description = found["description"]
+				for param in found["args"]:
+					function_info["args"].append(param)
+
+			else:
+				description = getdoc(functions[func])
+
+				for param in func_sig.parameters.values():
+					argument = {}
+					argument["name"] = param.name
+					argument["description"] = None
+					if (param.default is param.empty):
+						argument["type"] = None
+						argument["optional"] = "0"
+					else:
+						if param.default != None:
+							argument["type"] = type(param.default).__name__
+						else:
+							argument["type"] = None
+						argument["optional"] = "1"
+
+					function_info["args"].append(argument)
+
+			function_info["description"] = "" if description is None else description.replace("  ", "")
+			function_info["returnType"] = None
+			info.append(function_info)
+		return functions, fpaths, info

@@ -27,6 +27,7 @@ abstract class Module
     const TABLE_MODULE = "module";
     const TABLE_MODULE_DEPENDENCY = "module_dependency";
     const TABLE_COURSE_MODULE = "course_module";
+    const MODULE_GAMEFUNCTIONS_PATH = "autogame/gamerules/functions/gamefunctions/";
 
     protected $id;
     protected $course;
@@ -195,11 +196,23 @@ abstract class Module
         Core::database()->update(self::TABLE_COURSE_MODULE, ["isEnabled" => +$isEnabled],
             ["module" => $this->id, "course" => $this->course->getId()]);
 
+        $this->changeGameFunctionsStatus($isEnabled);
+
         if ($isEnabled) $this->init();
         else $this->disable();
 
 
         Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
+    }
+
+    public function changeGameFunctionsStatus(bool $isEnabled) {
+        $moduleName = $this->getName() . ".py";
+        $moduleGamefuntionsPath = ROOT_PATH . MODULE_GAMEFUNCTIONS_PATH . "course_" . $this->getCourse() . "/";
+        if (!$isEnabled) {
+            rename($moduleGamefuntionsPath . $moduleName, $moduleGamefuntionsPath . "_" . $moduleName);
+        } else {
+            rename($moduleGamefuntionsPath . "_" . $moduleName, $moduleGamefuntionsPath . $moduleName);
+        }
     }
 
 
