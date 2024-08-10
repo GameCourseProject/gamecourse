@@ -33,6 +33,8 @@ $nrReportsSent = 0;
 $timeLeft = null;
 $error = false;
 
+logProgressReport($progressReportModule->getLogsPath(), "Progress report script starting.", "INFO");
+
 // Send e-mail to each course student
 $students = $course->getStudents(true);
 foreach ($students as $student) {
@@ -44,6 +46,8 @@ foreach ($students as $student) {
 
     list($report, $totalXP, $currentPeriodXP, $diff, $tLeft, $prediction, $pieChart, $areaChart) = $progressReportModule->getUserProgressReport($studentId, $seqNr, $info);
     $timeLeft = $tLeft;
+
+    logProgressReport($progressReportModule->getLogsPath(), "Attempting to send to " . $student["email"], "INFO");
 
     if (!sendEmail($to, $subject, $report)) $error = true;
     else {

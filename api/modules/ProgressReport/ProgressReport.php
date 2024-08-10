@@ -31,6 +31,8 @@ class ProgressReport extends Module
     const TABLE_PROGRESS_REPORT_HISTORY = "progress_report_history";
     const TABLE_PROGRESS_REPORT_CONFIG = "progress_report_config";
 
+    const LOGS_FOLDER = "progressreport";
+
     public function __construct(?Course $course)
     {
         parent::__construct($course);
@@ -186,9 +188,17 @@ class ProgressReport extends Module
         }
     }
 
+    /**
+     * Gets Progress Report logs file for current course.
+     *
+     * @param int $courseId
+     * @param bool $fullPath
+     * @return string
+     */
     public function getLogsPath(): string
     {
-        return LOGS_FOLDER . "/progress_report_" . $this->course->getId() . ".txt";
+        $path = self::LOGS_FOLDER . "/" . "progress_report_" . $this->course->getId() . ".txt";
+        return LOGS_FOLDER . "/" . $path;
     }
 
 
