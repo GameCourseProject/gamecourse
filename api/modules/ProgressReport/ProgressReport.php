@@ -191,8 +191,6 @@ class ProgressReport extends Module
     /**
      * Gets Progress Report logs file for current course.
      *
-     * @param int $courseId
-     * @param bool $fullPath
      * @return string
      */
     public function getLogsPath(): string
