@@ -96,6 +96,7 @@ class RuleSystemController
         $section->setRoles($rolesNames);
 
         $sectionInfo = $section->getData();
+        $sectionInfo["roles"] = $section->getRoles();
         API::response($sectionInfo);
     }
 
@@ -127,6 +128,7 @@ class RuleSystemController
         $section->setRoles($rolesNames);
 
         $sectionInfo = $section->getData();
+        $sectionInfo["roles"] = $section->getRoles();
         API::response($sectionInfo);
     }
 
