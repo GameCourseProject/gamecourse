@@ -26,7 +26,7 @@ class Journey extends Module
 
     const ID = "Journey";  // NOTE: must match the name of the class
     const NAME = "Journey";
-    const DESCRIPTION = "Provides a different way of completing the Skills from the Skill Tree.";
+    const DESCRIPTION = "Provides a different, sequential, way of completing the Skills from the Skill Tree.";
     const TYPE = ModuleType::GAME_ELEMENT;
 
     const VERSION = "2.2.0";                                     // Current module version

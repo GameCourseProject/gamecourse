@@ -328,7 +328,8 @@ export class SectionsComponent implements OnInit {
       name: section?.name ?? null,
       position: section?.position ?? null,
       isActive: section?.isActive ?? true,
-      loading: false
+      loading: false,
+      roleNames: section?.roles?.map(role => role.name) ?? []
     };
     if (section) sectionData.id = section.id;
     return sectionData;
@@ -342,5 +343,6 @@ export interface SectionManageData {
   name?: string,
   position?: number,
   isActive?: boolean,
-  loading?: boolean
+  loading?: boolean,
+  roleNames?: string[]
 }

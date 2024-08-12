@@ -39,7 +39,7 @@
       <div cdkDropList [id]="'sections-list'" class="dd max-w-none h-96 overflow-y-auto" (cdkDropListDropped)="drop($event)" appScrollableDrag>
         <!-- Sections list -->
         <div class="dd-item" *ngFor="let section of sectionsToShow" [cdkDragDisabled]="section.name === 'Graveyard'" cdkDrag (cdkDragStarted)="showWarning()">
-          <div class="justify-center flex {{(section.name === 'Graveyard' && nrRules[section.id] === 0) ? 'hidden' : ''}}">
+          <div class="justify-center flex">
             <!-- Move -->
             <div *ngIf="sectionsToShow.length > 1 && section.name !== 'Graveyard'" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
               <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
@@ -56,11 +56,16 @@
 
                   <div class="flex items-start mt-2 justify-between">
 
-                    <div class="prose items-center flex gap-3 mb-3 flex-wrap items-start">
+                    <div class="items-center flex gap-3 mb-3 flex-wrap">
                       <ng-icon [name]="'jam-box'" [size]="'1.5rem'"
                                [classList]="section.isActive ? '' : 'text-base-content text-opacity-30'"></ng-icon>
-                      <h3 class="mt-0 {{section.isActive ? '' : 'text-base-content text-opacity-50'}}">{{section.name}}</h3>
+                      <h3 class="mt-0 font-semibold text-xl {{section.isActive ? '' : 'text-base-content text-opacity-50'}}">{{section.name}}</h3>
                       <app-spinner *ngIf="section.loading" [classList]="'ml-2'"></app-spinner>
+                      <div class="flex flex-wrap items-center gap-1.5">
+                        <div *ngFor="let role of section.roles" class="badge badge-outline">
+                          {{ role.name }}
+                        </div>
+                      </div>
                     </div>
 
                     <div>
@@ -155,20 +160,32 @@
 </app-modal>
 <ng-template #MANAGE_SECTION>
   <form #s="ngForm">
-    <div class="w-full flex-wrap mt-3">
-      <app-input-text
-        [id] = "'section-name'"
-        [form] = "s"
-        [(value)] = "sectionToManage.name"
-        [placeholder]="'Section Name'"
-        [topLabel]="'Name'"
-        [pattern]="'(?!^\\d+$)^.+$'"
-        [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
-        [required]="true"
-        [maxLength]="60"
-        [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
-      </app-input-text>
-    </div>
+    <app-input-text
+      [id] = "'section-name'"
+      [form] = "s"
+      [(value)] = "sectionToManage.name"
+      [placeholder]="'Section Name'"
+      [topLabel]="'Name'"
+      [pattern]="'(?!^\\d+$)^.+$'"
+      [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
+      [required]="true"
+      [maxLength]="60"
+      [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
+    </app-input-text>
+    <app-input-select-role
+      [courseId]="course.id"
+      [id]="'section-roles'"
+      [form]="s"
+      [(value)]="sectionToManage.roleNames"
+      [placeholder]="'Section Roles'"
+      [multiple]="true"
+      [topLabel]="'Roles'"
+      [classList]="'mt-2'"
+      [required]="true"
+      [helperText]="'The rules inside this section will be applied to all users with at least one of these roles'"
+      [helperPosition]="'right'"
+      [search]="true"
+    ></app-input-select-role>
   </form>
 </ng-template>
 

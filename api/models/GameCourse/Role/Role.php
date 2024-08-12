@@ -21,6 +21,7 @@ class Role
 {
     const TABLE_ROLE = "role";
     const TABLE_USER_ROLE = "user_role";
+    const TABLE_RULE_SECTION_ROLE = "rule_section_role";
 
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
@@ -827,6 +828,56 @@ class Role
         $where = ["user" => $userId, "course" => $courseId, "role" => $roleId];
         return !empty(Core::database()->select(self::TABLE_USER_ROLE, $where));
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------- Rule Section related --------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets section's roles.
+     */
+    public static function getSectionRoles(int $sectionId): array
+    {
+        $roles = Core::database()->selectMultiple(
+            self::TABLE_RULE_SECTION_ROLE . " sr JOIN " . Role::TABLE_ROLE . " r on sr.role=r.id",
+            ["sr.section" => $sectionId],
+            "r.id, name, landingPage, module"
+        );
+        foreach ($roles as &$role) { $role = self::parse($role); }
+        return $roles;
+    }
+
+    /**
+     * Replaces section's roles in the database.
+     *
+     * @param int $sectionId
+     * @param int $courseId
+     * @param array $rolesNames
+     * @return void
+     * @throws Exception
+     */
+    public static function setSectionRoles(int $sectionId, int $courseId, array $rolesNames)
+    {
+        // Check if roles exist in course
+        foreach ($rolesNames as $roleName) {
+            if (!self::courseHasRole($courseId, $roleName))
+                throw new Exception("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
+        }
+
+        // Remove all section roles
+        Core::database()->delete(self::TABLE_RULE_SECTION_ROLE, ["section" => $sectionId]);
+
+        // Add new roles
+        foreach ($rolesNames as $roleName) {
+            $roleId = self::getRoleId($roleName, $courseId);
+            Core::database()->insert(self::TABLE_RULE_SECTION_ROLE, [
+                "section" => $sectionId,
+                "role" => $roleId
+            ]);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Validations ------------------- ***/

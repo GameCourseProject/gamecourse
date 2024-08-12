@@ -1560,7 +1560,8 @@ export class ApiHttpService {
     const data = {
       course : sectionData.course,
       name: sectionData.name,
-      position: sectionData.position
+      position: sectionData.position,
+      roles: sectionData.roleNames
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1579,7 +1580,8 @@ export class ApiHttpService {
       course: sectionData.course,
       name: sectionData.name,
       position: sectionData.position,
-      isActive: sectionData.isActive
+      isActive: sectionData.isActive,
+      roles: sectionData.roleNames
     }
 
     const params = (qs: QueryStringParameters) => {
