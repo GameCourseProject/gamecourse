@@ -17,6 +17,7 @@ class ExpressionEvaluatorBase
     public $shift = 1;
     public $reduce = 2;
     public $accept = 3;
+    public $matches;
 
     function trace()
     {
