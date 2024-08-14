@@ -246,7 +246,7 @@ class Dictionary
 
         // Call function
         try {
-            return $library->{$funcName}(...$args);
+        return $library->{$funcName}(...$args);
         } catch (InvalidArgumentException $e) {
             $errorMessage = $e->getMessage();
             $position = strpos($errorMessage, ':');

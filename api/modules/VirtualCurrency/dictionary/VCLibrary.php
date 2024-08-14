@@ -354,7 +354,7 @@ class VCLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, string $ratio, int $threshold, bool $extra): ?ValueNode
+    public function exchangeTokensForXP(int $userId, string $ratio, ?int $threshold = null, ?bool $extra = true): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));

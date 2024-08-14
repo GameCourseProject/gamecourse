@@ -4,11 +4,8 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class GenericUnaryOp extends UnaryOp {
-    private $op;
-
-    public function __construct($op, $rhs, ?Library $library = null) {
+    public function __construct(private $op, $rhs, ?Library $library = null) {
         parent::__construct($rhs, $library);
-        $this->op = $op;
     }
 
     public function getOp() {

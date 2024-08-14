@@ -487,10 +487,9 @@ class Notification
     /**
      * Trims notification parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values){
+    private static function trim(mixed &...$values){
         $params = ["message"];
         Utils::trim($params, ...$values);
     }

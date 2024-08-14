@@ -4,10 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class ParameterNode extends Node {
-    private $param;
-
-    public function __construct(string $param, ?Library $library = null) {
-        $this->param = $param;
+    public function __construct(private string $param, ?Library $library = null) {
         $this->setLibrary($library);
     }
 

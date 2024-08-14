@@ -633,10 +633,9 @@ class GameElement
     /**
      * Trims gameElement parameter's whitespace at start/end
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["module"];
         Utils::trim($params, ...$values);
