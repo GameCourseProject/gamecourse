@@ -2,6 +2,7 @@
 namespace GameCourse\Views\Dictionary;
 
 use GameCourse\Core\Core;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
 use Utils\Cache;
 use Utils\Time;
@@ -210,26 +211,27 @@ class ProvidersLibrary extends Library
                         $XPEvolution[1]["data"] = $cacheValue[1]["data"];
 
                     } else {
-                        foreach ($userIds as $i => $uId) {
-                            // Get user awards
-                            $awardsModule = new \GameCourse\Module\Awards\Awards($course);
-                            $awards = array_filter($awardsModule->getUserAwards($uId), function ($award) {
-                                return $award["type"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
-                            });
+                        $awardsModule = new \GameCourse\Module\Awards\Awards($course);
+                        $awards = array_filter($awardsModule->getCourseUsersAwards($userIds), function ($award) {
+                            return $award["type"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
+                        });
 
-                            $totalUserXP = 0;
-                            $t = 0;
+                        $awardByTime = [];
 
-                            // Calculate XP over time
-                            while ($t <= $timePassed) {
-                                $awardsOfTime = array_filter($awards, function ($award) use ($baseline, $t, $time) {
-                                    return Time::timeBetween($baseline, $award["date"], $time) == $t;
-                                });
-                                foreach ($awardsOfTime as $award) { $totalUserXP += $award["reward"]; }
-                                if ($i == 0) $XPEvolution[1]["data"][$t] = ["x" => $t, "y" => round($totalUserXP / $nrUsers)];
-                                else $XPEvolution[1]["data"][$t]["y"] += round($totalUserXP / $nrUsers);
-                                $t++;
+                        foreach ($awards as $award) {
+                            $awardAge = Time::timeBetween($baseline, $award["date"], $time);
+                            if (isset($awardByTime[$awardAge])) {
+                                $awardByTime[$awardAge] += $award["reward"];
+                            } else {
+                                $awardByTime[$awardAge] = $award["reward"];
                             }
+                        }
+
+                        $xpFirstDay = $awardByTime[0] ?? 0;
+                        $XPEvolution[1]["data"][0] = ["x" => 0, "y" => round($xpFirstDay / $nrUsers)];
+                        for ($index = 1; $index < $timePassed; $index++) {
+                            $XPEvolution[1]["data"][$index] = ["x" => $index, "y" => $XPEvolution[1]["data"][$index-1]["y"] +
+                                round(($awardByTime[$index] ?? 0) / $nrUsers)];
                         }
                     }
                 }
@@ -430,54 +432,52 @@ class ProvidersLibrary extends Library
                 $leaderboardEvolution[0]["data"] = $cacheValue[0]["data"];
 
             } else {
-                $course = Core::dictionary()->getCourse();
-                if (!$course) $this->throwError("leaderboardEvolution", "no course found");
+                //START
+                $awardsModule = new \GameCourse\Module\Awards\Awards($course);
+                $awards = array_filter($awardsModule->getCourseUsersAwards($userIds), function ($award) {
+                    return $award["type"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
+                });
 
-                // Calculate elements over time
-                $XPOverTime = [];
-                $badgesOverTime = [];
+                $xpByTimeAndUser = [];
+                $badgesByTimeAndUser = [];
 
-                foreach ($userIds as $uId) {
-                    // Get user awards
-                    $awardsModule = new \GameCourse\Module\Awards\Awards($course);
-                    $awards = array_filter($awardsModule->getUserAwards($uId), function ($award) {
-                        return $award["type"] !== \GameCourse\Module\Awards\AwardType::TOKENS;
-                    });
-
-                    $totalUserXP = 0;
-                    $userXPOverTime = [];
-
-                    $userBadges = 0;
-                    $userBadgesOverTime = [];
-
-                    $t = 0;
-                    while ($t <= $timePassed) {
-                        $awardsOfTime = array_filter($awards, function ($award) use ($baseline, $t, $time) {
-                            return Time::timeBetween($baseline, $award["date"], $time) == $t;
-                        });
-                        foreach ($awardsOfTime as $award) {
-                            $totalUserXP += $award["reward"];
-                            if ($award["type"] === \GameCourse\Module\Awards\AwardType::BADGE) $userBadges++;
-                        }
-                        $userXPOverTime[] = ["x" => $t, "y" => $totalUserXP];
-                        $userBadgesOverTime[] = ["x" => $t, "y" => $userBadges];
-                        $t++;
+                // initialize arrays by time to guarantee they are never null
+                for ($index = 0; $index <= $timePassed; $index++) {
+                    $xpByTimeAndUser[$index] = [];
+                    $badgesByTimeAndUser[$index] = [];
+                    foreach ($userIds as $uId) {
+                        $xpByTimeAndUser[$index][$uId] = 0;
+                        $badgesByTimeAndUser[$index][$uId] = 0;
                     }
-                    $XPOverTime[$uId] = $userXPOverTime;
-                    $badgesOverTime[$uId] = $userBadgesOverTime;
+                }
+
+                foreach ($awards as $award) {
+                    $awardAge = Time::timeBetween($baseline, $award["date"], $time);
+                    $user = intval($award["user"]);
+                    $xpByTimeAndUser[$awardAge][$user] += $award["reward"];
+                    if ($award["type"] === AwardType::BADGE) {
+                        $badgesByTimeAndUser[$awardAge][$user] += 1;
+                    }
+                }
+
+                for ($index = 1; $index <= $timePassed; $index++) {
+                    foreach ($userIds as $uId) {
+                        $xpByTimeAndUser[$index][$uId] += $xpByTimeAndUser[$index-1][$uId];
+                        $badgesByTimeAndUser[$index][$uId] += $badgesByTimeAndUser[$index-1][$uId];
+                    }
                 }
 
                 // Calculate position over time
                 $t = 0;
                 while ($t <= $timePassed) {
                     // Order by XP, badges count and name
-                    usort($userIds, function ($a, $b) use ($t, $XPOverTime, $badgesOverTime) {
-                        $xpA = $XPOverTime[$a][$t]["y"];
-                        $xpB = $XPOverTime[$b][$t]["y"];
+                    usort($userIds, function ($a, $b) use ($t, $xpByTimeAndUser, $badgesByTimeAndUser) {
+                        $xpA = $xpByTimeAndUser[$t][$a]["y"];
+                        $xpB = $xpByTimeAndUser[$t][$b]["y"];
 
                         if ($xpA == $xpB) {
-                            $badgesA = $badgesOverTime[$a][$t]['y'];
-                            $badgesB = $badgesOverTime[$b][$t]['y'];
+                            $badgesA = $badgesByTimeAndUser[$t][$a]['y'];
+                            $badgesB = $badgesByTimeAndUser[$t][$b]['y'];
 
                             if ($badgesA == $badgesB) {
                                 $nameA = \GameCourse\User\User::getUserById($a)->getName();

@@ -6,6 +6,7 @@ use GameCourse\AutoGame\AutoGame;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Awards\Awards;
+use GameCourse\Module\Awards\AwardType;
 use GameCourse\Module\Config\Action;
 use GameCourse\Module\Config\ActionScope;
 use GameCourse\Module\Config\DataType;
@@ -17,6 +18,7 @@ use GameCourse\Module\Streaks\Streak;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
 use GameCourse\NotificationSystem\Notification;
+use GameCourse\User\User;
 
 /**
  * This is the Skills module, which serves as a compartimentalized
@@ -454,17 +456,18 @@ class Skills extends Module
         $users = [];
         $skill = Skill::getSkillById($skillId);
         if ($skill) {
-            $skillTreeId = $skill->getTier()->getSkillTree()->getId();
-            foreach ($this->getCourse()->getStudents() as $student) {
-                $completedSkills = $this->getUserSkills($student["id"], $skillTreeId);
-                foreach ($completedSkills as $skill) {
-                    if ($skill["id"] == $skillId) {
-                        $users[] = $student;
-                        break;
-                    }
-                }
-            }
+            $table = Awards::TABLE_AWARD . " a LEFT JOIN " . Skills::TABLE_SKILL . " s on a.moduleInstance=s.id"
+                . " LEFT JOIN " . User::TABLE_USER . " u on a.user=u.id";
+            $where = ["a.course" => $this->course->getId(), "a.type" => AwardType::SKILL, "s.id" => $skillId];
+
+            $users = Core::database()->selectMultiple($table, $where, "a.user");
         }
+        foreach ($users as &$user) {
+            $user["id"] = intval($user["id"]);
+            $userObject = new User($user["id"]);
+            $user["image"] = $userObject->getImage();
+        }
+
         return $users;
     }
 

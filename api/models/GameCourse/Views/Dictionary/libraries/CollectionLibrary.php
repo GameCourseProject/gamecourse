@@ -153,8 +153,28 @@ class CollectionLibrary extends Library
                 ReturnType::COLLECTION,
                 $this,
                 "collection.generate(5)"
+            ),
+            new DFunction("getOrdinal",
+                [["name" => "size", "optional" => false, "type" => "int"]],
+                "Generates a collection of given size. This is useful when you want to repeat a component in a page 
+                a given number of times, with no interest in the actual content of each item.",
+                ReturnType::TEXT,
+                $this,
+                "collection.getOrdinal(5)"
             )
         ];
+    }
+
+    public function getOrdinal(int $index): ValueNode {
+        if ($index == 0) {
+            return new ValueNode("st");
+        } else if ($index == 1) {
+            return new ValueNode("nd");
+        } else if ($index == 2) {
+            return new ValueNode("rd");
+        } else {
+            return new ValueNode("th");
+        }
     }
 
     // NOTE: add new library functions bellow & update its

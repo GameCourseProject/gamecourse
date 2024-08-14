@@ -18,6 +18,7 @@ use GameCourse\Module\ModuleType;
 use GameCourse\Module\Moodle\Moodle;
 use GameCourse\Module\VirtualCurrency\VirtualCurrency;
 use GameCourse\Module\XPLevels\XPLevels;
+use GameCourse\User\User;
 use GameCourse\Views\Dictionary\ReturnType;
 use Utils\Cache;
 use Utils\Utils;
@@ -1052,21 +1053,22 @@ class Badges extends Module
     public function getUsersWithBadge(int $badgeId, int $level, bool $orderByDate = true): array
     {
         $users = [];
-        foreach ($this->getCourse()->getStudents() as $student) {
-            $badgeLevel = $this->getUserBadgeLevel($student["id"], $badgeId);
-            if ($badgeLevel >= $level) {
-                if ($orderByDate) {
-                    $awardsModule = new Awards($this->getCourse());
-                    $awardDate = array_values(array_filter($awardsModule->getUserAwardsByType($student["id"], AwardType::BADGE, $badgeId), function ($award) use ($level) {
-                        return Utils::strEndsWith($award["description"], "(level $level)");
-                    }))[0]["date"];
-                    $student["awardDate"] = $awardDate;
-                }
-                $users[] = $student;
+
+        $results = Core::database()->selectMultiple(Awards::TABLE_AWARD . " a JOIN "
+            . User::TABLE_USER . " u ON a.user = u.id",
+            ["course" => $this->course->getId(), "moduleInstance" => $badgeId],
+            "u.*, COUNT(*) AS badgeLevel",null,[],[],
+            "u.id");
+
+        foreach ($results as $user) {
+            if (intval($user["badgeLevel"]) >= $level) {
+                $user["id"] = intval($user["id"]);
+                $userObject = new User($user["id"]);
+                $user["image"] = $userObject->getImage();
+                $users[] = $user;
             }
         }
 
-        if ($orderByDate) usort($users, function ($a, $b) { return strcmp($a["awardDate"], $b["awardDate"]); });
         return $users;
     }
 

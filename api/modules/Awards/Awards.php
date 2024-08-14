@@ -160,6 +160,16 @@ class Awards extends Module
         return $awards;
     }
 
+    public function getCourseUsersAwards($userIds): array
+    {
+        $awards = Core::database()->executeQuery(
+            "SELECT * FROM " . XPLevels::TABLE_XP . " WHERE course = " .
+            Core::dictionary()->getCourse()->getId() . " AND user IN (" .
+            implode(", ", $userIds) . ");")->fetchAll();
+        foreach ($awards as &$award) { $award = self::parse($award); }
+        return $awards;
+    }
+
     /**
      * Gets awards for a given user of a specific type of award.
      * NOTE: types of awards in AwardType.php
