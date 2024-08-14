@@ -1,7 +1,9 @@
 <?php
 namespace GameCourse\Module\Journey;
 
+use GameCourse\Core\Core;
 use GameCourse\Course\Course;
+use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
@@ -13,6 +15,10 @@ use GameCourse\Module\Skills\Skills;
  */
 class Journey extends Module
 {
+    const TABLE_JOURNEY_PATH = 'journey_path';
+    const TABLE_JOURNEY_PATH_SKILLS = 'journey_path_skills';
+    const TABLE_JOURNEY_CONFIG = 'journey_config';
+
     public function __construct(?Course $course)
     {
         parent::__construct($course);
@@ -48,7 +54,10 @@ class Journey extends Module
 
     public function init()
     {
-        $this->initTemplates();
+        $this->initDatabase();
+
+        // Init config
+        Core::database()->insert(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()]);
     }
 
     public function copyTo(Course $copyTo)
@@ -58,6 +67,161 @@ class Journey extends Module
 
     public function disable()
     {
-        $this->removeTemplates();
+        $this->cleanDatabase();
     }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ---------------- Configuration ---------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function isConfigurable(): bool
+    {
+        return true;
+    }
+
+    public function getGeneralInputs(): array
+    {
+        return [
+            [
+                "name" => "General",
+                "contents" => [
+                    [
+                        "contentType" => "container",
+                        "classList" => "flex flex-wrap items-center",
+                        "contents" => [
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxXP",
+                                "value" => $this->getMaxXP(),
+                                "placeholder" => "Max. XP",
+                                "options" => [
+                                    "topLabel" => "Skills max. XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum XP each student can earn with skills"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "maxExtraCredit",
+                                "value" => $this->getMaxExtraCredit(),
+                                "placeholder" => "Max. extra credit",
+                                "options" => [
+                                    "topLabel" => "Skills max. extra credit XP",
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Maximum extra credit XP each student can earn with skills"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "width" => "1/3",
+                                "type" => InputType::NUMBER,
+                                "id" => "minRating",
+                                "value" => $this->getMinRating(),
+                                "placeholder" => "Min. rating",
+                                "options" => [
+                                    "topLabel" => "Skills min. rating",
+                                    "required" => true,
+                                    "minValue" => 0
+                                ],
+                                "helper" => "Minimum rating for a skill to be awarded"
+                            ],
+                            [
+                                "contentType" => "item",
+                                "type" => InputType::TOGGLE,
+                                "id" => "isRepeatable",
+                                "value" => $this->getIsRepeatable(),
+                                "helper" => "Allow students to complete another Journey Path after completing one.",
+                                "options" => [
+                                    "label" => "Allow Completing Several Paths",
+                                    "color" => "primary"
+                                ],
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveGeneralInputs(array $inputs)
+    {
+        foreach ($inputs as $input) {
+            if ($input["id"] == "maxXP") $this->updateMaxXP($input["value"]);
+            if ($input["id"] == "maxExtraCredit") $this->updateMaxExtraCredit($input["value"]);
+            if ($input["id"] == "minRating") $this->updateMinRating($input["value"]);
+            if ($input["id"] == "isRepeatable") $this->updateIsRepeatable($input["value"]);
+        }
+    }
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Module Specific --------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /*** ---------- Config ---------- ***/
+
+    public function getMaxXP(): ?int
+    {
+        $maxXP = Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "maxXP");
+        if (!is_null($maxXP)) $maxXP = intval($maxXP);
+        return $maxXP;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxXP(?int $max)
+    {
+        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["maxXP" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMaxExtraCredit(): ?int
+    {
+        $maxExtraCredit = Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "maxExtraCredit");
+        if (!is_null($maxExtraCredit)) $maxExtraCredit = intval($maxExtraCredit);
+        return $maxExtraCredit;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMaxExtraCredit(?int $max)
+    {
+        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["maxExtraCredit" => $max], ["course" => $this->course->getId()]);
+    }
+
+    public function getMinRating(): int
+    {
+        return intval(Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "minRating"));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateMinRating(int $minRating)
+    {
+        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["minRating" => $minRating], ["course" => $this->course->getId()]);
+    }
+
+    public function getIsRepeatable(): bool
+    {
+        return boolval(Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "minRating"));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function updateIsRepeatable(bool $isRepeatable)
+    {
+        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["isRepeatable" => $isRepeatable], ["course" => $this->course->getId()]);
+    }
+
+
 }
