@@ -137,7 +137,7 @@ class Journey extends Module
                                 "value" => $this->getIsRepeatable(),
                                 "helper" => "Allow students to complete another Journey Path after completing one.",
                                 "options" => [
-                                    "label" => "Allow Completing Several Paths",
+                                    "label" => "Allow Completion of Multiple Paths",
                                     "color" => "primary"
                                 ],
                             ]
@@ -160,6 +160,11 @@ class Journey extends Module
             if ($input["id"] == "isRepeatable") $this->updateIsRepeatable($input["value"]);
         }
     }
+
+/*    public function getPersonalizedConfig(): ?array
+    {
+        return ["position" => "after"];
+    }*/
 
     /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/
@@ -212,7 +217,7 @@ class Journey extends Module
 
     public function getIsRepeatable(): bool
     {
-        return boolval(Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "minRating"));
+        return boolval(Core::database()->select(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()], "isRepeatable"));
     }
 
     /**
@@ -220,7 +225,7 @@ class Journey extends Module
      */
     public function updateIsRepeatable(bool $isRepeatable)
     {
-        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["isRepeatable" => $isRepeatable], ["course" => $this->course->getId()]);
+        Core::database()->update(self::TABLE_JOURNEY_CONFIG, ["isRepeatable" => +$isRepeatable], ["course" => $this->course->getId()]);
     }
 
 
