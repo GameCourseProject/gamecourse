@@ -1,0 +1,76 @@
+<!-- Paths -->
+<div class="card w-full bg-base-100 shadow-xl">
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Paths</h2>
+      <app-spinner *ngIf="loading.paths" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+    </div>
+
+    <!-- Top Actions -->
+    <app-top-actions
+      [rightActions]="[{action: 'Create path', icon: 'feather-plus-circle', color: 'primary'}]"
+      (btnClicked)="doAction($event)">
+    </app-top-actions>
+
+    <!-- Paths Table -->
+    <app-table
+      [id]="'paths'"
+      [classList]="'mt-5'"
+      [headers]="tablesInfo.paths.headers"
+      [data]="data"
+      [options]="tablesInfo.paths.tableOptions"
+      [loading]="loading.page"
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
+    </app-table>
+
+  </div>
+</div>
+
+
+<!-- New / Edit Modal -->
+<app-modal *ngIf="pathToManage"
+           [id]="'path-manage'"
+           [templateRef]="PATH_MANAGE"
+           [size]="'md'"
+           [header]="pathMode?.capitalize() + ' path'"
+           [closeBtnText]="'Discard ' + (pathMode === 'create' ? 'tier' : 'changes')"
+           [submitBtnText]="pathMode === 'create' ? pathMode?.capitalize() + ' tier' : 'Save'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="fPath.onSubmit(null); pathMode === 'create' ? createPath() : editPath()"
+           (onClose)="resetPathToManage()">
+</app-modal>
+<ng-template #PATH_MANAGE>
+  <form #fPath="ngForm">
+    <div class="flex flex-wrap">
+      <!-- Name -->
+      <div class="w-full sm:w-1/2 sm:pr-3">
+        <app-input-text
+          [id]="'path-name'"
+          [form]="fPath"
+          [(value)]="pathToManage.name"
+          [placeholder]="'Path name'"
+          [topLabel]="'Name'"
+          [required]="true"
+          [maxLength]="50"
+          [maxLengthErrorMessage]="'Path name is too long: maximum of 50 characters'"
+          [helperText]="'Name for journey path'"
+          [helperPosition]="'right'">
+        </app-input-text>
+      </div>
+
+      <!-- Color -->
+      <app-input-color
+        [id]="'path-color'"
+        [form]="fPath"
+        [(value)]="pathToManage.color"
+        [placeholder]="'Path color'"
+        [topLabel]="'Color'"
+        [helperText]="'Color to differentiate journey paths'"
+        [helperPosition]="'left'">
+      </app-input-color>
+    </div>
+  </form>
+</ng-template>

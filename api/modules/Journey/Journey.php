@@ -15,8 +15,8 @@ use GameCourse\Module\Skills\Skills;
  */
 class Journey extends Module
 {
-    const TABLE_JOURNEY_PATH = 'journey_path';
-    const TABLE_JOURNEY_PATH_SKILLS = 'journey_path_skills';
+    const TABLE_JOURNEY_PATH = JourneyPath::TABLE_JOURNEY_PATH;
+    const TABLE_JOURNEY_PATH_SKILLS = JourneyPath::TABLE_JOURNEY_PATH_SKILLS;
     const TABLE_JOURNEY_CONFIG = 'journey_config';
 
     public function __construct(?Course $course)
@@ -161,10 +161,10 @@ class Journey extends Module
         }
     }
 
-/*    public function getPersonalizedConfig(): ?array
+    public function getPersonalizedConfig(): ?array
     {
         return ["position" => "after"];
-    }*/
+    }
 
     /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/

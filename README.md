@@ -40,6 +40,7 @@ This is a setup guide to run the project on your machine.
               "ProgressReport/controllers",
               "QR/controllers",
               "Skills/controllers",
+              "Journey/controllers",
               "VirtualCurrency/controllers"
             ]
           }
