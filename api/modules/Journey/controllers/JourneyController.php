@@ -37,7 +37,14 @@ class JourneyController
 
         API::requireCoursePermission($course);
 
-        API::response(JourneyPath::getJourneyPaths($courseId));
+        $paths = JourneyPath::getJourneyPaths($courseId);
+
+        foreach ($paths as &$pathInfo) {
+            $path = JourneyPath::getJourneyPathById($pathInfo["id"]);
+            $pathInfo["skills"] = $path->getSkills();
+        }
+
+        API::response($paths);
     }
 
     /**

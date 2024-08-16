@@ -108,8 +108,19 @@ export class JourneyComponent implements OnInit {
     const table: { type: TableDataType, content: any }[][] = [];
     this.journeyPaths.forEach(path => {
       const row: { type: TableDataType, content: any }[] = [
-        {type: TableDataType.TEXT, content: {text: path.name}},
-        {type: TableDataType.TEXT, content: {text: path.color, classList: 'font-semibold'}},
+        {type: TableDataType.CUSTOM, content: {html: '<div class="!text-left !text-start !justify-start">' +
+              '<div class="flex items-center space-x-3">' +
+              '<div class="avatar">' +
+              '<div class="mask mask-circle w-9 h-9 !flex !items-center !justify-center bg-base-content bg-opacity-30" style="background-color: ' + path.color + '">' +
+              '<span class="text-base-100">' + path.name[0] + '</span>' +
+              '</div>' +
+              '</div>' +
+              '<div class="prose text-sm">' +
+              '<h4>' + path.name + '</h4>' +
+              '</div>' +
+              '</div>' +
+              '</div>', searchBy: path.name}},
+        {type: TableDataType.TEXT, content: {text: this.stringifySkills(path.skills)}},
         {type: TableDataType.NUMBER, content: {value: 0}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: path.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW_RULE]}},
@@ -206,6 +217,7 @@ export class JourneyComponent implements OnInit {
     const pathData: PathManageData = {
       name: path?.name ?? null,
       color: path?.color ?? null,
+      skills: path?.skills ?? []
     };
     if (path) pathData.id = path.id;
     return pathData;
@@ -217,10 +229,15 @@ export class JourneyComponent implements OnInit {
     this.fPath.resetForm();
   }
 
+  stringifySkills(skills: Skill[]) {
+    return skills.map(skill => skill.name).join(" -> ")
+  }
+
 }
 
 export interface PathManageData {
   id?: number,
   name: string,
-  color: string
+  color: string,
+  skills: Skill[]
 }

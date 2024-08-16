@@ -1,16 +1,20 @@
+import {Skill, SkillDatabase} from "../skills/skill";
+
 export class JourneyPath {
   private _id: number;
   private _courseID: number;
   private _name: string;
   private _color: string;
   private _isActive: boolean;
+  private _skills: Skill[];
 
-  constructor(id: number, courseID: number, name: string, color: string, isActive: boolean) {
+  constructor(id: number, courseID: number, name: string, color: string, isActive: boolean, skills: Skill[]) {
     this._id = id;
     this._courseID = courseID;
     this._name = name;
     this._color = color;
     this._isActive = isActive;
+    this._skills = skills;
   }
 
   get id(): number {
@@ -53,6 +57,14 @@ export class JourneyPath {
     this._isActive = value;
   }
 
+  get skills(): Skill[] {
+    return this._skills;
+  }
+
+  set skills(value: Skill[]) {
+    this._skills = value;
+  }
+
   /**
    * Custom way to stringify this class.
    * This is needed so that the output of JSON.stringify()
@@ -74,7 +86,8 @@ export class JourneyPath {
       obj.course,
       obj.name,
       obj.color,
-      obj.isActive
+      obj.isActive,
+      obj.skills.map(skill => Skill.fromDatabase(skill))
     );
   }
 }
@@ -84,5 +97,6 @@ interface JourneyPathDatabase {
   course: number,
   name: string,
   color: string,
-  isActive: boolean
+  isActive: boolean,
+  skills: SkillDatabase[]
 }

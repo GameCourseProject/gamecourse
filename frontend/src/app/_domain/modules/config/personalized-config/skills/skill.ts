@@ -159,7 +159,7 @@ export class Skill {
   }
 }
 
-interface SkillDatabase {
+export interface SkillDatabase {
   id: number,
   course: number,
   tier: number,
