@@ -2947,12 +2947,46 @@ export class ApiHttpService {
     const data = {
       courseId: courseID,
       name: pathData.name,
-      color: pathData.color ?? null,
+      color: pathData.color,
     }
 
     const params = (qs: QueryStringParameters) => {
       qs.push('module', ApiHttpService.JOURNEY);
       qs.push('request', 'createJourneyPath');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public editJourneyPath(courseID: number, pathData: PathManageData): Observable<void> {
+    const data = {
+      courseId: courseID,
+      pathId: pathData.id,
+      name: pathData.name,
+      color: pathData.color,
+    }
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.JOURNEY);
+      qs.push('request', 'editJourneyPath');
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+    return this.post(url, data, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res) );
+  }
+
+  public deleteJourneyPath(courseID: number, pathID: number): Observable<void> {
+    const data = {
+      courseId: courseID,
+      pathId: pathID
+    };
+
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.JOURNEY);
+      qs.push('request', 'deleteJourneyPath');
     };
 
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);

@@ -61,4 +61,43 @@ class JourneyController
         JourneyPath::addJourneyPath($courseId, $name, $color);
     }
 
+    /**
+     * @throws Exception
+     */
+    public function editJourneyPath()
+    {
+        API::requireValues("courseId", "pathId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+        API::requireValues("name", "color");
+
+        // Get values
+        $name = API::getValue("name");
+        $color = API::getValue("color");
+        $pathId = API::getValue("pathId", "int");
+
+        // Edit path
+        $path = JourneyPath::getJourneyPathById($pathId);
+        $path->editJourneyPath($name, $color);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteJourneyPath()
+    {
+        API::requireValues("courseId", "pathId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCourseAdminPermission($course);
+
+        $pathId = API::getValue("pathId", "int");
+        JourneyPath::deleteJourneyPath($pathId);
+    }
+
 }

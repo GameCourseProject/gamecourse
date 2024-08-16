@@ -68,9 +68,22 @@
         [(value)]="pathToManage.color"
         [placeholder]="'Path color'"
         [topLabel]="'Color'"
+        [required]="true"
         [helperText]="'Color to differentiate journey paths'"
         [helperPosition]="'left'">
       </app-input-color>
     </div>
   </form>
 </ng-template>
+
+<!-- Delete Verification Modal -->
+<app-simple-modal *ngIf="pathToDelete"
+                  [id]="'path-delete-verification'"
+                  [title]="'Delete path'"
+                  [text]="'Are you sure you want to delete path \'' + pathToDelete?.name + '\'? You won\'t be able to undo this action.'"
+                  [submitBtnText]="'Delete'"
+                  [submitBtnColor]="'error'"
+                  [actionInProgress]="loading.action"
+                  (submitBtnClicked)="deletePath(pathToDelete)"
+                  (onClose)="pathToDelete = null">
+</app-simple-modal>

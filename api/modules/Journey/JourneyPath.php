@@ -113,7 +113,7 @@ class JourneyPath
     public function setData(array $fieldValues)
     {
         $courseId = $this->getCourse()->getId();
-        $rule = $this->getRule();
+        /* $rule = $this->getRule(); */
 
         // Trim values
         self::trim($fieldValues);
@@ -278,6 +278,7 @@ class JourneyPath
      * Adds a new path to the database.
      * Returns the newly created path.
      *
+     * @param int $courseId
      * @param string $name
      * @param string $color
      * @return JourneyPath
@@ -296,6 +297,54 @@ class JourneyPath
 
         return $path;
     }
+
+    /**
+     * Edits an existing path in the database.
+     * Returns the edited path.
+     *
+     * @param string $name
+     * @param string $color
+     * @return JourneyPath
+     * @throws Exception
+     */
+    public function editJourneyPath(string $name, string $color): JourneyPath
+    {
+        $this->setData([
+            "name" => $name,
+            "color" => $color
+        ]);
+        return $this;
+    }
+
+    /**
+     * Deletes an existing path in the database.
+     *
+     * @return JourneyPath
+     * @throws Exception
+     */
+    public static function deleteJourneyPath(int $pathId) {
+        $path = self::getJourneyPathById($pathId);
+        if ($path) {
+            // $courseId = $path->getCourse()->getId();
+
+            // TODO: Remove skill rule
+            // self::removeRule($courseId, $path->getRule()->getId());
+
+            // Delete skill from database
+            Core::database()->delete(self::TABLE_JOURNEY_PATH, ["id" => $pathId]);
+        }
+    }
+
+    /**
+     * Checks whether journey path exists.
+     *
+     * @return bool
+     */
+    public function exists(): bool
+    {
+        return !empty($this->getData("id"));
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** ----------------------- Utils ---------------------- ***/

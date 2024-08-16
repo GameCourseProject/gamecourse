@@ -5,7 +5,6 @@ import { JourneyPath } from "src/app/_domain/modules/config/personalized-config/
 import {TableDataType} from "../../../../../../../../../_components/tables/table-data/table-data.component";
 import {Skill} from "../../../../../../../../../_domain/modules/config/personalized-config/skills/skill";
 import {Action} from "../../../../../../../../../_domain/modules/config/Action";
-import {Tier} from "../../../../../../../../../_domain/modules/config/personalized-config/skills/tier";
 import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
@@ -36,7 +35,7 @@ export class JourneyComponent implements OnInit {
 
   pathMode: 'create' | 'edit';
   pathToManage: PathManageData = this.initPathToManage();
-  pathToDelete: Tier;
+  pathToDelete: JourneyPath;
   @ViewChild('fPath', { static: false }) fPath: NgForm;
 
   constructor(
@@ -128,6 +127,17 @@ export class JourneyComponent implements OnInit {
   }
 
   async doActionOnTable(action: string, row: number, col: number, value?: any): Promise<void> {
+    const pathToActOn = this.journeyPaths[row];
+
+    if (action === 'edit') {
+      this.pathMode = 'edit';
+      this.pathToManage = this.initPathToManage(pathToActOn);
+      ModalService.openModal('path-manage');
+    }
+    else if (action === 'delete') {
+      this.pathToDelete = pathToActOn;
+      ModalService.openModal('path-delete-verification');
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -160,6 +170,32 @@ export class JourneyComponent implements OnInit {
   }
 
   async editPath(): Promise<void> {
+    if (this.fPath.valid) {
+      this.loading.action = true;
+
+      await this.api.editJourneyPath(this.courseID, clearEmptyValues(this.pathToManage)).toPromise();
+      this.journeyPaths = await this.api.getJourneyPaths(this.courseID).toPromise();
+      this.buildPathsTable();
+
+      ModalService.closeModal('path-manage');
+      AlertService.showAlert(AlertType.SUCCESS, 'Journey Path edited: ' + this.pathToManage.name);
+      this.resetPathToManage();
+
+      this.loading.action = false;
+
+    } else AlertService.showAlert(AlertType.ERROR, 'Invalid form');
+  }
+
+  async deletePath(path: JourneyPath): Promise<void> {
+    this.loading.action = true;
+
+    await this.api.deleteJourneyPath(this.courseID, path.id).toPromise();
+    this.journeyPaths = await this.api.getJourneyPaths(this.courseID).toPromise();
+    this.buildPathsTable();
+
+    this.loading.action = false;
+    ModalService.closeModal('path-delete-verification');
+    AlertService.showAlert(AlertType.SUCCESS, 'Path \'' + path.name + '\' deleted');
   }
 
   /*** --------------------------------------------- ***/
