@@ -197,6 +197,24 @@ class SkillsController
     }
 
     /**
+     * Get all skills of a course.
+     *
+     * @throws Exception
+     */
+    public function getSkillsOfCourse()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        API::response(Skill::getSkills($courseId));
+    }
+
+
+    /**
      * @throws Exception
      */
     public function createSkill()

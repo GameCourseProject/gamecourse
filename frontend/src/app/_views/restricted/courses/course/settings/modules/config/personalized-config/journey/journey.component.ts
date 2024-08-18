@@ -9,10 +9,13 @@ import {NgForm} from "@angular/forms";
 import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
+import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
 
 @Component({
   selector: 'app-journey',
-  templateUrl: './journey.component.html'
+  templateUrl: './journey.component.html',
+  styleUrls: ['./journey.component.scss']
+
 })
 export class JourneyComponent implements OnInit {
 
@@ -25,12 +28,13 @@ export class JourneyComponent implements OnInit {
   courseID: number;
   courseFolder: string;
 
+  showAdd: boolean = false;
+
+  skills: Skill[];
+  skillToAdd: string;
+  skillsAvailable: {value: string, text: string}[];
+
   journeyPaths: JourneyPath[];
-  journeyPathsInfo: {
-    id: number,
-    loading: boolean,
-    skills: Skill[]
-  }[];
   data: {type: TableDataType, content: any}[][] = [];
 
   pathMode: 'create' | 'edit';
@@ -49,7 +53,8 @@ export class JourneyComponent implements OnInit {
     this.route.parent.params.subscribe(async params => {
       this.courseID = parseInt(params.id);
 
-      await this.initJourneyPathsInfo(this.courseID);
+      await this.initJourneyPaths(this.courseID);
+      await this.initSkills(this.courseID);
 
       this.loading.page = false;
     });
@@ -59,18 +64,19 @@ export class JourneyComponent implements OnInit {
   /*** -------------------- Init ------------------- ***/
   /*** --------------------------------------------- ***/
 
-  async initJourneyPathsInfo(courseID: number) {
-    this.journeyPathsInfo = [];
+  async initJourneyPaths(courseID: number) {
     this.journeyPaths = await this.api.getJourneyPaths(courseID).toPromise();
-
-    for (const path of this.journeyPaths) {
-      // Get info
-      //const skills = await this.api.getSkillsOfJourneyPath(skillTree.id, null, null, null).toPromise();
-      const skills = [];
-      this.journeyPathsInfo.push({id: path.id, loading: false, skills: skills});
-    }
-    // Build table
     this.buildPathsTable();
+  }
+
+  async initSkills(courseID: number) {
+    this.skills = await this.api.getSkillsOfCourse(courseID).toPromise();
+    this.skillsAvailable = this.skills.map((skill) => {
+      return {
+        value: skill.id.toString(),
+        text: skill.name
+      }
+    })
   }
 
   /*** --------------------------------------------- ***/
@@ -231,6 +237,24 @@ export class JourneyComponent implements OnInit {
 
   stringifySkills(skills: Skill[]) {
     return skills.map(skill => skill.name).join(" -> ")
+  }
+
+  addSkill() {
+    this.pathToManage.skills.push(this.skills.find((skill) => skill.id.toString() == this.skillToAdd));
+    this.skillToAdd = null;
+  }
+
+  editSkill(index: number, skill: Skill) {
+    this.pathToManage.skills.splice(index, 1, skill);
+  }
+
+  deleteSkill(index: number) {
+    this.pathToManage.skills.splice(index, 1);
+  }
+
+  drop(event: CdkDragDrop<string[]>){
+    moveItemInArray(this.pathToManage.skills, event.previousIndex, event.currentIndex);
+    console.log(this.pathToManage.skills)
   }
 
 }

@@ -63,9 +63,10 @@ class JourneyController
         // Get values
         $name = API::getValue("name");
         $color = API::getValue("color");
+        $skills = API::getValue("skills", "array");
 
         // Add new path
-        JourneyPath::addJourneyPath($courseId, $name, $color);
+        JourneyPath::addJourneyPath($courseId, $name, $color, $skills);
     }
 
     /**
@@ -79,16 +80,17 @@ class JourneyController
         $course = API::verifyCourseExists($courseId);
 
         API::requireCourseAdminPermission($course);
-        API::requireValues("name", "color");
+        API::requireValues("name", "color", "skills");
 
         // Get values
+        $pathId = API::getValue("pathId", "int");
         $name = API::getValue("name");
         $color = API::getValue("color");
-        $pathId = API::getValue("pathId", "int");
+        $skills = API::getValue("skills", "array");
 
         // Edit path
         $path = JourneyPath::getJourneyPathById($pathId);
-        $path->editJourneyPath($name, $color);
+        $path->editJourneyPath($name, $color, $skills);
     }
 
     /**

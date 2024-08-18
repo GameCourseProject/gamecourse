@@ -21,12 +21,10 @@ CREATE TABLE IF NOT EXISTS journey_path(
 
 CREATE TABLE IF NOT EXISTS journey_path_skills(
     skill 		                int unsigned NOT NULL,
-    course                      int unsigned NOT NULL,
     path                        int unsigned NOT NULL,
     position                    int unsigned,
 
     UNIQUE key(path, position),
     FOREIGN key(skill) REFERENCES skill(id) ON DELETE CASCADE,
-    FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN key(path) REFERENCES journey_path(id) ON DELETE CASCADE
 );

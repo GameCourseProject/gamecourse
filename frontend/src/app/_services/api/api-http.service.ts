@@ -2943,11 +2943,25 @@ export class ApiHttpService {
       .pipe( map((res: any) => res['data'].map(obj => JourneyPath.fromDatabase(obj))) );
   }
 
+  public getSkillsOfCourse(courseID: number): Observable<Skill[]> {
+    const params = (qs: QueryStringParameters) => {
+      qs.push('module', ApiHttpService.SKILLS);
+      qs.push('request', 'getSkillsOfCourse');
+      qs.push('courseId', courseID);
+    };
+
+    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
+
+    return this.get(url, ApiHttpService.httpOptions)
+      .pipe( map((res: any) => res['data'].map(obj => Skill.fromDatabase(obj))) );
+  }
+
   public createJourneyPath(courseID: number, pathData: PathManageData): Observable<void> {
     const data = {
       courseId: courseID,
       name: pathData.name,
       color: pathData.color,
+      skills: pathData.skills
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2966,6 +2980,7 @@ export class ApiHttpService {
       pathId: pathData.id,
       name: pathData.name,
       color: pathData.color,
+      skills: pathData.skills.map(skill => skill.id)
     }
 
     const params = (qs: QueryStringParameters) => {

@@ -285,7 +285,7 @@ class JourneyPath
      * @throws Exception
      */
     public function getSkills(bool $active = null, bool $extra = null, bool $collab = null,
-                                           string $orderBy = "s.position"): array
+                                           string $orderBy = "p.position"): array
     {
         $where = ["p.path" => $this->id];
         if ($active !== null) $where["s.isActive"] = $active;
@@ -314,10 +314,11 @@ class JourneyPath
      * @param int $courseId
      * @param string $name
      * @param string $color
+     * @param array $skills
      * @return JourneyPath
      * @throws Exception
      */
-    public static function addJourneyPath(int $courseId, string $name, string $color): JourneyPath
+    public static function addJourneyPath(int $courseId, string $name, string $color, array $skills): JourneyPath
     {
         self::trim($name);
         self::validateName($courseId, $name);
@@ -327,7 +328,7 @@ class JourneyPath
             "color" => $color
         ]);
         $path = new JourneyPath($id);
-
+        $path->setSkills($skills);
         return $path;
     }
 
@@ -337,15 +338,17 @@ class JourneyPath
      *
      * @param string $name
      * @param string $color
+     * @param array $skills
      * @return JourneyPath
      * @throws Exception
      */
-    public function editJourneyPath(string $name, string $color): JourneyPath
+    public function editJourneyPath(string $name, string $color, array $skills): JourneyPath
     {
         $this->setData([
             "name" => $name,
             "color" => $color
         ]);
+        $this->setSkills($skills);
         return $this;
     }
 
@@ -376,6 +379,60 @@ class JourneyPath
     public function exists(): bool
     {
         return !empty($this->getData("id"));
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Skills --------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Sets path skills.
+     *
+     * @param array $skills
+     * @return void
+     * @throws Exception
+     */
+    public function setSkills(array $skills)
+    {
+        // TODO: self::validateSkills($this->getTier(), $skills);
+
+        // Remove all skills
+        foreach ($this->getSkills() as $skill) {
+            $this->removeSkill($skill["id"]);
+        }
+
+        // Add new skills
+        foreach ($skills as $index=>$skillId) {
+            $this->addSkill($index, $skillId);
+        }
+    }
+
+    /**
+     * Adds a new skill to the path.
+     *
+     * @param int $position
+     * @param int $skillId
+     * @return void
+     * @throws Exception
+     */
+    public function addSkill(int $position, int $skillId)
+    {
+        $data = ["skill" => $skillId, "path" => $this->getId(), "position" => $position];
+        Core::database()->insert(self::TABLE_JOURNEY_PATH_SKILLS, $data);
+    }
+
+    /**
+     * Removes a skill from the path.
+     *
+     * @param int $skillId
+     * @return void
+     * @throws Exception
+     */
+    public function removeSkill(int $skillId)
+    {
+        $where = ["skill" => $skillId, "path" => $this->getId()];
+        Core::database()->delete(self::TABLE_JOURNEY_PATH_SKILLS, $where);
     }
 
 
