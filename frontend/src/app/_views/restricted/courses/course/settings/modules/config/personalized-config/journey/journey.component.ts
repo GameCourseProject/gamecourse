@@ -10,6 +10,7 @@ import {clearEmptyValues} from "../../../../../../../../../_utils/misc/misc";
 import {ModalService} from "../../../../../../../../../_services/modal.service";
 import {AlertService, AlertType} from "../../../../../../../../../_services/alert.service";
 import {CdkDragDrop, moveItemInArray} from "@angular/cdk/drag-drop";
+import * as _ from "lodash";
 
 @Component({
   selector: 'app-journey',
@@ -32,7 +33,7 @@ export class JourneyComponent implements OnInit {
 
   skills: Skill[];
   skillToAdd: string;
-  skillsAvailable: {value: string, text: string}[];
+  skillsAvailable: {value: string, text: string, html?: string}[];
 
   journeyPaths: JourneyPath[];
   data: {type: TableDataType, content: any}[][] = [];
@@ -74,7 +75,25 @@ export class JourneyComponent implements OnInit {
     this.skillsAvailable = this.skills.map((skill) => {
       return {
         value: skill.id.toString(),
-        text: skill.name
+        text: skill.name,
+        html:
+          '<div class="!text-left !text-start !justify-start">' +
+            '<div class="flex items-center space-x-3">' +
+              '<div class="avatar">' +
+                '<div class="mask mask-circle w-9 h-9 !flex !items-center !justify-center bg-base-content bg-opacity-30" style="background-color: ' + skill.color + '">' +
+                  '<span class="text-base-100 text-base">' + skill.name[0] + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex flex-col">' +
+                '<div class="prose text-sm">' +
+                  '<h4>' + skill.name + '</h4>' +
+                '</div>' +
+                '<div class="prose text-sm opacity-60">' +
+                  '<div>' + skill.reward + ' XP </div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
       }
     })
   }
@@ -236,7 +255,7 @@ export class JourneyComponent implements OnInit {
     const pathData: PathManageData = {
       name: path?.name ?? null,
       color: path?.color ?? null,
-      skills: path?.skills ?? []
+      skills: path?.skills ? _.cloneDeep(path.skills) : []
     };
     if (path) pathData.id = path.id;
     return pathData;

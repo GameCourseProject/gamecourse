@@ -36,8 +36,8 @@
            [templateRef]="PATH_MANAGE"
            [size]="'md'"
            [header]="pathMode?.capitalize() + ' path'"
-           [closeBtnText]="'Discard ' + (pathMode === 'create' ? 'tier' : 'changes')"
-           [submitBtnText]="pathMode === 'create' ? pathMode?.capitalize() + ' tier' : 'Save'"
+           [closeBtnText]="'Discard ' + (pathMode === 'create' ? 'path' : 'changes')"
+           [submitBtnText]="pathMode === 'create' ? pathMode?.capitalize() + ' path' : 'Save'"
            [actionInProgress]="loading.action"
            (submitBtnClicked)="fPath.onSubmit(null); pathMode === 'create' ? createPath() : editPath()"
            (onClose)="resetPathToManage()"
@@ -100,7 +100,7 @@
         </div>
       </div>
     </div>
-    <button class="btn btn-block btn-secondary btn-outline mt-2" (click)="showAdd = true">Add Skill</button>
+    <button class="btn btn-block btn-secondary btn-outline mt-2" (click)="showAdd = !showAdd">{{showAdd ? 'Cancel' : 'Add Skill'}}</button>
     <div class="mt-2 w-full">
       <app-input-select
         *ngIf="showAdd"
