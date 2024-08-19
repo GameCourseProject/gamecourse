@@ -57,7 +57,12 @@ class Journey extends Module
         $this->initDatabase();
 
         // Init config
-        Core::database()->insert(self::TABLE_JOURNEY_CONFIG, ["course" => $this->course->getId()]);
+        $skills = new Skills($this->course);
+        Core::database()->insert(self::TABLE_JOURNEY_CONFIG, [
+            "course" => $this->course->getId(),
+            "maxXP" => $skills->getMaxXP(),
+            "maxExtraCredit" => $skills->getMaxExtraCredit()
+        ]);
     }
 
     public function copyTo(Course $copyTo)
