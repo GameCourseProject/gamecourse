@@ -41,7 +41,7 @@ class JourneyController
 
         foreach ($paths as &$pathInfo) {
             $path = JourneyPath::getJourneyPathById($pathInfo["id"]);
-            $pathInfo["skills"] = $path->getSkills();
+            $pathInfo["skills"] = $path->getSkills(true);
         }
 
         API::response($paths);

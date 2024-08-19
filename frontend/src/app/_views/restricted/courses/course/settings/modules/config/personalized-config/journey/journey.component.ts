@@ -127,7 +127,7 @@ export class JourneyComponent implements OnInit {
               '</div>' +
               '</div>', searchBy: path.name}},
         {type: TableDataType.TEXT, content: {text: this.stringifySkills(path.skills)}},
-        {type: TableDataType.NUMBER, content: {value: 0}},
+        {type: TableDataType.NUMBER, content: {value: this.getTotalSkillsXP(path.skills)}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: path.isActive}},
         {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW_RULE]}},
         {type: TableDataType.ACTIONS, content: {actions: [
@@ -236,16 +236,21 @@ export class JourneyComponent implements OnInit {
   }
 
   stringifySkills(skills: Skill[]) {
-    return skills.map(skill => skill.name).join(" -> ")
+    const string = skills.map(skill => skill.name).join(" -> ");
+    return string.length > 80 ? string.substring(0, 80) + "(...)" : string
+  }
+
+  getTotalSkillsXP(skills: Skill[]) {
+    return skills.reduce((prev, cur) => prev + cur.reward, 0);
   }
 
   addSkill() {
-    this.pathToManage.skills.push(this.skills.find((skill) => skill.id.toString() == this.skillToAdd));
+    this.pathToManage.skills.push(this.skills.find((skill) => skill.id.toString() === this.skillToAdd));
     this.skillToAdd = null;
   }
 
-  editSkill(index: number, skill: Skill) {
-    this.pathToManage.skills.splice(index, 1, skill);
+  editSkill(index: number, newSkillId: string) {
+    this.pathToManage.skills.splice(index, 1, this.skills.find((skill) => skill.id.toString() === newSkillId));
   }
 
   deleteSkill(index: number) {
@@ -254,7 +259,6 @@ export class JourneyComponent implements OnInit {
 
   drop(event: CdkDragDrop<string[]>){
     moveItemInArray(this.pathToManage.skills, event.previousIndex, event.currentIndex);
-    console.log(this.pathToManage.skills)
   }
 
 }

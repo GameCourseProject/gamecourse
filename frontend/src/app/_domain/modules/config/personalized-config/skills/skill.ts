@@ -12,9 +12,10 @@ export class Skill {
   private _position: number;
   private _ruleID: number;
   private _dependencies: Skill[][];
+  private _reward?: number;
 
   constructor(id: number, tierID: number, name: string, isCollab: boolean, isExtra: boolean, isActive: boolean, position: number,
-              ruleID: number, dependencies: Skill[][], color?: string, page?: string) {
+              ruleID: number, dependencies: Skill[][], color?: string, page?: string, reward?: number) {
 
     this._id = id;
     this._tierID = tierID;
@@ -27,6 +28,7 @@ export class Skill {
     this._dependencies = dependencies;
     if (color) this._color = color;
     if (page) this._page = page;
+    if (reward) this._reward = reward;
   }
 
   get id(): number {
@@ -117,6 +119,14 @@ export class Skill {
     this._dependencies = value;
   }
 
+  get reward(): number {
+    return this._reward;
+  }
+
+  set reward(value: number) {
+    this._reward = value;
+  }
+
   static getWildcard(wildcardTierID: number): Skill {
     return new Skill(0, wildcardTierID, Tier.WILDCARD, false, false, false, 0, null, []);
   }
@@ -154,7 +164,8 @@ export class Skill {
       obj.rule,
       obj.dependencies? Object.values(obj.dependencies).map(combo => combo.map(skill => Skill.fromDatabase(skill))) : null,
       obj.color ?? null,
-      obj.page ?? null
+      obj.page ?? null,
+      obj.reward
     );
   }
 }
@@ -171,5 +182,6 @@ export interface SkillDatabase {
   isActive: boolean,
   position: number,
   rule: number,
-  dependencies?: {[dependencyId: number]: SkillDatabase[]}
+  dependencies?: {[dependencyId: number]: SkillDatabase[]},
+  reward?: number
 }

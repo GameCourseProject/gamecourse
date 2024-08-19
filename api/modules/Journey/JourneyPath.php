@@ -274,30 +274,24 @@ class JourneyPath
 
     /**
      * Gets all skills of path.
-     * Option for 'collab', 'extra', 'active' and ordering.
+     * Option to include or not the reward value.
      *
      * @param int $pathId
-     * @param bool|null $active
-     * @param bool|null $extra
-     * @param bool|null $collab
-     * @param string $orderBy
+     * @param bool|null $withReward
      * @return array
      * @throws Exception
      */
-    public function getSkills(bool $active = null, bool $extra = null, bool $collab = null,
-                                           string $orderBy = "p.position"): array
+    public function getSkills(bool $withReward = false): array
     {
         $where = ["p.path" => $this->id];
-        if ($active !== null) $where["s.isActive"] = $active;
-        if ($extra !== null) $where["s.isExtra"] = $extra;
-        if ($collab !== null) $where["s.isCollab"] = $collab;
         $skills = Core::database()->selectMultiple(Skills::TABLE_SKILL . " s LEFT JOIN " . self::TABLE_JOURNEY_PATH_SKILLS . " p on s.id=p.skill",
-            $where, "s.*", $orderBy);
+            $where, "s.*", "p.position");
         foreach ($skills as &$skillInfo) {
             $skill = Skill::getSkillById($skillInfo["id"]);
             $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = Skill::parse($skillInfo);
+            if ($withReward) $skillInfo["reward"] = $skill->getTier()->getReward();
         }
         return $skills;
     }

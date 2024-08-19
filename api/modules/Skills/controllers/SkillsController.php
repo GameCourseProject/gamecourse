@@ -197,7 +197,7 @@ class SkillsController
     }
 
     /**
-     * Get all skills of a course.
+     * Get all skills of a course, with the reward value.
      *
      * @throws Exception
      */
@@ -210,7 +210,12 @@ class SkillsController
 
         API::requireCoursePermission($course);
 
-        API::response(Skill::getSkills($courseId));
+        $skills = Skill::getSkills($courseId);
+        foreach ($skills as &$skillInfo) {
+            $skill = Skill::getSkillById($skillInfo["id"]);
+            $skillInfo["reward"] = $skill->getTier()->getReward();
+        }
+        API::response($skills);
     }
 
 

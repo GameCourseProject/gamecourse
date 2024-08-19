@@ -76,7 +76,7 @@
     <!-- Skills -->
     <div class="flex flex-row font-semibold mt-4">
       <div>Skills</div>
-      <span class="ml-auto text-info">Total: ?? XP</span>
+      <span class="ml-auto text-info">Total: {{ getTotalSkillsXP(pathToManage.skills) }} XP</span>
     </div>
     <div cdkDropList [id]="'skills-list'" class="mt-2 h-75 overflow-y-auto flex flex-col gap-2 w-full" (cdkDropListDropped)="drop($event)" appScrollableDrag>
       <div class="dd-item flex flex-row items-center gap-4 w-full" *ngFor="let skill of pathToManage.skills; index as i" cdkDrag>
@@ -95,7 +95,7 @@
             [btnIcon]="'jam-trash-f'"
             (btnClicked)="deleteSkill(i)"
             [required]="true"
-            (valueChange)="editSkill(i, skill)"
+            (valueChange)="editSkill(i, $event)"
           ></app-input-select>
         </div>
       </div>
