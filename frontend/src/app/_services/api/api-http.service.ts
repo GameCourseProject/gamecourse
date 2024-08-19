@@ -2974,12 +2974,13 @@ export class ApiHttpService {
       .pipe( map((res: any) => res) );
   }
 
-  public editJourneyPath(courseID: number, pathData: PathManageData): Observable<void> {
+  public editJourneyPath(courseID: number, pathData: JourneyPath): Observable<void> {
     const data = {
       courseId: courseID,
       pathId: pathData.id,
       name: pathData.name,
       color: pathData.color,
+      isActive: pathData.isActive,
       skills: pathData.skills.map(skill => skill.id)
     }
 

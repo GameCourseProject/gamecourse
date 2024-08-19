@@ -332,15 +332,17 @@ class JourneyPath
      *
      * @param string $name
      * @param string $color
+     * @param bool $isActive
      * @param array $skills
      * @return JourneyPath
      * @throws Exception
      */
-    public function editJourneyPath(string $name, string $color, array $skills): JourneyPath
+    public function editJourneyPath(string $name, string $color, bool $isActive, array $skills): JourneyPath
     {
         $this->setData([
             "name" => $name,
-            "color" => $color
+            "color" => $color,
+            "isActive" => $isActive
         ]);
         $this->setSkills($skills);
         return $this;

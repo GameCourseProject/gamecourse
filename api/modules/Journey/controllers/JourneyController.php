@@ -86,11 +86,12 @@ class JourneyController
         $pathId = API::getValue("pathId", "int");
         $name = API::getValue("name");
         $color = API::getValue("color");
+        $isActive = API::getValue("isActive", "bool");
         $skills = API::getValue("skills", "array");
 
         // Edit path
         $path = JourneyPath::getJourneyPathById($pathId);
-        $path->editJourneyPath($name, $color, $skills);
+        $path->editJourneyPath($name, $color, $isActive, $skills);
     }
 
     /**

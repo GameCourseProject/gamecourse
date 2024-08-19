@@ -155,6 +155,14 @@ export class JourneyComponent implements OnInit {
       this.pathToDelete = pathToActOn;
       ModalService.openModal('path-delete-verification');
     }
+    else if (action === 'value changed') {
+      this.loading.paths = true;
+
+      pathToActOn.isActive = value;
+      await this.api.editJourneyPath(this.courseID, clearEmptyValues(pathToActOn)).toPromise();
+
+      this.loading.paths = false;
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -190,7 +198,12 @@ export class JourneyComponent implements OnInit {
     if (this.fPath.valid) {
       this.loading.action = true;
 
-      await this.api.editJourneyPath(this.courseID, clearEmptyValues(this.pathToManage)).toPromise();
+      const pathToEdit = this.journeyPaths.find(el => el.id === this.pathToManage.id);
+      pathToEdit.name = this.pathToManage.name;
+      pathToEdit.color = this.pathToManage.color;
+      pathToEdit.skills = this.pathToManage.skills;
+
+      await this.api.editJourneyPath(this.courseID, clearEmptyValues(pathToEdit)).toPromise();
       this.journeyPaths = await this.api.getJourneyPaths(this.courseID).toPromise();
       this.buildPathsTable();
 
