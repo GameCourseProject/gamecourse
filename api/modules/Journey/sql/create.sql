@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS journey_path_skills(
     skill 		                int unsigned NOT NULL,
     path                        int unsigned NOT NULL,
     position                    int unsigned,
+    rule                        int unsigned NOT NULL,
 
     UNIQUE key(path, position),
     FOREIGN key(skill) REFERENCES skill(id) ON DELETE CASCADE,

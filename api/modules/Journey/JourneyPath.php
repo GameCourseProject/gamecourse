@@ -3,10 +3,12 @@ namespace GameCourse\Module\Journey;
 
 use Exception;
 use GameCourse\AutoGame\RuleSystem\Rule;
+use GameCourse\AutoGame\RuleSystem\Section;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
+use GameCourse\Module\Skills\Tier;
 use Utils\Utils;
 use ZipArchive;
 
@@ -414,7 +416,13 @@ class JourneyPath
      */
     public function addSkill(int $position, int $skillId)
     {
-        $data = ["skill" => $skillId, "path" => $this->getId(), "position" => $position];
+        $pathId = $this->getId();
+
+        $skill = new Skill($skillId);
+        $dependencies = Core::database()->selectMultiple(self::TABLE_JOURNEY_PATH_SKILLS, ["path" => $pathId], "skill", null, [], [["position", "<", $position]]);
+        $rule = self::addRule($this->getCourse()->getId(), $pathId, $position, $skill->getName(), array_column($dependencies, "skill"));
+
+        $data = ["skill" => $skillId, "path" => $pathId, "position" => $position, "rule" => $rule->getId()];
         Core::database()->insert(self::TABLE_JOURNEY_PATH_SKILLS, $data);
     }
 
@@ -428,7 +436,119 @@ class JourneyPath
     public function removeSkill(int $skillId)
     {
         $where = ["skill" => $skillId, "path" => $this->getId()];
+
+        $ruleId = Core::database()->select(self::TABLE_JOURNEY_PATH_SKILLS, $where, "rule");
+        self::removeRule($this->getCourse()->getId(), $ruleId);
+
         Core::database()->delete(self::TABLE_JOURNEY_PATH_SKILLS, $where);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Rules ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Adds a new skill rule to the Rule System.
+     * Returns the newly created rule.
+     *
+     * @param int $courseId
+     * @param int $pathId
+     * @param int $positionInPath
+     * @param string $skillName
+     * @param array $dependencies
+     * @return Rule
+     * @throws Exception
+     */
+    public static function addRule(int $courseId, int $pathId, int $positionInPath,
+                                   string $skillName, array $dependencies): Rule
+    {
+        // Find rule position
+        $position = self::findRulePosition($pathId, $positionInPath);
+
+        // Add rule to skills section
+        $journeyModule = new Journey(new Course($courseId));
+        return $journeyModule->addRuleOfItem($position, $skillName, $dependencies);
+    }
+
+    /**
+     * Deletes skill rule from the Rule System.
+     *
+     * @param int $courseId
+     * @param int $ruleId
+     * @return void
+     * @throws Exception
+     */
+    private static function removeRule(int $courseId, int $ruleId)
+    {
+        $journeyModule = new Journey(new Course($courseId));
+        $journeyModule->deleteRuleOfItem($ruleId);
+    }
+
+    /**
+     * Generates skill rule parameters.
+     *
+     * @param string $skillName
+     * @param array $dependencies
+     * @return array
+     */
+    public static function generateRuleParams(string $skillName, array $dependencies): array
+    {
+        // Generate rule clauses
+        $when = file_get_contents(__DIR__ . "/rules/when_template.txt");
+        $then = file_get_contents(__DIR__ . "/rules/then_template.txt");
+
+        // Fill-in skill name
+        $when = str_replace("<skill-name>", $skillName, $when);
+        $then = str_replace("<skill-name>", $skillName, $then);
+
+        // Fill-in skill dependencies
+        if (empty($dependencies)) {
+            $when = preg_replace("/<skill-dependencies>(\r*\n)*/", "", $when);
+            $then = str_replace(", <dependencies>", "", $then);
+
+        } else {
+            $dependenciesTxt = "";
+            $conditions = [];
+
+            // Generate dependencies text
+            foreach ($dependencies as $skillId) {
+                $conditions[] = "skill_completed(target, \"" . (new Skill($skillId))->getName() . "\")";
+            }
+            $dependenciesTxt .= "dependencies = " . implode(" and ", $conditions);
+
+            // Fill-in dependencies
+            $parts = explode("<skill-dependencies>", $when);
+            array_splice($parts, 1, 0, $dependenciesTxt);
+            $when = implode("", $parts);
+            $then = str_replace("<dependencies>", "dependencies", $then);
+        }
+
+        return ["name" => $skillName . " (Journey)", "when" => $when, "then" => $then];
+    }
+
+    /**
+     * Finds skill rule position based on skill position in a given path.
+     *
+     * @param int $tierId
+     * @param int $positionInTier
+     * @return int
+     * @throws Exception
+     */
+    private static function findRulePosition(int $pathId, int $positionInPath): int
+    {
+        $paths = JourneyPath::getJourneyPaths((new JourneyPath($pathId))->getCourse()->getId());
+
+        $position = 0;
+        foreach ($paths as $p) {
+            if ($p["id"] == $pathId) {
+                $position += $positionInPath;
+                break;
+            }
+            $path = new JourneyPath($p["id"]);
+            $position += count($path->getSkills());
+        }
+        return $position;
     }
 
 

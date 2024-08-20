@@ -1,12 +1,14 @@
 <?php
 namespace GameCourse\Module\Journey;
 
+use GameCourse\AutoGame\RuleSystem\RuleSystem;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Config\InputType;
 use GameCourse\Module\DependencyMode;
 use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
+use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
 
 /**
@@ -46,6 +48,7 @@ class Journey extends Module
     // NOTE: dependencies should be updated on code changes
 
     const RESOURCES = [];
+    const RULE_SECTION = "Journey";
 
 
     /*** ----------------------------------------------- ***/
@@ -55,6 +58,7 @@ class Journey extends Module
     public function init()
     {
         $this->initDatabase();
+        $this->initRules();
 
         // Init config
         $skills = new Skills($this->course);
@@ -73,6 +77,7 @@ class Journey extends Module
     public function disable()
     {
         $this->cleanDatabase();
+        $this->removeRules();
     }
 
 
@@ -170,6 +175,20 @@ class Journey extends Module
     {
         return ["position" => "after"];
     }
+
+
+    /*** ----------------------------------------------- ***/
+    /*** ----------------- Rule System ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    /**
+     * @throws Exception
+     */
+    protected function generateRuleParams(...$args): array
+    {
+        return JourneyPath::generateRuleParams(...$args);
+    }
+
 
     /*** ----------------------------------------------- ***/
     /*** --------------- Module Specific --------------- ***/
