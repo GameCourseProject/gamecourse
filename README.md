@@ -30,6 +30,7 @@ This is a setup guide to run the project on your machine.
               "Awards/dictionary",
               "Badges/dictionary",
               "Skills/dictionary",
+              "Journey/dictionary",
               "Streaks/dictionary",
               "VirtualCurrency/dictionary",
               "XPLevels/dictionary"
