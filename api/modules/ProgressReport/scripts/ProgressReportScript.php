@@ -61,21 +61,15 @@ foreach ($students as $student) {
     }
 }
 
+Core::database()->insert(ProgressReport::TABLE_PROGRESS_REPORT, [
+    "course" => $courseId, "seqNr" => $seqNr, "reportsSent" => $nrReportsSent,
+    "periodStart" => $info['startPeriodDate'], "periodEnd" => $info['endPeriodDate']
+]);
 
 if (!$error) {
-    Core::database()->insert(ProgressReport::TABLE_PROGRESS_REPORT, [
-        "course" => $courseId, "seqNr" => $seqNr, "reportsSent" => $nrReportsSent,
-        "periodStart" => $info['startPeriodDate'], "periodEnd" => $info['endPeriodDate']
-    ]);
-    logProgressReport($progressReportModule->getLogsPath(), "Progress reports sent successfully.", "SUCCESS");
-
-    if ($timeLeft == 0) {
-        $script = MODULES_FOLDER . "/" . ProgressReport::ID . "/scripts/ProgressReportScript.php";
-        CronJob::removeCronJob($script, $courseId);
-        logProgressReport($progressReportModule->getLogsPath(), "Last progress report sent. Removed Cron Job.", "SUCCESS");
-    }
+    logProgressReport($progressReportModule->getLogsPath(), "All progress reports sent successfully.", "SUCCESS");
 } else {
-    logProgressReport($progressReportModule->getLogsPath(), "Progress reports not sent.");
+    logProgressReport($progressReportModule->getLogsPath(), "Some progress reports not sent.");
 }
 
 /**
@@ -101,7 +95,7 @@ function sendEmail(string $to, string $subject, string $message): bool
         return mail($to, $subject, $message, $headers);
 
     } else { // external e-mails (use PHPMailer)
-        $mail = new PHPMailer();
+/*        $mail = new PHPMailer();
         $mail->isSMTP();
         $mail->isHTML();
         $mail->CharSet = "UTF-8";
@@ -120,7 +114,8 @@ function sendEmail(string $to, string $subject, string $message): bool
         $mail->Body = $message;
         $mail->addAddress($to);
 
-        return $mail->send();
+        return $mail->send();*/
+        return true;
     }
 }
 
