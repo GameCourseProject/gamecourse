@@ -114,14 +114,13 @@ export class JourneyComponent implements OnInit {
         {label: 'Skills', align: 'left'},
         {label: 'Reward (XP)', align: 'middle'},
         {label: 'Active', align: 'middle'},
-        {label: 'View Rule'},
         {label: 'Actions'}
       ],
       tableOptions: {
         order: [[ 0, 'asc' ]], // default order
         columnDefs: [
-          { type: 'natural', targets: [0] },
-          {orderable: false, targets: [3, 4, 5]}
+          {type: 'natural', targets: [0]},
+          {orderable: false, targets: [3, 4]}
         ]
       }
     }
@@ -148,7 +147,6 @@ export class JourneyComponent implements OnInit {
         {type: TableDataType.TEXT, content: {text: this.stringifySkills(path.skills)}},
         {type: TableDataType.NUMBER, content: {value: this.getTotalSkillsXP(path.skills)}},
         {type: TableDataType.TOGGLE, content: {toggleId: 'isActive', toggleValue: path.isActive}},
-        {type: TableDataType.ACTIONS, content: {actions: [Action.VIEW_RULE]}},
         {type: TableDataType.ACTIONS, content: {actions: [
               Action.EDIT,
               Action.DELETE
@@ -193,6 +191,11 @@ export class JourneyComponent implements OnInit {
       this.pathMode = 'create';
       this.pathToManage = this.initPathToManage();
       ModalService.openModal('path-manage');
+    }
+    else if (action === 'View Rules') {
+      let sectionID = await this.api.getSectionIdByModule(this.courseID, "Journey").toPromise();
+      const ruleLink = './rule-system/sections/' + sectionID;
+      this.router.navigate([ruleLink], {relativeTo: this.route.parent});
     }
   }
 

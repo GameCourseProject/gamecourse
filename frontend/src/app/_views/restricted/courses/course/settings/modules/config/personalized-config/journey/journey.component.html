@@ -10,7 +10,8 @@
 
     <!-- Top Actions -->
     <app-top-actions
-      [rightActions]="[{action: 'Create path', icon: 'feather-plus-circle', color: 'primary'}]"
+      [rightActions]="[{action: 'View Rules', icon: 'tabler-clipboard-list', color: 'secondary'},
+                       {action: 'Create path', icon: 'feather-plus-circle', color: 'primary'}]"
       (btnClicked)="doAction($event)">
     </app-top-actions>
 
