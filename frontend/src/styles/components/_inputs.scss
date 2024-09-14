@@ -114,22 +114,18 @@
 
     .ss-single {
       @apply text-sm text-base-content m-0 #{!important};
-
-      span {
-        @apply bg-transparent px-0 #{!important};
-      }
     }
 
     .ss-value {
-      @apply badge badge-outline px-1 #{!important};
+      @apply badge badge-outline border-base-content/75 px-1 #{!important};
 
       .ss-value-text {
-        @apply text-sm text-base-content #{!important};
+        @apply text-sm text-base-content/75 #{!important};
       }
       .ss-value-delete {
-        @apply border-l-0 -ml-1;
+        @apply border-l-0 -ml-1 ;
         svg path {
-          @apply stroke-base-content #{!important};
+          @apply stroke-base-content/75 #{!important};
         }
       }
     }

@@ -16,7 +16,6 @@ import {InputType} from "../../../../../../../../_components/inputs/InputType";
 import {Action, ActionScope, scopeAllows} from 'src/app/_domain/modules/config/Action';
 import {TableDataType} from "../../../../../../../../_components/tables/table-data/table-data.component";
 import {SkillsComponent} from "../personalized-config/skills/skills.component";
-import {JourneyComponent} from "../personalized-config/journey/journey.component";
 import {QrComponent} from "../personalized-config/qr/qr.component";
 import {GooglesheetsComponent} from "../personalized-config/googlesheets/googlesheets.component";
 import {ProfilingComponent} from "../personalized-config/profiling/profiling.component";
@@ -373,7 +372,6 @@ export class ConfigComponent implements OnInit {
       if (this.module.id === ApiHttpService.PROFILING) return ProfilingComponent;
       if (this.module.id === ApiHttpService.QR) return QrComponent;
       if (this.module.id === ApiHttpService.SKILLS) return SkillsComponent;
-      if (this.module.id === ApiHttpService.JOURNEY) return JourneyComponent;
 
       ErrorService.set("Personalized config for module '" + this.module.id + "' not found.");
     }

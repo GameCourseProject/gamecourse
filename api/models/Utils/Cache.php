@@ -124,7 +124,7 @@ class Cache
     private static function loadPageFromCache(array $where) {
         $page = Core::database()->select(self::TABLE_VIEW_CACHE, $where);
 
-        return isset($page["value"]) ? unserialize(gzuncompress(base64_decode($page["value"]))) : null;
+        return isset($page) ? unserialize(gzuncompress(base64_decode($page["value"]))) : null;
     }
 
     public static function storeUserViewInDatabase(int $pageId, ?int $userId, array $page) {

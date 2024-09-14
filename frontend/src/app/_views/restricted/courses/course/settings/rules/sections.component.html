@@ -7,7 +7,7 @@
   </div>
 </div>
 
-<div class="w-full relative h-full flex flex-col">
+<div class="w-full relative">
   <!-- Header -->
   <app-header [classList]="'text-md'"
               [title]="'Rule Editor'"
@@ -23,7 +23,7 @@
     </div>
 
     <!-- Search -->
-    <div class="md:w-[55%] w-full mx-auto mt-5">
+    <div class="w-[55%] mx-auto mt-5">
       <app-input-search
         [id] = "'sections-search'"
         [items] = "originalSections"
@@ -35,88 +35,85 @@
     <span *ngIf="originalSections.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing to show yet.</span>
     <span *ngIf="sectionsToShow.length === 0" class="p-32 text-base-content text-opacity-50 flex flex-wrap justify-center">Nothing found.</span>
 
-    <div cdkDropList [id]="'sections-list'" class="dd max-w-none h-full overflow-y-auto rounded-lg border border-base-content border-opacity-20 mt-6 p-2 pb-7"
-         (cdkDropListDropped)="drop($event)" appScrollableDrag>
-      <!-- Sections list -->
-      <div class="dd-item" *ngFor="let section of sectionsToShow" [cdkDragDisabled]="section.name === 'Graveyard'" cdkDrag (cdkDragStarted)="showWarning()">
-        <div class="justify-center flex">
-          <!-- Move -->
-          <div *ngIf="sectionsToShow.length > 1 && section.name !== 'Graveyard'" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
-            <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
-              <ng-icon name="tabler-arrows-vertical" size="1.2rem">
-              </ng-icon>
-              <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
-            </button>
-          </div>
+    <div class="rounded-lg border border-base-content border-opacity-20 mt-6 p-2">
+      <div cdkDropList [id]="'sections-list'" class="dd max-w-none h-96 overflow-y-auto" (cdkDropListDropped)="drop($event)" appScrollableDrag>
+        <!-- Sections list -->
+        <div class="dd-item" *ngFor="let section of sectionsToShow" [cdkDragDisabled]="section.name === 'Graveyard'" cdkDrag (cdkDragStarted)="showWarning()">
+          <div class="justify-center flex {{(section.name === 'Graveyard' && nrRules[section.id] === 0) ? 'hidden' : ''}}">
+            <!-- Move -->
+            <div *ngIf="sectionsToShow.length > 1 && section.name !== 'Graveyard'" class="tooltip absolute -ml-[60%] mt-16" data-tip="Move">
+              <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+                <ng-icon name="tabler-arrows-vertical" size="1.2rem">
+                </ng-icon>
+                <div class="dd-handle overlay h-[1.2rem] w-[1.2rem]"></div>
+              </button>
+            </div>
 
-          <!-- Card -->
-          <div class="dd-content {{!section.isActive ? 'border-gray-400': 'border-primary'}} border-opacity-75 card md:w-[55%] w-[90%] bg-base-100 shadow-xl mt-5">
-            <div class="card-body">
-              <ng-container *ngIf="!loading.page">
+            <!-- Card -->
+            <div class="dd-content {{!section.isActive ? 'border-gray-400': 'border-primary'}} border-opacity-75 card w-[55%] bg-base-100 shadow-xl mt-5">
+              <div class="card-body">
+                <ng-container *ngIf="!loading.page">
 
-                <div class="flex flex-row items-center justify-between">
+                  <div class="flex items-start mt-2 justify-between">
 
-                  <div class="flex flex-col items-start">
-                    <div class="flex flex-wrap items-center justify-start md:gap-x-2">
+                    <div class="prose items-center flex gap-3 mb-3 flex-wrap items-start">
                       <ng-icon [name]="'jam-box'" [size]="'1.5rem'"
                                [classList]="section.isActive ? '' : 'text-base-content text-opacity-30'"></ng-icon>
-                      <h3 class="font-semibold text-xl ml-2 md:ml-0 {{section.isActive ? '' : 'text-base-content text-opacity-50'}}">{{section.name}}</h3>
+                      <h3 class="mt-0 {{section.isActive ? '' : 'text-base-content text-opacity-50'}}">{{section.name}}</h3>
                       <app-spinner *ngIf="section.loading" [classList]="'ml-2'"></app-spinner>
-                      <div class="flex flex-wrap items-center gap-1.5">
-                        <div *ngFor="let role of section.roles" class="badge badge-outline">
-                          {{ role.name }}
-                        </div>
+                    </div>
+
+                    <div>
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Edit'">
+                        <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                                (click)="section.name !== 'Graveyard' ? prepareManagement('edit section', section) : ''">
+                          <ng-icon name="jam-pencil-f" size="1.5rem"
+                                   class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-warning'}}"></ng-icon>
+                        </button>
+                      </div>
+
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Delete'">
+                        <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
+                                (click)="section.name !== 'Graveyard' ? prepareManagement('remove section', section) : ''">
+                          <ng-icon name="jam-trash-f" size="1.5rem"
+                                   class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-error'}}"></ng-icon>
+                        </button>
+                      </div>
+
+                      <div class="tooltip align-middle mx-1.5" [attr.data-tip]="'See more details'">
+                        <button class="btn btn-sm btn-ghost btn-circle"
+                                (click)="prepareManagement('see section', section)">
+                          <ng-icon name="feather-arrow-right-circle" size="1.5rem"
+                                   class="text-primary"></ng-icon>
+                        </button>
                       </div>
                     </div>
-
-                    <div class="text-sm text-base-content text-opacity-50">
-                      ({{nrRules[section.id] > 0 ? nrRules[section.id] : 'No'}} rule{{(nrRules[section.id] && nrRules[section.id] === 1) ? '' : 's'}})
-                    </div>
                   </div>
 
-                  <div class="flex md:flex-row flex-col">
-                    <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Edit'">
-                      <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
-                              (click)="section.name !== 'Graveyard' ? prepareManagement('edit section', section) : ''">
-                        <ng-icon name="jam-pencil-f" size="1.5rem"
-                                 class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-warning'}}"></ng-icon>
-                      </button>
-                    </div>
-
-                    <div class="tooltip align-middle mx-1.5" [attr.data-tip]="section.name === 'Graveyard' ? null : 'Delete'">
-                      <button class="{{section.name === 'Graveyard' ? 'no-hover-effect': ''}} btn btn-sm btn-ghost btn-circle"
-                              (click)="section.name !== 'Graveyard' ? prepareManagement('remove section', section) : ''">
-                        <ng-icon name="jam-trash-f" size="1.5rem"
-                                 class="{{section.name === 'Graveyard' ? 'text-gray-300' : 'text-error'}}"></ng-icon>
-                      </button>
-                    </div>
-
-                    <div class="tooltip align-middle mx-1.5" [attr.data-tip]="'See more details'">
-                      <button class="btn btn-sm btn-ghost btn-circle"
-                              (click)="prepareManagement('see section', section)">
-                        <ng-icon name="feather-arrow-right-circle" size="1.5rem"
-                                 class="text-primary"></ng-icon>
-                      </button>
-                    </div>
+                  <div class="flex items-start justify-between">
+                <span class="text-sm text-base-content text-opacity-50 ml-8 -mt-3">
+                  ({{nrRules[section.id] > 0 ? nrRules[section.id] : 'No'}} rule{{(nrRules[section.id] && nrRules[section.id] === 1) ? '' : 's'}})
+                </span>
                   </div>
-                </div>
 
-                <!-- Loader -->
-                <app-loader [loading]="loading.page"></app-loader>
 
-              </ng-container>
+                  <!-- Loader -->
+                  <app-loader [loading]="loading.page"></app-loader>
+
+                </ng-container>
+              </div>
             </div>
-          </div>
 
-          <!-- Status toggle -->
-          <div class="absolute tooltip align-middle mt-16 md:ml-[60%] ml-[75%]" [attr.data-tip]="section.isActive ? 'Disable' : 'Enable'">
-            <div *ngIf="section.name !== 'Graveyard'" class="-rotate-90">
-              <app-input-toggle
-                [id]="section.id + 'status'"
-                [(value)]="section.isActive"
-                [color]="'primary'"
-                (valueChange)="toggleStatus(section)">
-              </app-input-toggle>
+            <!-- Status toggle -->
+            <div class="absolute tooltip align-middle mt-16 ml-[60%]" [attr.data-tip]="section.isActive ? 'Disable' : 'Enable'">
+              <div *ngIf="section.name !== 'Graveyard'" class="-rotate-90">
+                <app-input-toggle
+                  [id]="section.id + 'status'"
+                  [(value)]="section.isActive"
+                  [color]="'primary'"
+                  (valueChange)="toggleStatus(section)">
+                </app-input-toggle>
+              </div>
             </div>
           </div>
         </div>
@@ -158,32 +155,20 @@
 </app-modal>
 <ng-template #MANAGE_SECTION>
   <form #s="ngForm">
-    <app-input-text
-      [id] = "'section-name'"
-      [form] = "s"
-      [(value)] = "sectionToManage.name"
-      [placeholder]="'Section Name'"
-      [topLabel]="'Name'"
-      [pattern]="'(?!^\\d+$)^.+$'"
-      [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
-      [required]="true"
-      [maxLength]="60"
-      [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
-    </app-input-text>
-    <app-input-select-role
-      [courseId]="course.id"
-      [id]="'section-roles'"
-      [form]="s"
-      [(value)]="sectionToManage.roleNames"
-      [placeholder]="'Section Roles'"
-      [multiple]="true"
-      [topLabel]="'Roles'"
-      [classList]="'mt-2'"
-      [required]="true"
-      [helperText]="'The rules inside this section will be applied to all users with at least one of these roles'"
-      [helperPosition]="'right'"
-      [search]="true"
-    ></app-input-select-role>
+    <div class="w-full flex-wrap mt-3">
+      <app-input-text
+        [id] = "'section-name'"
+        [form] = "s"
+        [(value)] = "sectionToManage.name"
+        [placeholder]="'Section Name'"
+        [topLabel]="'Name'"
+        [pattern]="'(?!^\\d+$)^.+$'"
+        [patternErrorMessage]="'Section name can\'t be composed of only numbers'"
+        [required]="true"
+        [maxLength]="60"
+        [maxLengthErrorMessage]="'Section name is too long: maximum of 60 characters'">
+      </app-input-text>
+    </div>
   </form>
 </ng-template>
 

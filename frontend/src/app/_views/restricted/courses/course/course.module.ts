@@ -20,7 +20,6 @@ import { PreferenceQuestionnaireComponent } from "./settings/adaptation/question
 import { ModulesComponent } from "./settings/modules/modules/modules.component";
 import { ConfigComponent } from './settings/modules/config/config/config.component';
 import { SkillsComponent } from './settings/modules/config/personalized-config/skills/skills.component';
-import { JourneyComponent } from "./settings/modules/config/personalized-config/journey/journey.component";
 import { GooglesheetsComponent } from './settings/modules/config/personalized-config/googlesheets/googlesheets.component';
 import { QrComponent } from './settings/modules/config/personalized-config/qr/qr.component';
 import { ProfilingComponent } from './settings/modules/config/personalized-config/profiling/profiling.component';
@@ -51,7 +50,6 @@ import {SettingsComponent} from "./settings/settings/settings.component";
     CoursePageComponent,
     ConfigComponent,
     SkillsComponent,
-    JourneyComponent,
     GooglesheetsComponent,
     QrComponent,
     ProfilingComponent,

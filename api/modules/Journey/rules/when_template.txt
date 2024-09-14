@@ -1,4 +1,0 @@
-<skill-dependencies>
-
-logs = get_skill_logs(target, "<skill-name>")
-rating = get_best_rating(logs)
