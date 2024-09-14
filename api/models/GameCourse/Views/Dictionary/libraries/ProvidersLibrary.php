@@ -442,7 +442,7 @@ class ProvidersLibrary extends Library
                 $badgesByTimeAndUser = [];
 
                 // initialize arrays by time to guarantee they are never null
-                for ($index = 0; $index <= $timePassed; $index++) {
+                for ($index = 0; $index < $timePassed; $index++) {
                     $xpByTimeAndUser[$index] = [];
                     $badgesByTimeAndUser[$index] = [];
                     foreach ($userIds as $uId) {
@@ -453,14 +453,16 @@ class ProvidersLibrary extends Library
 
                 foreach ($awards as $award) {
                     $awardAge = Time::timeBetween($baseline, $award["date"], $time);
-                    $user = intval($award["user"]);
-                    $xpByTimeAndUser[$awardAge][$user] += $award["reward"];
-                    if ($award["type"] === AwardType::BADGE) {
-                        $badgesByTimeAndUser[$awardAge][$user] += 1;
+                    if ($awardAge < $timePassed) {
+                        $user = intval($award["user"]);
+                        $xpByTimeAndUser[$awardAge][$user] += $award["reward"];
+                        if ($award["type"] === AwardType::BADGE) {
+                            $badgesByTimeAndUser[$awardAge][$user] += 1;
+                        }
                     }
                 }
 
-                for ($index = 1; $index <= $timePassed; $index++) {
+                for ($index = 1; $index < $timePassed; $index++) {
                     foreach ($userIds as $uId) {
                         $xpByTimeAndUser[$index][$uId] += $xpByTimeAndUser[$index-1][$uId];
                         $badgesByTimeAndUser[$index][$uId] += $badgesByTimeAndUser[$index-1][$uId];
@@ -469,7 +471,7 @@ class ProvidersLibrary extends Library
 
                 // Calculate position over time
                 $t = 0;
-                while ($t <= $timePassed) {
+                while ($t < $timePassed) {
                     // Order by XP, badges count and name
                     usort($userIds, function ($a, $b) use ($t, $xpByTimeAndUser, $badgesByTimeAndUser) {
                         $xpA = $xpByTimeAndUser[$t][$a]["y"];

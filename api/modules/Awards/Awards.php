@@ -163,7 +163,7 @@ class Awards extends Module
     public function getCourseUsersAwards($userIds): array
     {
         $awards = Core::database()->executeQuery(
-            "SELECT * FROM " . XPLevels::TABLE_XP . " WHERE course = " .
+            "SELECT * FROM " . self::TABLE_AWARD . " WHERE course = " .
             Core::dictionary()->getCourse()->getId() . " AND user IN (" .
             implode(", ", $userIds) . ");")->fetchAll();
         foreach ($awards as &$award) { $award = self::parse($award); }
