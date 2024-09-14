@@ -197,6 +197,29 @@ class SkillsController
     }
 
     /**
+     * Get all skills of a course, with the reward value.
+     *
+     * @throws Exception
+     */
+    public function getSkillsOfCourse()
+    {
+        API::requireValues("courseId");
+
+        $courseId = API::getValue("courseId", "int");
+        $course = API::verifyCourseExists($courseId);
+
+        API::requireCoursePermission($course);
+
+        $skills = Skill::getSkills($courseId);
+        foreach ($skills as &$skillInfo) {
+            $skill = Skill::getSkillById($skillInfo["id"]);
+            $skillInfo["reward"] = $skill->getTier()->getReward();
+        }
+        API::response($skills);
+    }
+
+
+    /**
      * @throws Exception
      */
     public function createSkill()

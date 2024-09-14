@@ -1,0 +1,132 @@
+<!-- Paths -->
+<div class="card w-full bg-base-100 shadow-xl">
+  <div class="card-body">
+
+    <!-- Header -->
+    <div class="flex items-center mb-3">
+      <h2 class="card-title mb-0">Paths</h2>
+      <app-spinner *ngIf="loading.paths" [size]="'sm'" [color]="'primary'" [classList]="'ml-3'"></app-spinner>
+    </div>
+
+    <!-- Top Actions -->
+    <app-top-actions
+      [rightActions]="[{action: 'View Rules', icon: 'tabler-clipboard-list', color: 'secondary'},
+                       {action: 'Create path', icon: 'feather-plus-circle', color: 'primary'}]"
+      (btnClicked)="doAction($event)">
+    </app-top-actions>
+
+    <!-- Paths Table -->
+    <app-table
+      [id]="'paths'"
+      [classList]="'mt-5'"
+      [headers]="tablesInfo.paths.headers"
+      [data]="data"
+      [options]="tablesInfo.paths.tableOptions"
+      [loading]="loading.page"
+      (btnClicked)="doActionOnTable($event.type, $event.row, $event.col)"
+      (valueChanged)="doActionOnTable('value changed', $event.row, $event.col, $event.value)">
+    </app-table>
+
+  </div>
+</div>
+
+
+<!-- New / Edit Modal -->
+<app-modal *ngIf="pathToManage"
+           [id]="'path-manage'"
+           [templateRef]="PATH_MANAGE"
+           [size]="'md'"
+           [header]="pathMode?.capitalize() + ' path'"
+           [closeBtnText]="'Discard ' + (pathMode === 'create' ? 'path' : 'changes')"
+           [submitBtnText]="pathMode === 'create' ? pathMode?.capitalize() + ' path' : 'Save'"
+           [actionInProgress]="loading.action"
+           (submitBtnClicked)="fPath.onSubmit(null); pathMode === 'create' ? createPath() : editPath()"
+           (onClose)="resetPathToManage()"
+           [static]="true"
+></app-modal>
+<ng-template #PATH_MANAGE>
+  <form #fPath="ngForm">
+    <div class="md:grid grid-cols-2 gap-4">
+      <!-- Name -->
+      <app-input-text
+        [id]="'path-name'"
+        [form]="fPath"
+        [(value)]="pathToManage.name"
+        [placeholder]="'Path name'"
+        [topLabel]="'Name'"
+        [required]="true"
+        [maxLength]="50"
+        [maxLengthErrorMessage]="'Path name is too long: maximum of 50 characters'"
+        [helperText]="'Name for journey path'"
+        [helperPosition]="'right'"
+      ></app-input-text>
+
+      <!-- Color -->
+      <app-input-color
+        [id]="'path-color'"
+        [form]="fPath"
+        [(value)]="pathToManage.color"
+        [placeholder]="'Path color'"
+        [topLabel]="'Color'"
+        [required]="true"
+        [helperText]="'Color to differentiate journey paths'"
+        [helperPosition]="'left'"
+      ></app-input-color>
+    </div>
+
+    <!-- Skills -->
+    <div class="flex flex-row font-semibold mt-4">
+      <div>Skills</div>
+      <span class="ml-auto text-info">Total: {{ getTotalSkillsXP(pathToManage.skills) }} XP</span>
+    </div>
+    <div cdkDropList [id]="'skills-list'" class="mt-2 h-75 overflow-y-auto flex flex-col gap-2 w-full" (cdkDropListDropped)="drop($event)" appScrollableDrag>
+      <div class="dd-item flex flex-row items-center gap-4 w-full" *ngFor="let skill of pathToManage.skills; index as i" cdkDrag>
+        <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
+          <ng-icon name="tabler-arrows-vertical" size="1.2rem"></ng-icon>
+          <div class="dd-handle overlay h-[1.2rem] w-[1.2rem] cursor-grab"></div>
+        </button>
+        <div class="w-full">
+          <app-input-select
+            [id]="'path-skill-' + i"
+            [(value)]="''+skill.id"
+            [options]="skillsAvailable"
+            [placeholder]="'Select Skill'"
+            [leftLabel]="'Skill ' + (i + 1)"
+            [leftLabelSize]="'w-24'"
+            [btnIcon]="'jam-trash-f'"
+            (btnClicked)="deleteSkill(i)"
+            [required]="true"
+            (valueChange)="editSkill(i, $event)"
+          ></app-input-select>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-block btn-secondary btn-outline mt-2" (click)="showAdd = !showAdd">{{showAdd ? 'Cancel' : 'Add Skill'}}</button>
+    <div class="mt-2 w-full">
+      <app-input-select
+        *ngIf="showAdd"
+        [id]="'path-skill'"
+        [(value)]="skillToAdd"
+        [options]="skillsAvailable"
+        [placeholder]="'Select Skill'"
+        [leftLabel]="'New Skill'"
+        [btnIcon]="'jam-plus'"
+        (btnClicked)="addSkill(); showAdd = false"
+        [required]="false"
+      ></app-input-select>
+    </div>
+
+  </form>
+</ng-template>
+
+<!-- Delete Verification Modal -->
+<app-simple-modal *ngIf="pathToDelete"
+                  [id]="'path-delete-verification'"
+                  [title]="'Delete path'"
+                  [text]="'Are you sure you want to delete path \'' + pathToDelete?.name + '\'? You won\'t be able to undo this action.'"
+                  [submitBtnText]="'Delete'"
+                  [submitBtnColor]="'error'"
+                  [actionInProgress]="loading.action"
+                  (submitBtnClicked)="deletePath(pathToDelete)"
+                  (onClose)="pathToDelete = null">
+</app-simple-modal>
