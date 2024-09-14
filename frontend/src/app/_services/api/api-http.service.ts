@@ -78,10 +78,6 @@ import {
   EditableParticipationData
 } from "../../_views/restricted/courses/course/settings/db-explorer/db-explorer.component";
 import {Colors, SelectedTypes} from "../../_components/avatar-generator/model";
-import { JourneyPath } from 'src/app/_domain/modules/config/personalized-config/journey/journey-path';
-import {
-  PathManageData
-} from "../../_views/restricted/courses/course/settings/modules/config/personalized-config/journey/journey.component";
 
 @Injectable({
   providedIn: 'root'
@@ -112,7 +108,6 @@ export class ApiHttpService {
   static readonly PROFILING: string = 'Profiling';
   static readonly QR: string = 'QR';
   static readonly SKILLS: string = 'Skills';
-  static readonly JOURNEY: string = 'Journey';
   static readonly VIRTUAL_CURRENCY: string = 'VirtualCurrency';
   static readonly AWARDS: string = 'Awards';
   // FIXME: should be compartimentalized
@@ -1565,8 +1560,7 @@ export class ApiHttpService {
     const data = {
       course : sectionData.course,
       name: sectionData.name,
-      position: sectionData.position,
-      roles: sectionData.roleNames
+      position: sectionData.position
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -1585,8 +1579,7 @@ export class ApiHttpService {
       course: sectionData.course,
       name: sectionData.name,
       position: sectionData.position,
-      isActive: sectionData.isActive,
-      roles: sectionData.roleNames
+      isActive: sectionData.isActive
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2926,88 +2919,6 @@ export class ApiHttpService {
     const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
     return this.post(url, data, ApiHttpService.httpOptions)
       .pipe(map((res: any) => res) );
-  }
-
-  // Journey
-
-  public getJourneyPaths(courseID: number): Observable<JourneyPath[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.JOURNEY);
-      qs.push('request', 'getJourneyPaths');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => JourneyPath.fromDatabase(obj))) );
-  }
-
-  public getSkillsOfCourse(courseID: number): Observable<Skill[]> {
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.SKILLS);
-      qs.push('request', 'getSkillsOfCourse');
-      qs.push('courseId', courseID);
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-
-    return this.get(url, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res['data'].map(obj => Skill.fromDatabase(obj))) );
-  }
-
-  public createJourneyPath(courseID: number, pathData: PathManageData): Observable<void> {
-    const data = {
-      courseId: courseID,
-      name: pathData.name,
-      color: pathData.color,
-      skills: pathData.skills.map(skill => skill.id)
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.JOURNEY);
-      qs.push('request', 'createJourneyPath');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public editJourneyPath(courseID: number, pathData: JourneyPath): Observable<void> {
-    const data = {
-      courseId: courseID,
-      pathId: pathData.id,
-      name: pathData.name,
-      color: pathData.color,
-      isActive: pathData.isActive,
-      skills: pathData.skills.map(skill => skill.id)
-    }
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.JOURNEY);
-      qs.push('request', 'editJourneyPath');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
-  }
-
-  public deleteJourneyPath(courseID: number, pathID: number): Observable<void> {
-    const data = {
-      courseId: courseID,
-      pathId: pathID
-    };
-
-    const params = (qs: QueryStringParameters) => {
-      qs.push('module', ApiHttpService.JOURNEY);
-      qs.push('request', 'deleteJourneyPath');
-    };
-
-    const url = this.apiEndpoint.createUrlWithQueryParameters('', params);
-    return this.post(url, data, ApiHttpService.httpOptions)
-      .pipe( map((res: any) => res) );
   }
 
 

@@ -494,15 +494,6 @@ CREATE TABLE rule_section(
      FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
 );
 
-CREATE TABLE rule_section_role(
-     section                     int unsigned NOT NULL,
-     role                        int unsigned NOT NULL,
-
-     PRIMARY key(section, role),
-     FOREIGN key(section) REFERENCES rule_section(id) ON DELETE CASCADE,
-     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
-);
-
 CREATE TABLE rule_tag(
      id                          int unsigned AUTO_INCREMENT PRIMARY KEY,
      course                      int unsigned NOT NULL,
