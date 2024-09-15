@@ -4,7 +4,11 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 abstract class UnaryOp extends Node {
-    public function __construct(private $rhs, ?Library $library = null) {
+
+    private $rhs;
+
+    public function __construct($rhs, ?Library $library = null) {
+        $this->rhs = $rhs;
         $this->setLibrary($library);
     }
 

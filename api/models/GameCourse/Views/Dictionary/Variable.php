@@ -7,8 +7,20 @@ namespace GameCourse\Views\Dictionary;
  */
 class Variable
 {
-    public function __construct(private string $id, private string $name, private string $type, private string $description, private Library $library)
+
+    private $id;
+    private $name;
+    private $type;
+    private $description;
+    private $library;
+
+    public function __construct(string $id, string $name, string $type, string $description, Library $library)
     {
+        $this->id = $id;
+        $this->name = $name;
+        $this->type = $type;
+        $this->description = $description;
+        $this->library = $library;
     }
 
 

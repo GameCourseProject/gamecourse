@@ -10,10 +10,13 @@ use Utils\Utils;
 
 class EvaluateVisitor extends Visitor
 {
-    // whether to generate mocks
+    private $params;        // variables available
+    private $mockData;      // whether to generate mocks
 
-    public function __construct(private array $params, private bool $mockData = false)
+    public function __construct(array $params, bool $mockData = false)
     {
+        $this->params = $params;
+        $this->mockData = $mockData;
     }
 
     public function getParams(): array
