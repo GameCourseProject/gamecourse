@@ -4,7 +4,13 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 abstract class BinaryOp extends Node {
-    public function __construct(private $lhs, private $rhs, ?Library $library = null) {
+
+    private $lhs;
+    private $rhs;
+
+    public function __construct($lhs, $rhs, ?Library $library = null) {
+        $this->lhs = $lhs;
+        $this->rhs = $rhs;
         $this->setLibrary($library);
     }
 

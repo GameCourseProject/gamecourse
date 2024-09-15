@@ -1,6 +1,6 @@
 {
   "require": {
-    "php": "=7.3.21",
+    "php": ">8.0",
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-zip": "*",
@@ -13,7 +13,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "9.5",
-    "mockery/mockery": "dev-master",
+    "mockery/mockery": "^1.5",
     "opis/closure": "^3.6",
     "wikimedia/composer-merge-plugin": "^2.0"
   },

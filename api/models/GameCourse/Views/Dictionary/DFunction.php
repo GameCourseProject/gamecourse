@@ -7,8 +7,22 @@ namespace GameCourse\Views\Dictionary;
  */
 class DFunction
 {
-    public function __construct(private string $name, private array $args, private string $description, private string $returnType, private Library $library)
+
+    private $name;
+    private $args;           // [[ name => string, optional => boolean, type => any ]]
+    private $description;
+    private $returnType;
+    private $library;
+    private $example;
+
+    public function __construct(string $name, array $args, string $description, string $returnType, Library $library, string $example = null)
     {
+        $this->name = $name;
+        $this->args = $args;
+        $this->description = $description;
+        $this->returnType = $returnType;
+        $this->library = $library;
+        $this->example = $example;
     }
 
 
