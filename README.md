@@ -46,13 +46,14 @@ This is a setup guide to run the project on your machine.
         }
       }
      ```
-  3. Install all dependencies by running: ```composer install```
-  4. Because of incompatibility of PHP version and project, we need to add #[\AllowDynamicProperties] to vendor/opis/closure/src/SerializableClosure.php and vendor/opis/closure/src/ClosureStream.php above the class declaration.
+  3. Uncomment on php.ini (if using xampp, on xampp/php/php.ini) the lines with _extension=zip_ and _extension=gd_ (remove the ';')
+  4. Install all dependencies by running: ```composer install```
+  5. Because of incompatibility of PHP version and project, we need to add #[\AllowDynamicProperties] to vendor/opis/closure/src/SerializableClosure.php and vendor/opis/closure/src/ClosureStream.php above the class declaration.
     ```
       #[\AllowDynamicProperties]
       class SerializableClosure implements Serializable { ... }
     ```
-  5. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
+  6. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
   
 - **Frontend**:<br>
   1. Copy the configuration file template (_frontend/src/environments/config.template.ts_) and rename it to _config.ts_. Update its configuration variables.
@@ -85,7 +86,7 @@ After all of these steps, you should be able to access [https://pcm.rnl.ulisboa.
   * **<a id="xampp"></a>XAMPP**: <br>
   XAMPP is a _PHP development environment_. It is a completely free, easy-to-install **Apache** distribution containing _MariaDB_, _PHP_, and _Perl_. See more [here](https://www.apachefriends.org/). <br><br>
   **How to Install?**
-    - Download the latest version of XAMPP for **PHP 8.2** (version 8.2.22) [here](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.21/).
+    - Download the latest version of XAMPP for **PHP 8.2** (version 8.2.22) [here](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.2.12/).
     - Click on the installer and follow the installation wizard.
         - <ins>Select components</ins>: You must install **Apache**, **MySQL**, and **PHP**. The rest of the components are up to you, but phpMyAdmin is also useful for database management (more [here](https://www.siteground.com/tutorials/phpmyadmin/database-management/)).
     - Change MySQL server charset
