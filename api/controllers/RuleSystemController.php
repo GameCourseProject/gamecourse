@@ -66,7 +66,8 @@ class RuleSystemController
 
         $courseSections = Section::getSections($courseId);
         foreach ($courseSections as &$courseSectionInfo) {
-            Section::getSectionById($courseSectionInfo["id"]);
+            $section = Section::getSectionById($courseSectionInfo["id"]);
+            $courseSectionInfo["roles"] = $section->getRoles();
         }
         API::response($courseSections);
     }
@@ -78,7 +79,7 @@ class RuleSystemController
      */
     public function createSection()
     {
-        API::requireValues('course', 'name', 'position');
+        API::requireValues('course', 'name', 'position', 'roles');
 
         $courseId = API::getValue("course", "int");
 
@@ -87,11 +88,15 @@ class RuleSystemController
         // Get values
         $name = API::getValue("name");
         $position = API::getValue("position");
+        $rolesNames = API::getValue("roles", "array");
 
         // Add section to system
         $section = Section::addSection($courseId, $name);
+        // Edit section roles
+        $section->setRoles($rolesNames);
 
         $sectionInfo = $section->getData();
+        $sectionInfo["roles"] = $section->getRoles();
         API::response($sectionInfo);
     }
 
@@ -102,7 +107,7 @@ class RuleSystemController
      */
     public function editSection()
     {
-        API::requireValues('id', 'course', 'name', 'position', 'isActive');
+        API::requireValues('id', 'course', 'name', 'position', 'isActive', 'roles');
 
         $courseId = API::getValue("course", "int");
 
@@ -115,10 +120,15 @@ class RuleSystemController
         $name = API::getValue("name");
         $position = API::getValue("position", "int");
         $isActive = API::getValue("isActive", "bool");
+        $rolesNames = API::getValue("roles", "array");
 
+        // Edit section
         $section->editSection($name, $position, $isActive);
-        $sectionInfo = $section->getData();
+        // Edit section roles
+        $section->setRoles($rolesNames);
 
+        $sectionInfo = $section->getData();
+        $sectionInfo["roles"] = $section->getRoles();
         API::response($sectionInfo);
     }
 

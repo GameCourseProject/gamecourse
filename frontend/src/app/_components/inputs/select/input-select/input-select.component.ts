@@ -47,6 +47,7 @@ export class InputSelectComponent implements OnInit, AfterViewInit, OnChanges {
 
   @Input() topLabel?: string;                                                       // Top label text
   @Input() leftLabel?: string;                                                      // Text on prepended label
+  @Input() leftLabelSize?: string;                                                  // Send a fixed width
   @Input() rightLabel?: string;                                                     // Text on appended label
 
   @Input() btnText?: string;                                                        // Text on appended button
