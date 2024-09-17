@@ -1,0 +1,24 @@
+{
+  "autoload": {
+    "psr-4": {
+      "GameCourse\\Views\\Dictionary\\": [
+        "Awards/dictionary",
+        "Badges/dictionary",
+        "Skills/dictionary",
+        "Journey/dictionary",
+        "Streaks/dictionary",
+        "VirtualCurrency/dictionary",
+        "XPLevels/dictionary"
+      ],
+      "API\\": [
+        "GoogleSheets/controllers",
+        "Profiling/controllers",
+        "ProgressReport/controllers",
+        "QR/controllers",
+        "Skills/controllers",
+        "Journey/controllers",
+        "VirtualCurrency/controllers"
+      ]
+    }
+  }
+}

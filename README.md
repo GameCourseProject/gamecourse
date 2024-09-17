@@ -21,41 +21,14 @@ This is a setup guide to run the project on your machine.
 
 - **Backend**:<br>
   1. Copy the configuration file template (_api/inc/config.template.ts_) and rename it to _config.php_. Update its configuration variables.
-  2. In file _api/modules/composer.json_ add the following lines:<br>
-     ```
-       {
-        "autoload": {
-          "psr-4": {
-            "GameCourse\\Views\\Dictionary\\": [
-              "Awards/dictionary",
-              "Badges/dictionary",
-              "Skills/dictionary",
-              "Journey/dictionary",
-              "Streaks/dictionary",
-              "VirtualCurrency/dictionary",
-              "XPLevels/dictionary"
-            ],
-            "API\\": [
-              "GoogleSheets/controllers",
-              "Profiling/controllers",
-              "ProgressReport/controllers",
-              "QR/controllers",
-              "Skills/controllers",
-              "Journey/controllers",
-              "VirtualCurrency/controllers"
-            ]
-          }
-        }
-      }
-     ```
-  3. Uncomment on php.ini (if using xampp, on xampp/php/php.ini) the lines with _extension=zip_ and _extension=gd_ (remove the ';')
-  4. Install all dependencies by running: ```composer install```
-  5. Because of incompatibility of PHP version and project, we need to add #[\AllowDynamicProperties] to vendor/opis/closure/src/SerializableClosure.php and vendor/opis/closure/src/ClosureStream.php above the class declaration.
+  2. Uncomment on php.ini (if using xampp, on xampp/php/php.ini) the lines with _extension=zip_ and _extension=gd_ (remove the ';')
+  3. Install all dependencies by running: ```composer install```
+  4. Because of incompatibility of PHP version and project, we need to add #[\AllowDynamicProperties] to vendor/opis/closure/src/SerializableClosure.php and vendor/opis/closure/src/ClosureStream.php above the class declaration.
     ```
       #[\AllowDynamicProperties]
       class SerializableClosure implements Serializable { ... }
     ```
-  6. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
+  5. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
   
 - **Frontend**:<br>
   1. Copy the configuration file template (_frontend/src/environments/config.template.ts_) and rename it to _config.ts_. Update its configuration variables.
