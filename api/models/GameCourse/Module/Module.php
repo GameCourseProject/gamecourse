@@ -207,11 +207,13 @@ abstract class Module
 
     public function changeGameFunctionsStatus(bool $isEnabled) {
         $moduleName = $this->getName() . ".py";
-        $moduleGamefuntionsPath = ROOT_PATH . MODULE_GAMEFUNCTIONS_PATH . "course_" . $this->getCourse() . "/";
-        if (!$isEnabled) {
-            rename($moduleGamefuntionsPath . $moduleName, $moduleGamefuntionsPath . "_" . $moduleName);
-        } else {
-            rename($moduleGamefuntionsPath . "_" . $moduleName, $moduleGamefuntionsPath . $moduleName);
+        $moduleGamefuntionsPath = ROOT_PATH . self::MODULE_GAMEFUNCTIONS_PATH . "course_" . $this->getCourse()->getId() . "/";
+        if (file_exists($moduleGamefuntionsPath)) {
+            if (!$isEnabled) {
+                rename($moduleGamefuntionsPath . $moduleName, $moduleGamefuntionsPath . "_" . $moduleName);
+            } else {
+                rename($moduleGamefuntionsPath . "_" . $moduleName, $moduleGamefuntionsPath . $moduleName);
+            }
         }
     }
 
