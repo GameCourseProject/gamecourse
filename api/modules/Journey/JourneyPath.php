@@ -344,7 +344,7 @@ class JourneyPath
         $this->setData([
             "name" => $name,
             "color" => $color,
-            "isActive" => $isActive
+            "isActive" => +$isActive
         ]);
         $this->setSkills($skills);
         return $this;
