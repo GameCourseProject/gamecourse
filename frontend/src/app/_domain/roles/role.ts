@@ -1,11 +1,11 @@
 export class Role {
   private _id: number;
   private _name: string;
-  private _landingPage: number;
+  private _landingPage: number | null;
   private _children?: Role[];
   private _module?: string;
 
-  constructor(id: number, name: string, landingPage: number, children?: Role[], module?: string) {
+  constructor(id: number, name: string, landingPage: number | null, children?: Role[], module?: string) {
     this._id = id;
     this._name = name;
     this._landingPage = landingPage;
@@ -29,11 +29,11 @@ export class Role {
     this._name = value;
   }
 
-  get landingPage(): number {
+  get landingPage(): number | null{
     return this._landingPage;
   }
 
-  set landingPage(value: number) {
+  set landingPage(value: number | null) {
     this._landingPage = value;
   }
 
@@ -111,7 +111,7 @@ export class Role {
 export interface RoleDatabase {
   id: number,
   name: string,
-  landingPage: number,
+  landingPage: number | null,
   children?: RoleDatabase[]
   module: string,
 }
