@@ -19,6 +19,7 @@ class Journey extends Module
 {
     const TABLE_JOURNEY_PATH = JourneyPath::TABLE_JOURNEY_PATH;
     const TABLE_JOURNEY_PATH_SKILLS = JourneyPath::TABLE_JOURNEY_PATH_SKILLS;
+    const TABLE_JOURNEY_PROGRESS = JourneyPath::TABLE_JOURNEY_PROGRESS;
     const TABLE_JOURNEY_CONFIG = 'journey_config';
 
     public function __construct(?Course $course)
@@ -117,19 +118,6 @@ class Journey extends Module
                                 "contentType" => "item",
                                 "width" => "1/3",
                                 "type" => InputType::NUMBER,
-                                "id" => "maxExtraCredit",
-                                "value" => $this->getMaxExtraCredit(),
-                                "placeholder" => "Max. extra credit",
-                                "options" => [
-                                    "topLabel" => "Skills max. extra credit XP",
-                                    "minValue" => 0
-                                ],
-                                "helper" => "Maximum extra credit XP each student can earn with skills"
-                            ],
-                            [
-                                "contentType" => "item",
-                                "width" => "1/3",
-                                "type" => InputType::NUMBER,
                                 "id" => "minRating",
                                 "value" => $this->getMinRating(),
                                 "placeholder" => "Min. rating",
@@ -142,6 +130,7 @@ class Journey extends Module
                             ],
                             [
                                 "contentType" => "item",
+                                "width" => "1/3",
                                 "type" => InputType::TOGGLE,
                                 "id" => "isRepeatable",
                                 "value" => $this->getIsRepeatable(),

@@ -20,6 +20,7 @@ class JourneyPath
 {
     const TABLE_JOURNEY_PATH = 'journey_path';
     const TABLE_JOURNEY_PATH_SKILLS = 'journey_path_skills';
+    const TABLE_JOURNEY_PROGRESS = 'journey_progress';
 
     protected $id;
 
@@ -462,6 +463,38 @@ class JourneyPath
         self::removeRule($this->getCourse()->getId(), $ruleId);
 
         Core::database()->delete(self::TABLE_JOURNEY_PATH_SKILLS, $where);
+    }
+
+    /**
+     * Returns bool indicating if skill is available for user or not
+     *
+     * @param int $userId
+     * @return bool
+     * @throws Exception
+     */
+    public static function isSkillAvailableForUser(int $courseId, int $userId, int $pathId, int $skillId): bool
+    {
+        $path = self::getJourneyPathById($pathId);
+        $inProgress = Core::database()->select(self::TABLE_JOURNEY_PROGRESS, ["course" => $courseId, "user" => $userId, "completed" => false]);
+
+        if (!$inProgress) {
+            foreach (self::getJourneyPaths($courseId) as $pathInfo) {
+                $path = new JourneyPath($pathInfo["id"]);
+                if ($path->getSkills()[0]["id"] == $skillId) return true;
+            }
+        }
+        else if ($inProgress["path"] == $pathId) {
+            $path = new JourneyPath($pathId);
+            $skills = $path->getSkills();
+            $position = array_search($skillId, array_map(function ($s) {
+                return $s["id"];
+            }, $skills));
+            if (isset($position)) {
+                if ($position == 0) return true;
+                //else return Skill::completedByUser($skills[$position - 1]);
+            }
+        }
+        return false;
     }
 
 

@@ -151,6 +151,15 @@ class JourneyLibrary extends Library
                 $this,
                 "journey.getJourneyXP(%journeyId)"
             ),
+            new DFunction("isSkillAvailableForUser",
+                [   ["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "pathId", "optional" => false, "type" => "int"],
+                    ["name" => "skillId", "optional" => false, "type" => "int"]],
+                "Gets if a skill is available for a user given its ID.",
+                ReturnType::BOOLEAN,
+                $this,
+                "journey.isSkillAvailableForUser(%user, %path.id, %skill.id)"
+            ),
         ];
     }
 
@@ -340,6 +349,32 @@ class JourneyLibrary extends Library
             $XP = $journey->getTotalXP();
         }
         return new ValueNode($XP, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Indicates if a skill is available for a user.
+     *
+     * @param int $userId
+     * @param int $pathId
+     * @param int $skillId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function isSkillAvailableForUser(int $userId, int $pathId, int $skillId)
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $available = Core::dictionary()->faker()->boolean();
+
+        } else {
+            $available = JourneyPath::isSkillAvailableForUser($courseId, $userId, $pathId, $skillId);
+        }
+
+        return new ValueNode($available, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
 }
