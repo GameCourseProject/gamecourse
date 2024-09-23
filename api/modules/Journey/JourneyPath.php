@@ -491,7 +491,10 @@ class JourneyPath
             }, $skills));
             if (isset($position)) {
                 if ($position == 0) return true;
-                //else return Skill::completedByUser($skills[$position - 1]);
+                else {
+                    $prevSkill = new Skill($skills[$position - 1]["id"]);
+                    return $prevSkill->completedByUser($userId);
+                }
             }
         }
         return false;
