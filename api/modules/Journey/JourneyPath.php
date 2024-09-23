@@ -286,7 +286,7 @@ class JourneyPath
     public function getSkills(bool $withReward = false): array
     {
         $where = ["p.path" => $this->id];
-        $skills = Core::database()->selectMultiple(Skills::TABLE_SKILL . " s LEFT JOIN " . self::TABLE_JOURNEY_PATH_SKILLS . " p on s.id=p.skill",
+        $skills = Core::database()->selectMultiple(self::TABLE_JOURNEY_PATH_SKILLS . " p LEFT JOIN " . Skills::TABLE_SKILL . " s on s.id=p.skill",
             $where, "s.*", "p.position");
         foreach ($skills as &$skillInfo) {
             $skill = Skill::getSkillById($skillInfo["id"]);
@@ -296,6 +296,27 @@ class JourneyPath
             if ($withReward) $skillInfo["reward"] = $skill->getTier()->getReward();
         }
         return $skills;
+    }
+
+    /**
+     * Gets total XP of path.
+     * Option to include or not the reward value.
+     *
+     * @param int $pathId
+     * @param bool|null $withReward
+     * @return array
+     * @throws Exception
+     */
+    public function getTotalXP(): int
+    {
+        $total = 0;
+        $where = ["path" => $this->id];
+        $skills = Core::database()->selectMultiple(self::TABLE_JOURNEY_PATH_SKILLS, $where, "skill");
+        foreach ($skills as $skillInfo) {
+            $skill = Skill::getSkillById($skillInfo["skill"]);
+            $total += $skill->getTier()->getReward();
+        }
+        return $total;
     }
 
 
