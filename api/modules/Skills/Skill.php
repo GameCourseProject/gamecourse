@@ -97,6 +97,14 @@ class Skill
     }
 
     /**
+     * @throws Exception
+     */
+    public function getReward(): array
+    {
+        return $this->getTier()->getReward();
+    }
+
+    /**
      * Checks whether skill is wildcard.
      *
      * @return bool

@@ -306,7 +306,7 @@ class SkillsLibrary extends Library
     }
 
     /**
-     * Gets skill's name.
+     * Gets skill's color.
      *
      * @param $skill
      * @return ValueNode
@@ -319,6 +319,22 @@ class SkillsLibrary extends Library
         elseif (is_object($skill) && method_exists($skill, 'getColor')) $color = $skill->getColor();
         else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
         return new ValueNode($color, Core::dictionary()->getLibraryById(TextLibrary::ID));
+    }
+
+    /**
+     * Gets skill's reward.
+     *
+     * @param $skill
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function reward($skill): ValueNode
+    {
+        // NOTE: on mock data, skill will be mocked
+        if (is_array($skill)) $reward = $skill["reward"];
+        elseif (is_object($skill) && method_exists($skill, 'getReward')) $reward = $skill->getReward();
+        else throw new InvalidArgumentException("Invalid type for first argument: expected a skill.");
+        return new ValueNode($reward, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /**

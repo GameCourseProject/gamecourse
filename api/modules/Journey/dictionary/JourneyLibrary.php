@@ -3,6 +3,7 @@ namespace GameCourse\Views\Dictionary;
 
 use Exception;
 use GameCourse\Core\Core;
+use GameCourse\Module\Journey\Journey;
 use GameCourse\Module\Journey\JourneyPath;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Views\ExpressionLanguage\ValueNode;
@@ -69,6 +70,7 @@ class JourneyLibrary extends Library
             "id" => $id ?: Core::dictionary()->faker()->numberBetween(0, 100),
             "name" => $name ?: Core::dictionary()->faker()->text(20),
             "color" => Core::dictionary()->faker()->hexColor(),
+            "reward" => Core::dictionary()->faker()->numberBetween(100, 1000),
             "isCollab" => $collab ?: Core::dictionary()->faker()->boolean(),
             "isExtra" => $extra ?: Core::dictionary()->faker()->boolean(),
             "isActive" => $active ?: Core::dictionary()->faker()->boolean(),
@@ -114,6 +116,13 @@ class JourneyLibrary extends Library
                 $this,
                 "journey.skills(%journey)\nor (shorthand notation):\n%journey.skills"
             ),
+            new DFunction("getMaxXP",
+                [],
+                "Gets maximum XP each student can earn with journeys.",
+                ReturnType::NUMBER,
+                $this,
+                "journey.getMaxXP()"
+            ),
             new DFunction("getJourneyById",
                 [["name" => "journeyId", "optional" => false, "type" => "int"]],
                 "Gets a journey by its ID.",
@@ -134,6 +143,22 @@ class JourneyLibrary extends Library
                 ReturnType::JOURNEYS_COLLECTION,
                 $this,
                 "journey.getJourneys(true)"
+            ),
+            new DFunction("getJourneyXP",
+                [["name" => "journey", "optional" => false, "type" => "int"]],
+                "Gets the total earnable XP from the journey.",
+                ReturnType::NUMBER,
+                $this,
+                "journey.getJourneyXP(%journeyId)"
+            ),
+            new DFunction("isSkillAvailableForUser",
+                [   ["name" => "userId", "optional" => false, "type" => "int"],
+                    ["name" => "pathId", "optional" => false, "type" => "int"],
+                    ["name" => "skillId", "optional" => false, "type" => "int"]],
+                "Gets if a skill is available for a user given its ID.",
+                ReturnType::BOOLEAN,
+                $this,
+                "journey.isSkillAvailableForUser(%user, %path.id, %skill.id)"
             ),
         ];
     }
@@ -200,13 +225,38 @@ class JourneyLibrary extends Library
         if (Core::dictionary()->mockData()) {
             $skills = $journey["skills"];
         } elseif (is_array($journey)) {
-            $skills = JourneyPath::getJourneyPathById($journey["id"])->getSkills();
+            $skills = JourneyPath::getJourneyPathById($journey["id"])->getSkills(true);
         } elseif (is_object($journey) && method_exists($journey, 'getSkills')) {
-            $skills = $journey->getSkills();
+            $skills = $journey->getSkills(true);
         } else {
             throw new InvalidArgumentException("Invalid type for first argument: expected a journey.");
         }
         return new ValueNode($skills, Core::dictionary()->getLibraryById(SkillsLibrary::ID));
+    }
+
+    /*** ---------- Config ---------- ***/
+
+    /**
+     * Gets maximum XP each student can earn with journeys.
+     *
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getMaxXP(): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $course = Core::dictionary()->getCourse();
+        $this->requireCoursePermission("getCourseById", $course->getId(), $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $maxXP = Core::dictionary()->faker()->numberBetween(5000, 20000);
+
+        } else {
+            $journeyModule = new Journey($course);
+            $maxXP = $journeyModule->getMaxXP();
+        }
+        return new ValueNode($maxXP, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
     /*** --------- General ---------- ***/
@@ -275,6 +325,56 @@ class JourneyLibrary extends Library
         } else $journeys = JourneyPath::getJourneyPaths($courseId, $active);
 
         return new ValueNode($journeys, $this);
+    }
+
+    /**
+     * Gets the total earnable XP from the journey.
+     *
+     * @param int $journeyId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function getJourneyXP(int $journeyId): ValueNode
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $XP = Core::dictionary()->faker()->numberBetween(1000, 10000);
+
+        } else {
+            $journey = JourneyPath::getJourneyPathById($journeyId);
+            $XP = $journey->getTotalXP();
+        }
+        return new ValueNode($XP, Core::dictionary()->getLibraryById(MathLibrary::ID));
+    }
+
+    /**
+     * Indicates if a skill is available for a user.
+     *
+     * @param int $userId
+     * @param int $pathId
+     * @param int $skillId
+     * @return ValueNode
+     * @throws Exception
+     */
+    public function isSkillAvailableForUser(int $userId, int $pathId, int $skillId)
+    {
+        // Check permissions
+        $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));
+        $courseId = Core::dictionary()->getCourse()->getId();
+        $this->requireCoursePermission("getCourseById", $courseId, $viewerId);
+
+        if (Core::dictionary()->mockData()) {
+            $available = Core::dictionary()->faker()->boolean();
+
+        } else {
+            $available = JourneyPath::isSkillAvailableForUser($courseId, $userId, $pathId, $skillId);
+        }
+
+        return new ValueNode($available, Core::dictionary()->getLibraryById(MathLibrary::ID));
     }
 
 }
