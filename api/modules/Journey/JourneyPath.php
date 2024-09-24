@@ -432,8 +432,8 @@ class JourneyPath
         }
 
         // Add new skills
-        foreach ($skills as $index=>$skillId) {
-            $this->addSkill($index, $skillId);
+        foreach ($skills as $index=>$skill) {
+            $this->addSkill($index, $skill["id"], $skill["reward"]);
         }
     }
 
@@ -445,7 +445,7 @@ class JourneyPath
      * @return void
      * @throws Exception
      */
-    public function addSkill(int $position, int $skillId)
+    public function addSkill(int $position, int $skillId, ?int $reward)
     {
         $pathId = $this->getId();
 
@@ -454,6 +454,8 @@ class JourneyPath
         $rule = self::addRule($this->getCourse()->getId(), $pathId, $position, $skill->getName(), array_column($dependencies, "skill"));
 
         $data = ["skill" => $skillId, "path" => $pathId, "position" => $position, "rule" => $rule->getId()];
+        if (isset($reward) && $reward != $skill->getReward()) $data["reward"] = $reward;
+
         Core::database()->insert(self::TABLE_JOURNEY_PATH_SKILLS, $data);
     }
 

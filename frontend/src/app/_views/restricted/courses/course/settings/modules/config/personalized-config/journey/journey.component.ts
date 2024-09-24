@@ -84,13 +84,8 @@ export class JourneyComponent implements OnInit {
                   '<span class="text-base-100 text-base">' + skill.name[0] + '</span>' +
                 '</div>' +
               '</div>' +
-              '<div class="flex flex-col">' +
-                '<div class="prose text-sm">' +
-                  '<h4>' + skill.name + '</h4>' +
-                '</div>' +
-                '<div class="prose text-sm opacity-60">' +
-                  '<div>' + skill.reward + ' XP </div>' +
-                '</div>' +
+              '<div class="prose text-sm">' +
+                '<h4>' + skill.name + '</h4>' +
               '</div>' +
             '</div>' +
           '</div>'

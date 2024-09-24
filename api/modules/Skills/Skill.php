@@ -99,7 +99,7 @@ class Skill
     /**
      * @throws Exception
      */
-    public function getReward(): array
+    public function getReward(): int
     {
         return $this->getTier()->getReward();
     }
