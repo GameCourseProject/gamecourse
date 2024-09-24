@@ -484,15 +484,23 @@ class JourneyPath
     public static function isSkillAvailableForUser(int $courseId, int $userId, int $pathId, int $skillId): bool
     {
         $path = self::getJourneyPathById($pathId);
-        $inProgress = Core::database()->select(self::TABLE_JOURNEY_PROGRESS, ["course" => $courseId, "user" => $userId, "completed" => false]);
+        $entries = Core::database()->selectMultiple(self::TABLE_JOURNEY_PROGRESS, ["course" => $courseId, "user" => $userId]);
+        $inProgress = array_filter($entries, function ($e) { return is_array($e) && $e["completed"] == 0; });
+        $completed = array_filter($entries, function ($e) {  return is_array($e) && $e["completed"] == 1; });
 
-        if (!$inProgress) {
+        if (count(array_filter($completed, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
+            return true;
+        }
+        else if (!$inProgress) {
+            $journeyModule = new Journey(new Course($courseId));
+            if (!$journeyModule->getIsRepeatable() && count($completed) > 0) return false;
+
             foreach (self::getJourneyPaths($courseId) as $pathInfo) {
                 $path = new JourneyPath($pathInfo["id"]);
                 if ($path->getSkills()[0]["id"] == $skillId) return true;
             }
         }
-        else if ($inProgress["path"] == $pathId) {
+        else if (count(array_filter($inProgress, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
             $path = new JourneyPath($pathId);
             $skills = $path->getSkills();
             $position = array_search($skillId, array_map(function ($s) {
