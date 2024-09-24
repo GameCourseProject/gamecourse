@@ -176,6 +176,7 @@ export class JourneyComponent implements OnInit {
       this.loading.paths = true;
 
       pathToActOn.isActive = value;
+      pathToActOn.skills = null;
       await this.api.editJourneyPath(this.courseID, clearEmptyValues(pathToActOn)).toPromise();
 
       this.loading.paths = false;

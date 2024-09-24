@@ -77,6 +77,23 @@ class JourneyPath
         return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
 
+    /**
+     * Gets path rules.
+     *
+     * @return Rule
+     */
+    public function getRules(): array
+    {
+        $rules = [];
+        foreach ($this->getSkills() as $skill) {
+            $where = ["skill" => $skill["id"], "path" => $this->getId()];
+            $ruleId = Core::database()->select(self::TABLE_JOURNEY_PATH_SKILLS, $where, "rule");
+            $rules[] = Rule::getRuleById($ruleId);
+        }
+        return $rules;
+    }
+
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -118,7 +135,6 @@ class JourneyPath
     public function setData(array $fieldValues)
     {
         $courseId = $this->getCourse()->getId();
-        /* $rule = $this->getRule(); */
 
         // Trim values
         self::trim($fieldValues);
@@ -136,24 +152,17 @@ class JourneyPath
         if (key_exists("isActive", $fieldValues)) {
             $newStatus = $fieldValues["isActive"];
             $oldStatus = $this->isActive();
+            if ($oldStatus != $newStatus) {
+                // Update rule status
+                foreach ($this->getRules() as $rule) {
+                    $rule->setActive($newStatus);
+                }
+            }
         }
 
         // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_JOURNEY_PATH, $fieldValues, ["id" => $this->id]);
-
-        /*if (key_exists("isActive", $fieldValues)) {
-            if ($oldStatus != $newStatus) {
-                // Update rule status
-                $rule->setActive($newStatus);
-            }
-        }
-        if (key_exists("name", $fieldValues)) {
-            // Update path rule
-            $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
-            self::updateRule($rule->getId(), $name, $description, $isPoint, $this->getLevels());
-        }*/
-        // TODO: Commented stuff when rules are ready
     }
 
 
@@ -361,14 +370,14 @@ class JourneyPath
      * @return JourneyPath
      * @throws Exception
      */
-    public function editJourneyPath(string $name, string $color, bool $isActive, array $skills): JourneyPath
+    public function editJourneyPath(string $name, string $color, bool $isActive, ?array $skills): JourneyPath
     {
+        if (isset($skills)) $this->setSkills($skills);
         $this->setData([
             "name" => $name,
             "color" => $color,
             "isActive" => +$isActive
         ]);
-        $this->setSkills($skills);
         return $this;
     }
 
@@ -381,10 +390,12 @@ class JourneyPath
     public static function deleteJourneyPath(int $pathId) {
         $path = self::getJourneyPathById($pathId);
         if ($path) {
-            // $courseId = $path->getCourse()->getId();
+            $courseId = $path->getCourse()->getId();
 
-            // TODO: Remove skill rule
-            // self::removeRule($courseId, $path->getRule()->getId());
+            // Remove skill rules
+            foreach ($path->getRules() as $rule) {
+                self::removeRule($courseId, $rule->getId());
+            }
 
             // Delete skill from database
             Core::database()->delete(self::TABLE_JOURNEY_PATH, ["id" => $pathId]);
@@ -415,8 +426,6 @@ class JourneyPath
      */
     public function setSkills(array $skills)
     {
-        // TODO: self::validateSkills($this->getTier(), $skills);
-
         // Remove all skills
         foreach ($this->getSkills() as $skill) {
             $this->removeSkill($skill["id"]);

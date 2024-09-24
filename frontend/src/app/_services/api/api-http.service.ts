@@ -2981,7 +2981,7 @@ export class ApiHttpService {
       name: pathData.name,
       color: pathData.color,
       isActive: pathData.isActive,
-      skills: pathData.skills.map(skill => skill.id)
+      skills: pathData.skills?.map(skill => skill.id) ?? null
     }
 
     const params = (qs: QueryStringParameters) => {

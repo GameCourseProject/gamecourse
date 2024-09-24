@@ -63,7 +63,7 @@
                       <h3 class="font-semibold text-xl ml-2 md:ml-0 {{section.isActive ? '' : 'text-base-content text-opacity-50'}}">{{section.name}}</h3>
                       <app-spinner *ngIf="section.loading" [classList]="'ml-2'"></app-spinner>
                       <div class="flex flex-wrap items-center gap-1.5">
-                        <div *ngFor="let role of section.roles" class="badge badge-outline">
+                        <div *ngFor="let role of section.roles" class="badge badge-outline {{section.isActive ? '' : 'opacity-30'}}">
                           {{ role.name }}
                         </div>
                       </div>
@@ -179,7 +179,6 @@
       [multiple]="true"
       [topLabel]="'Roles'"
       [classList]="'mt-2'"
-      [required]="true"
       [helperText]="'The rules inside this section will be applied to all users with at least one of these roles'"
       [helperPosition]="'right'"
       [search]="true"
