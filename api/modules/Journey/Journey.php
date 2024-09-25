@@ -10,6 +10,7 @@ use GameCourse\Module\Module;
 use GameCourse\Module\ModuleType;
 use GameCourse\Module\Skills\Skill;
 use GameCourse\Module\Skills\Skills;
+use GameCourse\Role\Role;
 
 /**
  * This is the Journey module, which serves as a compartimentalized
@@ -21,6 +22,9 @@ class Journey extends Module
     const TABLE_JOURNEY_PATH_SKILLS = JourneyPath::TABLE_JOURNEY_PATH_SKILLS;
     const TABLE_JOURNEY_PROGRESS = JourneyPath::TABLE_JOURNEY_PROGRESS;
     const TABLE_JOURNEY_CONFIG = 'journey_config';
+
+    const BASE_ROLE = "Skills";
+    const SKILLS_ROLES = [ self::BASE_ROLE => ["SkillTree", "Journey" ] ];
 
     public function __construct(?Course $course)
     {
@@ -68,6 +72,9 @@ class Journey extends Module
             "maxXP" => $skills->getMaxXP(),
             "maxExtraCredit" => $skills->getMaxExtraCredit()
         ]);
+
+        $this->addRolesToCourse();
+        $this->initTemplates();
     }
 
     public function copyTo(Course $copyTo)
@@ -79,6 +86,71 @@ class Journey extends Module
     {
         $this->cleanDatabase();
         $this->removeRules();
+        $this->removeTemplates();
+        $this->removeRolesFromCourse();
+    }
+
+    /**
+     * Adds roles from the specific module to a course
+     *
+     * @param array $roles
+     * @return void
+     * @throws Exception
+     */
+    protected function addRolesToCourse()
+    {
+        $roles = self::SKILLS_ROLES;
+        $course = $this->course;
+        $courseId = $course->getId();
+        $rolesNames = Role::getCourseRoles($courseId);
+        $parent = array_keys($roles)[0];
+        $hierarchy = $course->getRolesHierarchy();
+        $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
+        $changes = false;
+
+        // Add parent
+        if (!in_array($parent, $rolesNames)) {
+            Role::addRoleToCourse($courseId, $parent, null, null, self::ID);
+            // Update hierarchy
+            $hierarchy[$studentIndex]["children"][] = ["name" => $parent];
+            $changes = true;
+        }
+        // Add children
+        foreach ($roles[$parent] as $child){
+            if (!in_array($child, $rolesNames)) {
+                Role::addRoleToCourse($courseId, $child, null, null, self::ID);
+                // Update hierarchy
+                $parentIndex = array_search($parent, array_column($hierarchy[$studentIndex]["children"], "name"));
+                $hierarchy[$studentIndex]["children"][$parentIndex]["children"][] = ["name" => $child];
+                $changes = true;
+            }
+        }
+        if ($changes) $course->setRolesHierarchy($hierarchy);
+    }
+
+    /**
+     * Removes roles from the specific module from a course
+     *
+     * @param array $roles
+     * @return void
+     * @throws Exception
+     */
+    protected function removeRolesFromCourse()
+    {
+        $course = $this->course;
+        Role::removeRoleFromCourse($course->getId(), self::BASE_ROLE);
+
+        // Update hierarchy
+        $studentIndex = array_search("Student", Role::DEFAULT_ROLES);
+        $hierarchy = $course->getRolesHierarchy();
+
+        foreach ($hierarchy[$studentIndex]["children"] as $key => $value){
+            if ($value["name"] == self::BASE_ROLE){
+                array_splice($hierarchy[$studentIndex]["children"], $key, 1);
+                $course->setRolesHierarchy($hierarchy);
+                return;
+            }
+        }
     }
 
 
