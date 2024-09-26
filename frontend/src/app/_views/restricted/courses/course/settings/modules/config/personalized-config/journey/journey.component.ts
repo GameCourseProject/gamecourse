@@ -33,6 +33,7 @@ export class JourneyComponent implements OnInit {
 
   skills: Skill[];
   skillToAdd: string;
+  skillToEdit: Skill;
   skillsAvailable: {value: string, text: string, html?: string}[];
 
   journeyPaths: JourneyPath[];
@@ -56,6 +57,7 @@ export class JourneyComponent implements OnInit {
 
       await this.initJourneyPaths(this.courseID);
       await this.initSkills(this.courseID);
+      await this.getCourseDataFolder();
 
       this.loading.page = false;
     });
@@ -91,6 +93,10 @@ export class JourneyComponent implements OnInit {
           '</div>'
       }
     })
+  }
+
+  async getCourseDataFolder() {
+    this.courseFolder = (await this.api.getCourseById(this.courseID).toPromise()).folder;
   }
 
   /*** --------------------------------------------- ***/
@@ -290,6 +296,11 @@ export class JourneyComponent implements OnInit {
 
   drop(event: CdkDragDrop<string[]>){
     moveItemInArray(this.pathToManage.skills, event.previousIndex, event.currentIndex);
+  }
+
+  openModal(skill: Skill) {
+    this.skillToEdit = skill;
+    ModalService.openModal('skill-manage');
   }
 
 }
