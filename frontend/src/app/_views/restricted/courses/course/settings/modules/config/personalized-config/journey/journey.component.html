@@ -144,4 +144,10 @@
                   (onClose)="pathToDelete = null">
 </app-simple-modal>
 
-<app-skill-editor *ngIf="skillToEdit" [skill]="skillToEdit" [courseFolder]="courseFolder"/>
+<app-skill-editor
+  *ngIf="skillToEdit"
+  [skill]="skillToEdit"
+  [courseID]="courseID"
+  [courseFolder]="courseFolder"
+  (onClose)="skillToEdit = null"
+/>

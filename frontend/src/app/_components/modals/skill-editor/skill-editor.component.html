@@ -11,7 +11,7 @@
            [extraBtnDisabled]="!skillToManage.page"
            [submitBtnText]="'Save'"
            [actionInProgress]="loading"
-           (submitBtnClicked)="onSubmit()"
+           (submitBtnClicked)="fSkill.onSubmit(null); onSubmit()"
            (extraBtnClicked)="skillPageMode = skillPageMode === 'preview' ? 'editor' : 'preview'"
            (onClose)="reset()"
            [static]="true"
