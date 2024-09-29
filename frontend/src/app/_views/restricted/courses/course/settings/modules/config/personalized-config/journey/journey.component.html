@@ -80,7 +80,7 @@
       <span class="ml-auto text-info">Total: {{ getTotalSkillsXP(pathToManage.skills) }} XP</span>
     </div>
     <div cdkDropList [id]="'skills-list'" class="mt-2 h-75 overflow-y-auto flex flex-col gap-2 w-full" (cdkDropListDropped)="drop($event)" appScrollableDrag>
-      <div class="dd-item flex flex-row items-center gap-4 w-full" *ngFor="let skill of pathToManage.skills; index as i" cdkDrag>
+      <div class="dd-item flex flex-row items-center gap-2 w-full" *ngFor="let skill of pathToManage.skills; index as i" cdkDrag>
         <button class="dd-handle btn btn-sm btn-ghost btn-circle hover:text-base-content m-0 relative cursor-grab">
           <ng-icon name="tabler-arrows-vertical" size="1.2rem"></ng-icon>
           <div class="dd-handle overlay h-[1.2rem] w-[1.2rem] cursor-grab"></div>
@@ -93,11 +93,24 @@
             [placeholder]="'Select Skill'"
             [leftLabel]="'Skill ' + (i + 1)"
             [leftLabelSize]="'w-24'"
-            [btnIcon]="'jam-trash-f'"
-            (btnClicked)="deleteSkill(i)"
             [required]="true"
             (valueChange)="editSkill(i, $event)"
           ></app-input-select>
+        </div>
+        <div class="w-64">
+          <app-input-number
+            [id]="'path-skill-reward-' + i"
+            [(value)]="skill.reward"
+            [rightLabel]="'XP'"
+          />
+        </div>
+        <div class="flex flex-row">
+          <button class="btn btn-ghost btn-circle btn-sm h-10 w-10 text-warning" (click)="openModal(skill)">
+            <ng-icon name="jam-pencil-f" size="1.5rem"/>
+          </button>
+          <button class="btn btn-ghost btn-circle btn-sm h-10 w-10 text-error" (click)="deleteSkill(i)">
+            <ng-icon name="jam-trash-f" size="1.5rem"/>
+          </button>
         </div>
       </div>
     </div>
@@ -130,3 +143,11 @@
                   (submitBtnClicked)="deletePath(pathToDelete)"
                   (onClose)="pathToDelete = null">
 </app-simple-modal>
+
+<app-skill-editor
+  *ngIf="skillToEdit"
+  [skill]="skillToEdit"
+  [courseID]="courseID"
+  [courseFolder]="courseFolder"
+  (onClose)="skillToEdit = null"
+/>

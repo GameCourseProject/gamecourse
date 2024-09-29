@@ -4,6 +4,7 @@ use Google\Service\Sheets;
 
 require_once("google.config.php");
 
+#[\AllowDynamicProperties]
 class GoogleHandler
 {
     private static $INSTANCE;

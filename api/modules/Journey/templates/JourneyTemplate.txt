@@ -1,0 +1,227 @@
+[
+    {
+        "type": "block",
+        "class": "card card bg-base-100 shadow-xl",
+        "variables": [
+            {
+                "name": "courseColor",
+                "value": "{courses.getCourseById(%course).color}"
+            }
+        ],
+        "children": [
+            [
+                {
+                    "type": "block",
+                    "class": "card-body",
+                    "children": [
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-6",
+                                "direction": "horizontal",
+                                "columns": 2,
+                                "responsive": false,
+                                "children": [
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "gap-3 items-center mb-4",
+                                            "direction": "horizontal",
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "icon",
+                                                        "class": "mt-1",
+                                                        "style": "color: {%courseColor}",
+                                                        "icon": "tabler-bulb",
+                                                        "size": "1.8rem"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "class": "font-bold",
+                                                        "style": "font-size: 1.5rem",
+                                                        "text": "Journey"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ],
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "float-right mt-2 gap-1 items-center font-semibold",
+                                            "direction": "horizontal",
+                                            "responsive": false,
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "class": "text-neutral\/75",
+                                                        "text": "Total:"
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "text",
+                                                        "style": "color: {%courseColor}",
+                                                        "text": "{xp.getUserSkillsXP(%user)} XP"
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ],
+                        [
+                            {
+                                "type": "block",
+                                "class": "gap-4",
+                                "children": [
+                                    [
+                                        {
+                                            "type": "block",
+                                            "class": "gap-4",
+                                            "loopData": "{ journey.getJourneys(true) }",
+                                            "direction": "horizontal",
+                                            "variables": [
+                                                {
+                                                    "name": "path",
+                                                    "value": "{%item}"
+                                                }
+                                            ],
+                                            "children": [
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "class": "w-60",
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-semibold",
+                                                                    "style": "font-size: 1.1rem; color: {%path.color}",
+                                                                    "text": "{%path.name}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-semibold text-lg",
+                                                                    "text": "{journey.getJourneyXP(%path.id)} XP"
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ],
+                                                [
+                                                    {
+                                                        "type": "block",
+                                                        "loopData": "{%path.skills}",
+                                                        "variables": [
+                                                            {
+                                                                "name": "skill",
+                                                                "value": "{%item}"
+                                                            },
+                                                            {
+                                                                "name": "attempts",
+                                                                "value": "{skills.getUserSkillAttempts(%user, %skill.id)}"
+                                                            }
+                                                        ],
+                                                        "children": [
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-4",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "block",
+                                                                                "class": "w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2 relative",
+                                                                                "style": "background: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), %skill.color, '#607D8B')}; outline-color: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), %skill.color, '#607D8B')}; opacity: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), '1', '0.75')}",
+                                                                                "events": [
+                                                                                    {
+                                                                                        "type": "click",
+                                                                                        "action": "{actions.goToPage(%skill.id, null, true)}"
+                                                                                    }
+                                                                                ],
+                                                                                "children": [
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "text",
+                                                                                            "class": "block text-white font-semibold text-xs break-words",
+                                                                                            "style": "color: white; text-decoration: inherit",
+                                                                                            "text": "{%skill.name}"
+                                                                                        }
+                                                                                    ],
+                                                                                    [
+                                                                                        {
+                                                                                            "type": "icon",
+                                                                                            "class": "absolute -bottom-1 right-0 mr-2 mb-1 text-white",
+                                                                                            "visibilityType": "conditional",
+                                                                                            "visibilityCondition": "{skills.isSkillCompletedByUser(%user, %skill.id)}",
+                                                                                            "icon": "tabler-checks",
+                                                                                            "size": "1.1rem"
+                                                                                        }
+                                                                                    ]
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-bold text-sm mt-2",
+                                                                    "text": "{%skill.reward} XP"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "text",
+                                                                    "class": "font-medium text-sm",
+                                                                    "text": "Nr. attempts: {%attempts}"
+                                                                }
+                                                            ],
+                                                            [
+                                                                {
+                                                                    "type": "block",
+                                                                    "class": "gap-1",
+                                                                    "direction": "horizontal",
+                                                                    "children": [
+                                                                        [
+                                                                            {
+                                                                                "type": "text",
+                                                                                "class": "font-medium text-sm",
+                                                                                "text": "Cost to {system.if(%attempts > 0, 'retry', 'try')}: {skills.getUserSkillCost(%user, %skill.id)}"
+                                                                            }
+                                                                        ],
+                                                                        [
+                                                                            {
+                                                                                "type": "image",
+                                                                                "class": "h-4 w-4",
+                                                                                "src": "{vc.getImage()}"
+                                                                            }
+                                                                        ]
+                                                                    ]
+                                                                }
+                                                            ]
+                                                        ]
+                                                    }
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                ]
+                            }
+                        ]
+                    ]
+                }
+            ]
+        ]
+    }
+]

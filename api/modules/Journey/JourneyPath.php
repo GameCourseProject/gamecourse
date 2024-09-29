@@ -20,7 +20,7 @@ class JourneyPath
 {
     const TABLE_JOURNEY_PATH = 'journey_path';
     const TABLE_JOURNEY_PATH_SKILLS = 'journey_path_skills';
-    const TABLE_JOURNEY_PROGRESS = 'journey_progress';
+    const TABLE_JOURNEY_PROGRESSION = 'journey_progression';
 
     protected $id;
 
@@ -77,6 +77,23 @@ class JourneyPath
         return is_array($res) ? self::parse($res) : self::parse(null, $res, $field);
     }
 
+    /**
+     * Gets path rules.
+     *
+     * @return Rule
+     */
+    public function getRules(): array
+    {
+        $rules = [];
+        foreach ($this->getSkills() as $skill) {
+            $where = ["skill" => $skill["id"], "path" => $this->getId()];
+            $ruleId = Core::database()->select(self::TABLE_JOURNEY_PATH_SKILLS, $where, "rule");
+            $rules[] = Rule::getRuleById($ruleId);
+        }
+        return $rules;
+    }
+
+
 
     /*** ---------------------------------------------------- ***/
     /*** ---------------------- Setters --------------------- ***/
@@ -118,7 +135,6 @@ class JourneyPath
     public function setData(array $fieldValues)
     {
         $courseId = $this->getCourse()->getId();
-        /* $rule = $this->getRule(); */
 
         // Trim values
         self::trim($fieldValues);
@@ -136,24 +152,17 @@ class JourneyPath
         if (key_exists("isActive", $fieldValues)) {
             $newStatus = $fieldValues["isActive"];
             $oldStatus = $this->isActive();
+            if ($oldStatus != $newStatus) {
+                // Update rule status
+                foreach ($this->getRules() as $rule) {
+                    $rule->setActive($newStatus);
+                }
+            }
         }
 
         // Update data
         if (count($fieldValues) != 0)
             Core::database()->update(self::TABLE_JOURNEY_PATH, $fieldValues, ["id" => $this->id]);
-
-        /*if (key_exists("isActive", $fieldValues)) {
-            if ($oldStatus != $newStatus) {
-                // Update rule status
-                $rule->setActive($newStatus);
-            }
-        }
-        if (key_exists("name", $fieldValues)) {
-            // Update path rule
-            $name = key_exists("name", $fieldValues) ? $newName : $this->getName();
-            self::updateRule($rule->getId(), $name, $description, $isPoint, $this->getLevels());
-        }*/
-        // TODO: Commented stuff when rules are ready
     }
 
 
@@ -288,13 +297,15 @@ class JourneyPath
     {
         $where = ["p.path" => $this->id];
         $skills = Core::database()->selectMultiple(self::TABLE_JOURNEY_PATH_SKILLS . " p LEFT JOIN " . Skills::TABLE_SKILL . " s on s.id=p.skill",
-            $where, "s.*", "p.position");
+            $where, "s.*, p.reward", "p.position");
         foreach ($skills as &$skillInfo) {
             $skill = Skill::getSkillById($skillInfo["id"]);
             $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = Skill::parse($skillInfo);
-            if ($withReward) $skillInfo["reward"] = $skill->getTier()->getReward();
+            if ($withReward) {
+                if (!isset($skillInfo["reward"])) $skillInfo["reward"] = $skill->getTier()->getReward();
+            }
         }
         return $skills;
     }
@@ -361,14 +372,14 @@ class JourneyPath
      * @return JourneyPath
      * @throws Exception
      */
-    public function editJourneyPath(string $name, string $color, bool $isActive, array $skills): JourneyPath
+    public function editJourneyPath(string $name, string $color, bool $isActive, ?array $skills): JourneyPath
     {
+        if (isset($skills)) $this->setSkills($skills);
         $this->setData([
             "name" => $name,
             "color" => $color,
             "isActive" => +$isActive
         ]);
-        $this->setSkills($skills);
         return $this;
     }
 
@@ -381,10 +392,12 @@ class JourneyPath
     public static function deleteJourneyPath(int $pathId) {
         $path = self::getJourneyPathById($pathId);
         if ($path) {
-            // $courseId = $path->getCourse()->getId();
+            $courseId = $path->getCourse()->getId();
 
-            // TODO: Remove skill rule
-            // self::removeRule($courseId, $path->getRule()->getId());
+            // Remove skill rules
+            foreach ($path->getRules() as $rule) {
+                self::removeRule($courseId, $rule->getId());
+            }
 
             // Delete skill from database
             Core::database()->delete(self::TABLE_JOURNEY_PATH, ["id" => $pathId]);
@@ -415,16 +428,14 @@ class JourneyPath
      */
     public function setSkills(array $skills)
     {
-        // TODO: self::validateSkills($this->getTier(), $skills);
-
         // Remove all skills
         foreach ($this->getSkills() as $skill) {
             $this->removeSkill($skill["id"]);
         }
 
         // Add new skills
-        foreach ($skills as $index=>$skillId) {
-            $this->addSkill($index, $skillId);
+        foreach ($skills as $index=>$skill) {
+            $this->addSkill($index, $skill["id"], $skill["reward"]);
         }
     }
 
@@ -436,7 +447,7 @@ class JourneyPath
      * @return void
      * @throws Exception
      */
-    public function addSkill(int $position, int $skillId)
+    public function addSkill(int $position, int $skillId, ?int $reward)
     {
         $pathId = $this->getId();
 
@@ -445,6 +456,8 @@ class JourneyPath
         $rule = self::addRule($this->getCourse()->getId(), $pathId, $position, $skill->getName(), array_column($dependencies, "skill"));
 
         $data = ["skill" => $skillId, "path" => $pathId, "position" => $position, "rule" => $rule->getId()];
+        if (isset($reward) && $reward != $skill->getReward()) $data["reward"] = $reward;
+
         Core::database()->insert(self::TABLE_JOURNEY_PATH_SKILLS, $data);
     }
 
@@ -475,15 +488,23 @@ class JourneyPath
     public static function isSkillAvailableForUser(int $courseId, int $userId, int $pathId, int $skillId): bool
     {
         $path = self::getJourneyPathById($pathId);
-        $inProgress = Core::database()->select(self::TABLE_JOURNEY_PROGRESS, ["course" => $courseId, "user" => $userId, "completed" => false]);
+        $entries = Core::database()->selectMultiple(self::TABLE_JOURNEY_PROGRESSION, ["course" => $courseId, "user" => $userId]);
+        $inProgress = array_filter($entries, function ($e) { return is_array($e) && $e["completed"] == 0; });
+        $completed = array_filter($entries, function ($e) {  return is_array($e) && $e["completed"] == 1; });
 
-        if (!$inProgress) {
+        if (count(array_filter($completed, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
+            return true;
+        }
+        else if (!$inProgress) {
+            $journeyModule = new Journey(new Course($courseId));
+            if (!$journeyModule->getIsRepeatable() && count($completed) > 0) return false;
+
             foreach (self::getJourneyPaths($courseId) as $pathInfo) {
                 $path = new JourneyPath($pathInfo["id"]);
                 if ($path->getSkills()[0]["id"] == $skillId) return true;
             }
         }
-        else if ($inProgress["path"] == $pathId) {
+        else if (count(array_filter($inProgress, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
             $path = new JourneyPath($pathId);
             $skills = $path->getSkills();
             $position = array_search($skillId, array_map(function ($s) {

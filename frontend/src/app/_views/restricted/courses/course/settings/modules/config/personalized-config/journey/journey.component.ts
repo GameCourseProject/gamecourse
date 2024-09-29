@@ -33,6 +33,7 @@ export class JourneyComponent implements OnInit {
 
   skills: Skill[];
   skillToAdd: string;
+  skillToEdit: Skill;
   skillsAvailable: {value: string, text: string, html?: string}[];
 
   journeyPaths: JourneyPath[];
@@ -56,6 +57,7 @@ export class JourneyComponent implements OnInit {
 
       await this.initJourneyPaths(this.courseID);
       await this.initSkills(this.courseID);
+      await this.getCourseDataFolder();
 
       this.loading.page = false;
     });
@@ -84,18 +86,17 @@ export class JourneyComponent implements OnInit {
                   '<span class="text-base-100 text-base">' + skill.name[0] + '</span>' +
                 '</div>' +
               '</div>' +
-              '<div class="flex flex-col">' +
-                '<div class="prose text-sm">' +
-                  '<h4>' + skill.name + '</h4>' +
-                '</div>' +
-                '<div class="prose text-sm opacity-60">' +
-                  '<div>' + skill.reward + ' XP </div>' +
-                '</div>' +
+              '<div class="prose text-sm">' +
+                '<h4>' + skill.name + '</h4>' +
               '</div>' +
             '</div>' +
           '</div>'
       }
     })
+  }
+
+  async getCourseDataFolder() {
+    this.courseFolder = (await this.api.getCourseById(this.courseID).toPromise()).folder;
   }
 
   /*** --------------------------------------------- ***/
@@ -176,6 +177,7 @@ export class JourneyComponent implements OnInit {
       this.loading.paths = true;
 
       pathToActOn.isActive = value;
+      pathToActOn.skills = null;
       await this.api.editJourneyPath(this.courseID, clearEmptyValues(pathToActOn)).toPromise();
 
       this.loading.paths = false;
@@ -294,6 +296,11 @@ export class JourneyComponent implements OnInit {
 
   drop(event: CdkDragDrop<string[]>){
     moveItemInArray(this.pathToManage.skills, event.previousIndex, event.currentIndex);
+  }
+
+  openModal(skill: Skill) {
+    this.skillToEdit = skill;
+    ModalService.openModal('skill-manage');
   }
 
 }

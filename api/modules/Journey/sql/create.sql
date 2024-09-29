@@ -24,13 +24,15 @@ CREATE TABLE IF NOT EXISTS journey_path_skills(
     path                        int unsigned NOT NULL,
     position                    int unsigned,
     rule                        int unsigned NOT NULL,
+    reward                      int unsigned,
 
     UNIQUE key(path, position),
     FOREIGN key(skill) REFERENCES skill(id) ON DELETE CASCADE,
-    FOREIGN key(path) REFERENCES journey_path(id) ON DELETE CASCADE
+    FOREIGN key(path) REFERENCES journey_path(id) ON DELETE CASCADE,
+    FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS journey_progress(
+CREATE TABLE IF NOT EXISTS journey_progression(
     course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
     path                        int unsigned NOT NULL,

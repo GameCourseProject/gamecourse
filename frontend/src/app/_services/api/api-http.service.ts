@@ -2961,7 +2961,10 @@ export class ApiHttpService {
       courseId: courseID,
       name: pathData.name,
       color: pathData.color,
-      skills: pathData.skills.map(skill => skill.id)
+      skills: pathData.skills.map(skill => ({
+        id: skill.id,
+        reward: skill.reward
+      }))
     }
 
     const params = (qs: QueryStringParameters) => {
@@ -2981,7 +2984,10 @@ export class ApiHttpService {
       name: pathData.name,
       color: pathData.color,
       isActive: pathData.isActive,
-      skills: pathData.skills.map(skill => skill.id)
+      skills: pathData.skills?.map(skill => ({
+        id: skill.id,
+        reward: skill.reward
+      })) ?? null
     }
 
     const params = (qs: QueryStringParameters) => {

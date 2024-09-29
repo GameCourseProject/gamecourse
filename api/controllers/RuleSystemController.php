@@ -107,7 +107,7 @@ class RuleSystemController
      */
     public function editSection()
     {
-        API::requireValues('id', 'course', 'name', 'position', 'isActive', 'roles');
+        API::requireValues('id', 'course', 'name', 'position', 'isActive');
 
         $courseId = API::getValue("course", "int");
 
@@ -125,7 +125,7 @@ class RuleSystemController
         // Edit section
         $section->editSection($name, $position, $isActive);
         // Edit section roles
-        $section->setRoles($rolesNames);
+        if (isset($rolesNames)) $section->setRoles($rolesNames);
 
         $sectionInfo = $section->getData();
         $sectionInfo["roles"] = $section->getRoles();
