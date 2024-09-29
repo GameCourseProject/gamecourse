@@ -173,6 +173,13 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     :returns: void
     """
 
+    # FIXME is hardcoded for the "Journey" role
+    q = "SELECT * FROM user_role ur LEFT JOIN role r ON ur.role = r.id WHERE ur.course = %s AND ur.user = %s AND r.name = 'Journey'"
+    res = gc_db.execute_query(q, (config.COURSE, target), "fetch")
+    in_journey = False
+    if len(res) > 0:
+        in_journey = True
+
     def calculate_skill_tree_reward(reward_to_give, reward_given=0):
         reward_to_give = int(reward_to_give)
         reward_given = int(reward_given)
@@ -269,6 +276,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         # Calculate reward
         is_extra = table_skill[2]
         skill_reward = int(table_skill[1])
+        if in_journey:
+            q = "SELECT reward FROM journey_path_skills WHERE skill = %s"
+            res = gc_db.execute_query(q, (skill_id), "fetch")
+            if len(res) > 0:
+                skill_reward = int(res[0][0])
+
         award_given = awards.get_award(target, name, award_type, skill_id)
         reward = awards.calculate_extra_credit_reward(target, award_type, skill_reward, award_given[
             config.AWARD_REWARD_COL] if award_given is not None else 0) if is_extra else skill_reward
