@@ -20,7 +20,7 @@ class Journey extends Module
 {
     const TABLE_JOURNEY_PATH = JourneyPath::TABLE_JOURNEY_PATH;
     const TABLE_JOURNEY_PATH_SKILLS = JourneyPath::TABLE_JOURNEY_PATH_SKILLS;
-    const TABLE_JOURNEY_PROGRESS = JourneyPath::TABLE_JOURNEY_PROGRESS;
+    const TABLE_JOURNEY_PROGRESSION = JourneyPath::TABLE_JOURNEY_PROGRESSION;
     const TABLE_JOURNEY_CONFIG = 'journey_config';
 
     const BASE_ROLE = "Skills";

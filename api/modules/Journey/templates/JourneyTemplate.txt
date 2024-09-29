@@ -1,9 +1,5 @@
 [
     {
-        "aspect": {
-            "viewerRole": null,
-            "userRole": "Halfhearted"
-        },
         "type": "block",
         "class": "card card bg-base-100 shadow-xl",
         "variables": [
@@ -15,10 +11,6 @@
         "children": [
             [
                 {
-                    "aspect": {
-                        "viewerRole": null,
-                        "userRole": "Halfhearted"
-                    },
                     "type": "block",
                     "class": "card-body",
                     "children": [
@@ -47,10 +39,6 @@
                                                 ],
                                                 [
                                                     {
-                                                        "aspect": {
-                                                            "viewerRole": null,
-                                                            "userRole": "Halfhearted"
-                                                        },
                                                         "type": "text",
                                                         "class": "font-bold",
                                                         "style": "font-size: 1.5rem",
@@ -89,19 +77,11 @@
                         ],
                         [
                             {
-                                "aspect": {
-                                    "viewerRole": null,
-                                    "userRole": "Halfhearted"
-                                },
                                 "type": "block",
                                 "class": "gap-4",
                                 "children": [
                                     [
                                         {
-                                            "aspect": {
-                                                "viewerRole": null,
-                                                "userRole": "Halfhearted"
-                                            },
                                             "type": "block",
                                             "class": "gap-4",
                                             "loopData": "{ journey.getJourneys(true) }",
@@ -115,19 +95,11 @@
                                             "children": [
                                                 [
                                                     {
-                                                        "aspect": {
-                                                            "viewerRole": null,
-                                                            "userRole": "Halfhearted"
-                                                        },
                                                         "type": "block",
                                                         "class": "w-60",
                                                         "children": [
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "text",
                                                                     "class": "font-semibold",
                                                                     "style": "font-size: 1.1rem; color: {%path.color}",
@@ -136,10 +108,6 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "text",
                                                                     "class": "font-semibold text-lg",
                                                                     "text": "{journey.getJourneyXP(%path.id)} XP"
@@ -150,10 +118,6 @@
                                                 ],
                                                 [
                                                     {
-                                                        "aspect": {
-                                                            "viewerRole": null,
-                                                            "userRole": "Halfhearted"
-                                                        },
                                                         "type": "block",
                                                         "loopData": "{%path.skills}",
                                                         "variables": [
@@ -169,20 +133,12 @@
                                                         "children": [
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "block",
                                                                     "class": "gap-4",
                                                                     "direction": "horizontal",
                                                                     "children": [
                                                                         [
                                                                             {
-                                                                                "aspect": {
-                                                                                    "viewerRole": null,
-                                                                                    "userRole": "Halfhearted"
-                                                                                },
                                                                                 "type": "block",
                                                                                 "class": "w-20 h-20 p-2 rounded-lg hover:cursor-pointer hover:outline hover:outline-offset-2 relative",
                                                                                 "style": "background: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), %skill.color, '#607D8B')}; outline-color: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), %skill.color, '#607D8B')}; opacity: {system.if(journey.isSkillAvailableForUser(%user, %path.id, %skill.id), '1', '0.75')}",
@@ -195,10 +151,6 @@
                                                                                 "children": [
                                                                                     [
                                                                                         {
-                                                                                            "aspect": {
-                                                                                                "viewerRole": null,
-                                                                                                "userRole": "Halfhearted"
-                                                                                            },
                                                                                             "type": "text",
                                                                                             "class": "block text-white font-semibold text-xs break-words",
                                                                                             "style": "color: white; text-decoration: inherit",
@@ -207,10 +159,6 @@
                                                                                     ],
                                                                                     [
                                                                                         {
-                                                                                            "aspect": {
-                                                                                                "viewerRole": null,
-                                                                                                "userRole": "Halfhearted"
-                                                                                            },
                                                                                             "type": "icon",
                                                                                             "class": "absolute -bottom-1 right-0 mr-2 mb-1 text-white",
                                                                                             "visibilityType": "conditional",
@@ -227,10 +175,6 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "text",
                                                                     "class": "font-bold text-sm mt-2",
                                                                     "text": "{%skill.reward} XP"
@@ -238,10 +182,6 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "text",
                                                                     "class": "font-medium text-sm",
                                                                     "text": "Nr. attempts: {%attempts}"
@@ -249,20 +189,12 @@
                                                             ],
                                                             [
                                                                 {
-                                                                    "aspect": {
-                                                                        "viewerRole": null,
-                                                                        "userRole": "Halfhearted"
-                                                                    },
                                                                     "type": "block",
                                                                     "class": "gap-1",
                                                                     "direction": "horizontal",
                                                                     "children": [
                                                                         [
                                                                             {
-                                                                                "aspect": {
-                                                                                    "viewerRole": null,
-                                                                                    "userRole": "Halfhearted"
-                                                                                },
                                                                                 "type": "text",
                                                                                 "class": "font-medium text-sm",
                                                                                 "text": "Cost to {system.if(%attempts > 0, 'retry', 'try')}: {skills.getUserSkillCost(%user, %skill.id)}"
@@ -270,10 +202,6 @@
                                                                         ],
                                                                         [
                                                                             {
-                                                                                "aspect": {
-                                                                                    "viewerRole": null,
-                                                                                    "userRole": "Halfhearted"
-                                                                                },
                                                                                 "type": "image",
                                                                                 "class": "h-4 w-4",
                                                                                 "src": "{vc.getImage()}"

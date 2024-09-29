@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS journey_path_skills(
     FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS journey_progress(
+CREATE TABLE IF NOT EXISTS journey_progression(
     course                      int unsigned NOT NULL,
     user                        int unsigned NOT NULL,
     path                        int unsigned NOT NULL,

@@ -20,7 +20,7 @@ class JourneyPath
 {
     const TABLE_JOURNEY_PATH = 'journey_path';
     const TABLE_JOURNEY_PATH_SKILLS = 'journey_path_skills';
-    const TABLE_JOURNEY_PROGRESS = 'journey_progress';
+    const TABLE_JOURNEY_PROGRESSION = 'journey_progression';
 
     protected $id;
 
@@ -297,13 +297,15 @@ class JourneyPath
     {
         $where = ["p.path" => $this->id];
         $skills = Core::database()->selectMultiple(self::TABLE_JOURNEY_PATH_SKILLS . " p LEFT JOIN " . Skills::TABLE_SKILL . " s on s.id=p.skill",
-            $where, "s.*", "p.position");
+            $where, "s.*, p.reward", "p.position");
         foreach ($skills as &$skillInfo) {
             $skill = Skill::getSkillById($skillInfo["id"]);
             $skillInfo["page"] = $skill->getPage();
             $skillInfo["dependencies"] = $skill->getDependencies();
             $skillInfo = Skill::parse($skillInfo);
-            if ($withReward) $skillInfo["reward"] = $skill->getTier()->getReward();
+            if ($withReward) {
+                if (!isset($skillInfo["reward"])) $skillInfo["reward"] = $skill->getTier()->getReward();
+            }
         }
         return $skills;
     }
@@ -486,7 +488,7 @@ class JourneyPath
     public static function isSkillAvailableForUser(int $courseId, int $userId, int $pathId, int $skillId): bool
     {
         $path = self::getJourneyPathById($pathId);
-        $entries = Core::database()->selectMultiple(self::TABLE_JOURNEY_PROGRESS, ["course" => $courseId, "user" => $userId]);
+        $entries = Core::database()->selectMultiple(self::TABLE_JOURNEY_PROGRESSION, ["course" => $courseId, "user" => $userId]);
         $inProgress = array_filter($entries, function ($e) { return is_array($e) && $e["completed"] == 0; });
         $completed = array_filter($entries, function ($e) {  return is_array($e) && $e["completed"] == 1; });
 
