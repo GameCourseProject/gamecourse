@@ -176,16 +176,19 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     # FIXME is hardcoded for the "Journey" role
     q = "SELECT * FROM user_role ur LEFT JOIN role r ON ur.role = r.id WHERE ur.course = %s AND ur.user = %s AND r.name = 'Journey'"
     res = gc_db.execute_query(q, (config.COURSE, target), "fetch")
-    in_journey = False
-    if len(res) > 0:
-        in_journey = True
+    in_journey = True if len(res) > 0 else False
 
     def calculate_skill_tree_reward(reward_to_give, reward_given=0):
         reward_to_give = int(reward_to_give)
         reward_given = int(reward_given)
 
         # Get max. skill tree reward
-        max_skill_tree_reward = int(table_skill[3]) if table_skill[3] else None
+        if in_journey:
+            q = "SELECT maxXP FROM journey_config WHERE course = %s"
+            res = gc_db.execute_query(q, (config.COURSE), "fetch")
+            max_skill_tree_reward = int(res[0][0]) if res[0][0] else None
+        else:
+            max_skill_tree_reward = int(table_skill[3]) if table_skill[3] else None
 
         # No max. threshold set, nothing to calculate
         if max_skill_tree_reward is None:
@@ -244,8 +247,12 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
     award_type = "skill"
 
     # Get min. rating
-    global skillMinRating
-    min_rating = skillMinRating
+    if in_journey:
+        q = "SELECT minRating FROM journey_config WHERE course = %s"
+        min_rating = int(gc_db.execute_query(q, (config.COURSE), "fetch")[0][0])
+    else:
+        global skillMinRating
+        min_rating = skillMinRating
 
     # Get skill info
     global preloaded_skills_info
