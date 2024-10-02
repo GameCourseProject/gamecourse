@@ -479,46 +479,87 @@ class JourneyPath
     }
 
     /**
-     * Returns bool indicating if skill is available for user or not
+     * Returns bool indicating if path is complete by user or not
      *
      * @param int $userId
+     * @return bool
+     * @throws Exception
+     */
+    public function isCompletedByUser(int $userId): bool
+    {
+        foreach($this->getSkills() as $skillInfo) {
+            $skill = new Skill($skillInfo["id"]);
+            if (!$skill->completedByUser($userId)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns bool indicating if path is in progress by user or not
+     *
+     * @param int $userId
+     * @return bool
+     * @throws Exception
+     */
+    public function isInProgressByUser(int $userId): bool
+    {
+        $res = false;
+        $skills = $this->getSkills();
+
+        foreach($skills as $index=>$skillInfo) {
+            $skill = new Skill($skillInfo["id"]);
+            if ($skill->completedByUser($userId)) {
+                if ($index == count($skills) - 1) $res = false; // isn't in progress anymore, it was complete!
+                else $res = true;
+            }
+        }
+        return $res;
+    }
+
+    /**
+     * Returns bool indicating if skill is available for user or not
+     *
+     * @param int $courseId
+     * @param int $userId
+     * @param int $pathId
+     * @param int $skillId
      * @return bool
      * @throws Exception
      */
     public static function isSkillAvailableForUser(int $courseId, int $userId, int $pathId, int $skillId): bool
     {
         $path = self::getJourneyPathById($pathId);
-        $entries = Core::database()->selectMultiple(self::TABLE_JOURNEY_PROGRESSION, ["course" => $courseId, "user" => $userId]);
-        $inProgress = array_filter($entries, function ($e) { return is_array($e) && $e["completed"] == 0; });
-        $completed = array_filter($entries, function ($e) {  return is_array($e) && $e["completed"] == 1; });
+        $skills = $path->getSkills();
 
-        if (count(array_filter($completed, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
-            return true;
-        }
-        else if (!$inProgress) {
-            $journeyModule = new Journey(new Course($courseId));
-            if (!$journeyModule->getIsRepeatable() && count($completed) > 0) return false;
-
-            foreach (self::getJourneyPaths($courseId) as $pathInfo) {
-                $path = new JourneyPath($pathInfo["id"]);
-                if ($path->getSkills()[0]["id"] == $skillId) return true;
-            }
-        }
-        else if (count(array_filter($inProgress, function ($p) use ($pathId) { return $p["path"] == $pathId; })) > 0) {
-            $path = new JourneyPath($pathId);
-            $skills = $path->getSkills();
+        if ($path->isCompletedByUser($userId)) return true;
+        else if ($path->isInProgressByUser($userId)) {
             $position = array_search($skillId, array_map(function ($s) {
                 return $s["id"];
             }, $skills));
             if (isset($position)) {
                 if ($position == 0) return true;
-                else {
-                    $prevSkill = new Skill($skills[$position - 1]["id"]);
-                    return $prevSkill->completedByUser($userId);
-                }
-            }
+                $prevSkill = new Skill($skills[$position - 1]["id"]);
+                return $prevSkill->completedByUser($userId);
+            } else return false;
         }
-        return false;
+        else {
+            if ($skills[0]["id"] != $skillId) return false;
+
+            $allPaths = self::getJourneyPaths($courseId);
+            $pathsInProgress = array_filter($allPaths, function($e) use($userId) {
+                $el = new JourneyPath($e["id"]);
+                return $el->isInProgressByUser($userId) == true;
+            });
+            if (count($pathsInProgress) > 0) return false;
+
+            $pathsCompleted = array_filter($allPaths, function($e) use($userId) {
+                $el = new JourneyPath($e["id"]);
+                return $el->isCompletedByUser($userId) == true;
+            });
+            $journeyModule = new Journey(new Course($courseId));
+            if (count($pathsCompleted) > 0) return $journeyModule->getIsRepeatable();
+            return true;
+        }
     }
 
 
