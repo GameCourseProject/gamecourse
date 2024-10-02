@@ -184,8 +184,8 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
         # Get max. skill tree reward
         if in_journey:
-            q = "SELECT maxXP FROM journey_config WHERE course = %s"
-            res = gc_db.execute_query(q, (config.COURSE), "fetch")
+            q = "SELECT maxXP FROM journey_config WHERE course = %s" % config.COURSE
+            res = gc_db.execute_query(q)
             max_skill_tree_reward = int(res[0][0]) if res[0][0] else None
         else:
             max_skill_tree_reward = int(table_skill[3]) if table_skill[3] else None
@@ -248,8 +248,8 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
 
     # Get min. rating
     if in_journey:
-        q = "SELECT minRating FROM journey_config WHERE course = %s"
-        min_rating = int(gc_db.execute_query(q, (config.COURSE), "fetch")[0][0])
+        q = "SELECT minRating FROM journey_config WHERE course = %s" % config.COURSE
+        min_rating = int(gc_db.execute_query(q)[0][0])
     else:
         global skillMinRating
         min_rating = skillMinRating
@@ -284,9 +284,9 @@ def award_skill(target, name, rating, logs, dependencies=True, use_wildcard=Fals
         is_extra = table_skill[2]
         skill_reward = int(table_skill[1])
         if in_journey:
-            q = "SELECT reward FROM journey_path_skills WHERE skill = %s"
-            res = gc_db.execute_query(q, (skill_id), "fetch")
-            if len(res) > 0:
+            q = "SELECT reward FROM journey_path_skills WHERE skill = %s" % skill_id
+            res = gc_db.execute_query(q)
+            if res[0][0]:
                 skill_reward = int(res[0][0])
 
         award_given = awards.get_award(target, name, award_type, skill_id)
