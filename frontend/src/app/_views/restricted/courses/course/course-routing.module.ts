@@ -108,10 +108,6 @@ const routes: Routes = [
         component: ViewsEditorComponent
       },
       {
-        path: 'themes',
-        component: ComingSoonComponent
-      },
-      {
         path: 'adaptation',
         component: AdaptationComponent
       }

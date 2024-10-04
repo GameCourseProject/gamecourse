@@ -5,7 +5,6 @@ import { AdminGuard } from "../../_guards/admin.guard";
 import { DocsGuard } from "../../_guards/docs-guard.service";
 
 import { RestrictedComponent } from "./restricted.component";
-import { ComingSoonComponent } from "../../_components/misc/pages/coming-soon/coming-soon.component";
 import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
@@ -45,8 +44,7 @@ const routes: Routes = [
       },
       {
         path: 'docs',
-        component: ComingSoonComponent,
-        // loadChildren: () => import('./docs/docs.module').then(mod => mod.DocsModule), FIXME: refactor docs
+        loadChildren: () => import('./docs/docs.module').then(mod => mod.DocsModule),
         canActivate: [DocsGuard]
       },
       { path: '', redirectTo: 'home', pathMatch: 'full' }

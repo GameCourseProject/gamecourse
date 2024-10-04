@@ -94,25 +94,20 @@ export class SidebarComponent implements OnInit {
     } else this.navigation = [];
   }
 
-  getDocsNavigation(): Navigation[] { // FIXME: needs refactoring
+  getDocsNavigation(): Navigation[] {
     const pages: {[key: string]: Navigation} = {
-      viewsPage: {
-        link: '/docs/views',
-        name: 'Views',
-      },
-      functionsPage: {
-        link: '/docs/functions',
-        name: 'Functions',
-      },
       modulesPage: {
-        link: '/docs/modules',
-        name: 'Modules',
+        category: 'Basics',
+        children: [
+          {
+            link: '/docs/modules',
+            name: 'Modules',
+          }
+        ]
       }
     };
 
     this.docsNavigation = [
-      pages.viewsPage,
-      pages.functionsPage,
       pages.modulesPage
     ];
     return this.docsNavigation;
