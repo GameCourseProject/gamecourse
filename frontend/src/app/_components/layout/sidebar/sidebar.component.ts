@@ -95,20 +95,37 @@ export class SidebarComponent implements OnInit {
   }
 
   getDocsNavigation(): Navigation[] {
-    const pages: {[key: string]: Navigation} = {
-      modulesPage: {
+    this.docsNavigation = [
+      {
         category: 'Basics',
         children: [
+          {
+            link: '/docs/introduction',
+            name: 'Introduction',
+          },
           {
             link: '/docs/modules',
             name: 'Modules',
           }
         ]
+      },
+      {
+        category: 'Advanced',
+        children: [
+          {
+            link: '/docs/el',
+            name: 'Expression Language',
+          },
+          {
+            link: '/docs/rule-editor',
+            name: 'Rule Editor',
+          },
+          {
+            link: '/docs/view-editor',
+            name: 'View Editor',
+          }
+        ]
       }
-    };
-
-    this.docsNavigation = [
-      pages.modulesPage
     ];
     return this.docsNavigation;
   }
