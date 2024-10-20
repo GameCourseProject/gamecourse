@@ -208,7 +208,7 @@ abstract class Module
     public function changeGameFunctionsStatus(bool $isEnabled) {
         $moduleName = $this->getName() . ".py";
         $moduleGamefuntionsPath = ROOT_PATH . self::MODULE_GAMEFUNCTIONS_PATH . "course_" . $this->getCourse()->getId() . "/";
-        if (file_exists($moduleGamefuntionsPath)) {
+        if (file_exists($moduleGamefuntionsPath . $moduleName)) {
             if (!$isEnabled) {
                 rename($moduleGamefuntionsPath . $moduleName, $moduleGamefuntionsPath . "_" . $moduleName);
             } else {
