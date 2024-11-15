@@ -31,13 +31,3 @@ CREATE TABLE IF NOT EXISTS journey_path_skills(
     FOREIGN key(path) REFERENCES journey_path(id) ON DELETE CASCADE,
     FOREIGN key(rule) REFERENCES rule(id) ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS journey_progression(
-    course                      int unsigned NOT NULL,
-    user                        int unsigned NOT NULL,
-    path                        int unsigned NOT NULL,
-    completed                   boolean NOT NULL DEFAULT FALSE,
-
-    FOREIGN key(user, course) REFERENCES course_user(id, course) ON DELETE CASCADE,
-    FOREIGN key(path) REFERENCES journey_path(id) ON DELETE CASCADE
-);
