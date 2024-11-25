@@ -99,7 +99,7 @@ def log_end():
 def update_view_cache(course, students):
     targets = ','.join(map(str, students.keys()))
     try:
-        subprocess.run(f"php /var/www/html/gamecourse/api/autogame/PageCacheScript.php {course} {targets}", check=True, shell=True)
+        subprocess.run(f"php /var/www/html/gamecourse/api/autogame/PageCacheScript.php {course} {targets} > /dev/null 2>&1 &", check=True, shell=True)
     except subprocess.CalledProcessError as e:
         logging.error("Failed to update views cache")
 
@@ -137,26 +137,9 @@ if __name__ == "__main__":
         # Get targets to run
         students = get_targets(course, all_targets, targets_list)
         if students:
-
-            # Import custom course functions
-            # FIXME: doesn't seem to be doing anything
-            functions_path = os.path.join(config.IMPORTED_FUNCTIONS_FOLDER, course)
-            functions, fpaths, info = import_functions_from_rulepath(functions_path, info=True)
-
             # Read and set Metadata
             METADATA = get_metadata()
             scope, logs = {"METADATA": METADATA, "null": None}, {}
-
-            # Initialize Moodle connector
-            if module_enabled("Moodle"):
-                mdl_table = "moodle_config"
-                query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
-                mdl_host, mdl_database, mdl_username, mdl_password = gc_db.execute_query(query, (config.COURSE,))[0]
-                if mdl_password:
-                    from gamerules.connector.db_connector import connect_to_moodle_db
-                    connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(),
-                                         mdl_password.decode())
-                    from gamerules.connector.moodle_connector import *
 
             # Save the start date
             start_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

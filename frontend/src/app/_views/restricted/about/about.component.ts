@@ -1,37 +1,42 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { ModalService } from 'src/app/_services/modal.service';
-import {Subject} from "rxjs";
+import {Component, OnInit} from '@angular/core';
+import { Theme } from 'src/app/_services/theming/themes-available';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-about',
-  templateUrl: './about.component.html',
-  styleUrls: ['./about.component.scss']
+  templateUrl: './about.component.html'
 })
 export class AboutComponent implements OnInit {
-
-  value;
-  value2;
-  @ViewChild('f', { static: false }) f: NgForm;
-
-  setSelected: Subject<any[]> = new Subject<any[]>();
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  test() {
-    ModalService.openModal('verification-modal')
-  }
+  
+  /*** --------------------------------------------- ***/
+  /*** ------------------ Helpers ------------------ ***/
+  /*** --------------------------------------------- ***/
 
-  onSubmit() {
-    if (this.f.form.valid) {
-      console.log('valid')
+  getDefaultLogoImg(): string {
+    const html = document.querySelector('html');
+    const theme = html.getAttribute('data-theme');
 
-    } else {
-      console.log('invalid')
-      console.log(this.f.errors)
+    switch (theme) {
+      case Theme.DARK:
+      case Theme.SYNTHWAVE:
+      case Theme.DRACULA:
+      case Theme.HALLOWEEN:
+      case Theme.FOREST:
+      case Theme.BLACK:
+      case Theme.LUXURY:
+      case Theme.NIGHT:
+      case Theme.COFFEE:
+      case Theme.BUSINESS:
+        return environment.logoPicture.dark;
+      default:
+        return environment.logoPicture.light;
     }
   }
+
 }

@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class GenericBinaryOp extends BinaryOp {
+
     private $op;
 
     public function __construct($op, $lhs, $rhs, ?Library $library = null) {

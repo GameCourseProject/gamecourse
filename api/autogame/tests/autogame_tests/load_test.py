@@ -378,3 +378,8 @@ class TestRuleLoad (MatchTest):
 		print("Awards given: ", nr)
 		print("\n")
 		
+
+if __name__ == "__main__":
+	test_rule_load = TestRuleLoad()
+	test_rule_load.setUp()
+	test_rule_load.test_01()

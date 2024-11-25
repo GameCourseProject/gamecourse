@@ -6,6 +6,7 @@ import { DocsGuard } from "../../_guards/docs-guard.service";
 
 import { RestrictedComponent } from "./restricted.component";
 import { ComingSoonComponent } from "../../_components/misc/pages/coming-soon/coming-soon.component";
+import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
   {
@@ -40,8 +41,7 @@ const routes: Routes = [
       },
       {
         path: 'about',
-        component: ComingSoonComponent
-        // component: AboutComponent FIXME: do about
+        component: AboutComponent
       },
       {
         path: 'docs',

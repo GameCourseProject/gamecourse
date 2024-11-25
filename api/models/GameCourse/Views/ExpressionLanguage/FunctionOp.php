@@ -4,9 +4,11 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Core\Core;
 
 class FunctionOp extends Node {
+
     private $name;
     private $args;
     private $context;
+
 
     public function __construct(string $name, ?ArgumentSequence $args, ?string $libraryId, Node $context = null) {
         $this->name = $name;

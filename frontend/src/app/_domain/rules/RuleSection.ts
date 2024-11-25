@@ -1,3 +1,5 @@
+import {Role, RoleDatabase} from "../roles/role";
+
 export class RuleSection{
 
   private _id: number;
@@ -7,14 +9,16 @@ export class RuleSection{
   private _module: string;
   private _isActive: boolean;
   private _loading: boolean;
+  private _roles: Role[];
 
-  constructor(id: number, course: number, name: string, position: number, module: string, isAcive: boolean) {
+  constructor(id: number, course: number, name: string, position: number, module: string, isAcive: boolean, roles: Role[]) {
     this._id = id;
     this._course = course;
     this._name = name;
     this._position = position;
     this._module = module;
     this._isActive = isAcive;
+    this._roles = roles;
 
     // for showing spinner individually
     this._loading = false;
@@ -76,6 +80,14 @@ export class RuleSection{
     this._loading = value;
   }
 
+  get roles(): Role[] {
+    return this._roles;
+  }
+
+  set roles(value: Role[]) {
+    this._roles = value;
+  }
+
   static fromDatabase(obj: RuleSectionDatabase): RuleSection {
     return new RuleSection(
       obj.id,
@@ -83,7 +95,8 @@ export class RuleSection{
       obj.name,
       obj.position,
       obj.module,
-      obj.isActive
+      obj.isActive,
+      obj.roles?.map(role => Role.fromDatabase(role)),
     );
   }
 }
@@ -95,5 +108,6 @@ interface RuleSectionDatabase {
   position: number,
   module: string,
   isActive: boolean,
-  loading: boolean
+  loading: boolean,
+  roles: RoleDatabase[]
 }

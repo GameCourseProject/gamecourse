@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class ValueNode extends Node {
+
     private $value;
 
     public function __construct($value, ?Library $library = null) {

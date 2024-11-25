@@ -5,6 +5,7 @@ use Exception;
 use GameCourse\Core\Core;
 use GameCourse\Course\Course;
 use GameCourse\Module\Module;
+use GameCourse\Role\Role;
 use Utils\Utils;
 
 /**
@@ -409,6 +410,32 @@ class Section
     }
 
     /*** ---------------------------------------------------- ***/
+    /*** ----------------------- Roles ---------------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets section's roles.
+     * @return array
+     */
+    public function getRoles(): array
+    {
+        return Role::getSectionRoles($this->id);
+    }
+
+    /**
+     * Replaces section's roles in the database.
+     *
+     * @param array $rolesNames
+     * @return void
+     * @throws Exception
+     */
+    public function setRoles(array $rolesNames)
+    {
+        Role::setSectionRoles($this->id, $this->getCourse()->getId(), $rolesNames);
+    }
+
+
+    /*** ---------------------------------------------------- ***/
     /*** ---------------------- Rules ----------------------- ***/
     /*** ---------------------------------------------------- ***/
 
@@ -605,10 +632,9 @@ class Section
     /**
      * Trims section parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name"];
         Utils::trim($params, ...$values);

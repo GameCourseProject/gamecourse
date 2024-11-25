@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class ArgumentSequence extends Node {
+
     private $node;
     private $next;
 

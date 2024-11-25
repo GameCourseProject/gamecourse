@@ -26,6 +26,7 @@ import { ModalComponent } from './_components/modals/modal/modal.component';
 import { SimpleModalComponent } from './_components/modals/simple-modal/simple-modal.component';
 import { ErrorModalComponent } from './_components/modals/error-modal/error-modal.component';
 import { FilePickerModalComponent } from "./_components/modals/file-picker-modal/file-picker-modal.component";
+import { SkillEditorComponent } from "./_components/modals/skill-editor/skill-editor.component";
 
 // Components: inputs
 import { InputTextComponent } from "./_components/inputs/general/input-text/input-text.component";
@@ -152,7 +153,8 @@ import {
   featherXCircle,
   featherChevronDown,
   featherChevronLeft,
-  featherChevronRight
+  featherChevronRight,
+  featherGithub
 } from "@ng-icons/feather-icons";
 
 import {
@@ -252,6 +254,7 @@ import {
   tablerCode,
   tablerCodeDots,
   tablerClick,
+  tablerTool,
   tablerTools
 } from "@ng-icons/tabler-icons";
 
@@ -358,7 +361,8 @@ import {
     LogsViewerComponent,
     PageNotFoundComponent,
     NoAccessComponent,
-    ComingSoonComponent
+    ComingSoonComponent,
+    SkillEditorComponent
   ],
   exports: [
     AsPipe,
@@ -451,6 +455,7 @@ import {
     PageNotFoundComponent,
     NoAccessComponent,
     ComingSoonComponent,
+    SkillEditorComponent,
 
     NgIconsModule,
     FormsModule,
@@ -492,6 +497,7 @@ import {
       featherChevronDown,
       featherChevronLeft,
       featherChevronRight,
+      featherGithub,
 
       jamCircleF,
       jamDownload,
@@ -587,6 +593,7 @@ import {
       tablerCode,
       tablerCodeDots,
       tablerClick,
+      tablerTool,
       tablerTools,
 
       matFaceRetouchingNatural,

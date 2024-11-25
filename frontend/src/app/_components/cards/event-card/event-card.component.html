@@ -10,7 +10,7 @@
       [search]="false"
       [classList]="'-mt-2'"
       [size]="'sm'"
-      [required]="true"
+      [required]="false"
     ></app-input-select>
     <div *ngIf="!edit && !new" class="mr-4">
       <span class="block font-semibold text-md">When:</span>{{event.type.capitalize()}}
@@ -30,7 +30,7 @@
           [classList]="'-mt-2'"
           [size]="'sm'"
           [topLabel]="'Do:'"
-          [required]="true"
+          [required]="false"
         ></app-input-select>
       </div>
       <div class="gap-1 pl-1 flex flex-row items-end" *ngIf="eventToAdd.action">

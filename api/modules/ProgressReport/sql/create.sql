@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS progress_report(
 );
 
 CREATE TABLE IF NOT EXISTS progress_report_history(
-    course              int unsigned PRIMARY KEY,
+    course              int unsigned NOT NULL,
     user                int unsigned NOT NULL,
     seqNr               int unsigned NOT NULL,
     totalXP             int unsigned DEFAULT 0,
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS progress_report_history(
     emailSend           TEXT,
     dateSent            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
+    PRIMARY key(course, user, seqNr),
     FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
     FOREIGN key(user) REFERENCES course_user(id) ON DELETE CASCADE
 );

@@ -32,11 +32,18 @@ export class EventCardComponent implements OnInit {
     }
   }
 
+  isFilled() {
+    if (this.eventToAdd.type || this.eventToAdd.action) return true;
+    else return false;
+  }
+
   deleteAction() {
     this.deleteEvent.emit();
   }
 
   addNewAction() {
+    AlertService.clear(AlertType.ERROR);
+
     if (this.eventToAdd.type != null && this.eventToAdd.action != null) {
       this.refresh = true;
 
@@ -63,6 +70,8 @@ export class EventCardComponent implements OnInit {
   }
 
   saveAction() {
+    AlertService.clear(AlertType.ERROR);
+
     if (this.eventToAdd.type != null && this.eventToAdd.action != null) {
       const preparedArguments = this.prepareArgumentsForAction();
 
@@ -108,6 +117,11 @@ export class EventCardComponent implements OnInit {
 
     for (let value of EventActionHelper[this.eventToAdd.action].args) {
       if (this.eventToAdd.args[index]) {
+        if (EventActionHelper[this.eventToAdd.action].types?.[index] == "string") {
+          if (!/^(['"]).*\1$/.test(this.eventToAdd.args[index])) {
+            this.eventToAdd.args[index] = "\"" + this.eventToAdd.args[index] + "\""
+          }
+        }
         argsToSend.push(this.eventToAdd.args[index]);
       }
       else if (!value.containsWord("(optional)")) {

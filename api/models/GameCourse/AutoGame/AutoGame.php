@@ -57,7 +57,7 @@ abstract class AutoGame
      */
     public static function copyAutoGameInfo(int $courseId, int $copyFrom)
     {
-       Utils::copyDirectory(AUTOGAME_FOLDER . "/imported-functions/" . $copyFrom . "/", AUTOGAME_FOLDER . "/imported-functions/" . $courseId . "/");
+       Utils::copyDirectory(AUTOGAME_FOLDER . "/gamerules/functions/gamefunctions/course_" . $copyFrom . "/", AUTOGAME_FOLDER . "/gamerules/functions/gamefunctions/course_" . $courseId . "/");
        file_put_contents(AUTOGAME_FOLDER . "/config/config_" . $courseId . ".txt", file_get_contents(AUTOGAME_FOLDER . "/config/config_" . $copyFrom . ".txt"));
     }
 

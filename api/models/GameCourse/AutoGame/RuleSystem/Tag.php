@@ -387,10 +387,9 @@ class Tag
     /**
      * Trims tag parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "color"];
         Utils::trim($params, ...$values);

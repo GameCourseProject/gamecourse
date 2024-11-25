@@ -13,7 +13,7 @@
   <div [viewSelection]="view"
        class="relative outline-2 rounded-xl transition hover:cursor-pointer
           {{isError() ? 'outline outline-error' : isSelected() ? 'outline outline-secondary' : 'hover:outline outline-neutral/50'}}"
-       (contextmenu)="onRightClick($event)" (mousedown)="selection.close()"
+       (contextmenu)="onRightClick($event)" (mousedown)="selection.close()" (dblclick)="$event.stopPropagation(); selection.set(view); editAction()"
   >
     <div class="{{isSelected() ? 'block' : 'hidden'}} absolute -top-4 left-0 bg-secondary rounded-full py-1 px-2 text-white text-xs z-30">
       {{view.type.capitalize()}}
@@ -113,6 +113,7 @@
   [static]="true"
   (submitBtnClicked)="submitEditAction()"
   (closeBtnClicked)="cancelEditAction()"
+  (dblclick)="$event.stopPropagation();"
 />
 <ng-template #COMPONENT_EDITOR>
   <app-component-editor

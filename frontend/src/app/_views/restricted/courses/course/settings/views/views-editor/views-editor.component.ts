@@ -32,7 +32,7 @@ import {ViewImage, ViewImageDatabase} from "src/app/_domain/views/view-types/vie
 import {ViewRow, ViewRowDatabase} from "src/app/_domain/views/view-types/view-row";
 import {ViewTable, ViewTableDatabase} from "src/app/_domain/views/view-types/view-table";
 import {ViewText, ViewTextDatabase} from "src/app/_domain/views/view-types/view-text";
-import {HistoryService} from "src/app/_services/history.service";
+import {HistoryEntry, HistoryService} from "src/app/_services/history.service";
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Subscription} from "rxjs";
 import {HttpErrorResponse} from "@angular/common/http";
@@ -76,6 +76,9 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   options: Option[];
   activeSubMenu: SubMenu;
 
+  showToast: boolean = false;                   // Tutorial Modal
+  videoElement: HTMLVideoElement | null = null;
+
   coreComponents: Map<ViewType, { category: string; views: View[] }[]>;
   customComponents: { id: number, view: View }[];
   sharedComponents: { id: number, sharedTimestamp: string, user: number, view: View }[];
@@ -116,6 +119,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
         this.view = value;
       }, 100);
     });
+
     this.route.parent.params.subscribe(async params => {
       const courseID = parseInt(params.id);
       await this.getCourse(courseID);
@@ -123,7 +127,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
       await this.getComponents();
       await this.getTemplates();
 
-      this.route.params.subscribe(async childParams => {
+      this.route.params.subscribe(async () => {
         const prevSegment = this.route.snapshot.url[this.route.snapshot.url.length - 2].path;
         const segment = this.route.snapshot.url[this.route.snapshot.url.length - 1].path;
 
@@ -154,37 +158,41 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
           await this.initView(parseInt(segment),
             (prevSegment === "template" || prevSegment === "system-template") ? prevSegment : null);
         }
-
       });
+
       this.loading.page = false;
       this.componentSettings = { id: null, top: null };
       this.templateSettings = { id: null, top: null };
       this.setOptions();
     })
 
-    addEventListener('keydown', async (event: KeyboardEvent) => {
-      if (ModalService.isOpen("component-editor")) return;
-
-      if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
-        (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
-      {
-        event.preventDefault();
-        await this.doAction('Redo');
-      }
-      else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        await this.doAction('Undo');
-      }
-      else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
-        event.preventDefault();
-        if (this.page || this.template) { await this.saveChanges(); }
-        else if (this.pageToManage) { this.openSaveAsPageModal(); }
-      }
-    })
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    addEventListener('keydown', this.handleKeyDown);
   }
 
   ngOnDestroy() {
+    removeEventListener('keydown', this.handleKeyDown);
     this._subscription.unsubscribe();
+  }
+
+  async handleKeyDown(event: KeyboardEvent) {
+    if (ModalService.isOpen("component-editor")) return;
+
+    if (((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey) && event.shiftKey) ||
+      (event.key === 'Y' || event.key === 'y') && event.ctrlKey)
+    {
+      event.preventDefault();
+      await this.doAction('Redo');
+    }
+    else if ((event.key === 'Z' || event.key === 'z') && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      await this.doAction('Undo');
+    }
+    else if (event.ctrlKey && (event.key === 'S' || event.key === 's')) {
+      event.preventDefault();
+      if (this.page || this.template) { await this.saveChanges(); }
+      else if (this.pageToManage) { this.openSaveAsPageModal(); }
+    }
   }
 
   /*** --------------------------------------------- ***/
@@ -913,22 +921,12 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
     else if (action === 'Undo') {
       if (this.history.hasUndo()) {
-        const res = this.history.undo();
-        this.service.viewsByAspect = res.viewsByAspect;
-        setGroupedChildren(res.groupedChildren);
-        setViewsDeleted(res.viewsByAspect);
-
-        this.view = this.service.getSelectedView();
+        this.loadFromHistory(this.history.undo());
       }
     }
     else if (action === 'Redo') {
       if (this.history.hasRedo()) {
-        const res = this.history.redo();
-        this.service.viewsByAspect = res.viewsByAspect;
-        setGroupedChildren(res.groupedChildren);
-        setViewsDeleted(res.viewsByAspect);
-
-        this.view = this.service.getSelectedView();
+        this.loadFromHistory(this.history.redo());
       }
     }
     else if (action === 'Raw (default)') {
@@ -1065,6 +1063,7 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     }
 
     this.loading.action = true;
+    AlertService.clear(AlertType.ERROR);
     try {
       this.view = await this.api.previewPage(this.page.id, this.viewerToPreview, this.userToPreview).toPromise();
     }
@@ -1096,13 +1095,16 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
   /*** ------------------ Helpers ------------------ ***/
   /*** --------------------------------------------- ***/
 
-  recoverFromFail() {
-    const backup = this.history.getMostRecent();
-    this.service.viewsByAspect = backup.viewsByAspect;
-    setGroupedChildren(backup.groupedChildren);
-    setViewsDeleted(backup.viewsByAspect);
+  loadFromHistory(data: HistoryEntry) {
+    this.service.viewsByAspect = data.viewsByAspect;
+    setGroupedChildren(data.groupedChildren);
+    setViewsDeleted(data.viewsDeleted);
 
     this.view = this.service.getSelectedView();
+  }
+
+  recoverFromFail() {
+    this.loadFromHistory(this.history.getMostRecent());
   }
 
   get ViewType(): typeof ViewType {
@@ -1186,6 +1188,13 @@ export class ViewsEditorComponent implements OnInit, OnDestroy {
     this.templateSettings.top = event.pageY - 325;
   }
 
+  openTutorial(){
+    ModalService.openModal('views-tutorial');
+  }
+
+  closeTutorial(){
+    ModalService.closeModal('views-tutorial');
+  }
 }
 
 export interface Option {

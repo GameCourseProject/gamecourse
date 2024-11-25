@@ -55,11 +55,11 @@ class ActionsLibrary extends Library
             ),
             new DFunction("showTooltip",
                 [[ "name" => "text", "optional" => false, "type" => "string"],
-                 ["name" => "position", "optional" => true, "type" => "string"]],
+                 ["name" => "position", "optional" => true, "type" => "'top' | 'bottom' | 'left' | 'right'"]],
                 "Shows a tooltip with a given text and position.",
                 ReturnType::VOID,
                 $this,
-                "actions.showTooltip('Can be earned multiple times')"
+                "actions.showTooltip('Helper text here', 'right')"
             )
         ];
     }

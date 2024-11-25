@@ -535,6 +535,7 @@ class Page
             $logs = $viewTreeChanges["logs"];
             $views = $viewTreeChanges["views"];
             Logging::processLogs($logs, $views, $this->getCourse()->getId());
+            $this->setViewRoot($viewTreeChanges["viewRoot"]);
         }
 
         // Update automations
@@ -638,11 +639,15 @@ class Page
      */
     public function renderPage(int $viewerId, int $userId = null, array $mockedData = null): array
     {
-        $pageInfo = $this->getData("course, viewRoot, type");
-        if (isset($pageInfo["type"])) Cache::loadFromDatabase($this->id, $pageInfo["type"], $userId);
+        $pageInfo = $this->getData("course, viewRoot");
 
         // NOTE: user defaults as viewer if no user directly passed
         $userId = $userId ?? $viewerId;
+
+        $renderedPage = Cache::loadFromDatabase($this->id, $userId);
+        if (isset($renderedPage)) {
+            return $renderedPage;
+        }
 
         $sortedAspects = Aspect::getAspectsByViewerAndUser($pageInfo["course"], $viewerId, $userId, true);
 
@@ -652,6 +657,40 @@ class Page
         else {
             return ViewHandler::renderView($pageInfo["viewRoot"], $sortedAspects, ["course" => $pageInfo["course"], "viewer" => $viewerId, "user" => $userId]);
         }
+    }
+
+    public static function updateCachePages(int $courseId, array $targets, $pages = []) {
+        if (empty($pages)) $pages = Page::getPages($courseId);
+
+        foreach ($pages as $page) {
+            $pageId = intval($page["id"]);
+            $pageToCache = new Page($pageId);
+
+            foreach ($targets as $target) {
+                $targetId = intval($target);
+                Core::database()->delete(TABLE_VIEWS_CACHE, ["page_id" => $pageId, "user_id" => $targetId]);
+
+                $pageString = $pageToCache->renderPage($targetId, $targetId);
+
+                Cache::storeUserViewInDatabase($pageId, $targetId, $pageString);
+            }
+        }
+    }
+
+    /**
+     * Method to verify if a page is user specific, meaning that all aspects depend only
+     * on userRoles and all viewerRoles should be null.
+     *
+     * @throws Exception
+     */
+    public function isUserSpecific() {
+        $pageAspects = Aspect::getAspectsInViewTree($this->getViewRoot());
+        foreach ($pageAspects as $aspect) {
+            if (isset($aspect["viewerRole"])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -1036,10 +1075,9 @@ class Page
     /**
      * Trims page parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "creationTimestamp", "updateTimestamp", "visibleFrom", "visibleUntil"];
         Utils::trim($params, ...$values);

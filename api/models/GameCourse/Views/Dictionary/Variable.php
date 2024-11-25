@@ -7,6 +7,7 @@ namespace GameCourse\Views\Dictionary;
  */
 class Variable
 {
+
     private $id;
     private $name;
     private $type;

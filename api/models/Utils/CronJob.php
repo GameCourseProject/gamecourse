@@ -64,7 +64,7 @@ class CronJob
 
         // Get scheduled cron jobs list
         $output = shell_exec('crontab -l');
-        $cronjobs = array_filter(array_map('trim', explode("\n", trim($output))), function ($line) { return !empty($line); });
+        $cronjobs = array_filter(array_map('trim', explode("\n", trim($output  ?? ''))), function ($line) { return !empty($line); });
 
         // Filter out given script
         $cronjobs = array_filter($cronjobs, function ($cronjob) use ($script, $args) {

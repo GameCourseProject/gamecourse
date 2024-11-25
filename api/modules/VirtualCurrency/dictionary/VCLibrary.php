@@ -14,6 +14,44 @@ class VCLibrary extends Library
         parent::__construct(self::ID, self::NAME, self::DESCRIPTION);
     }
 
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Metadata ------------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    const ID = "vc";    // NOTE: must match the name of the class
+    const NAME = "Virtual Currency";
+    const DESCRIPTION = "Provides access to information regarding virtual currency.";
+
+
+    /*** ----------------------------------------------- ***/
+    /*** --------------- Documentation ----------------- ***/
+    /*** ----------------------------------------------- ***/
+
+    public function getNamespaceDocumentation(): ?string
+    {
+        return <<<HTML
+        <p>This namespace allows you to obtain data regarding the users' spendings, and the tokens
+        configured for the course. <b>VC</b> stands for <b>Virtual Currency</b>.</p><br>
+        <p>A spending is characterized by:</p>
+        <div class="bg-base-100 rounded-box px-4 py-2 my-2">
+          <pre><code>
+            {
+              "id": 3,
+              "user": 3,
+              "course": 1,
+              "description": "Token(s) exchange",
+              "amount": 160,
+              "date": "2024-04-08 09:29:21"
+            }
+          </code></pre>
+        </div>
+        HTML;
+    }
+
+    /*** ----------------------------------------------- ***/
+    /*** ------------------ Mock data ------------------ ***/
+    /*** ----------------------------------------------- ***/
+
     private function mockSpending($userId) : array
     {
         return [
@@ -25,14 +63,6 @@ class VCLibrary extends Library
             "date" => Core::dictionary()->faker()->dateTimeThisYear()->format("Y-m-d H:m:s")
         ];
     }
-
-    /*** ----------------------------------------------- ***/
-    /*** ------------------ Metadata ------------------- ***/
-    /*** ----------------------------------------------- ***/
-
-    const ID = "vc";    // NOTE: must match the name of the class
-    const NAME = "Virtual Currency";
-    const DESCRIPTION = "Provides access to information regarding virtual currency.";
 
 
     /*** ----------------------------------------------- ***/
@@ -324,7 +354,7 @@ class VCLibrary extends Library
      * @return ValueNode
      * @throws Exception
      */
-    public function exchangeTokensForXP(int $userId, string $ratio, int $threshold, bool $extra): ?ValueNode
+    public function exchangeTokensForXP(int $userId, string $ratio, ?int $threshold = null, ?bool $extra = true): ?ValueNode
     {
         // Check permissions
         $viewerId = intval(Core::dictionary()->getVisitor()->getParam("viewer"));

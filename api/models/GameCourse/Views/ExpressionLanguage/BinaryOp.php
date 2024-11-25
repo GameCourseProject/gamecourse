@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 abstract class BinaryOp extends Node {
+
     private $lhs;
     private $rhs;
 

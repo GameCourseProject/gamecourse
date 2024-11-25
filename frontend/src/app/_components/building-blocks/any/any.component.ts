@@ -207,6 +207,10 @@ export class BBAnyComponent implements OnInit, OnDestroy {
       AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable but didn't press 'Add'! Clear the fields or Add to be able to continue.")
       return;
     }
+    else if (this.componentEditor.hasUnsavedEvent()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Event but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      return;
+    }
 
     await this.componentEditor.saveView();
 

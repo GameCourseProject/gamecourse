@@ -4,6 +4,7 @@ namespace GameCourse\Views\ExpressionLanguage;
 use GameCourse\Views\Dictionary\Library;
 
 class ParameterNode extends Node {
+
     private $param;
 
     public function __construct(string $param, ?Library $library = null) {

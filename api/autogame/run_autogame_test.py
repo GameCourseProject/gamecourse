@@ -91,20 +91,6 @@ if __name__ == "__main__":
 		METADATA = get_config_metadata(course)
 		scope, logs = {"METADATA" : METADATA, "null": None}, {}
 
-		# Initialize Moodle connector
-		if module_enabled("Moodle"):
-
-			mdl_table = "moodle_config"
-			query = "SELECT dbServer, dbName, dbUser, dbPass FROM " + mdl_table + " WHERE course = %s;"
-			mdl_host, mdl_database, mdl_username, mdl_password = gc_db.execute_query(query, (config.COURSE,))[0]
-			if mdl_password:
-
-				from gamerules.connector.db_connector import connect_to_moodle_db
-
-				connect_to_moodle_db(mdl_host.decode(), mdl_database.decode(), mdl_username.decode(),
-									 mdl_password.decode())
-				from gamerules.connector.moodle_connector import *
-
 		try:
 			rs = RuleSystem(path, AUTOSAVE)
 

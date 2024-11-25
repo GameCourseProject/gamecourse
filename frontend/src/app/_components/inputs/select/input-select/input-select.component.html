@@ -47,7 +47,7 @@
   <label class="input-group {{InputGroupSize[size]}}">
 
     <!-- Left label -->
-    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}}">{{leftLabel}}</span>
+    <span *ngIf="leftLabel" class="min-w-fit {{InputGroupLabelColor[color]}} {{leftLabelSize ?? ''}}">{{leftLabel}}</span>
 
     <!-- Select -->
     <ng-container [ngTemplateOutlet]="SELECT"></ng-container>

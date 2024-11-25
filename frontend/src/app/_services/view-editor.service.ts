@@ -5,13 +5,11 @@ import * as _ from "lodash"
 import {
   addToGroupedChildren,
   addVariantToGroupedChildren,
-  getFakeId,
   groupedChildren,
   viewsDeleted
 } from '../_domain/views/build-view-tree/build-view-tree';
 import {Subject} from 'rxjs';
 import {ViewTable} from '../_domain/views/view-types/view-table';
-import {buildView} from "../_domain/views/build-view/build-view";
 import {ViewBlock} from "../_domain/views/view-types/view-block";
 import {ViewCollapse} from "../_domain/views/view-types/view-collapse";
 
@@ -122,7 +120,14 @@ export class ViewEditorService {
   applyAspectChanges() {
     // Delete aspects
     for (let deleted of this.aspectsToDelete) {
-      this.deleteAspect(deleted);
+      // Was added but then deleted without saving in betweeen
+      if (this.aspectsToAdd.find(e => _.isEqual(e.newAspect, deleted))) {
+        this.aspectsToAdd = this.aspectsToAdd.filter(e => !_.isEqual(e.newAspect, deleted))
+      }
+      // It's an already-existing one
+      else {
+        this.deleteAspect(deleted);
+      }
     }
     this.aspectsToDelete = [];
 
@@ -162,6 +167,17 @@ export class ViewEditorService {
     );
 
     return higherInHierarchy;
+  }
+
+  lowerInHierarchy(item: View) {
+    const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
+
+    const lowerInHierarchy = viewsWithThis.filter((e) =>
+      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
+      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
+    );
+
+    return lowerInHierarchy;
   }
 
   getFutureAspects(): Aspect[] {
@@ -238,18 +254,10 @@ export class ViewEditorService {
   delete(item: View): ViewBlock | null {
     let newBlock; // the new parent block
 
-    const viewsWithThis = this.viewsByAspect.filter((e) => !_.isEqual(this.selectedAspect, e.aspect) && e.view?.findView(item.id));
-
-    const lowerInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.viewerRole, this.selectedAspect.viewerRole))
-      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(e.aspect.userRole, this.selectedAspect.userRole))
-    );
+    const lowerInHierarchy = this.lowerInHierarchy(item);
     lowerInHierarchy.push(this.getEntryOfAspect(this.selectedAspect));
 
-    const higherInHierarchy = viewsWithThis.filter((e) =>
-      (e.aspect.userRole === this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.viewerRole, e.aspect.viewerRole))
-      || (e.aspect.userRole !== this.selectedAspect.userRole && this.isMoreSpecific(this.selectedAspect.userRole, e.aspect.userRole))
-    );
+    const higherInHierarchy = this.higherInHierarchy(item);
 
     // if there is any aspect above, we need to create a new version of the parent, without the item, for this aspect
     if (higherInHierarchy.length > 0 && item.parent) {
@@ -260,58 +268,29 @@ export class ViewEditorService {
       newBlock.switchMode(ViewMode.EDIT);
       addToGroupedChildren(newBlock, null);
 
-      // the parent also has a parent already -> just make an alternative block then
       if (item.parent.parent) {
         newBlock.parent = item.parent.parent;
         addVariantToGroupedChildren(item.parent.parent.id, item.parent.id, newBlock.id);
+      }
+      else {
+        newBlock.parent = null;
+        addToGroupedChildren(newBlock, null);
+      }
 
-        for (let el of lowerInHierarchy) {
-          let view = el.view.findView(item.parent.id);
+      lowerInHierarchy.forEach((el) => {
+        let view = el.view.findView(item.parent.id);
+        if (!view.parent) {
+          this.viewsByAspect = this.viewsByAspect.map(e => {
+            if (_.isEqual(e, el)) {
+              return {aspect: e.aspect, view: _.cloneDeep(newBlock)}
+            } else return e;
+          })
+          this.selectedChange.next(this.getSelectedView());
+        }
+        else {
           view.parent.replaceView(view.id, _.cloneDeep(newBlock));
         }
-      }
-      // make a new block with the original content, so the parent has the two alternatives (original and new) as child
-      // keeping the root the same
-      else {
-        const baseBlock = buildView({
-          id: getFakeId(),
-          viewRoot: null,
-          aspect: item.parent.aspect,
-          type: "block",
-          class: ""
-        });
-        baseBlock.switchMode(ViewMode.EDIT);
-        newBlock.classList = "";
-
-        if (item.parent instanceof ViewBlock && baseBlock instanceof ViewBlock) {
-          for (let el of lowerInHierarchy) {
-            const found = el.view.findView(item.parent.id);
-            if (found instanceof ViewBlock) found.children = [newBlock];
-          }
-
-          for (let el of this.viewsByAspect.filter(e => lowerInHierarchy.indexOf(e) == -1)) {
-            const found = el.view.findView(item.parent.id);
-            if (found instanceof ViewBlock) {
-              const otherBlock = _.cloneDeep(baseBlock);
-              otherBlock.parent = item.parent;
-              otherBlock.children = _.cloneDeep(found.children);
-
-              found.children = [otherBlock];
-
-              for (let el of otherBlock.children) {
-                el.parent = otherBlock
-              }
-            }
-          }
-
-          const oldChildren = groupedChildren.get(item.parent.id);
-          groupedChildren.set(baseBlock.id, oldChildren);
-          groupedChildren.set(item.parent.id, [[baseBlock.id]]);
-          addVariantToGroupedChildren(item.parent.id, baseBlock.id, newBlock.id);
-
-          newBlock.parent = item.parent;
-        }
-      }
+      })
 
     }
     // item has no parent at all -> it's the root we are deleting -> only gets here if it's a new page -> it's fine! just make it null
@@ -323,9 +302,11 @@ export class ViewEditorService {
     }
     // no higher -> can just delete it here and in lower aspects
     else {
+      newBlock = item.parent; // this is just so that the reorder action knows the parent is still the same
+
       for (let el of lowerInHierarchy) {
         let view = el.view.findView(item.id);
-        if (view.parent) {
+        if (view?.parent) {
           // visually delete the item from those views
           view.parent.removeChildView(item.id);
 

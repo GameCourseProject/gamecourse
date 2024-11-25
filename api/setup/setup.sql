@@ -391,7 +391,7 @@ CREATE TABLE page(
      course                      int unsigned NOT NULL,
      name                        varchar(100) NOT NULL,
      isVisible                   boolean DEFAULT FALSE,
-     viewRoot                    bigint unsigned NOT NULL,
+     viewRoot                    bigint unsigned,
      creationTimestamp           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      updateTimestamp             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
      visibleFrom                 TIMESTAMP NULL DEFAULT NULL,
@@ -401,7 +401,7 @@ CREATE TABLE page(
 
      UNIQUE key(course, name),
      UNIQUE key(course, position),
-     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE CASCADE,
+     FOREIGN key(viewRoot) REFERENCES view_aspect(viewRoot) ON DELETE SET NULL,
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE
 );
 
@@ -492,6 +492,15 @@ CREATE TABLE rule_section(
      UNIQUE key(position, course),
      FOREIGN key(course) REFERENCES course(id) ON DELETE CASCADE,
      FOREIGN key(module) REFERENCES module(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rule_section_role(
+     section                     int unsigned NOT NULL,
+     role                        int unsigned NOT NULL,
+
+     PRIMARY key(section, role),
+     FOREIGN key(section) REFERENCES rule_section(id) ON DELETE CASCADE,
+     FOREIGN key(role) REFERENCES role(id) ON DELETE CASCADE
 );
 
 CREATE TABLE rule_tag(

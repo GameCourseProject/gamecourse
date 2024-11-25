@@ -7,6 +7,7 @@ namespace GameCourse\Views\Dictionary;
  */
 class DFunction
 {
+
     private $name;
     private $args;           // [[ name => string, optional => boolean, type => any ]]
     private $description;

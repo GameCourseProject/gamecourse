@@ -40,6 +40,7 @@ import {
 import {ViewEditorService} from "src/app/_services/view-editor.service";
 import {Aspect} from "../../../../../../../../_domain/views/aspects/aspect";
 import {AuxVarCardComponent} from "../../../../../../../../_components/cards/aux-var-card/aux-var-card.component";
+import {EventCardComponent} from "../../../../../../../../_components/cards/event-card/event-card.component";
 
 @Component({
   selector: 'app-component-editor',
@@ -57,6 +58,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   @ViewChild('previewComponent', { static: true }) previewComponent: BBAnyComponent;
   @ViewChild('additionalTools') additionalToolsRef: ElementRef;
   @ViewChild('newAuxVar') newAuxVar: AuxVarCardComponent;
+  @ViewChild('newEvent') newEvent: EventCardComponent;
 
   viewToEdit: ViewManageData;
   viewToPreview: View;
@@ -77,6 +79,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
   namespaces: { [name: string]: string };
 
   higherInHierarchy: {aspect: Aspect, view: View}[] = [];
+  lowerInHierarchy: {aspect: Aspect, view: View}[] = [];
 
   // Helpers for collapse
   newHeaderType: ViewType;
@@ -96,6 +99,7 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
       await this.getCookbook(this.courseId);
       this.prepareAdditionalTools();
       this.higherInHierarchy = this.service.higherInHierarchy(this.view);
+      this.lowerInHierarchy = this.service.lowerInHierarchy(this.view);
       this.loading = false;
     })
 
@@ -305,6 +309,10 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return this.higherInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
   }
 
+  getLowerInHierarchyString() {
+    return this.lowerInHierarchy.map(e => "viewer: " + (e.aspect.viewerRole ?? "none") + ", user: " + (e.aspect.userRole ?? "none")).join(" ; ")
+  }
+
   changeComponentType(view: View, type: ViewType): View {
     let newView;
 
@@ -495,9 +503,16 @@ export class ComponentEditorComponent implements OnInit, OnChanges {
     return this.newAuxVar?.isFilled() ?? false;
   }
 
+  hasUnsavedEvent() {
+    return this.newEvent?.isFilled() ?? false;
+  }
+
   async trySaveView() {
     if (this.hasUnsavedAuxVar()) {
-      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable in the Cell but didn't press 'Add'! Clear the fields or Add to be able to continue.")
+      AlertService.showAlert(AlertType.WARNING, "You have written an Auxiliary Variable in the Cell but didn't press 'Add'! Clear the fields or Add to be able to continue.");
+      return;
+    } else if (this.hasUnsavedEvent()) {
+      AlertService.showAlert(AlertType.WARNING, "You have written an Event in the Cell but didn't press 'Add'! Clear the fields or Add to be able to continue.");
       return;
     } else await this.saveView();
   }

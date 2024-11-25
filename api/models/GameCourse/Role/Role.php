@@ -10,6 +10,7 @@ use GameCourse\Course\Course;
 use GameCourse\User\CourseUser;
 use GameCourse\Views\Aspect\Aspect;
 use GameCourse\Views\Page\Page;
+use GameCourse\Views\ViewHandler;
 use Utils\Utils;
 
 /**
@@ -20,6 +21,7 @@ class Role
 {
     const TABLE_ROLE = "role";
     const TABLE_USER_ROLE = "user_role";
+    const TABLE_RULE_SECTION_ROLE = "rule_section_role";
 
 
     const DEFAULT_ROLES = ["Teacher", "Student", "Watcher"];  // default roles for each course
@@ -672,6 +674,7 @@ class Role
     public static function updateUserRoles(int $userId,  int $courseId, array $rolesNames)
     {
         // Remove roles that got deleted
+        $rolesToUpdate = [];
         $oldRoles = Role::getUserRoles($userId, $courseId, false);
         foreach ($oldRoles as $oldRole){
             $exists = !empty(array_filter($rolesNames, function ($role) use ($oldRole, $courseId) {
@@ -680,6 +683,7 @@ class Role
             }));
             if (!$exists){
                 self::removeRoleFromUser($userId, $courseId, $oldRole["name"], $oldRole["id"]);
+                $rolesToUpdate[] = $oldRole["name"];
             }
         }
 
@@ -691,8 +695,35 @@ class Role
 
             if (!in_array($roleId, $beforeUpdateRolesIds)) { // add role
                 self::addRoleToUser($userId, $courseId, $role, $roleId);
+                $rolesToUpdate[] = $role;
             }
         }
+
+        $pagesToUpdate = self::getPagesToUpdate($courseId, $rolesToUpdate);
+        if(!empty($pagesToUpdate)) {
+            Page::updateCachePages($courseId, [$userId], $pagesToUpdate);
+        }
+    }
+
+    public static function getPagesToUpdate(int $courseId, array $updatedRoles) {
+        $pagesToUpdate = [];
+
+        $pages = Page::getPages($courseId);
+        foreach ($pages as $page) {
+            $pageRoles = [];
+            $aspects = Aspect::getAspectsInViewTree($page["viewRoot"]);
+            foreach ($aspects as $aspect) {
+                if (isset($aspect["viewerRole"])) $pageRoles[] =  $aspect["viewerRole"];
+                if (isset($aspect["userRole"])) $pageRoles[] =  $aspect["userRole"];
+            }
+
+            foreach ($updatedRoles as $role) {
+                if (in_array($role, $pageRoles)) $pagesToUpdate[] = $page;
+                break;
+            }
+        }
+
+        return $pagesToUpdate;
     }
 
     /**
@@ -797,6 +828,56 @@ class Role
         $where = ["user" => $userId, "course" => $courseId, "role" => $roleId];
         return !empty(Core::database()->select(self::TABLE_USER_ROLE, $where));
     }
+
+
+    /*** ---------------------------------------------------- ***/
+    /*** --------------- Rule Section related --------------- ***/
+    /*** ---------------------------------------------------- ***/
+
+    /**
+     * Gets section's roles.
+     */
+    public static function getSectionRoles(int $sectionId): array
+    {
+        $roles = Core::database()->selectMultiple(
+            self::TABLE_RULE_SECTION_ROLE . " sr JOIN " . Role::TABLE_ROLE . " r on sr.role=r.id",
+            ["sr.section" => $sectionId],
+            "r.id, name, landingPage, module"
+        );
+        foreach ($roles as &$role) { $role = self::parse($role); }
+        return $roles;
+    }
+
+    /**
+     * Replaces section's roles in the database.
+     *
+     * @param int $sectionId
+     * @param int $courseId
+     * @param array $rolesNames
+     * @return void
+     * @throws Exception
+     */
+    public static function setSectionRoles(int $sectionId, int $courseId, array $rolesNames)
+    {
+        // Check if roles exist in course
+        foreach ($rolesNames as $roleName) {
+            if (!self::courseHasRole($courseId, $roleName))
+                throw new Exception("Role with name '" . $roleName . "' doesn't exist in course with ID = " . $courseId . ".");
+        }
+
+        // Remove all section roles
+        Core::database()->delete(self::TABLE_RULE_SECTION_ROLE, ["section" => $sectionId]);
+
+        // Add new roles
+        foreach ($rolesNames as $roleName) {
+            $roleId = self::getRoleId($roleName, $courseId);
+            Core::database()->insert(self::TABLE_RULE_SECTION_ROLE, [
+                "section" => $sectionId,
+                "role" => $roleId
+            ]);
+        }
+    }
+
 
     /*** ---------------------------------------------------- ***/
     /*** -------------------- Validations ------------------- ***/
@@ -959,10 +1040,9 @@ class Role
     /**
      * Trims rule parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name"];
         Utils::trim($params, ...$values);

@@ -97,6 +97,14 @@ class Skill
     }
 
     /**
+     * @throws Exception
+     */
+    public function getReward(): int
+    {
+        return $this->getTier()->getReward();
+    }
+
+    /**
      * Checks whether skill is wildcard.
      *
      * @return bool
@@ -1912,10 +1920,9 @@ class Skill
     /**
      * Trims skill parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["name", "color", "page"];
         Utils::trim($params, ...$values);

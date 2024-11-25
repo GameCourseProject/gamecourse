@@ -3,8 +3,8 @@
 ## Technology
 
 - **Server**:<br>
-<ins>Environment</ins>: **PHP 7.3.21** and **Python 3.7.3**<br>
-You will need a server running PHP 7.3.21 version and a composer (dependency manager).<br>
+<ins>Environment</ins>: **PHP 8.2.22** and **Python 3.11.2**<br>
+You will need a server running PHP 8.2.22 version and a composer (dependency manager).<br>
 For example, you can use _XAMPP_. Guides [here](#xampp).
 
 - **Database**:<br>
@@ -21,33 +21,14 @@ This is a setup guide to run the project on your machine.
 
 - **Backend**:<br>
   1. Copy the configuration file template (_api/inc/config.template.ts_) and rename it to _config.php_. Update its configuration variables.
-  2. In file _api/modules/composer.json_ add the following lines:<br>
-     ```
-       {
-        "autoload": {
-          "psr-4": {
-            "GameCourse\\Views\\Dictionary\\": [
-              "Awards/dictionary",
-              "Badges/dictionary",
-              "Skills/dictionary",
-              "Streaks/dictionary",
-              "VirtualCurrency/dictionary",
-              "XPLevels/dictionary"
-            ],
-            "API\\": [
-              "GoogleSheets/controllers",
-              "Profiling/controllers",
-              "ProgressReport/controllers",
-              "QR/controllers",
-              "Skills/controllers",
-              "VirtualCurrency/controllers"
-            ]
-          }
-        }
-      }
-     ```
+  2. Uncomment on php.ini (if using xampp, on xampp/php/php.ini) the lines with _extension=zip_ and _extension=gd_ (remove the ';')
   3. Install all dependencies by running: ```composer install```
-  4. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
+  4. Because of incompatibility of PHP version and project, we need to add #[\AllowDynamicProperties] to vendor/opis/closure/src/SerializableClosure.php and vendor/opis/closure/src/ClosureStream.php above the class declaration.
+    ```
+      #[\AllowDynamicProperties]
+      class SerializableClosure implements Serializable { ... }
+    ```
+  5. Create Fénix app, if necessary (guides [here](#fenixapp)), and update configuration information from _api/inc/config.php_
   
 - **Frontend**:<br>
   1. Copy the configuration file template (_frontend/src/environments/config.template.ts_) and rename it to _config.ts_. Update its configuration variables.
@@ -80,7 +61,7 @@ After all of these steps, you should be able to access [https://pcm.rnl.ulisboa.
   * **<a id="xampp"></a>XAMPP**: <br>
   XAMPP is a _PHP development environment_. It is a completely free, easy-to-install **Apache** distribution containing _MariaDB_, _PHP_, and _Perl_. See more [here](https://www.apachefriends.org/). <br><br>
   **How to Install?**
-    - Download the latest version of XAMPP for **PHP 7.3** (version 7.3.21) [here](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/7.3.21/).
+    - Download the latest version of XAMPP for **PHP 8.2** (version 8.2.22) [here](https://sourceforge.net/projects/xampp/files/XAMPP%20Windows/8.2.12/).
     - Click on the installer and follow the installation wizard.
         - <ins>Select components</ins>: You must install **Apache**, **MySQL**, and **PHP**. The rest of the components are up to you, but phpMyAdmin is also useful for database management (more [here](https://www.siteground.com/tutorials/phpmyadmin/database-management/)).
     - Change MySQL server charset

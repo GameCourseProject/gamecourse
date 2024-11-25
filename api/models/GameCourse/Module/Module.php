@@ -27,6 +27,7 @@ abstract class Module
     const TABLE_MODULE = "module";
     const TABLE_MODULE_DEPENDENCY = "module_dependency";
     const TABLE_COURSE_MODULE = "course_module";
+    const MODULE_GAMEFUNCTIONS_PATH = "autogame/gamerules/functions/gamefunctions/";
 
     protected $id;
     protected $course;
@@ -195,11 +196,25 @@ abstract class Module
         Core::database()->update(self::TABLE_COURSE_MODULE, ["isEnabled" => +$isEnabled],
             ["module" => $this->id, "course" => $this->course->getId()]);
 
+        $this->changeGameFunctionsStatus($isEnabled);
+
         if ($isEnabled) $this->init();
         else $this->disable();
 
 
         Event::trigger($isEnabled ? EventType::MODULE_ENABLED : EventType::MODULE_DISABLED, $this->course->getId(), $this->id);
+    }
+
+    public function changeGameFunctionsStatus(bool $isEnabled) {
+        $moduleName = $this->getName() . ".py";
+        $moduleGamefuntionsPath = ROOT_PATH . self::MODULE_GAMEFUNCTIONS_PATH . "course_" . $this->getCourse()->getId() . "/";
+        if (file_exists($moduleGamefuntionsPath . $moduleName)) {
+            if (!$isEnabled) {
+                rename($moduleGamefuntionsPath . $moduleName, $moduleGamefuntionsPath . "_" . $moduleName);
+            } else {
+                rename($moduleGamefuntionsPath . "_" . $moduleName, $moduleGamefuntionsPath . $moduleName);
+            }
+        }
     }
 
 
@@ -855,17 +870,15 @@ abstract class Module
     /*** ---------------------------------------------------- ***/
     /*** ------------------- Rule System -------------------- ***/
     /*** ---------------------------------------------------- ***/
-
     /**
      * Adds a new module item rule to the Rule System.
      * Returns the newly created rule.
      *
      * @param int|null $position
-     * @param mixed ...$args
      * @return Rule
      * @throws Exception
      */
-    public function addRuleOfItem(int $position = null, ...$args): Rule
+    public function addRuleOfItem(int $position = null, mixed ...$args): Rule
     {
         // Generate rule params
         $params = $this->generateRuleParams(...$args);
@@ -886,11 +899,10 @@ abstract class Module
      * @param int $ruleId
      * @param int|null $position
      * @param bool $isActive
-     * @param mixed ...$args
      * @return void
      * @throws Exception
      */
-    public function updateRuleOfItem(int $ruleId, int $position = null, bool $isActive = true, ...$args)
+    public function updateRuleOfItem(int $ruleId, int $position = null, bool $isActive = true, mixed ...$args)
     {
         // Re-generate rule params
         $params = $this->generateRuleParams(...$args);
@@ -922,10 +934,9 @@ abstract class Module
     /**
      * Generates rule parameters for a module item.
      *
-     * @param mixed ...$args
      * @return array
      */
-    protected function generateRuleParams(...$args): array
+    protected function generateRuleParams(mixed ...$args): array
     {
         return [];
     }
@@ -1347,10 +1358,9 @@ abstract class Module
     /**
      * Trims module parameters' whitespace at start/end.
      *
-     * @param mixed ...$values
      * @return void
      */
-    private static function trim(&...$values)
+    private static function trim(mixed &...$values)
     {
         $params = ["id", "name", "description", "type", "version", "minProjectVersion", "maxProjectVersion", "minAPIVersion", "maxAPIVersion"];
         Utils::trim($params, ...$values);
