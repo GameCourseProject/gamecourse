@@ -99,7 +99,7 @@ def log_end():
 def update_view_cache(course, students):
     targets = ','.join(map(str, students.keys()))
     try:
-        subprocess.run(f"php /var/www/html/gamecourse/api/autogame/PageCacheScript.php {course} {targets}", check=True, shell=True)
+        subprocess.run(f"php /var/www/html/gamecourse/api/autogame/PageCacheScript.php {course} {targets} > /dev/null 2>&1 &", check=True, shell=True)
     except subprocess.CalledProcessError as e:
         logging.error("Failed to update views cache")
 

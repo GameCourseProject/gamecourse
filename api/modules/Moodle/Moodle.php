@@ -562,6 +562,7 @@ class Moodle extends Module
                 "forum grades" => "ForumGrades",
                 "peergrades" => "Peergrades",
                 "quiz grades" => "QuizGrades",
+                "peergradeAssignment" => "PeergradeAssignment",
                 "assignment grades" => "AssignmentGrades"
             ];
             foreach ($import as $itemStr => $item) {
@@ -1462,6 +1463,81 @@ class Moodle extends Module
 
         if (!empty($values)) {
             $sql .= implode(", ", $values);
+            Core::database()->executeQuery($sql);
+        }
+        return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
+    }
+
+    /**
+     * Imports Moodle assignment grades into the system.
+     * Returns oldest and last records timestamp if new data
+     * was imported, null otherwise.
+     *
+     * @return array|null
+     * @throws Exception
+     */
+    public function importPeergradeAssignment(): ?array
+    {
+        $assignmentAssignments = $this->getPeergradeAssignments();
+        return $this->savePeergradeAssignments($assignmentAssignments);
+    }
+
+    private function getPeergradeAssignments() {
+        $fields = "u.username as username, f.name as forumName, fp.subject, fd.id as discussionId, fp.id as postId, ug.username as grader, pa.timeassigned as timestamp";
+
+        $table = self::$prefix . "peerforum_time_assigned pa JOIN " . self::$prefix . "peerforum_posts fp on pa.itemid=fp.id JOIN " .
+            self::$prefix . "peerforum_discussions fd on fd.id=fp.discussion JOIN " . self::$prefix . "peerforum f on f.id=fd.peerforum JOIN " .
+            self::$prefix . "user u on fp.userid=u.id JOIN " . self::$prefix . "user ug on pa.userid=ug.id JOIN " .
+            self::$prefix . "course c on f.course=c.id";
+
+        $where = ["f.course" => self::$courseId];
+        //if (!is_null(self::$checkpoint)) $whereCompare[] = ["g.timemodified", ">", self::$checkpoint];
+        $orderBy = "pa.timeassigned";
+        return $this->database()->selectMultiple($table, $where, $fields, $orderBy);
+    }
+
+
+    private function savePeergradeAssignments(array $peergradeAssignments): ?array
+    {
+        // NOTE: it's better performance-wise to do only one big insert
+        //       as opposed to multiple small inserts
+        $sql = "INSERT INTO " . AutoGame::TABLE_PARTICIPATION . " (user, course, source, description, type, post, date, evaluator) VALUES ";
+        $values = [];
+
+        $lastRecordTimestamp = null; // Timestamp of the last record imported
+        $targets = []; // Which targets to run AutoGame for, based on new data imported
+
+        foreach ($peergradeAssignments as $peergradeAssign) {
+            self::parsePeergradeAssignment($peergradeAssign);
+            $courseUser = $this->course->getCourseUserByUsername($peergradeAssign["username"]);
+            if ($courseUser) {
+                $grader = $this->course->getCourseUserByUsername($peergradeAssign["grader"]);
+                if ($grader) {
+                    if (!$this->hasPeergradeAssigment($courseUser->getId(), $peergradeAssign["discussionId"], $peergradeAssign["postId"], $grader->getId())) { // new peergrade
+                        $params = [
+                            $courseUser->getId(),
+                            $this->getCourse()->getId(),
+                            "\"" . $this->id . "\"",
+                            "\"" . $peergradeAssign["forumName"] . ", " . $peergradeAssign["subject"] . "\"",
+                            "\"Peergrade Assigned\"",
+                            "\"mod/peerforum/discuss.php?d=" . $peergradeAssign["discussionId"] . "#p" . $peergradeAssign["postId"] . "\"",
+                            "\"" . date("Y-m-d H:i:s", $peergradeAssign["timestamp"]) . "\"",
+                            $grader->getId()
+                        ];
+                        $values[] = "(" . implode(", ", $params) . ")";
+
+                    }
+                    $lastRecordTimestamp = max($peergradeAssign["timestamp"], $lastRecordTimestamp);
+                    $targets = array_merge($targets, [$courseUser->getId(), $grader->getId()]);
+
+                } else self::log($this->course->getId(), "(While importing peergrade assignments) No user with username '" . $peergradeAssign["grader"] . "' enrolled in the course.", "WARNING");
+
+            } else self::log($this->course->getId(), "(While importing peergrade assignments) No user with username '" . $peergradeAssign["username"] . "' enrolled in the course.", "WARNING");
+        }
+
+        if (!empty($values)) {
+            $sql .= implode(", ", $values);
+            //echo $sql;
             Core::database()->executeQuery($sql);
         }
         return $lastRecordTimestamp ? ["lastRecordTimestamp" => $lastRecordTimestamp, "targets" => array_unique($targets)] : null;
